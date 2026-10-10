@@ -3,6 +3,7 @@
 **Status:** Accepted presentation contracts. Compact styles, `Sparkline` and plain
 `DurationText` shipped in 0.1.0; measurement gauges and segmented readouts extend
 those contracts and have not yet been included in a tagged release.
+The responsive instrument tile below is a proposal, not an available API.
 
 Present supplied measurements and durations; applications retain sampling, timing and interpretation.
 
@@ -66,6 +67,111 @@ chooses text when the complete lettering does not fit the allocation. Formatting
 units and interpretation remain application-owned; this is a passive readout.
 Segmented artwork always measures all three rows, regardless of inherited text
 line limits. The ordinary-text fallback retains the caller's native line limit.
+
+## Proposed responsive instrument tile
+
+**Status:** Design recommendation; no implementation or public API yet. Prove
+the fitting contract in a small example before promoting it into the library.
+
+The missing behavior is fitting a complete reading and supporting facts into a
+small allocation while giving optional visuals the remaining space. Existing
+readouts, gauges, sparklines and group styles already supply the drawing and
+chrome. A new component must remove repeated fitting policy, not just rename a
+`GroupBox` or collect measurement configuration.
+
+### Candidate API
+
+One passive, unprefixed `InstrumentTile` accepts a label, one complete
+application-formatted `reading: String`, essential supporting content, and an
+optional visual group. Native view builders keep supplied content composable;
+convenience initializers omit empty groups. The visual builder receives an
+expanded or compact presentation choice. Proposed call-site shape, uncompiled:
+
+```swift
+InstrumentTile("Temperature", reading: "21.4 °C") {
+    Text("Within target")
+    Text("Recorded mean: 20.8 °C")
+    Text("Recorded maximum: 24.8 °C")
+} visuals: { presentation in
+    switch presentation {
+    case .expanded:
+        VStack(alignment: .leading, spacing: 0) {
+            MeasurementGauge(position: 0.535, style: .dial)
+                .frame(height: 5)
+            Text("Scale: 0–40 °C")
+        }
+    case .compact:
+        VStack(alignment: .leading, spacing: 0) {
+            MeasurementGauge(position: 0.535)
+                .frame(height: 1)
+            Text("Scale: 0–40 °C")
+        }
+    }
+}
+```
+
+Chio styles the label, ordinary reading and supporting group through the theme.
+The ordinary reading remains present with visuals. Applications can place a tile
+inside a native styled `GroupBox` and compose grids or expanded inspectors;
+the tile adds no border, terminal-size breakpoint or collection policy of its own.
+
+Use the reading verbatim: no first-word extraction, numeric parsing, unit joining,
+conversion or inferred missing state. Supporting facts remain independent of the
+current reading. An unavailable reading can coexist with known recorded values;
+a missing gauge position remains distinct from zero. Applications choose whether
+status, detail and other facts belong in essential content or optional visuals.
+They retain formatting, normalization, thresholds, freshness, priorities, clocks,
+sampling and retention. No new measurement DTO, registry or style protocol is
+justified by this slice.
+
+### Fitting contract to prove
+
+Try complete expanded content, complete compact content, then essential text
+alone. Optional visuals and their captions are admitted as a group, so a gauge
+cannot displace its scale label or an essential fact. Enlarging the allocation
+must restore the preferred presentation. Long readings and facts use native
+wrapping rather than intentional ellipsis; terminal-cell width must not be
+approximated with string character counts.
+
+Use native stacks and `ViewThatFits`, not a Chio measurement engine. The pinned
+native implementation resolves every candidate, probes ideal dimensions on the
+selected axes, and chooses the last candidate even if none fits. Therefore this
+is a content-priority contract, not a guarantee that arbitrary text fits any
+fixed frame. Establish the essential content's minimum allocation in the spike;
+the surrounding application owns extra space or scrolling below that minimum.
+Keep supplied content passive and its state/resources above the alternatives.
+
+Give a dial its full five-row allocation in the expanded candidate. An unbounded
+Canvas or a nested adaptive visual can give misleading fit results; explicitly
+bounded visual candidates must be tested in the complete tile. Ordinary text,
+native accessibility and existing group styling remain the foundations.
+
+Optional segmented lettering can be supplied using `InstrumentReadout` inside
+the visual group. Its existing plain-text fallback remains intact, including for
+unsupported strings; the tile must not parse the ordinary reading or promise
+that duplicate plain text is suppressed. Prefer a bar/dial proof first, then
+validate a caller-supplied numeric readout without adding another public option.
+
+### Acceptance and delivery
+
+1. Prove a compact grid and an expanded instrument with neutral synthetic data,
+   including a non-workout example. Compare full and reduced allocations before
+   introducing a public type; preserve existing primitive behavior.
+2. Cover missing, zero, negative and large readings, long labels, Unicode units,
+   complete supporting groups, and missing current values with known recorded
+   facts. Test exact fit boundaries, explicit gauge heights and the minimum
+   allocation; do not claim that clipped essential content is a successful fit.
+3. Use retained hosted sessions to replace readings, clear optional content, cycle
+   themes and shrink/expand repeatedly. Verify no stale pixels, recovered visuals,
+   no added focus stops, and accessible full readings without decorative duplicates.
+4. Check default, light, btop and custom themes, monochrome and true-color output.
+   After implementation, run the required local/platform/terminal gates and update
+   the public component example and theme previews through the showcase workflow.
+
+Target bands, trend indicators and timestamped history remain separate proposals.
+Existing sparklines describe equally spaced slots and must not silently acquire
+irregular-time semantics. Paired facts, navigation displays and collection layout
+remain application compositions until a separate shared contract is demonstrated.
 
 ## Duration presentation and example-owned timekeeping
 

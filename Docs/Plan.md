@@ -39,10 +39,22 @@ parity remain outside it. Existing polygon cut-edge limitations remain explicit.
 Keep revision-specific results in release records rather than expanding this
 active plan with completed implementation history.
 
+## Current design pass: responsive instrumentation
+
+Assess one passive instrument tile that preserves complete readings and essential
+supporting facts while fitting optional visuals. The
+[instrumentation proposal](Decisions/Instrumentation.md#proposed-responsive-instrument-tile)
+owns the candidate API, application boundaries and acceptance criteria. It is not
+implemented or part of the public API. The recommended next step is a focused
+native-layout proof in a compact grid and expanded instrument with synthetic data.
+
+Provider archive acquisition is on hold at the user's request. No archive reader
+or downloader has been adopted; existing local pack APIs remain available.
+
 ## Native runtime follow-up
 
-The demonstrated native shutdown issue currently takes priority over the next map
-acquisition slice. [SwiftTUI PR #45](https://github.com/SwiftTUI/swift-tui/pull/45)
+The demonstrated native shutdown issue is tracked separately in
+[SwiftTUI PR #45](https://github.com/SwiftTUI/swift-tui/pull/45), which
 is the current upstream proposal after assessing the limits of an internal
 workaround. It has not been adopted by Chio; the dependency pin remains unchanged.
 [Native integration](Decisions/NativeIntegration.md#cooperative-shutdown-follow-up)
@@ -80,7 +92,8 @@ or implicit network behavior.
 
 ### Next slice: offline pack acquisition
 
-**Status:** Programmatic local preparation and read-only loading implemented.
+**Status:** Provider acquisition paused. Programmatic local preparation and
+read-only loading implemented.
 Delivery requires the platform, process and review gates in [Verification](Verification.md). [Offline packs](Decisions/OfflineTilePacks.md)
 owns the format, limits and lifetime contracts. [Usage](Usage.md#offline-tile-packs)
 and [Examples](Examples.md#maps) contain the public API and runnable commands.
@@ -151,8 +164,9 @@ separate rewrite. Intentional single-case
 filters, extensible upstream/raw-input switches, native wrappers and private
 nested conformances retain their documented roles.
 
-The approved map expansion above is the current feature queue. Real application
-use of the public map remains useful validation. Other component additions and a
+The map expansion above remains approved, with provider acquisition paused while
+the instrumentation design is assessed. Real application use of the public map
+remains useful validation. Other component additions and a
 new stable release remain possible directions, not delivery promises.
 
 Prioritize demonstrated regressions in shipped behavior: focus, selection,
