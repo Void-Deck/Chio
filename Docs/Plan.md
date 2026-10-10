@@ -41,12 +41,26 @@ active plan with completed implementation history.
 
 ## Current design pass: responsive instrumentation
 
-Assess one passive instrument tile that preserves complete readings and essential
-supporting facts while fitting optional visuals. The
-[instrumentation proposal](Decisions/Instrumentation.md#proposed-responsive-instrument-tile)
-owns the candidate API, application boundaries and acceptance criteria. It is not
-implemented or part of the public API. The recommended next step is a focused
-native-layout proof in a compact grid and expanded instrument with synthetic data.
+The [full instrumentation assessment](Decisions/Instrumentation.md#instrumentation-expansion-assessment)
+recommends a passive instrument tile, a compatible target-band gauge extension and
+a separate one-series time-aware chart. It records proposed APIs, value contracts,
+native limitations and acceptance evidence. None is implemented or part of the
+public API; evaluation does not commit to the whole inventory.
+
+Recommended delivery order:
+
+1. Prove the tile's essential-content fitting in compact and expanded examples,
+   alongside grouped-fact and native playback recipes. Promote only demonstrated
+   reusable behavior.
+2. Prove target bands in bars/dials, then extend the existing gauge while preserving
+   all no-band behavior.
+3. Prove explicit time spacing, missing intervals, clipping and work limits before
+   promoting the proposed history chart.
+
+Trend indicators, paired/grouped readings and responsive collections remain
+compositions unless the examples reveal a shared missing contract. Native control
+styles are a smaller possible follow-up than a playback framework. Domain-specific
+widgets, compasses and multiple overlaid chart series remain deferred.
 
 Provider archive acquisition is on hold at the user's request. No archive reader
 or downloader has been adopted; existing local pack APIs remain available.
@@ -165,7 +179,7 @@ filters, extensible upstream/raw-input switches, native wrappers and private
 nested conformances retain their documented roles.
 
 The map expansion above remains approved, with provider acquisition paused while
-the instrumentation design is assessed. Real application use of the public map
+the instrumentation proposals are reviewed. Real application use of the public map
 remains useful validation. Other component additions and a
 new stable release remain possible directions, not delivery promises.
 
