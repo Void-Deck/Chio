@@ -78,8 +78,11 @@ of movement on the other axis. Its regression tests fail on unchanged upstream
 and pass on candidate `fc80a1894ecd0d3d81f7a621ec67427136cab73c`: 50 tests across
 native registry, collection interaction, lazy composition, viewport sizing and
 wheel-scroll suites pass on macOS with Swift 6.4.0. Independent review found no
-issues. The candidate is draft pending broader verification; Chio's dependency
-pin is unchanged. Cursor reveal and unanchored `scrollTo` share the helper;
+issues. The full native `bun run test` gate also passes on macOS at that revision,
+including all runtime shards, platform suites, TermUIPerf and the soundness scan.
+GitHub workflows report `action_required` without executing; upstream CI remains
+pending. Chio's dependency pin is unchanged.
+Cursor reveal and unanchored `scrollTo` share the helper;
 explicit anchors and arbitrary binding normalization remain outside this fix.
 
 ### Row measurement and navigation disagree
