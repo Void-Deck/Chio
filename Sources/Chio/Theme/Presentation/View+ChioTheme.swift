@@ -20,6 +20,8 @@ extension View {
             .linkStyle(ChioLinkStyle(theme: theme))
             .pickerStyle(ChioPickerStyle(theme: theme))
             .toggleStyle(ChioToggleStyle(theme: theme))
+            .sliderStyle(ChioSliderStyle())
+            .stepperStyle(ChioStepperStyle())
             .foregroundStyle(theme.colors.foreground)
             .tint(theme.colors.accent)
             .background(theme.colors.surface)
