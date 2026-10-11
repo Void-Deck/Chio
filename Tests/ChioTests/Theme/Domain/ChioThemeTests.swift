@@ -4,6 +4,63 @@ import SwiftTUIRuntime
 import Testing
 
 struct ChioThemeTests {
+    @Test("Custom gauge colors compose independently and survive successive theme replacements")
+    func gaugeCustomization() {
+        let base = ChioTheme.btop
+        let palette = ChioTheme.GaugeColors(arc: .red, target: .green, needle: .blue)
+        let composed = ChioTheme(colors: base.colors, spacing: base.spacing,
+                                 treatments: base.treatments, syntax: base.syntax,
+                                 map: base.map, gauge: palette)
+        let changedPalette = palette.replacing(target: .yellow).replacing(needle: .cyan)
+        let changed = composed.replacing(gauge: changedPalette)
+            .replacing(colors: base.colors.replacing(accent: .magenta))
+
+        #expect(composed == base.replacing(gauge: palette))
+        #expect(palette == ChioTheme.GaugeColors(arc: .red, target: .green, needle: .blue))
+        #expect(changed.gauge == ChioTheme.GaugeColors(arc: .red, target: .yellow, needle: .cyan))
+        #expect(composed.gauge == palette)
+        #expect(base.gauge == ChioTheme.GaugeColors(arc: Color(hexRGB: 0x565F66),
+                                                  target: Color(hexRGB: 0x6FFFFF),
+                                                  needle: Color(hexRGB: 0xFFFFFF)))
+        #expect(changed.colors == base.colors.replacing(accent: .magenta))
+        #expect(changed.spacing == base.spacing)
+        #expect(changed.treatments == base.treatments)
+        #expect(changed.syntax == base.syntax)
+        #expect(changed.map == base.map)
+        #expect(changed.replacing() == changed)
+        #expect(changedPalette.replacing() == changedPalette)
+    }
+
+    @Test("Gauge palettes preserve distinct roles through serialization and hashing")
+    func gaugeRoundTrip() throws {
+        let palette = ChioTheme.GaugeColors(arc: Color(hexRGB: 0x102030),
+                                           target: Color(hexRGB: 0x405060),
+                                           needle: Color(hexRGB: 0x708090))
+        let data = try JSONEncoder().encode(palette)
+        let decoded = try JSONDecoder().decode(ChioTheme.GaugeColors.self, from: data)
+        #expect(decoded == palette)
+        #expect(Set([palette, decoded]).count == 1)
+        #expect(Set([palette, palette.replacing(arc: .red),
+                     palette.replacing(target: .red), palette.replacing(needle: .red)]).count == 4)
+    }
+
+    @Test("Original theme function references remain available and retain a customized gauge")
+    func themeFunctionReferences() {
+        let construct: (ChioTheme.Colors, ChioTheme.Spacing, ChioTheme.Treatments,
+                        ChioTheme.SyntaxColors, ChioTheme.MapColors) -> ChioTheme = ChioTheme.init
+        let base = ChioTheme.light
+        let constructed = construct(base.colors, base.spacing, base.treatments, base.syntax, base.map)
+        #expect(constructed.gauge == ChioTheme.GaugeColors())
+        #expect(constructed == base.replacing(gauge: ChioTheme.GaugeColors()))
+
+        let customized = base.replacing(gauge: ChioTheme.GaugeColors(arc: .red))
+        let replace: (ChioTheme.Colors?, ChioTheme.Spacing?, ChioTheme.Treatments?,
+                      ChioTheme.SyntaxColors?, ChioTheme.MapColors?) -> ChioTheme = customized.replacing
+        #expect(replace(nil, nil, nil, nil, nil) == customized)
+        #expect(replace(base.colors.replacing(accent: .blue), nil, nil, nil, nil)
+            == customized.replacing(colors: base.colors.replacing(accent: .blue)))
+    }
+
     @Test("The instrumentation preset preserves semantic customization and native treatments")
     func instrumentationPreset() throws {
         let base = ChioTheme.btop

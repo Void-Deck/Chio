@@ -534,13 +534,14 @@ See [duration labels](Usage.md#duration-labels).
 COLORTERM=truecolor swift run -c release chio-dashboard --metrics
 ```
 
-Compact border titles, `MeasurementGauge` bars or plain dials, segmented numeric
+Compact border titles, `MeasurementGauge` bars or target dials, segmented numeric
 readouts and single-series sparklines share the
 btop-inspired palette. Press `n` or activate **Next sample** to advance the local
 24-sample history. Press `g` or activate **History** to cycle through full, missing
-and empty readings. Press `v` to switch between bars and plain arc-and-needle
-dials, without target brackets or reference markers. Compact layouts use bars
-and omit large readouts; expansion restores the chosen presentation. Plain dials
+and empty readings. Press `v` to switch between bars and high-contrast target dials. Their colored arc segment
+shows the supplied 45–60% target; numeric target and scale captions remain visible.
+The needle wins shared-cell paint; references remain bar-only. Compact layouts use bars
+and omit large readouts; expansion restores the chosen presentation. Target dials
 need at least 70 × 28 cells for the complete example; shorter layouts keep bars.
 Tab/Shift-Tab moves between native buttons; Return/Space
 activates them. Ctrl-T cycles btop, default and light themes; Ctrl-Q quits.
@@ -558,9 +559,9 @@ COLORTERM=truecolor swift run -c release chio-dashboard --instruments
 swift run -c release chio-dashboard --instruments --theme btop --snapshot
 ```
 
-**Candidate for PR review; not merged or released.** This
-example passes focused local checks; platform qualification is tracked in
-[Plan](Plan.md#current-slice-responsive-instrumentation). It composes the native instrument style, a
+**Merged in PR #8; not yet included in a tagged release.** This
+example passed macOS/Linux qualification in [PR #8](https://github.com/echoz/Chio/pull/8).
+It composes the native instrument style, a
 synthetic temperature reading, a reservoir fact, supplied mean/maximum reference
 marks and a desired band. The response-time history includes distinct same-time
 observations, a missing reading and an explicit segment break; the break does not
@@ -669,7 +670,7 @@ activation does; this demo opens no browser and makes no network requests.
 
 ![Instrumentation panels with segmented numeric readouts, measurement gauges, single-series history graphs and native sample controls](Media/metrics.png)
 
-Advance local readings, switch between bars and plain dials, show missing or empty
+Advance local readings, switch between bars and target dials, show missing or empty
 history, and compare btop, default and light palettes. Gauges remain accented at 100%; the
 application supplies data, normalization and updates.
 [Watch](https://echoz.github.io/Chio/#metrics) · [Download recording](Media/metrics.cast).

@@ -6,12 +6,18 @@ Use semantic themes and native styles to give controls coherent paint while reta
 
 ## Theme
 
-`ChioTheme` contains semantic colors, syntax colors, spacing and treatments;
+`ChioTheme` contains semantic colors, syntax/map/gauge palettes, spacing and treatments;
 `.chioTheme(...)` applies it through the environment and installs native styles.
 Use `replacing(...)` on the theme and nested values to customize presentation.
 Construction and replacement preserve nonnegative spacing and printable
 single-cell glyph preconditions. Options own component behavior; application
 composition owns content and layout.
+
+`GaugeColors` defines `arc`, `target` and `needle` for target-band dials. Customize
+it with `theme.replacing(gauge: theme.gauge.replacing(target: ...))`. These roles
+are independent of status colors and do not recolor ordinary bars or plain dials.
+The palette is immutable, hashable, codable and sendable; theme equality includes
+it. The overall theme retains its existing native-type conformance limitations.
 
 The default, light and btop presets share the same interaction policy. The
 executable's `ExampleTheme` is an internal comparison choice, not a public theme

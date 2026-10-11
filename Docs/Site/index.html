@@ -304,7 +304,7 @@
           <div class="player" aria-label="Compact metrics recording"></div>
           <p class="player-message" role="status" hidden></p>
           <div class="recording-caption">
-            <p>Advance local samples, switch between bars and plain dials, show missing or empty history, and compare segmented readouts and compact border titles across three palettes. Chio presents the readings; the application owns the data and updates.</p>
+            <p>Advance local samples, switch between bars and segmented target dials, show missing or empty history, and compare segmented readouts and compact border titles across three palettes. Chio presents the readings; the application owns the data and updates.</p>
             <a class="download" href="recordings/metrics.cast" download>Download recording ↓</a>
           </div>
           <div class="recording-run">
@@ -318,21 +318,26 @@
           <div class="api-example">
             <h4>Use in your view</h4>
             <a class="api-doc-link" href="https://github.com/echoz/Chio/blob/main/Docs/Usage.md#compact-metrics-and-history">API guide ↗</a>
-            <p>samples: [Double?] is application-owned history; labels supply the measurement units.</p>
-            <pre><code data-theme-code>VStack {
+            <p>samples: [Double?] is application-owned history; labels supply the current reading, target interval and measurement scale.</p>
+            <pre><code data-theme-code>let target = try MeasurementGauge.TargetBand(
+    lowerBound: 0.45, upperBound: 0.60)
+
+VStack {
     InstrumentReadout(&quot;64&quot;)
-    MeasurementGauge(position: 0.64, style: .dial)
+    Text(&quot;Current 64%&quot;)
+    MeasurementGauge(position: 0.64, targetBand: target, style: .dial)
+    Text(&quot;Target 45–60% · Scale 0–100%&quot;)
     Sparkline(samples, scale: .fixed(0...1))
         .frame(width: 24, height: 4)
 }
 .chioTheme(.default)</code></pre>
           </div>
-          <p class="component-options"><strong>Presentation options.</strong> Gauge: normalized bar or plain dial (arc and needle only). Readout: segmented or plain. History: automatic or fixed scale; nil readings leave gaps. These choices are independent of theme.</p>
+          <p class="component-options"><strong>Presentation options.</strong> Gauge: normalized bar, plain dial, or segmented dial with an authored target interval. Reference marks remain available on bars. Readout: segmented or plain. History: automatic or fixed scale; nil readings leave gaps. These choices are independent of theme.</p>
           <div class="recording-details">
             <dl class="recording-ingredients">
               <div><dt>Chio</dt><dd><code>MeasurementGauge</code>, <code>InstrumentReadout</code>, <code>Sparkline</code>, <code>ChioTheme.btop</code>, <code>ChioGroupBoxStyle</code></dd></div>
               <div><dt>SwiftTUI</dt><dd><code>Canvas</code>, <code>GroupBox</code>, <code>Button</code></dd></div>
-              <div><dt>Example code</dt><dd>Fixed sample data, normalization, manual updates, bar/dial choice and adaptive instrument layout.</dd></div>
+              <div><dt>Example code</dt><dd>Fixed sample data, normalization, manual updates, bar/target-dial choice, authored numeric captions and adaptive instrument layout.</dd></div>
             </dl>
             <a class="example-source" href="https://github.com/echoz/Chio/blob/main/Examples/AgentDashboard/Presentation/MetricsExampleView.swift">View example source <span aria-hidden="true">↗</span></a>
           </div>
