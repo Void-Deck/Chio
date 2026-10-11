@@ -69,6 +69,10 @@ done
     > .build/ci-results/diff-compact.txt
 "$binary" --diff --snapshot --width 100 --height 30 \
     > .build/ci-results/diff-wide.txt
+for treatment in chio opencode btop; do
+  "$binary" --appearance --treatment "$treatment" --snapshot --width 36 --height 18 \
+    > ".build/ci-results/appearance-$treatment-compact.txt"
+done
 python3 Scripts/ci/terminal-smoke.py "$binary"
 python3 Scripts/ci/terminal-smoke.py "$binary" --choices
 python3 Scripts/ci/terminal-smoke.py "$binary" --text-entry
@@ -85,6 +89,8 @@ python3 Scripts/ci/terminal-smoke.py "$binary" --instruments
 python3 Scripts/ci/terminal-smoke.py "$binary" --metrics
 python3 Scripts/ci/terminal-smoke.py "$binary" --inbox
 python3 Scripts/ci/terminal-smoke.py "$binary" --diff
+python3 -B Scripts/docs/capture-appearance.py "$binary" --verify-only \
+  --output .build/ci-results/appearance
 
 # Public map contracts run with the test targets above. Exercise the local map
 # example separately from the dashboard, including fixture provenance and raw input.

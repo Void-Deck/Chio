@@ -28,10 +28,12 @@ struct ChioDashboardCommandTests {
         ExampleArguments(arguments: ["--diff"], example: .diff, startingTheme: .default),
     ]
 
-    private static let focusedExamples = Array(examples.dropFirst())
+    private static let focusedExamples = Array(examples.dropFirst()) + [
+        ExampleArguments(arguments: ["--appearance"], example: .appearance, startingTheme: .default),
+    ]
     private static let themeConflict = "Choose --theme or --light, not both."
     private static let dimensionError = "Use --width 20...240 and --height 10...100."
-    private static let exampleConflict = "Choose one example: --choices, --text-entry, --feedback, --files, --keyboard-help, --tabs, --pagination, --viewport, --tree, --forms, --timers, --metrics, --instruments, --inbox or --diff."
+    private static let exampleConflict = "Choose one example: --choices, --text-entry, --feedback, --files, --keyboard-help, --tabs, --pagination, --viewport, --tree, --forms, --timers, --metrics, --instruments, --inbox, --diff or --appearance."
     private static let simulationError = "--scenario and --paused describe the dashboard simulation; omit them with a focused example."
     private static let directoryError = "--directory is available only with --files."
     private static let filesSnapshotError = "--files loads folders asynchronously and does not support --snapshot; run the interactive example."
@@ -68,6 +70,49 @@ struct ChioDashboardCommandTests {
             #expect(command.resolveTheme(for: try command.resolveExample()) == theme)
             Self.expectRejected(fixture.arguments + ["--light", "--theme", theme.rawValue], message: Self.themeConflict)
         }
+    }
+
+    @Test("Appearance comparison selects its route with omitted recipe and density defaults")
+    func appearanceDefaults() throws {
+        let command = try ChioDashboardCommand.parse(["--appearance", "--snapshot", "--width", "36", "--height", "18"])
+        #expect(try command.resolveExample() == .appearance)
+        #expect(command.treatment == nil)
+        #expect(command.density == nil)
+        #expect(command.snapshot)
+        #expect(command.width == 36)
+        #expect(command.height == 18)
+    }
+
+    @Test("Appearance recipes and independent density choices are parsed", arguments: ["chio", "opencode", "btop"], ["recipe", "compact", "roomy"])
+    func appearanceOptions(treatment: String, density: String) throws {
+        let command = try ChioDashboardCommand.parse(["--appearance", "--treatment", treatment, "--density", density])
+        #expect(try command.resolveExample() == .appearance)
+        #expect(command.treatment?.rawValue == treatment)
+        #expect(command.density?.rawValue == density)
+    }
+
+    @Test("Comparison options require appearance even when explicitly supplying default values")
+    func appearanceOptionsRestricted() {
+        for arguments in [["--treatment", "chio"], ["--density", "recipe"],
+                          ["--treatment", "opencode", "--density", "compact"]] {
+            Self.expectRejected(arguments, message: "--treatment and --density are available only with --appearance.")
+            Self.expectRejected(["--forms"] + arguments, message: "--treatment and --density are available only with --appearance.")
+        }
+    }
+
+    @Test("Appearance recipes reject independent theme flags")
+    func appearancePaletteOwnership() {
+        let message = "--appearance recipes own their palettes; omit --theme and --light and choose --treatment instead."
+        Self.expectRejected(["--appearance", "--light"], message: message)
+        for theme in ["default", "light", "btop"] {
+            Self.expectRejected(["--appearance", "--theme", theme], message: message)
+        }
+    }
+
+    @Test("Unknown appearance recipes and densities retain parser diagnostics")
+    func unknownAppearanceOptions() {
+        Self.expectRejected(["--appearance", "--treatment", "unknown"], message: "The value 'unknown' is invalid for '--treatment <treatment>'. Please provide one of 'chio', 'opencode' or 'btop'.")
+        Self.expectRejected(["--appearance", "--density", "unknown"], message: "The value 'unknown' is invalid for '--density <density>'. Please provide one of 'recipe', 'compact' or 'roomy'.")
     }
 
     @Test("Unknown theme and scenario values retain parser diagnostics")

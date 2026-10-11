@@ -7,7 +7,7 @@ the dashboard simulates agents, while file selection reads your filesystem.
 
 ## Compare themes
 
-Every example accepts `--theme default`, `--theme light` or `--theme btop`:
+The component examples accept `--theme default`, `--theme light` or `--theme btop`:
 
 ```sh
 swift run -c release chio-dashboard --choices --theme btop
@@ -30,6 +30,37 @@ recorded session.
 
 Themes change styling, not terminal color support. For true-color terminals over
 SSH, see [Colors over SSH](#colors-over-ssh).
+
+### Appearance study
+
+Compare the same searchable list, editable form and supplied measurements with
+three example-owned presentation recipes:
+
+```sh
+swift run -c release chio-dashboard --appearance --treatment chio
+swift run -c release chio-dashboard --appearance --treatment opencode
+swift run -c release chio-dashboard --appearance --treatment btop
+# Keep the OpenCode-inspired palette and framing, with compact spacing:
+swift run -c release chio-dashboard --appearance --treatment opencode --density compact
+```
+
+Chio uses rounded outlines; OpenCode inspires raised surfaces and leading accent
+edges; btop inspires compact groups with headings on the border. These recipes
+are a visual study, not additional public `ChioTheme` presets. `--theme` and
+`--light` do not apply to this study. `--density recipe` uses the recipe's spacing;
+`compact` and `roomy` override only spacing. All values and measurements are local
+fixtures; Save changes only the example's message.
+
+**Ctrl-T** cycles looks, **Ctrl-D** cycles spacing, **Ctrl-E** reveals and focuses
+the workspace editor, **Ctrl-G** reveals graphs, **Ctrl-L** reveals the list, and
+**Ctrl-Q** quits. Native Tab/arrows and `/` search still work. Start at **100 × 30**
+for three columns; narrower terminals stack the sections in a native scroll view.
+The **36 × 64** comparison images show the full stack, while **36 × 18** is the
+small interactive check. The application owns this breakpoint and section navigation.
+
+[Compare the rendered treatments](https://echoz.github.io/Chio/appearance.html).
+The [theme decision](Decisions/Themes.md#appearance-study) records what remains
+example-only pending visual review.
 
 ## Maps
 

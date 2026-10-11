@@ -41,29 +41,30 @@ active plan with completed implementation history.
 
 <a id="current-slice-responsive-instrumentation"></a>
 
-## Current slice: high-contrast target dials
+## Current slice: appearance comparison
 
-Responsive instrumentation merged in [PR #8](https://github.com/echoz/Chio/pull/8),
-with macOS/Linux checks and the published showcase verified. It has not been
-included in a tagged release. Native instrument styling, annotated bars, checked
-history and native slider/stepper styles retain their accepted contracts.
+**Status:** Example-only comparison implemented for visual review. Public API
+promotion awaits a decision on the rendered comparison; platform results and
+publication state belong in its review PR.
 
-The accepted follow-up promotes the high-contrast dial prototype through
-`MeasurementGauge(position:targetBand:style:)`, retaining existing initializers,
-bar-only references and plain-dial behavior. The theme owns arc/target/needle
-colors. Numeric captions remain application-authored because Braille cells share
-one foreground and a needle can obscure a narrow target. The
-[instrumentation decision](Decisions/Instrumentation.md#target-bands-and-independent-gauge-references)
-owns these contracts.
+Responsive instrumentation and high-contrast target dials merged in
+[PR #8](https://github.com/echoz/Chio/pull/8) and
+[PR #9](https://github.com/echoz/Chio/pull/9). Their accepted contracts live in
+[Instrumentation](Decisions/Instrumentation.md); they are not yet in a tagged release.
 
-Metrics keeps bars by default; `v` selects target dials where the complete
-70 × 28 example fits. Compact layouts fall back to bars and recover the choice
-on expansion. Refresh its recording and all three theme previews. Instruments'
-bar/reference presentation is unchanged. Focused debug and release gauge/theme/example tests, the pinned rules gate and
-independent public-API review pass. Actual terminal captures pass in all three RGB themes and NO_COLOR, including
-resizing and terminal restoration. The Metrics recording and previews are refreshed;
-platform CI and final showcase results belong in the review PR under
-[Verification](Verification.md). The follow-up is not merged or published yet.
+The appearance study compares the same list, form and instruments with Chio,
+OpenCode-inspired and btop-inspired presentation. Colors, spacing and framing
+remain composable; applications own layout and breakpoints. Existing theme
+values and example-only pure styles keep the public API unchanged while the
+comparison is reviewed. [Themes](Decisions/Themes.md#appearance-study) owns the
+proposal boundary and [Examples](Examples.md#appearance-study) the controls.
+
+Acceptance evidence includes equal-size actual terminal captures at 100 × 30 and
+36 × 64, plus interactive 36 × 18 checks. Switching recipes, spacing and width
+must retain native focus, query, selection and entered values. The comparison
+page labels its recipes as a study rather than new supported public presets.
+Decide which shared surface roles and component treatments deserve promotion
+only after reviewing these results.
 
 Provider archive acquisition remains on hold at the user's request. No archive
 reader or downloader has been adopted; existing local pack APIs remain available.
@@ -182,7 +183,7 @@ filters, extensible upstream/raw-input switches, native wrappers and private
 nested conformances retain their documented roles.
 
 The map expansion above remains approved, with provider acquisition paused while
-the target-dial follow-up is verified and reviewed. Real application use of the public map
+the appearance study is verified and reviewed. Real application use of the public map
 remains useful validation. Other component additions and a
 new stable release remain possible directions, not delivery promises.
 

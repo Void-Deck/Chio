@@ -76,6 +76,8 @@ swift run -c release chio-maps --map street
   cohesive themes, expressive controls, forms, and polished terminal typography.
 - [btop++](https://github.com/aristocratos/btop) — compact panels, meters, history
   graphs, and information-dense layouts in the compact metrics example.
+- [OpenCode](https://opencode.ai/) — restrained surfaces, accent edges and breathing
+  room, explored in the [appearance study](Docs/Examples.md#appearance-study).
 - [gh-dash](https://www.gh-dash.dev/) — dense collections, contextual navigation,
   and list/detail workspaces.
 - [Hunk](https://www.hunk.dev/) — readable diffs and keyboard-driven review flows;

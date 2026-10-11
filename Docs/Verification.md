@@ -67,8 +67,8 @@ bash Scripts/ci/verify.sh
 ```
 
 The gate serializes builds and hosted tests. It runs all tests in release,
-selected tests in debug, a standalone release build, 21 plain-text snapshots and
-16 dashboard pseudo-terminal workflows, plus the map example's fixture
+selected tests in debug, a standalone release build, 24 plain-text snapshots and
+19 dashboard pseudo-terminal workflows, plus the map example's fixture
 reproduction and PTY workflow. Snapshot files are inspection artifacts;
 Swift tests assert the rendering contracts.
 
@@ -240,6 +240,22 @@ selected preview. Fragment links/history, script-free previews/downloads and
 missing-asset fallbacks remain supported. The build gives owned CSS/JavaScript
 content-hashed names. The player's NPT-poster limitation is recorded alongside
 the vendored assets.
+
+The separate [appearance study](https://echoz.github.io/Chio/appearance.html)
+compares six actual terminal captures (three recipes at 100 × 30 and 36 × 64).
+It keeps experimental recipes out of the catalog's public theme selector. Native
+hosted tests cover query, selection, editing and focused content across recipe,
+spacing and width changes. The CI terminal probe also exercises every recipe at
+36 × 18, including section shortcuts and clean terminal restoration.
+
+Regenerate recordings with `python3 -B Scripts/docs/capture-appearance.py
+.build/release/chio-dashboard`. Keep its full logs and evidence under `.build`;
+publish only the six clips ending before teardown. Initial-frame casts support
+PNG captures through the pinned local player. Inspect every still and the whole
+session; do not infer color quality from plain-text snapshots. The study page's
+recipe/size controls, matching commands, explicit playback, script-free links,
+390-pixel layout and missing-asset fallback need browser verification alongside
+site assembly. Palette and framing remain example-only until visual acceptance.
 
 Preview the deployable output locally:
 
