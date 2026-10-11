@@ -20,6 +20,14 @@ struct MetricsExampleView {
         61, 63, 64, 65, 65, 67, 68, 69, 68, 70, 71, 71,
     ]
 
+    private static let targetBand: MeasurementGauge.TargetBand = {
+        do {
+            return try MeasurementGauge.TargetBand(lowerBound: 0.45, upperBound: 0.60)
+        } catch {
+            preconditionFailure("Invalid local metrics target: \(error)")
+        }
+    }()
+
     init(theme: ExampleTheme = .btop, gaugeStyle: MeasurementGauge.Style = .bar) {
         _themeChoice = State(wrappedValue: theme)
         _gaugeStyle = State(wrappedValue: gaugeStyle)
@@ -54,6 +62,22 @@ struct MetricsExampleView {
     private var displayedGaugeStyle: MeasurementGauge.Style {
         if canDisplayDials { return gaugeStyle }
         return .bar
+    }
+    private var isDisplayingDials: Bool {
+        switch displayedGaugeStyle {
+        case .bar: false
+        case .dial: true
+        }
+    }
+    private var targetCaption: String {
+        let lowerPercent = Int(Self.targetBand.range.lowerBound * 100)
+        let upperPercent = Int(Self.targetBand.range.upperBound * 100)
+        return "Target \(lowerPercent)–\(upperPercent)%"
+    }
+    private var targetSummary: String {
+        let lowerPercent = Int(Self.targetBand.range.lowerBound * 100)
+        let upperPercent = Int(Self.targetBand.range.upperBound * 100)
+        return "target \(lowerPercent) to \(upperPercent) percent"
     }
     private var panelWidth: Int {
         if isWide {
@@ -105,31 +129,47 @@ struct MetricsExampleView {
     }
 
     private func panel(_ title: String, label: String, samples: [Double?]) -> some View {
-        let current = samples.last.flatMap { $0 } ?? 0
+        let current = samples.last.flatMap { $0 }
+        let reading = current.map { "\(Int($0))" } ?? "Unavailable"
+        let valueCaption = current.map { "\(Int($0))%" } ?? "Unavailable"
+        let valueSummary = current.map { "\(label) utilization: \(Int($0)) percent" }
+            ?? "\(label) utilization: unavailable"
+        let gaugeSummary = isDisplayingDials
+            ? "\(valueSummary), \(targetSummary), scale 0 to 100 percent"
+            : "\(valueSummary), scale 0 to 100 percent"
         return GroupBox(title) {
             VStack(alignment: .leading, spacing: 0) {
                 if !isCompact {
-                    InstrumentReadout("\(Int(current))")
+                    InstrumentReadout(reading)
                         .accessibilityHidden(true)
                 }
                 HStack(spacing: 1) {
-                    Text(label).foregroundStyle(theme.colors.secondaryText)
+                    Text(isDisplayingDials ? "\(label) current" : label)
+                        .foregroundStyle(theme.colors.secondaryText)
                     Spacer(minLength: 1)
-                    Text("\(Int(current))%")
+                    Text(valueCaption)
                         .foregroundStyle(theme.colors.accent)
-                        .accessibilityLabel("\(label) utilization: \(Int(current)) percent")
+                        .accessibilityLabel(valueSummary)
                 }
-                MeasurementGauge(position: current / 100, style: displayedGaugeStyle)
+                MeasurementGauge(position: current.map { $0 / 100 },
+                                 targetBand: isDisplayingDials ? Self.targetBand : nil,
+                                 style: displayedGaugeStyle)
                     .frame(width: meterWidth)
-                    .accessibilityLabel("\(label) utilization: \(Int(current)) percent, scale 0 to 100 percent")
+                    .accessibilityLabel(gaugeSummary)
                 Sparkline(history.displaying(samples), scale: .fixed(0...100))
                     .frame(height: isWide ? 4 : 2)
                     .accessibilityLabel(historySummary(title, samples: samples))
                 if !isCompact {
                     HStack {
-                        Text("24 samples · 1s / step")
-                        Spacer(minLength: 1)
-                        Text("0–100%")
+                        if isDisplayingDials {
+                            Text(targetCaption).foregroundStyle(theme.gauge.target)
+                            Spacer(minLength: 1)
+                            Text("Scale 0–100%")
+                        } else {
+                            Text("24 samples · 1s / step")
+                            Spacer(minLength: 1)
+                            Text("0–100%")
+                        }
                     }
                     .foregroundStyle(theme.colors.mutedText)
                 }

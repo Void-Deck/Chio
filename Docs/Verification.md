@@ -203,7 +203,11 @@ cover focus, input replacement, missing observations, theme changes and resizing
 Gauge sizing checks preserve the legacy plain dial's 20 × 5 plot boundary and
 exercise annotated bars under wide/short and narrow/tall proposals, wrapped
 captions, inherited line limits, complete track height and native numeric
-fallback/recovery. New target/reference overloads are bar-only.
+fallback/recovery. Dial targets must preserve the original geometry and nil-target
+paint, independent theme roles, endpoint/full/narrow intervals, shared-cell needle
+priority, accessible target facts and complete fitting/resize recovery. References
+remain bar-only. Inspect actual RGB and NO_COLOR terminal emissions; monochrome
+numeric captions carry target meaning when the colored segment cannot.
 History tests exercise equal timestamps, separate segments, nil breaks, real time
 and Y intersections, extreme finite arithmetic, dense spikes and whole-plot work
 rejection. A drawing bound does not bound an arbitrary caller's root allocation;

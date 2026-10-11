@@ -7,19 +7,34 @@ public struct ChioTheme {
     public let treatments: Treatments
     public let syntax: SyntaxColors
     public let map: MapColors
+    public let gauge: GaugeColors
 
     public init(
         colors: Colors = Colors(),
         spacing: Spacing = Spacing(),
         treatments: Treatments = Treatments(),
         syntax: SyntaxColors = SyntaxColors(),
-        map: MapColors = MapColors()
+        map: MapColors = MapColors(),
+        gauge: GaugeColors = GaugeColors()
     ) {
         self.colors = colors
         self.spacing = spacing
         self.treatments = treatments
         self.syntax = syntax
         self.map = map
+        self.gauge = gauge
+    }
+
+    /// Preserves the original initializer's function-reference signature.
+    public init(
+        colors: Colors,
+        spacing: Spacing,
+        treatments: Treatments,
+        syntax: SyntaxColors,
+        map: MapColors
+    ) {
+        self.init(colors: colors, spacing: spacing, treatments: treatments,
+                  syntax: syntax, map: map, gauge: GaugeColors())
     }
 
     /// Returns a new theme; omitted components retain their current values.
@@ -28,10 +43,24 @@ public struct ChioTheme {
         spacing: Spacing? = nil,
         treatments: Treatments? = nil,
         syntax: SyntaxColors? = nil,
-        map: MapColors? = nil
+        map: MapColors? = nil,
+        gauge: GaugeColors? = nil
     ) -> Self {
         ChioTheme(colors: colors ?? self.colors, spacing: spacing ?? self.spacing,
-             treatments: treatments ?? self.treatments, syntax: syntax ?? self.syntax, map: map ?? self.map)
+             treatments: treatments ?? self.treatments, syntax: syntax ?? self.syntax,
+             map: map ?? self.map, gauge: gauge ?? self.gauge)
+    }
+
+    /// Preserves the original replacement's function-reference signature.
+    public func replacing(
+        colors: Colors?,
+        spacing: Spacing?,
+        treatments: Treatments?,
+        syntax: SyntaxColors?,
+        map: MapColors?
+    ) -> Self {
+        replacing(colors: colors, spacing: spacing, treatments: treatments,
+                  syntax: syntax, map: map, gauge: nil)
     }
 
     /// A dark palette inspired by Charm's Huh controls and Bubbles lists.
@@ -55,7 +84,9 @@ public struct ChioTheme {
         string: Color(hexRGB: 0x246641),
         number: Color(hexRGB: 0x825005),
         comment: Color(hexRGB: 0x615968)
-    ), map: MapColors(water: Color(hexRGB: 0xC8D6E4), park: Color(hexRGB: 0xD8E1E1)))
+    ), map: MapColors(water: Color(hexRGB: 0xC8D6E4), park: Color(hexRGB: 0xD8E1E1)),
+       gauge: GaugeColors(arc: Color(hexRGB: 0x8B8B91), target: Color(hexRGB: 0x800056),
+                          needle: Color(hexRGB: 0x101014)))
 
     /// A compact dark palette inspired by btop's instrumentation layouts.
     public static let btop = ChioTheme(
@@ -80,7 +111,9 @@ public struct ChioTheme {
             number: Color(hexRGB: 0xE5BD72),
             comment: Color(hexRGB: 0xA0ACB6)
         ),
-        map: MapColors(water: Color(hexRGB: 0x1F3C43), park: Color(hexRGB: 0x28302B))
+        map: MapColors(water: Color(hexRGB: 0x1F3C43), park: Color(hexRGB: 0x28302B)),
+        gauge: GaugeColors(arc: Color(hexRGB: 0x565F66), target: Color(hexRGB: 0x6FFFFF),
+                           needle: Color(hexRGB: 0xFFFFFF))
     )
 
     /// Geographic area fills. Roads, routes and markers use the ordinary semantic palette.

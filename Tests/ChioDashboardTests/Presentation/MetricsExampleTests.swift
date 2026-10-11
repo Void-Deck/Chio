@@ -36,7 +36,7 @@ struct MetricsExampleTests {
         })
     }
 
-    @Test("Plain dial choice retains current values and uses complete bars in compact allocations",
+    @Test("Target dial choice retains current values and uses complete bars in compact allocations",
           arguments: [CellSize(width: 100, height: 30), CellSize(width: 70, height: 24),
                       CellSize(width: 70, height: 27), CellSize(width: 70, height: 28),
                       CellSize(width: 36, height: 18)], ExampleTheme.allCases)
@@ -54,18 +54,32 @@ struct MetricsExampleTests {
             #expect(text.contains("Dials"))
             #expect(!text.contains("▰"))
             #expect(text.unicodeScalars.contains { (0x2801...0x28FF).contains($0.value) })
+            for caption in ["CPU current", "RAM current", "Target 45–60%", "Scale 0–100%"] {
+                #expect(text.contains(caption))
+            }
+            let cells = rendered.rasterSurface.cells.flatMap { $0 }
+            #expect(cells.contains { $0.character == "T" && $0.style?.foregroundColor == appearance.theme.gauge.target })
+            for paint in [appearance.theme.gauge.arc, appearance.theme.gauge.target, appearance.theme.gauge.needle] {
+                #expect(cells.contains {
+                    $0.character.unicodeScalars.contains { (0x2801...0x28FF).contains($0.value) }
+                        && $0.style?.foregroundColor == paint
+                })
+            }
         } else {
             #expect(text.components(separatedBy: "▰▱").count - 1 == 2)
+            #expect(!text.contains("Target"))
             if size.width >= 70 && size.height >= 24 {
                 #expect(text.contains("Dials (compact bars)"))
             }
         }
-        for annotation in ["╞", "╡", "╪", "Reference", "target"] {
+        for annotation in ["╞", "╡", "╪", "Reference"] {
             #expect(!text.contains(annotation))
         }
         let nodes = rendered.semanticSnapshot.accessibilityNodes
-        #expect(nodes.contains { $0.label == "CPU utilization: 62 percent, scale 0 to 100 percent" })
-        #expect(nodes.contains { $0.label == "RAM utilization: 71 percent, scale 0 to 100 percent" })
+        let hasTargetDial = size.width >= 70 && size.height >= 28
+        let annotationSummary = hasTargetDial ? ", target 45 to 60 percent" : ""
+        #expect(nodes.contains { $0.label == "CPU utilization: 62 percent\(annotationSummary), scale 0 to 100 percent" })
+        #expect(nodes.contains { $0.label == "RAM utilization: 71 percent\(annotationSummary), scale 0 to 100 percent" })
     }
 
     @Test("Native actions, shortcuts, theme cycling and resize preserve simulated values and focus")
@@ -101,8 +115,8 @@ struct MetricsExampleTests {
                 $0.metricsHistory("empty") && $0.metricsValue("CPU", 28) && $0.metricsValue("RAM", 48)
             }
             session.send(.key(.character("v")))
-            let dials = try await recorder.wait(after: advancedEmpty.sequence, description: "plain dials retain current values, empty history and native focus") {
-                $0.metricsHavePlainDials() && $0.metricsHistory("empty") && $0.metricsValue("CPU", 28)
+            let dials = try await recorder.wait(after: advancedEmpty.sequence, description: "target dials retain current values, empty history and native focus") {
+                $0.metricsHaveTargetDials() && $0.metricsHistory("empty") && $0.metricsValue("CPU", 28)
                     && $0.metricsValue("RAM", 48) && $0.metricsFocused("Cycle history")
                     && $0.focusedIdentity == historyFocus.focusedIdentity
             }
@@ -113,7 +127,7 @@ struct MetricsExampleTests {
                 paletteFrame = try await recorder.wait(after: preceding.sequence, description: "palette cycle retains values, history mode and native focus") {
                     $0.metricsHistory("empty") && $0.metricsValue("CPU", 28) && $0.metricsValue("RAM", 48)
                         && $0.metricsFocused("Cycle history") && $0.focusedIdentity == preceding.focusedIdentity
-                        && $0.raster.cells != preceding.raster.cells && $0.metricsHavePlainDials()
+                        && $0.raster.cells != preceding.raster.cells && $0.metricsHaveTargetDials()
                 }
             }
             #expect(paletteFrame.raster.cells == dials.raster.cells)
@@ -127,8 +141,8 @@ struct MetricsExampleTests {
             }
             surface.updateSurfaceSize(CellSize(width: 70, height: 28))
             session.requestSurfaceRefresh()
-            let tallWide = try await recorder.wait(after: shortWide.sequence, description: "one additional row restores plain dials without changing values or focus") {
-                $0.raster.size == CellSize(width: 70, height: 28) && $0.metricsHavePlainDials()
+            let tallWide = try await recorder.wait(after: shortWide.sequence, description: "one additional row restores target dials without changing values or focus") {
+                $0.raster.size == CellSize(width: 70, height: 28) && $0.metricsHaveTargetDials()
                     && $0.metricsFocused("Cycle history") && $0.focusedIdentity == shortWide.focusedIdentity
                     && $0.metricsHistory("empty") && $0.metricsValue("CPU", 28) && $0.metricsValue("RAM", 48)
             }
@@ -150,8 +164,8 @@ struct MetricsExampleTests {
             }
             surface.updateSurfaceSize(CellSize(width: 100, height: 30))
             session.requestSurfaceRefresh()
-            let wide = try await recorder.wait(after: batched.sequence, description: "widening restores plain dials and retains simulated values") {
-                $0.metricsHavePlainDials() && $0.metricsFocused("Next sample") && $0.metricsValue("CPU", 36)
+            let wide = try await recorder.wait(after: batched.sequence, description: "widening restores target dials and retains simulated values") {
+                $0.metricsHaveTargetDials() && $0.metricsFocused("Next sample") && $0.metricsValue("CPU", 36)
                     && $0.metricsValue("RAM", 50) && $0.metricsHistory("full")
             }
             session.send(.key(.character("v")))
@@ -183,13 +197,16 @@ extension MetricsTestApp: App {
 }
 
 private extension SemanticHostFrame {
-    func metricsHavePlainDials() -> Bool {
+    func metricsHaveTargetDials() -> Bool {
         let text = raster.lines.joined(separator: "\n")
         let hasDialCaption = text.contains("Dials")
         let hasBraillePlot = text.unicodeScalars.contains { (0x2801...0x28FF).contains($0.value) }
         let hasBarTrack = text.contains("▰")
-        let hasAnnotations = ["╞", "╡", "╪", "Reference", "target"].contains { text.contains($0) }
-        return hasDialCaption && hasBraillePlot && !hasBarTrack && !hasAnnotations
+        let hasAnnotations = ["╞", "╡", "╪", "Reference"].contains { text.contains($0) }
+        let hasTargetCaption = text.components(separatedBy: "Target 45–60%").count - 1 == 2
+        let hasScaleCaption = text.components(separatedBy: "Scale 0–100%").count - 1 == 2
+        return hasDialCaption && hasBraillePlot && hasTargetCaption && hasScaleCaption
+            && !hasBarTrack && !hasAnnotations
     }
 
     func metricsHaveBars() -> Bool {

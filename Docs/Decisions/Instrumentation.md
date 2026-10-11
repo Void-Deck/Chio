@@ -3,10 +3,9 @@
 **Status:** Accepted presentation contracts. Compact styles, `Sparkline` and plain
 `DurationText` shipped in 0.1.0; measurement gauges and segmented readouts extend
 those contracts and have not yet been included in a tagged release.
-The expansion below is an accepted implementation candidate on `codex/instrumentation`.
-It is for PR review and has not been merged or released. The accepted bar-only
-annotation revision passes focused local tests and separate review; platform
-checks and publication remain tracked in [Plan](../Plan.md).
+The responsive instrumentation expansion merged in [PR #8](https://github.com/echoz/Chio/pull/8).
+The high-contrast target dial is an accepted follow-up candidate; its qualification
+and publication are tracked in [Plan](../Plan.md).
 
 Present supplied measurements and durations; applications retain sampling, timing and interpretation.
 
@@ -78,12 +77,12 @@ line limits. The ordinary-text fallback retains the caller's native line limit.
 
 ## Instrumentation expansion assessment
 
-**Status:** Accepted scope, implemented as a candidate for PR review.
+**Status:** Accepted; responsive instrumentation merged, with target dials in follow-up review.
 This record describes the current source contracts. The earlier source assessment
 led to native styles and composition;
 `InstrumentTile`, domain widgets, compasses and multiple overlaid series remain deferred.
 
-The candidate adds `.labeledContentStyle(.instrument)`, checked gauge target bands
+The expansion adds `.labeledContentStyle(.instrument)`, checked gauge target bands
 and independent reference marks, `HistoryChart` with checked snapshots and windows,
 and themed native slider/stepper styles. Supporting/paired readings, trends,
 responsive collections and playback remain ordinary native view recipes.
@@ -174,15 +173,11 @@ A future container needs repeated shared fitting policy beyond these recipes.
 
 <a id="proposed-target-band-gauge"></a>
 
-The existing initializer and position preconditions remain intact. The candidate
-adds distinct bar-only overloads. Compact dial redesigns were not sufficiently
-readable. Annotated measurements therefore use bars, with numeric readings and
-history graphs alongside them. The existing plain `.dial` API remains available
-as an arc and needle, without a target bracket or reference markers. Metrics
-exposes it as an optional presentation; target bands and reference marks do not
-extend it. Draft consumers of the annotated overloads
-must remove their `style:` argument; no merged initializer is removed.
-
+The existing initializer and position preconditions remain intact. Bar targets and
+references merged first. The accepted dial follow-up colors the existing arc's
+target segment without extra brackets, ticks or reference markers. Independent
+reference marks remain bar-only. This supersedes the earlier bar-only target
+scope; the rejected compact dial geometry is not reintroduced.
 The public signatures are:
 
 ```swift
@@ -190,6 +185,8 @@ The public signatures are:
 init(position: Double?, style: Style = .bar)
 
 init(position: Double?, targetBand: TargetBand?)
+
+init(position: Double?, targetBand: TargetBand?, style: Style)
 
 init(position: Double?, referenceMarks: ReferenceMarks,
      targetBand: TargetBand? = nil)
@@ -205,6 +202,33 @@ normalization and complete explanatory captions.
 Its immutable `range` is inclusive. `nil` removes the target. Bars add a separate
 track (`╞═╡`, or `╪` when endpoints share a cell). Tiny geometry may merge marks,
 so author a target caption when useful.
+
+A target dial retains the exact native 20 × 5 arc-and-needle geometry. Its theme's
+`gauge.arc`, `gauge.target` and `gauge.needle` roles separate the unmarked arc,
+desired interval and current reading. A missing current value still shows the
+target segment; a nil target restores the original accent-only dial. Plain dial
+and bar paint remain unchanged.
+
+Every Braille terminal cell shares one foreground across all eight dots. Target
+paint takes priority in a cell straddling an interval endpoint; needle paint takes
+priority over target or outside-arc paint. Very narrow bands may appear wider or
+be entirely obscured by the needle. Monochrome cannot distinguish the colored
+segment. Applications must keep independently authored numeric target/scale
+captions when those facts matter; normalized accessibility includes the target
+regardless of visible collisions. Colors express supplied facts, not alert states.
+
+The drawing records bounded native `BrailleCanvas` line coverage, then applies
+explicit styled pixels to already-lit samples in native `Canvas`. This preserves
+geometry and native glyph packing: unstyled native lines otherwise consume the
+context's final foreground. No second rasterizer or new renderer is introduced.
+The fixed plot bounds both coverage masks and recoloring work.
+
+The accepted default/light/btop palettes deliberately separate target from arc.
+They are theme values, never selected by comparing a theme's identity. Custom
+palettes remain application-owned; contrast in arbitrary palettes, indexed-color
+emulators and every font is not guaranteed. The prototype's real terminal captures
+established readability and whole-cell collisions; integrated captures and tests
+qualify the public implementation.
 
 `MeasurementGauge.ReferenceMark(id:label:position:)` throws its nested error for
 nonfinite/out-of-range positions or an empty label. The label must be a complete

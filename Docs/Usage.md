@@ -122,14 +122,28 @@ VStack(alignment: .leading) {
 
 `MeasurementGauge` defaults to `.bar`. The existing `.dial` option remains
 available for unannotated readings: `MeasurementGauge(position: 0.64, style: .dial)`
-draws only an arc and needle. The Metrics example offers this option; bars remain
-the default.
+draws only an arc and needle. Add an independent target to color its arc segment:
+
+```swift
+let target = try MeasurementGauge.TargetBand(lowerBound: 0.45, upperBound: 0.60)
+VStack(alignment: .leading) {
+    Text("Current 64%")
+    MeasurementGauge(position: 0.64, targetBand: target, style: .dial)
+    Text("Target 45–60% · Scale 0–100%")
+}
+.chioTheme(.btop)
+```
+
+`theme.gauge` owns arc, target and needle colors. All Braille dots in a cell share
+one foreground; the needle wins overlapping paint and can hide a narrow target.
+Keep numeric captions, especially for monochrome terminals. References stay
+bar-only. Metrics demonstrates target dials; bars remain its default.
 Supply a finite position in `0...1`, or `nil` for a missing reading. Normalize
 measurements and decide how to handle out-of-range data in your application before
 construction. The bar uses one row, with a one-column minimum, twenty-column
 preferred width and 512-column limit. The dial plot stays 20 × 5 cells, centered
 in surplus width. Four columns per row assumes cells are approximately twice as
-tall as they are wide; actual fonts differ. Both remain accented at one. These
+tall as they are wide; actual fonts differ. Bars and plain dials remain accented at one. These
 passive views have no sampling or input
 behavior; replace the normalized accessibility summary with your scale and units.
 
@@ -191,9 +205,8 @@ updates, missing and empty history, theme changes and adaptive composition.
 
 ## Instruments and time-aware history
 
-The instrumentation expansion is a candidate for PR review on
-`codex/instrumentation`; **implementation verification is IN PROGRESS**. It has
-not been merged or released. The following recipes match the candidate source.
+The instrumentation expansion merged in [PR #8](https://github.com/echoz/Chio/pull/8).
+It has not been included in a tagged release. These recipes match the merged source.
 
 Opt into native labelled-content hierarchy while retaining arbitrary content:
 

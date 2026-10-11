@@ -283,6 +283,98 @@ struct MeasurementGaugeTests {
         }
     }
 
+    @Test("Target dial paint preserves the original geometry and all initializer contracts")
+    func dialTargetCompatibility() throws {
+        let barInitializer: (Double?, MeasurementGauge.TargetBand?) -> MeasurementGauge =
+            MeasurementGauge.init(position:targetBand:)
+        let styledInitializer: (Double?, MeasurementGauge.TargetBand?, MeasurementGauge.Style) -> MeasurementGauge =
+            MeasurementGauge.init(position:targetBand:style:)
+        let target = try MeasurementGauge.TargetBand(lowerBound: 0.45, upperBound: 0.6)
+        for position in [nil, 0, 0.25, 0.5, 0.535, 1] as [Double?] {
+            let plain = render(position, style: .dial)
+            let targeted = DefaultRenderer().render(styledInitializer(position, target, .dial))
+            #expect(characters(targeted) == characters(plain))
+            #expect(targeted.rasterSurface.size == CellSize(width: 20, height: 5))
+            let absent = DefaultRenderer().render(styledInitializer(position, nil, .dial))
+            #expect(absent.rasterSurface == plain.rasterSurface)
+            let oldBar = DefaultRenderer().render(barInitializer(position, target))
+            let styledBar = DefaultRenderer().render(styledInitializer(position, target, .bar))
+            #expect(oldBar.rasterSurface == styledBar.rasterSurface)
+        }
+    }
+
+    @Test("Target dial uses independent theme roles and needle paint owns shared cells")
+    func dialTargetPaint() throws {
+        let target = try MeasurementGauge.TargetBand(lowerBound: 0.45, upperBound: 0.6)
+        let custom = ChioTheme.default.replacing(gauge: ChioTheme.GaugeColors(
+            arc: Color(hexRGB: 0x123456), target: Color(hexRGB: 0xABCDEF), needle: Color(hexRGB: 0xF12345)))
+        for theme in [ChioTheme.default, .light, .btop, custom] {
+            for position in [nil, 0.5] as [Double?] {
+                let frame = DefaultRenderer().render(
+                    MeasurementGauge(position: position, targetBand: target, style: .dial).chioTheme(theme))
+                let cells = frame.rasterSurface.cells
+                // Independently inspected native cell coverage: six target cells
+                // on the top arc, with the central needle crossing column ten.
+                for x in 8...13 {
+                    let color = position != nil && x == 10 ? theme.gauge.needle : theme.gauge.target
+                    #expect(cells[0][x].style?.foregroundColor == color)
+                }
+                #expect(cells[4][0].style?.foregroundColor == theme.gauge.arc)
+                #expect(cells[4][19].style?.foregroundColor == theme.gauge.arc)
+                let targetCells = cells.flatMap { $0 }.filter {
+                    $0.character != " " && $0.style?.foregroundColor == theme.gauge.target
+                }
+                #expect(targetCells.count == (position == nil ? 6 : 5))
+                let reading = position == nil ? "Measurement: missing reading." : "Measurement position: 0.5 of 1."
+                #expect(frame.semanticSnapshot.accessibilityNodes.contains {
+                    $0.role == .image && $0.label == reading + " Target band: 0.45 to 0.6 of 1."
+                })
+                #expect(frame.semanticSnapshot.focusRegions.isEmpty)
+            }
+        }
+    }
+
+    @Test("Full and subcell target intervals retain honest color-collision behavior")
+    func dialTargetBoundaries() throws {
+        let full = try MeasurementGauge.TargetBand(lowerBound: 0, upperBound: 1)
+        let fullFrame = DefaultRenderer().render(MeasurementGauge(position: nil, targetBand: full, style: .dial))
+        let arcCells = fullFrame.rasterSurface.cells.flatMap { $0 }.filter { $0.character != " " }
+        #expect(!arcCells.isEmpty)
+        #expect(arcCells.allSatisfy { $0.style?.foregroundColor == ChioTheme.default.gauge.target })
+        let narrow = try MeasurementGauge.TargetBand(lowerBound: 0.5001, upperBound: 0.5002)
+        let missing = DefaultRenderer().render(MeasurementGauge(position: nil, targetBand: narrow, style: .dial))
+        #expect(missing.rasterSurface.cells[0][10].style?.foregroundColor == ChioTheme.default.gauge.target)
+        let overlapping = DefaultRenderer().render(MeasurementGauge(position: 0.5, targetBand: narrow, style: .dial))
+        #expect(overlapping.rasterSurface.cells[0][10].style?.foregroundColor == ChioTheme.default.gauge.needle)
+        #expect(!overlapping.rasterSurface.cells.flatMap { $0 }.contains {
+            $0.character != " " && $0.style?.foregroundColor == ChioTheme.default.gauge.target
+        })
+        #expect(overlapping.semanticSnapshot.accessibilityNodes.contains {
+            $0.label?.contains("Target band: 0.5001 to 0.5002") == true
+        })
+    }
+
+    @Test("Retained target dials clear paint, preserve complete fitting and recover after resizing")
+    func retainedDialTarget() throws {
+        let target = try MeasurementGauge.TargetBand(lowerBound: 0.45, upperBound: 0.6)
+        let renderer = DefaultRenderer()
+        let proposal = ProposedSize(width: 20, height: 5)
+        let targeted = MeasurementGauge(position: 0.5, targetBand: target, style: .dial)
+        let first = renderer.render(targeted, proposal: proposal)
+        let plain = MeasurementGauge(position: 0.5, targetBand: nil, style: .dial)
+        #expect(renderer.render(plain, proposal: proposal).rasterSurface
+            == DefaultRenderer().render(plain, proposal: proposal).rasterSurface)
+        let fitting = ViewThatFits {
+            targeted
+            Text("Current 50%; target 45–60%")
+        }
+        #expect(glyphs(renderer.render(fitting, proposal: ProposedSize(width: 32, height: 4)))
+            == "Current50%;target45–60%")
+        let wide = renderer.render(targeted, proposal: ProposedSize(width: 32, height: 5))
+        #expect(pixels(wide) == Set(pixels(first).map { CellPoint(x: $0.x + 12, y: $0.y) }))
+        #expect(renderer.render(targeted, proposal: proposal).rasterSurface == first.rasterSurface)
+    }
+
     @Test("The target bar is a separate bracket track independent of the reading")
     func barTargets() throws {
         let bands = try [
