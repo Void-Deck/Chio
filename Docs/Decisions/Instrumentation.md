@@ -78,6 +78,12 @@ call sites are uncompiled; numerical safety, fitting, performance and new visual
 treatments still require the proofs below. The subsequent API review prioritizes
 native styles and composition; the earlier tile proposal is deferred.
 
+The recommended initial public additions are one native labelled-content style,
+one gauge overload with a checked band, and one history view with checked input
+values. Supporting/paired readings, trends and playback remain composition
+recipes. All presentation follows the [pure style contract](../Design.md#styles-and-view-contracts).
+These are API recommendations; none of the additions below has been implemented.
+
 | Capability | Recommendation | Reusable contribution | Relative work / main uncertainty |
 | --- | --- | --- | --- |
 | Labelled instrument | Propose one native `LabeledContentStyle` | Themed label/reading hierarchy with arbitrary authored content | Small; must offer useful defaults beyond native `.stacked` |
@@ -135,6 +141,11 @@ emphasized reading and uses semantic spacing. It adds no border, fixed dimension
 focus stop, formatting or missing-value inference. Do not add compact/prominent
 variants until a concrete visual distinction needs them. If this amounts only to
 native `.stacked` with no useful coherent treatment, retain a recipe instead.
+Its initial surface is a no-argument initializer, native `LabeledContentStyle`
+conformance and the `.instrument` shorthand. Use an ordinary custom native style
+for alternative arrangements; there is no Chio-specific style protocol or role flag.
+Theme/layout/configuration are inputs to the presentation transformation, with no
+state, acquisition, clock or deferred effects added by the style.
 
 The native configuration exposes opaque `label` and `content` views. A style can
 arrange and paint them; it cannot extract a number from `Text` or distinguish
@@ -259,6 +270,12 @@ Candidate surface, uncompiled:
 let target = try MeasurementGauge.TargetBand(lowerBound: 0.45, upperBound: 0.60)
 MeasurementGauge(position: 0.535, targetBand: target, style: .bar)
     .accessibilityLabel("Temperature: 21.4 degrees Celsius. Target: 18 to 24 degrees.")
+
+// The reading and target are independent facts.
+MeasurementGauge(position: nil, targetBand: target, style: .dial)
+
+// A replacement view description explicitly removes the target.
+MeasurementGauge(position: 0.535, targetBand: nil)
 ```
 
 Retain the exact existing `init(position:style:)`, including initializer references,
@@ -268,6 +285,19 @@ no authored band; it does not mean a missing current reading. The existing
 initializer delegates to the no-band case. No-band glyphs, dimensions, paint and
 accessibility remain unchanged.
 
+Proposed signatures (declarations only, not an implementation):
+
+```swift
+// Existing; preserve exactly.
+init(position: Double?, style: Style = .bar)
+
+// Added; the distinct required label avoids a competing defaulted overload.
+init(position: Double?, targetBand: TargetBand?, style: Style = .bar)
+
+// On MeasurementGauge.TargetBand.
+init(lowerBound: Double, upperBound: Double) throws(ValidationError)
+```
+
 `TargetBand` stores one authoritative range with finite endpoints satisfying
 `0 <= lower < upper <= 1`. Checked construction takes scalar endpoints so reversed
 input can throw a typed validation error before Swift constructs a `ClosedRange`.
@@ -275,6 +305,14 @@ Reject zero-width bands: a point target would need its own presentation contract
 Do not clamp, widen or silently remove invalid targets. Membership, when described,
 is inclusive at both ends and independent of raster rounding. A valid narrow band
 may occupy one cell without changing its stored range.
+
+Expose that range as `let range: ClosedRange<Double>`. Nest `ValidationError`
+under `TargetBand`, with `invalidLowerBound`, `invalidUpperBound` and
+`nonIncreasingBounds` cases. An invalid endpoint is nonfinite or outside `0...1`;
+check the lower endpoint, upper endpoint, then their relationship. The range's
+standard properties and membership operation are sufficient. Keep this data value
+usable outside the view's main-actor boundary. Removing or replacing the band
+constructs another view description; it needs no mutating method or state owner.
 
 This restricted value justifies a type; another normalized-position wrapper does
 not. Use immutable storage and `Hashable`/`Sendable`. If serialization becomes part
@@ -317,12 +355,33 @@ would manufacture observations or lose timing. Start with one series, straight
 connections and a supplied window; multiple series, smoothing, step/hold plots,
 interactive inspection and automatic scrolling remain later questions.
 
-Candidate surface, uncompiled:
+Candidate surface, uncompiled. Construction occurs at the application's input
+boundary before supplying a checked snapshot to the view:
 
 ```swift
+let series = try HistorySeries(
+    samples: [
+        HistorySeries.Sample(offset: .seconds(0), value: 72),
+        HistorySeries.Sample(offset: .seconds(7), value: 94),
+        HistorySeries.Sample(offset: .seconds(19), value: nil),
+        HistorySeries.Sample(offset: .seconds(26), value: 81),
+        HistorySeries.Sample(offset: .seconds(61), value: 310),
+        HistorySeries.Sample(offset: .seconds(83), value: 88)
+    ],
+    missingIntervals: [
+        HistoryInterval(start: .seconds(32), end: .seconds(54))
+    ]
+)
+let window = try HistoryInterval(start: .seconds(0), end: .seconds(90))
+
 HistoryChart(series, window: window, scale: .fixed(0...500))
-    .accessibilityLabel("Service latency in milliseconds over the selected five minutes.")
+    .frame(width: 48, height: 8)
+    .accessibilityLabel("Service latency in milliseconds over the selected ninety seconds.")
 ```
+
+The unavailable reading at 19 seconds breaks both adjacent connections. The
+independent outage from 32 through 54 seconds suppresses the connection from
+26 to 61 seconds. The outer `try` covers the nested checked constructors.
 
 ### Supplied values and admission
 
@@ -334,6 +393,22 @@ increasing interval endpoints, so differences stay representable. Store one nati
 range rather than duplicate start/end/duration representations. Applications
 translate wall timestamps and format labels; Chio reads no clock. A second `Date`
 mode, clock protocol or generic numeric-time abstraction is unnecessary initially.
+
+| Proposed type | Read-only values | Construction |
+| --- | --- | --- |
+| `HistoryInterval` | `range: ClosedRange<Duration>` | `init(start: Duration, end: Duration) throws(ValidationError)` |
+| `HistorySeries.Sample` | `offset: Duration`, `value: Double?` | `init(offset: Duration, value: Double?) throws(ValidationError)` |
+| `HistorySeries` | `samples: [Sample]`, `missingIntervals: [HistoryInterval]` | `init(samples: [Sample], missingIntervals: [HistoryInterval] = []) throws(ValidationError)` |
+| `HistoryChart` | Supplied series, window and scale | `init(_ series: HistorySeries, window: HistoryInterval, scale: Sparkline.Scale = .automatic)` |
+
+Each data value owns its nested validation error. Sample construction establishes
+the offset and finite-value invariants; interval construction establishes bounds
+and ordering; series construction establishes relationships across accepted
+samples and intervals. Relationship errors identify offending input indices.
+The exact error cases for work limits depend on the bounded-drawing proof below.
+No optional collection is needed: an empty array means no supplied samples or no
+declared missing intervals. Required `value:` preserves the deliberate choice
+between a numeric reading and an unavailable observation.
 
 - Samples have strictly increasing times and finite known values. `nil` is one
   unavailable reading at that time and breaks both adjacent connections; it says
@@ -358,6 +433,10 @@ The interval type enforces shared foundational restrictions; display window and
 outage roles do not justify duplicating it. Prefer `Hashable`/`Sendable` values;
 any later Codable contract must validate every sample and enclosing relationship
 on decoding. A chart snapshot does not require an application persistence format.
+Rebuild through the same checked constructors to replace the series, clear its
+missing intervals or change the window. Add no append/merge/repair API, generated
+identity or separate window type. The view does not advance its window or acquire
+readings, and a future presentation style cannot take over those responsibilities.
 
 ### Window, scale and bounded drawing
 
@@ -374,8 +453,8 @@ the plot. Empty visible geometry draws nothing; a constant series is centered.
 Fixed scaling uses true line/rectangle clipping, not independent endpoint clamping
 that changes the line's slope or crossing point.
 
-Reuse `Sparkline.Scale` for `.automatic` and `.fixed` configuration; optionally
-expose a type alias at the chart for discoverability. It already represents this
+Reuse `Sparkline.Scale` directly for `.automatic` and `.fixed` configuration;
+another alias is unnecessary for the first API. It already represents this
 choice. Keep its existing configuration coding and consumption-time validation
 unchanged; do not introduce a parallel `PlotScale` or silently turn the existing
 enum into a restricted persisted value.
@@ -433,6 +512,17 @@ without another public component. Promote an indicator only after repeated use
 shows shared fitting/accessibility behavior beyond that composition; no inferred
 trend from Sparkline or parsed formatted text.
 
+For example, this needs only existing native APIs:
+
+```swift
+Label("Response time falling by 12 ms over the last minute") {
+    Text("↓").accessibilityHidden(true)
+}
+```
+
+The title carries the complete meaning and the arrow is decorative. An unavailable
+comparison gets its own authored explanation; there is no Chio trend enum yet.
+
 **Paired/grouped facts:** use native `LabeledContent` (including `.stacked`), stacks,
 and the proposed instrument style where appropriate. A primary reading and recorded statistics,
 two independently measured channels, or labelled navigation facts do not require
@@ -459,6 +549,16 @@ empty/singleton sources, changing bounds, batched input, disabled controls and
 focus across resize. A shared Chio slider/stepper style may be justified by visual
 reuse in unrelated controls; preserve native routed track/actions instead of
 building a playback component or controller.
+
+For a supplied 120-observation fixture, a native
+`Slider("Sample", value: $selectedIndex, in: 0...119)` adjusts an application-owned
+index. A native `Stepper("Speed", value: $speed, in: 1...4)` adjusts an independent
+integer multiplier. Buttons invoke the application's play/pause intents. The
+application handles empty data, replacement bounds and timing. There is no
+`PlaybackBar`, `ReplayState`, timer or transport protocol in the proposed Chio API.
+Chio currently installs no slider or stepper style; keep native controls in the
+first recipe, and add pure themed styles only if the visual proof shows a useful
+gap. Such styles must preserve the native track and increment/decrement routes.
 
 **Domain displays and compass:** keep domain-specific instrument combinations in
 applications. Independent raw indexes, counts or signed angles do not acquire

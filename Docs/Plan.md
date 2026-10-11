@@ -50,6 +50,13 @@ The current pass is API review only; no implementation or rendering spike is in
 progress. Proposed additions are not public APIs, and evaluation does not commit
 to the whole inventory.
 
+The candidate surface is now explicit: `.labeledContentStyle(.instrument)`,
+`MeasurementGauge(position:targetBand:style:)` with checked `TargetBand`, and
+`HistoryChart(_:window:scale:)` with checked `HistorySeries.Sample`, `HistorySeries`
+and `HistoryInterval` values. Styles consume supplied inputs without effects.
+Supporting/paired readings, trends and playback use existing view/control recipes;
+there is no proposed tile, trend, group or playback framework to implement first.
+
 Recommended delivery order:
 
 1. Agree simple, custom, expanded, paired and missing-reading call sites. Then
