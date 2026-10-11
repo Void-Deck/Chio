@@ -75,12 +75,14 @@ line limits. The ordinary-text fallback retains the caller's native line limit.
 revision `2d84ac7083993da2ef52e9d3d30255467efb9553`. This is source-level design
 evidence, including separate gauge, chart and composition assessments. Candidate
 call sites are uncompiled; numerical safety, fitting, performance and new visual
-treatments still require the proofs below.
+treatments still require the proofs below. The subsequent API review prioritizes
+native styles and composition; the earlier tile proposal is deferred.
 
 | Capability | Recommendation | Reusable contribution | Relative work / main uncertainty |
 | --- | --- | --- | --- |
-| Instrument tile | Prove, then consider one new passive view | Preserve complete readings and essential facts before optional visuals | Medium; native fit probes versus wrapping and minimum allocation |
-| Primary reading with supporting facts | Part of the tile | Independent facts remain visible when the current reading is unavailable | Included in tile; no separate model or view |
+| Labelled instrument | Propose one native `LabeledContentStyle` | Themed label/reading hierarchy with arbitrary authored content | Small; must offer useful defaults beyond native `.stacked` |
+| Instrument tile | Defer; compose native groups and views first | Only justified by repeated essential/optional fitting policy | Medium if revisited; fit probes versus wrapping and minimum allocation |
+| Primary reading with supporting facts | Native composition | Independent facts remain visible when the current reading is unavailable | Small; no separate model or view |
 | Target-band gauge | Extend `MeasurementGauge` | Draw an authored desired interval without interpreting it as success/failure | Medium; monochrome geometry and small dials |
 | Timestamped history | Prove a separate one-series `HistoryChart` | Proportional elapsed-time placement, declared gaps and correct clipping | Largest; numerical correctness and dense interrupted histories |
 | Trend indicator | Native composition first | Directional glyph with complete authored explanation | Small; public extraction is not yet justified |
@@ -89,113 +91,159 @@ treatments still require the proofs below.
 | Playback controls | Native controls and styles | Existing bindings, input, focus and accessibility | Small recipe; any shared control style needs separate evidence |
 | Domain-specific instruments / compass | Retain in applications; compass deferred | Domain interpretation is not generic presentation | Missing compass reference/orientation contract |
 
-The proposed sequence is tile proof and neutral recipes, narrow tile promotion
-if justified, target bands, then time-aware history. This is a recommendation for
-separate reviewable slices, not authorization to build the entire inventory.
+Review the style-first call sites before implementation. The proposed delivery
+sequence is a labelled-content style and neutral recipes if justified, target
+bands, then time-aware history. This is a recommendation for separate reviewable
+slices, not authorization to build the entire inventory.
 No new package, chart dependency, registry, clock, sampler or telemetry service
 is needed. Native Canvas and layout remain the implementation foundation, adding
 no new static-Linux dependency requirement. Existing dependency/toolchain limits
 still apply; this assessment does not prove a static executable.
 
-## Proposed responsive instrument tile
+## Proposed instrument API
 
-**Status:** Design recommendation; no implementation or public API yet. Prove
-the fitting contract in a small example before promoting it into the library.
+**Status:** API design only. `.instrument` and its concrete style type below are
+proposals. Existing `LabeledContent`, `GroupBox`, `InstrumentReadout`, gauges and
+themes retain their public contracts. No new call site has been compiled or rendered.
 
-The missing behavior is fitting a complete reading and supporting facts into a
-small allocation while giving optional visuals the remaining space. Existing
-readouts, gauges, sparklines and group styles already supply the drawing and
-chrome. A new component must remove repeated fitting policy, not just rename a
-`GroupBox` or collect measurement configuration.
+### Responsibilities
 
-### Candidate API
+| Owner | Inputs and decisions |
+| --- | --- |
+| View | Authored labels/content, normalized position, target interval, samples and visible window |
+| Native style | Label/reading hierarchy, spacing and paint; group chrome belongs to `GroupBoxStyle` |
+| Theme | Shared semantic colours, spacing and treatments |
+| Application composition | Primary versus supporting facts, grouping, order, layout alternatives and which content may disappear |
+| Application model | Formatting, units, normalization, thresholds, missing/freshness meaning, sampling and clocks |
 
-One passive, unprefixed `InstrumentTile` accepts a label, one complete
-application-formatted `reading: String`, essential supporting content, and an
-optional visual group. Native view builders keep supplied content composable;
-convenience initializers omit empty groups. The visual builder receives an
-expanded or compact presentation choice. Proposed call-site shape, uncompiled:
+Bar/dial and plain/segmented are existing initializer style choices. Keep those
+APIs; this proposal adds no universal instrument style protocol or migration to
+new modifiers. A target interval is supplied information, not a theme or style.
+
+### Simple and custom readings
+
+Use a native labelled fact with an opt-in style:
 
 ```swift
-InstrumentTile("Temperature", reading: "21.4 °C") {
-    Text("Within target")
-    Text("Recorded mean: 20.8 °C")
-    Text("Recorded maximum: 24.8 °C")
-} visuals: { presentation in
-    switch presentation {
-    case .expanded:
-        VStack(alignment: .leading, spacing: 0) {
-            MeasurementGauge(position: 0.535, style: .dial)
-                .frame(height: 5)
-            Text("Scale: 0–40 °C")
-        }
-    case .compact:
-        VStack(alignment: .leading, spacing: 0) {
-            MeasurementGauge(position: 0.535)
-                .frame(height: 1)
-            Text("Scale: 0–40 °C")
-        }
+LabeledContent("Temperature", value: "21.4 °C")
+    .labeledContentStyle(.instrument)
+```
+
+Propose `.instrument` as shorthand for `ChioInstrumentLabeledContentStyle()`.
+The style reads the current `chioTheme` environment, puts a muted label above an
+emphasized reading and uses semantic spacing. It adds no border, fixed dimensions,
+focus stop, formatting or missing-value inference. Do not add compact/prominent
+variants until a concrete visual distinction needs them. If this amounts only to
+native `.stacked` with no useful coherent treatment, retain a recipe instead.
+
+The native configuration exposes opaque `label` and `content` views. A style can
+arrange and paint them; it cannot extract a number from `Text` or distinguish
+essential facts inside the content. Custom content stays a normal builder:
+
+```swift
+LabeledContent("Temperature") {
+    HStack(alignment: .bottom, spacing: 1) {
+        InstrumentReadout("21.4")
+        Text("°C")
     }
+}
+.labeledContentStyle(.instrument)
+```
+
+Here the caller selects segmented artwork explicitly; the style never duplicates
+the ordinary reading to obtain it. `InstrumentReadout` keeps its existing text
+fallback. Units stay authored content, with native accessibility and an optional
+application-supplied full label when the composition needs it. Custom content may
+override inherited paint; the style must retain each supplied slot once and avoid
+restricting it to numeric text.
+
+### Expanded, paired and missing readings
+
+Compose an expanded instrument with existing views:
+
+```swift
+GroupBox("Temperature") {
+    VStack(alignment: .leading, spacing: 1) {
+        LabeledContent("Current", value: "21.4 °C")
+            .labeledContentStyle(.instrument)
+        Text("Within target")
+        MeasurementGauge(position: 0.535, style: .dial)
+            .frame(height: 5)
+        Text("Scale: 0–40 °C")
+        LabeledContent("Recorded mean", value: "20.8 °C")
+        LabeledContent("Recorded maximum", value: "24.8 °C")
+    }
+}
+.chioTheme(.btop)
+```
+
+The style is local to the primary fact; supporting facts retain native styling.
+The existing theme modifier already supplies the group style. A different native
+`GroupBoxStyle` remains the chrome customization point; no `InstrumentPanel` is needed.
+
+For a pair of equal-priority readings, scope the style to their common container:
+
+```swift
+HStack(alignment: .top, spacing: 2) {
+    LabeledContent("Inlet", value: "18.2 °C")
+    LabeledContent("Outlet", value: "21.4 °C")
+}
+.labeledContentStyle(.instrument)
+.chioTheme(.btop)
+```
+
+The nearest native style scope wins. Do not have `.chioTheme` install the
+instrument treatment on every `LabeledContent`: ordinary field/value rows must
+not become prominent instruments merely because their palette changed. Using
+the style requires no repeated theme argument. Local layout numbers in these
+recipes are application choices, not new spacing tokens or mandatory presets.
+
+An awkward but important case needs no additional instrument state model:
+
+```swift
+VStack(alignment: .leading, spacing: 1) {
+    LabeledContent("Current", value: "Unavailable")
+        .labeledContentStyle(.instrument)
+    MeasurementGauge(position: nil)
+        .frame(height: 1)
+    LabeledContent("Recorded mean", value: "20.8 °C")
 }
 ```
 
-Chio styles the label, ordinary reading and supporting group through the theme.
-The ordinary reading remains present with visuals. Applications can place a tile
-inside a native styled `GroupBox` and compose grids or expanded inspectors;
-the tile adds no border, terminal-size breakpoint or collection policy of its own.
+The application supplies the missing-reading explanation. It can retain known
+recorded facts independently; neither the style nor the gauge decides to hide
+them. Empty authored text is not a missing-reading sentinel. Trend uses an authored
+`Label` or `Text`; playback uses native buttons, slider and stepper. These do not
+need an instrument-specific model or component family.
 
-Use the reading verbatim: no first-word extraction, numeric parsing, unit joining,
-conversion or inferred missing state. Supporting facts remain independent of the
-current reading. An unavailable reading can coexist with known recorded values;
-a missing gauge position remains distinct from zero. Applications choose whether
-status, detail and other facts belong in essential content or optional visuals.
-They retain formatting, normalization, thresholds, freshness, priorities, clocks,
-sampling and retention. No new measurement DTO, registry or style protocol is
-justified by this slice.
+### Responsive layout and the deferred tile
 
-### Fitting contract to prove
+<a id="proposed-responsive-instrument-tile"></a>
 
-Try complete expanded content, complete compact content, then essential text
-alone. Optional visuals and their captions are admitted as a group, so a gauge
-cannot displace its scale label or an essential fact. Enlarging the allocation
-must restore the preferred presentation. Long readings and facts use native
-wrapping rather than intentional ellipsis; terminal-cell width must not be
-approximated with string character counts.
+Defer `InstrumentTile` and its proposed `reading:`, supporting-content and visual
+slots. The earlier shape coupled a formatted string to a special container before
+proving that existing composition was insufficient. A native style cannot infer
+those roles from arbitrary content, and should not pretend to.
 
-Use native stacks and `ViewThatFits`, not a Chio measurement engine. The pinned
-native implementation resolves every candidate, probes ideal dimensions on the
-selected axes, and chooses the last candidate even if none fits. Therefore this
-is a content-priority contract, not a guarantee that arbitrary text fits any
-fixed frame. Establish the essential content's minimum allocation in the spike;
-the surrounding application owns extra space or scrolling below that minimum.
-Keep supplied content passive and its state/resources above the alternatives.
+Applications can change authored layouts using native `AnyLayout`, or offer
+passive expanded/compact alternatives with `ViewThatFits`. Primary/supporting
+priority and optional visuals remain explicit at the call site. Keep controls
+and state/resource ownership outside repeated fit alternatives. The pinned native
+implementation resolves every candidate and chooses the last even when none fits;
+it cannot promise arbitrary text will fit a fixed frame. The parent owns additional
+space or scrolling. There is no public native grid at this dependency revision.
 
-Give a dial its full five-row allocation in the expanded candidate. An unbounded
-Canvas or a nested adaptive visual can give misleading fit results; explicitly
-bounded visual candidates must be tested in the complete tile. Ordinary text,
-native accessibility and existing group styling remain the foundations.
+Revisit one passive container only if multiple examples repeat the same useful
+policy: preserve complete readings and essential facts, admit a visual with all
+its captions, and restore preferred content after enlargement. That would justify
+explicit semantic slots, rather than parsing child views or adding more style flags.
+Until then, do not publish a tile, grid, presentation enum or measurement DTO.
 
-Optional segmented lettering can be supplied using `InstrumentReadout` inside
-the visual group. Its existing plain-text fallback remains intact, including for
-unsupported strings; the tile must not parse the ordinary reading or promise
-that duplicate plain text is suppressed. Prefer a bar/dial proof first, then
-validate a caller-supplied numeric readout without adding another public option.
-
-### Acceptance and delivery
-
-1. Prove a compact grid and an expanded instrument with neutral synthetic data,
-   including a non-workout example. Compare full and reduced allocations before
-   introducing a public type; preserve existing primitive behavior.
-2. Cover missing, zero, negative and large readings, long labels, Unicode units,
-   complete supporting groups, and missing current values with known recorded
-   facts. Test exact fit boundaries, explicit gauge heights and the minimum
-   allocation; do not claim that clipped essential content is a successful fit.
-3. Use retained hosted sessions to replace readings, clear optional content, cycle
-   themes and shrink/expand repeatedly. Verify no stale pixels, recovered visuals,
-   no added focus stops, and accessible full readings without decorative duplicates.
-4. Check default, light, btop and custom themes, monochrome and true-color output.
-   After implementation, run the required local/platform/terminal gates and update
-   the public component example and theme previews through the showcase workflow.
+Once the API is agreed, implementation evidence must cover long labels/Unicode
+units, zero versus missing, independent recorded facts, narrow allocations and
+resize recovery. Check theme inheritance, local style overrides, arbitrary content,
+no duplicate accessibility reading and native focus preservation. A style should
+keep its slots mounted; fitting alternatives need separate retained-session proof.
 
 ## Proposed target-band gauge
 
@@ -236,7 +284,7 @@ incidental cleanup.
 
 The first visual proof should keep the existing bar and add a separate bracketed
 target track. That proposes two rows when a band is present and preserves one row
-without it; callers and tile candidates must reserve the complete height. For a
+without it; authored layouts must reserve the complete height. For a
 dial, test a distinct arc with endpoint marks inside the existing five-row budget.
 Both styles need a readable result before publishing an overload that accepts
 either style. Do not silently ignore the band on dials or treat clipped tracks as
@@ -386,7 +434,7 @@ shows shared fitting/accessibility behavior beyond that composition; no inferred
 trend from Sparkline or parsed formatted text.
 
 **Paired/grouped facts:** use native `LabeledContent` (including `.stacked`), stacks,
-and the tile if its proof succeeds. A primary reading and recorded statistics,
+and the proposed instrument style where appropriate. A primary reading and recorded statistics,
 two independently measured channels, or labelled navigation facts do not require
 new DTOs or `InstrumentGroup`. Known supporting values survive a missing current
 reading. Test complete facts, long units, missing/zero and side-by-side to stacked
@@ -397,7 +445,7 @@ one authored child set; lazy horizontal/vertical stacks serve scrollable sets.
 The pinned native source does not expose `Grid`, `GridItem`, `LazyVGrid` or
 `LazyHGrid`, so SwiftUI grid recipes are not currently native SwiftTUI APIs.
 Use small authored rows/stacks first. Reflow, scrolling, paging and primary-only
-display are different application policies, not a tile's decision. Regrouping
+display are different application policies, not a labelled-content style's decision. Regrouping
 items into new row parents can change identity even with stable item IDs; hosted
 focus/selection checks are required. `AnyLayout` identity tests do not prove every
 collection reflow. A later layout helper needs a demonstrated shared contract.
@@ -406,7 +454,7 @@ collection reflow. A later layout helper needs a demonstrated shared contract.
 `Stepper` where discrete adjustment helps. SwiftTUI owns their binding/input/focus
 and accessibility machinery. Applications own play/pause, allowed seeks, bounds,
 speed, clocks, source replacement and end behavior. Sequence position is not
-elapsed-time percentage. Keep controls outside passive tile alternatives; test
+elapsed-time percentage. Keep controls outside passive fitting alternatives; test
 empty/singleton sources, changing bounds, batched input, disabled controls and
 focus across resize. A shared Chio slider/stepper style may be justified by visual
 reuse in unrelated controls; preserve native routed track/actions instead of
@@ -421,12 +469,12 @@ normalization or direction inference is implied by this inventory.
 
 ## Expansion delivery and verification
 
-1. Build neutral tile/grouped-fact/playback recipes and the tile fitting proof.
-   Use compact collections and an expanded instrument. If native composition
-   stays clear and removes no repeated policy, retain a recipe instead of a public
-   tile. Otherwise promote only the tested passive contract.
+1. Agree the style-first API using simple, custom, expanded, paired and missing
+   readings. Then verify the proposed native style and neutral composition recipes;
+   keep a recipe if the style adds no useful treatment beyond native `.stacked`.
+   Revisit a tile only if repeated essential/optional fitting policy justifies it.
 2. Prove target-band geometry in bars and dials, including monochrome, then add
-   the checked band and compatible gauge overload. Update tile examples for the
+   the checked band and compatible gauge overload. Update composed examples for the
    extra band-track height; preserve every no-band regression.
 3. Prove timestamp validation, explicit discontinuities, true clipping and work
    bounds in an internal chart before freezing public series/window APIs. Promote

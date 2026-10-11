@@ -155,7 +155,7 @@ in Releases; avoid duplicating full contracts across documents.
 | Topic | Status and responsibility |
 | --- | --- |
 | <a id="theme"></a>[Themes and native control styling](Decisions/Themes.md) | Accepted |
-| <a id="compact-instrumentation"></a><a id="duration-presentation-and-example-owned-timekeeping"></a>[Compact instrumentation and duration display](Decisions/Instrumentation.md) | Accepted primitives; tile, target bands and time-aware history assessed as proposals |
+| <a id="compact-instrumentation"></a><a id="duration-presentation-and-example-owned-timekeeping"></a>[Compact instrumentation and duration display](Decisions/Instrumentation.md) | Accepted primitives; native instrument style, target bands and time-aware history proposed; tile deferred |
 | <a id="searchable-selection"></a><a id="searchable-multiple-choice"></a>[Searchable selection and membership](Decisions/SearchableSelection.md) | Accepted |
 | <a id="composition-and-layout"></a>[Responsive composition and status](Decisions/Composition.md) | Accepted |
 | <a id="contextual-keyboard-help"></a>[Contextual keyboard help](Decisions/KeyboardHelp.md) | Accepted |

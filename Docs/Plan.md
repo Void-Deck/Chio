@@ -42,16 +42,19 @@ active plan with completed implementation history.
 ## Current design pass: responsive instrumentation
 
 The [full instrumentation assessment](Decisions/Instrumentation.md#instrumentation-expansion-assessment)
-recommends a passive instrument tile, a compatible target-band gauge extension and
-a separate one-series time-aware chart. It records proposed APIs, value contracts,
-native limitations and acceptance evidence. None is implemented or part of the
-public API; evaluation does not commit to the whole inventory.
+now prioritizes [native style API design](Decisions/Instrumentation.md#proposed-instrument-api):
+`LabeledContent` for readings, existing groups and views for richer composition,
+a compatible target-band gauge extension and a separate one-series time-aware
+chart. `InstrumentTile` is deferred until repeated fitting policy justifies it.
+The current pass is API review only; no implementation or rendering spike is in
+progress. Proposed additions are not public APIs, and evaluation does not commit
+to the whole inventory.
 
 Recommended delivery order:
 
-1. Prove the tile's essential-content fitting in compact and expanded examples,
-   alongside grouped-fact and native playback recipes. Promote only demonstrated
-   reusable behavior.
+1. Agree simple, custom, expanded, paired and missing-reading call sites. Then
+   verify a theme-aware native labelled-content style and composition recipes;
+   promote only demonstrated reusable presentation.
 2. Prove target bands in bars/dials, then extend the existing gauge while preserving
    all no-band behavior.
 3. Prove explicit time spacing, missing intervals, clipping and work limits before
