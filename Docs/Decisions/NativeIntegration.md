@@ -4,6 +4,19 @@
 
 Keep native ownership and visible limitations explicit when composing or extending Chio.
 
+## Upstream contributions
+
+Match SwiftTUI's current contribution instructions, nearby source terminology and
+accepted pull-request conventions. Source comments explain a non-obvious reason,
+invariant or coordinate system; they do not narrate the patch or carry Chio's
+internal task history. Use established names consistently across code, tests and
+the PR description. Distinguish measured sizes from estimates explicitly.
+
+Lead PR descriptions with the reproducible problem and resulting behavior, then
+explain the correction and relevant verification. Include a minimal reproducer or
+regression test and keep unverified platforms visible. Review comments and wording
+alongside correctness so maintainers can assess the fix without knowing Chio.
+
 ## Native chrome
 
 Native list focus chrome uses SwiftTUI's theme; Chio themes selected content and
