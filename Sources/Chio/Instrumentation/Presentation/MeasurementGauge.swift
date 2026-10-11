@@ -8,15 +8,18 @@ import SwiftTUIViews
 /// and surrounding labels. This view owns no clock, sampling or measurement state.
 ///
 /// A target band is independent of the reading and uses the same normalized scale.
-/// The bar uses one row, or two with a target; the dial uses up to five rows.
-/// Reserve the complete height to avoid clipping the bar's target track. Tiny
-/// dials may merge target marks; callers can supply an ordinary target caption.
+/// The bar requires one row, plus a row each for targets and references. The
+/// dial requires a complete twenty-column, five-row plot to retain its aspect.
+/// Native fitting measures those complete plots; applications choose another
+/// presentation when they do not fit. A caller-forced smaller frame or ancestor
+/// viewport can still clip content through native layout.
 /// Supplied references add a numbered bar track, or numbered dial cells, and
 /// native caption text beneath the plot. A shared reference cell displays `*`;
 /// every caption remains independently present. Caption wrapping determines its
 /// additional height. Applications reserve the complete plot and caption layout.
-/// Both adapt to the native allocation, prefer twenty columns, and limit drawing
-/// to 512 columns. The
+/// Bars adapt to native width, prefer twenty columns, and limit drawing to 512
+/// columns. A dial centers its fixed plot within wider native allocations;
+/// reference captions wrap to the available width, up to 512 columns. The
 /// environment's accent color applies at every position, including one. Replace
 /// the accessibility label to describe an application's scale and units.
 @MainActor
@@ -71,6 +74,20 @@ public struct MeasurementGauge {
         }
     }
 
+    private var minimumWidth: Int {
+        switch style {
+        case .bar: return 1
+        case .dial: return 20
+        }
+    }
+
+    private var maximumWidth: Int {
+        switch style {
+        case .bar: return 512
+        case .dial: return 20
+        }
+    }
+
     private var summary: String {
         let reading: String
         if let position { reading = "Measurement position: \(position) of 1." }
@@ -88,10 +105,10 @@ public struct MeasurementGauge {
     private var plot: some View {
         Canvas(MeasurementDrawing(position: position, targetBand: targetBand,
                                   referenceMarks: referenceMarks, style: style), grid: .braille2x4)
-            .frame(idealWidth: 20, maxWidth: 512,
-                   idealHeight: .finite(preferredHeight), maxHeight: .finite(preferredHeight))
+            .frame(minWidth: .finite(minimumWidth), idealWidth: 20, maxWidth: .finite(maximumWidth),
+                   minHeight: .finite(preferredHeight), idealHeight: .finite(preferredHeight),
+                   maxHeight: .finite(preferredHeight))
             .foregroundStyle(theme.colors.accent)
-            .accessibilityLabel(summary)
     }
 }
 
@@ -99,22 +116,30 @@ extension MeasurementGauge.Style: Hashable {}
 extension MeasurementGauge.Style: Sendable {}
 
 extension MeasurementGauge: View {
-    @ViewBuilder
     public var body: some View {
+        presentation
+            .frame(minWidth: .finite(minimumWidth), idealWidth: 20, maxWidth: 512, alignment: .leading)
+            .fixedSize(horizontal: false, vertical: true)
+            .accessibilityRole(.image)
+            .accessibilityLabel(summary)
+    }
+
+    @ViewBuilder
+    private var presentation: some View {
         if referenceMarks.isEmpty {
             plot
+                .frame(maxWidth: .infinity)
+                .accessibilityHidden()
         } else {
             VStack(alignment: .leading, spacing: 0) {
-                plot.accessibilityHidden()
+                plot.frame(maxWidth: .infinity).accessibilityHidden()
                 ForEach(Array(referenceMarks.enumerated()), id: \.element.id) { entry in
                     Text("\(entry.offset + 1) \(entry.element.label)")
+                        .lineLimit(nil)
                         .foregroundStyle(theme.colors.mutedText)
                         .accessibilityHidden()
                 }
             }
-            .frame(maxWidth: 512, alignment: .leading)
-            .accessibilityRole(.image)
-            .accessibilityLabel(summary)
         }
     }
 }
@@ -161,8 +186,9 @@ private struct MeasurementDrawing {
 
     private func drawDial(into context: inout CanvasContext, width: Int) {
         let height = min(5, context.size.height)
-        // A terminal cell is approximately twice as tall as it is wide. Separate
-        // radii preserve the semicircle's aspect and fit even one-cell allocations.
+        // Assuming terminal cells are approximately twice as tall as they are
+        // wide, the fixed 20×5 plot presents a physical semicircle. Font and
+        // emulator metrics can differ; the drawing retains all braille samples.
         let radiusX = Double(width) / 2 - 0.25
         let radiusY = min(Double(height) - 0.25, radiusX / 2)
         let center = Point(x: Double(width) / 2, y: radiusY + 0.125)

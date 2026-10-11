@@ -200,6 +200,9 @@ Instrument changes additionally verify independent current/target/reference fact
 checked normalized annotations, coincident marker captions, pure native style slots,
 and native slider/stepper keyboard, pointer and accessibility routes. Retained tests
 cover focus, input replacement, missing observations, theme changes and resizing.
+Gauge sizing checks cover the 20 × 5 plot boundary, wide/short and narrow/tall
+proposals, wrapped captions, inherited line limits, complete track height and
+native fallback/recovery while the selected style remains application-owned.
 History tests exercise equal timestamps, separate segments, nil breaks, real time
 and Y intersections, extreme finite arithmetic, dense spikes and whole-plot work
 rejection. A drawing bound does not bound an arbitrary caller's root allocation;

@@ -93,24 +93,126 @@ struct MeasurementGaugeTests {
         #expect(idealDial.rasterSurface.size == CellSize(width: 20, height: 5))
     }
 
-    @Test("Zero allocations are empty; small caller frames retain a visible known zero")
-    func narrowFrames() {
-        for style in [MeasurementGauge.Style.bar, .dial] {
-            #expect(glyphs(render(0, style: style, width: 0)).isEmpty)
-            #expect(glyphs(render(0, style: style, height: 0)).isEmpty)
-            for width in [1, 2, 3] {
-                let frame = DefaultRenderer().render(
-                    MeasurementGauge(position: 0, style: style).frame(width: width, height: 1),
-                    proposal: ProposedSize(width: width, height: 1))
-                #expect(frame.rasterSurface.size == CellSize(width: width, height: 1))
-                #expect(!glyphs(frame).isEmpty)
-                #expect(glyphs(frame).count <= width)
+    @Test("Wide and tall allocations center a complete dial without stretching its braille geometry")
+    func dialAspectAndCentering() {
+        let original = pixels(render(0.5, style: .dial))
+        for width in [20, 32, 64, 512] {
+            for height in [1, 4, 5, 12] {
+                let frame = render(0.5, style: .dial, width: width, height: height)
+                let offset = (width - 20) / 2 * 2
+                let expected = Set(original.map { CellPoint(x: $0.x + offset, y: $0.y) })
+                #expect(pixels(frame) == expected)
+                #expect(frame.rasterSurface.size == CellSize(width: width, height: max(5, height)))
             }
         }
-        for width in [2, 9, 36] {
-            let drawing = pixels(render(0.5, style: .dial, width: width, height: 3))
-            #expect(!drawing.isEmpty)
-            #expect(drawing.allSatisfy { $0.x >= 0 && $0.x < width * 2 && $0.y >= 0 && $0.y < 12 })
+        #expect(pixels(render(0.5, style: .dial, width: 19, height: 4)) == original)
+        #expect(render(0.5, style: .dial, width: 19, height: 4).rasterSurface.size
+            == CellSize(width: 20, height: 5))
+    }
+
+    @Test("Passive native fitting rejects incomplete dial dimensions and preserves the application-selected style")
+    func nativeStyleFittingAndRecovery() {
+        let renderer = DefaultRenderer()
+        let presentation = ViewThatFits {
+            MeasurementGauge(position: 0.5, style: .dial)
+            MeasurementGauge(position: 0.5, style: .bar)
+            Text("Numeric")
+        }
+        let wide = ProposedSize(width: 20, height: 5)
+        let first = renderer.render(presentation, proposal: wide)
+        #expect(!pixels(first).isEmpty)
+        let short = renderer.render(presentation, proposal: ProposedSize(width: 20, height: 4))
+        #expect(pixels(short).isEmpty)
+        #expect(glyphs(short).contains("▰"))
+        let narrow = renderer.render(presentation, proposal: ProposedSize(width: 19, height: 5))
+        #expect(glyphs(narrow) == "Numeric")
+        #expect(renderer.render(presentation, proposal: wide).rasterSurface == first.rasterSurface)
+        let selectedBar = DefaultRenderer().render(
+            MeasurementGauge(position: 0.5, style: .bar), proposal: wide)
+        #expect(pixels(selectedBar).isEmpty)
+        #expect(glyphs(selectedBar).contains("▰"))
+    }
+
+    @Test("Whole annotated measurements fit only when every plot track and caption fits")
+    func annotatedFitting() throws {
+        let target = try MeasurementGauge.TargetBand(lowerBound: 0, upperBound: 1)
+        let references = try MeasurementGauge.ReferenceMarks([
+            MeasurementGauge.ReferenceMark(id: "first", label: "First", position: 0),
+            MeasurementGauge.ReferenceMark(id: "second", label: "Second", position: 1),
+        ])
+        let presentation = ViewThatFits {
+            MeasurementGauge(position: nil, referenceMarks: references, targetBand: target, style: .dial)
+            MeasurementGauge(position: nil, referenceMarks: references, targetBand: target, style: .bar)
+            Text("Numeric")
+        }
+        let renderer = DefaultRenderer()
+        let complete = renderer.render(presentation, proposal: ProposedSize(width: 20, height: 7))
+        #expect(!pixels(complete).isEmpty)
+        #expect(complete.rasterSurface.lines.contains { $0.contains("1 First") })
+        #expect(complete.rasterSurface.lines.contains { $0.contains("2 Second") })
+        let bar = renderer.render(presentation, proposal: ProposedSize(width: 20, height: 5))
+        #expect(bar.rasterSurface.lines == ["····················", "╞══════════════════╡",
+            "1                  2", "1 First", "2 Second"])
+        let short = renderer.render(presentation, proposal: ProposedSize(width: 20, height: 4))
+        #expect(glyphs(short) == "Numeric")
+        #expect(renderer.render(presentation, proposal: ProposedSize(width: 20, height: 7)).rasterSurface
+            == complete.rasterSurface)
+    }
+
+    @Test("Wrapped references use available width and retain units despite inherited line limits")
+    func wrappedReferenceFitting() throws {
+        let references = try MeasurementGauge.ReferenceMarks([
+            MeasurementGauge.ReferenceMark(id: "first", label: "First recorded value 20 °C", position: 0),
+            MeasurementGauge.ReferenceMark(id: "second", label: "Second recorded value 40 °C", position: 1),
+        ])
+        for style in [MeasurementGauge.Style.bar, .dial] {
+            let plotRows = style == .bar ? 2 : 5
+            let presentation = ViewThatFits(in: .vertical) {
+                MeasurementGauge(position: nil, referenceMarks: references, style: style)
+                Text("Numeric")
+            }
+            .lineLimit(1)
+            let wrapped = DefaultRenderer().render(presentation,
+                proposal: ProposedSize(width: 20, height: plotRows + 4))
+            #expect(wrapped.rasterSurface.lines.contains { $0.contains("value 20 °C") })
+            #expect(wrapped.rasterSurface.lines.contains { $0.contains("value 40 °C") })
+            let short = DefaultRenderer().render(presentation,
+                proposal: ProposedSize(width: 20, height: plotRows + 3))
+            #expect(glyphs(short) == "Numeric")
+            let wide = DefaultRenderer().render(presentation,
+                proposal: ProposedSize(width: 40, height: plotRows + 2))
+            #expect(wide.rasterSurface.lines.contains { $0.contains("1 First recorded value 20 °C") })
+            #expect(wide.rasterSurface.lines.contains { $0.contains("2 Second recorded value 40 °C") })
+            if style == .dial {
+                #expect(wide.rasterSurface.cells[4][10].character == "1")
+                #expect(wide.rasterSurface.cells[4][29].character == "2")
+            }
+        }
+    }
+
+    @Test("Native minimums retain complete plots while forced frames use native clipping")
+    func narrowFrames() {
+        for style in [MeasurementGauge.Style.bar, .dial] {
+            let plotHeight = style == .bar ? 1 : 5
+            let minimumWidth = style == .bar ? 1 : 20
+            let minimum = render(0, style: style, width: 0, height: 0)
+            #expect(minimum.rasterSurface.size == CellSize(width: minimumWidth, height: plotHeight))
+            #expect(!glyphs(minimum).isEmpty)
+            for width in [0, 1, 2, 3] {
+                let frame = DefaultRenderer().render(
+                    MeasurementGauge(position: 0, style: style)
+                        .frame(width: width, height: 1, alignment: .topLeading).clipped(),
+                    proposal: ProposedSize(width: width, height: 1))
+                if width == 0 {
+                    #expect(frame.rasterSurface.size == .zero)
+                    #expect(glyphs(frame).isEmpty)
+                } else {
+                    #expect(frame.rasterSurface.size == CellSize(width: width, height: 1))
+                    #expect(frame.rasterSurface.cells.count == 1)
+                    #expect(frame.rasterSurface.cells.allSatisfy { $0.count == width })
+                    if style == .bar { #expect(glyphs(frame) == String(repeating: "▱", count: width)) }
+                }
+            }
         }
     }
 
@@ -255,8 +357,9 @@ struct MeasurementGaugeTests {
             for width in [0, 1, 2, 3, 20, 512, 700, 4096] {
                 for height in [0, 1, 2, 3, 5] {
                     let frame = render(nil, targetBand: band, style: style, width: width, height: height)
-                    if width == 0 || height == 0 { #expect(glyphs(frame).isEmpty) }
-                    else { #expect(!glyphs(frame).isEmpty) }
+                    #expect(!glyphs(frame).isEmpty)
+                    let minimumWidth = style == .bar ? 1 : 20
+                    #expect(frame.rasterSurface.size.width == max(minimumWidth, width))
                     let plotHeight = style == .bar ? 2 : 5
                     for (y, row) in frame.rasterSurface.cells.enumerated() {
                         for (x, cell) in row.enumerated() where cell.character != " " {
@@ -265,7 +368,8 @@ struct MeasurementGaugeTests {
                     }
                     let drawing = pixels(frame)
                     #expect(drawing.allSatisfy {
-                        $0.x >= 0 && $0.x < min(width, 512) * 2 && $0.y >= 0 && $0.y < min(height, 5) * 4
+                        $0.x >= 0 && $0.x < min(max(width, style == .bar ? 1 : 20), 512) * 2
+                            && $0.y >= 0 && $0.y < plotHeight * 4
                     })
                     if style == .bar, width >= 512, height >= 2 {
                         #expect(frame.rasterSurface.cells[1][511].character == "╡")
@@ -280,7 +384,7 @@ struct MeasurementGaugeTests {
         }
         #expect(render(nil, targetBand: band, width: 1, height: 2).rasterSurface.lines == ["·", "╪"])
         #expect(render(nil, targetBand: band, width: 2, height: 2).rasterSurface.lines == ["··", "╞╡"])
-        #expect(render(nil, targetBand: band, width: 3, height: 1).rasterSurface.lines == ["···"])
+        #expect(render(nil, targetBand: band, width: 3, height: 1).rasterSurface.lines == ["···", "╞═╡"])
     }
 
     @Test("Target geometry is independent of theme paint and semantics remain passive and overrideable")
@@ -474,7 +578,8 @@ struct MeasurementGaugeTests {
             let wrapped = DefaultRenderer().render(
                 MeasurementGauge(position: nil, referenceMarks: references, style: style).frame(width: 8))
             let plotRows = style == .bar ? 2 : 5
-            #expect(wrapped.rasterSurface.size.height > plotRows + 2)
+            if style == .bar { #expect(wrapped.rasterSurface.size.height > plotRows + 2) }
+            else { #expect(wrapped.rasterSurface.size.height == plotRows + 2) }
             #expect(wrapped.semanticSnapshot.accessibilityNodes.contains {
                 $0.label?.contains("Mean 20.8 °C") == true && $0.label?.contains("Max 40.7 °C") == true
             })

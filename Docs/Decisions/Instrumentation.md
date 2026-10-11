@@ -4,9 +4,9 @@
 `DurationText` shipped in 0.1.0; measurement gauges and segmented readouts extend
 those contracts and have not yet been included in a tagged release.
 The expansion below is an accepted implementation candidate on `codex/instrumentation`.
-It is for PR review and has not been merged or released. The complete local
-macOS gate, independent source reviews and release terminal captures pass; hosted
-macOS/Linux checks and publication remain tracked in [Plan](../Plan.md).
+It is for PR review and has not been merged or released. Local tests,
+independent source reviews and release terminal captures pass; hosted macOS/Linux
+checks and publication remain tracked in [Plan](../Plan.md).
 
 Present supplied measurements and durations; applications retain sampling, timing and interpretation.
 
@@ -54,8 +54,13 @@ A known position must be finite and in `0...1`; construction traps otherwise.
 normalization, units, thresholds, out-of-range policy and surrounding labels.
 The view owns no sampler, clock or monitoring state.
 
-`.bar` is the default and uses one row; `.dial` uses up to five rows. Both use
-native Canvas, prefer twenty columns and bound drawing to 512 columns. Missing
+`.bar` is the default and uses one reading row. Bars have a one-column minimum,
+prefer twenty columns and remain flexible up to 512 columns. A dial plot measures
+exactly twenty columns by five rows and centers in surplus horizontal space.
+This assumes a terminal cell is approximately twice as tall as it is wide: four
+columns per row gives a semicircle rather than a flattened arc. Fonts can differ;
+this is a cell-based convention, not a physical-size guarantee. Both use native
+Canvas and retain Braille resolution. Missing
 bars show dots and missing dials retain their arc without a needle. The current
 theme's accent applies at every position, including one. Native image semantics
 supply a normalized-position or missing-reading summary; applications should
@@ -217,10 +222,25 @@ MeasurementGauge(position: nil, referenceMarks: references,
 ```
 
 Bars reserve one reading row plus one target row when present and one reference
-track when present. Dials reserve up to five plot rows. Reference captions add
-native wrapping height beyond that plot. Applications must reserve the whole
-layout; compact views may omit the complete optional reference group. Existing
-no-band/no-reference geometry, paint and accessibility remain compatibility gates.
+track when present. All required plot rows contribute to native minimum sizing;
+a short proposal cannot silently remove the target or reference track. Dials
+reserve their complete 20 × 5 plot independently of caption width. Reference
+captions wrap at the instrument's actual allocation (up to 512 columns), ignore
+inherited line limits and add their full native measured height below the plot.
+
+Applications must admit the complete instrument, including their own units and
+scale. Native `ViewThatFits` can choose passive dial, bar and complete numeric
+alternatives; the application retains the selected style across resizes. Its final
+alternative must itself fit. At this native revision, default two-axis fitting
+probes ideal width twenty; `.vertical` fitting uses the provided width for caption
+wrapping when the application has already admitted the plot's minimum width.
+A caller can still force clipping with an undersized
+fixed frame or ancestor clip; Chio adds no automatic data-hiding fallback. Compact
+views may omit a complete optional reference group by application policy.
+
+The 20 × 5 dial geometry, bar width behavior, paint and accessibility remain
+compatibility gates. Wide or undersized dials intentionally stop stretching or
+shrinking, and annotated plots expose their complete required height.
 New checked annotation values are immutable, hashable and sendable, without a
 Codable or persisted representation contract.
 

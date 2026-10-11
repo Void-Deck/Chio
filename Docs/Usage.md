@@ -123,9 +123,11 @@ VStack(alignment: .leading) {
 `MeasurementGauge` defaults to `.bar`; `.dial` draws a semicircular needle.
 Supply a finite position in `0...1`, or `nil` for a missing reading. Normalize
 measurements and decide how to handle out-of-range data in your application before
-construction. The bar uses one row and the dial up to five; native allocation
-controls their size, with a preferred width of twenty and a 512-column drawing
-limit. Both remain accented at one. These passive views have no sampling or input
+construction. The bar uses one row, with a one-column minimum, twenty-column
+preferred width and 512-column limit. The dial plot stays 20 × 5 cells, centered
+in surplus width. Four columns per row assumes cells are approximately twice as
+tall as they are wide; actual fonts differ. Both remain accented at one. These
+passive views have no sampling or input
 behavior; replace the normalized accessibility summary with your scale and units.
 
 `InstrumentReadout` accepts an already formatted string. Use `style: .plain` for
@@ -222,8 +224,15 @@ at most two are accepted. Caller order supplies ordinals, without sorting positi
 or deriving statistics. Shared reference cells show `*`; every numbered caption
 remains below the plot. Dials reserve whole ordinal cells over other geometry.
 Bars add one row each for a target track and a reference track. Reference captions
-add wrapping height to the bar or five-row dial: reserve the complete plot plus
-captions. Compact composition may omit a whole optional reference group. Pass
+use the actual instrument width and add their full wrapping height below the
+plot, independently of the dial's fixed plot size. Native fitting sees all required
+tracks and captions, even under an inherited line limit. Use passive
+`ViewThatFits` alternatives when the complete dial, bar or numeric reading should
+be chosen by available space; keep the selected style in application state. Default
+two-axis fitting probes ideal width twenty. If the minimum plot width is already
+met, `.vertical` fitting measures captions at the provided width. A forced
+undersized frame or ancestor clip can still hide content. Compact
+composition may omit a whole optional reference group. Pass
 `targetBand: nil` or checked `ReferenceMarks([])` to remove annotations. The legacy
 `MeasurementGauge(position:style:)` remains available.
 

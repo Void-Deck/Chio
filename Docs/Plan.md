@@ -41,11 +41,11 @@ active plan with completed implementation history.
 
 ## Current slice: responsive instrumentation
 
-**Status:** Accepted candidate implementation on `codex/instrumentation` for PR
-review. The complete local macOS verification script and pinned SwiftRules gate
+**Status:** Accepted implementation candidate in [PR #8](https://github.com/echoz/Chio/pull/8).
+Local tests, release terminal workflows, captures and the pinned SwiftRules gate
 pass. Independent library and example reviews have no remaining findings.
-This work is not merged or released; hosted platform checks and showcase
-publication remain pending.
+The PR records exact platform evidence; this work is not merged or released,
+and public showcase publication remains pending.
 The [instrumentation decision](Decisions/Instrumentation.md#instrumentation-expansion-assessment)
 owns the contracts and supersedes the earlier API-only proposals.
 
@@ -54,7 +54,9 @@ compatible checked gauge target bands and independent reference marks, one-serie
 `HistoryChart` with checked segmented history/window values, and native
 slider/stepper styles installed by `.chioTheme`. Equal timestamps are accepted
 within nondecreasing segments; boundaries prohibit connections without implying
-outage duration. Applications own timing, sampling, retained history and playback.
+outage duration. Applications own timing, sampling, retained history and playback. Dials keep a
+20 × 5 plot centered in surplus width; native sizing includes complete bar tracks
+and captions, while applications choose fallback composition.
 
 The local `--instruments` example composes readings, independent references,
 targets, same-time history observations and an explicit break, plus native controls
