@@ -43,11 +43,13 @@ renderer, focus system or hidden dependency patch.
 
 ## Tall list rows
 
-**Status:** Verified investigation; a focused upstream candidate is in
-[SwiftTUI PR #46](https://github.com/SwiftTUI/swift-tui/pull/46), not adopted by
-Chio. Measured-height corrections remain proposed. All new per-row density
-controls remain deferred from Chio's unified style API. Opencode keeps compact
-rows and roomier input padding/leading frames.
+**Status:** Verified investigation with two upstream candidates: the per-axis
+reveal correction in [SwiftTUI PR #46](https://github.com/SwiftTUI/swift-tui/pull/46)
+and the measured-height correction in
+[SwiftTUI PR #47](https://github.com/SwiftTUI/swift-tui/pull/47). Neither is adopted
+by Chio. All new per-row density controls remain deferred from Chio's unified
+style API.
+Opencode keeps compact rows and roomier input padding/leading frames.
 
 A standalone package importing only public `SwiftTUIRuntime` reproduces these
 failures on macOS with Swift 6.4.0. The same eight parameterized cases ran against
@@ -114,21 +116,33 @@ correcting the pinned ordering defect. Builder lists bypass that indexed path;
 uniform row placement without their measured heights. Their larger measured
 height does not prevent overlapping child placement.
 
-The proposed follow-up uses the native collection's measured row/window geometry
-consistently for navigation and placement, retaining whole-row scrolling and
-bounded realization. Include eager section headers/footers, separators, fixed
-chrome and indicators when translating rows to cells. Reuse the existing native
-scroll state/registration boundaries; do not introduce a Chio scroll controller.
-Placed and unrealized `scrollTo` targets currently take different routes, and
-explicit proxy offsets also use generic clamps. Their consistency needs coverage
-before claiming the broader collection correction complete.
+The measured-height candidate `3e7c1459b565e438a7f5d5fac9a9e74a4a7b7f8c`
+in draft PR #47 is based on PR #46. Layout publishes measured row geometry and
+the usable viewport through the existing collection registration. Navigation, paging, wheel movement
+and target anchors use those cells; unrealized indexed rows retain the existing
+one-line estimate. A programmatic target receives one correction after measurement,
+unless newer input supersedes it. Builder lists preserve measured row wrappers,
+section headers and footers through placement. Home and End can still reach
+section-only cells.
 
-The fix sequence is the focused per-axis reveal correction, then measured-height
-navigation and eager placement. Required coverage includes mixed-height rows,
-wrapping after resize, same-ID content changes, rows taller than the viewport,
-final-row activation and reverse traversal, section chrome, proxy anchors and
-native Table regressions because it shares collection scroll state. Preserve
-bounded measurement rather than measuring the entire dataset to reveal one row.
+Oversized focus targets align at their start. If a focused row leaves a collection
+window, a focusable collection can retain focus. A width change that wraps the
+focused row out of view reuses the runtime's single eager follow-up pass to reveal
+it before replacing focus regions. Explicit focus requests take precedence.
+These are native corrections; no Chio scroll controller or public view API was added.
+
+Regression coverage checks exact padded-row placement, mixed-height List/Table
+navigation and activation in both directions, sections, paging, wheel reversal,
+far programmatic targets, oversized rows and same-ID height/width changes. The
+width regression changes the collection frame; it does not establish live terminal
+resize or SSH behavior. Existing bounded-realization checks remain intact.
+The full native `bun run test` gate passes on macOS with Swift 6.4.0 at that
+revision: all 85 steps, including every runtime shard, platform suites, TermUIPerf
+and the soundness scan. Focused collection, focus and host-wire contract checks
+also pass; independent review found no remaining issues. All six GitHub workflows
+report `action_required` with zero jobs, so upstream platform execution awaits
+maintainer approval. Chio integration is not yet verified and its dependency pin
+remains unchanged.
 
 Applications can use
 `Text(item.title).lineLimit(1).truncationMode(.tail)` to limit row height, but this

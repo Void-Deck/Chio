@@ -70,14 +70,15 @@ playback, controls and narrow layout against the integrated candidate.
 **Deferred list spacing:** all new per-row density controls are excluded from
 this slice's public API. Standalone public-API tests reproduce tall-row reveal
 and compact-list focus failures on both Chio's pin and inspected upstream main.
-Upstream has corrected indexed intrinsic layout; eager builder placement still
-overlaps padded rows. [SwiftTUI PR #46](https://github.com/SwiftTUI/swift-tui/pull/46)
-contains the focused per-axis reveal candidate; measured-height navigation and
-placement remain follow-ups. No native fix or dependency update is adopted;
-upstream and Chio integration gates remain required.
+The per-axis reveal candidate is in
+[SwiftTUI PR #46](https://github.com/SwiftTUI/swift-tui/pull/46).
+[Draft PR #47](https://github.com/SwiftTUI/swift-tui/pull/47) carries measured-height
+navigation and builder placement; its full native macOS gate and independent
+review pass. Neither native fix nor a dependency update is adopted by Chio.
+Upstream CI awaits maintainer approval; Chio integration gates remain required.
 [Native integration](Decisions/NativeIntegration.md#tall-list-rows)
 owns these findings and the conditions for revisiting row density. This deferral
-is not a blocker for the unified style API; neither failure is claimed fixed.
+is not a blocker for the unified style API; neither fix has shipped in Chio.
 
 Provider archive acquisition remains on hold at the user's request. No archive
 reader or downloader has been adopted; existing local pack APIs remain available.
