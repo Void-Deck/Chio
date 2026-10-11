@@ -44,6 +44,46 @@ cache's expiry and eviction. Applications own distribution and any management UI
 [Offline packs](Decisions/OfflineTilePacks.md) owns storage and lifetime contracts;
 [Plan](Plan.md#next-slice-offline-pack-acquisition) owns the delivery sequence.
 
+## Styles and view contracts
+
+Prefer a native style when an existing view already expresses the required
+content and behavior. Use composition for grouping and application priorities.
+Extend an existing view, or introduce a focused view, when reusable functionality
+requires meaningful inputs, content roles or interaction that existing views do
+not express. Configuration count alone does not establish that boundary.
+
+Styles are pure presentation transformations: supplied configuration, immutable
+style options, theme/environment values and layout inputs determine a view
+description. Repeated evaluation with equivalent inputs must describe equivalent
+presentation and leave the inputs and external state unchanged. Reading the
+framework-supplied environment or layout proposal counts as consuming an input;
+it does not authorize reading arbitrary global state.
+
+A style may arrange authored content and respond to supplied focus, selection,
+enabled state or progress. It must not own changing state, perform I/O, fetch
+data, read clocks or randomness, or introduce tasks, timers or lifecycle effects
+in the returned presentation. Keep effect and resource ownership in explicit
+application or component boundaries. Rendering and native interaction remain
+SwiftTUI's responsibility.
+
+Preserve authored slots and native interaction routes. Passing through content
+or wiring a supplied action preserves its existing owner; invoking that action
+during style evaluation is a side effect. Authored content may have its own state
+and effects, but the style must not add or take ownership of them. Changing a
+style must preserve the supplied facts, action meanings and accessibility
+contract even when their visual arrangement changes.
+
+Do not pass samples, service clients or application models into a style to
+compensate for missing view inputs. A target interval belongs to a gauge's input
+contract; its visual treatment belongs to presentation. Data acquisition belongs
+to an explicit loader/provider. Custom views may offer style choices when useful;
+neither a new view nor many options require a new style protocol.
+
+These are design and semantic review requirements, not proof that every existing
+style has been audited. Verify repeatable presentation and unchanged inputs at
+the relevant boundary; review effect ownership as well as direct function calls
+so deferred effects in returned views do not evade the purity contract.
+
 ## Value contracts
 
 Owned domain values and view configuration have `let` stored properties and pure
