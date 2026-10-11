@@ -324,10 +324,12 @@ Xcode 27 and the Swift 6.4.0 Ubuntu 24.04 container. The Linux image uses
 pinned to the same image digest verified from Docker Hub, to avoid depending on
 Docker Hub authentication during runner initialization. Builds/tests serialize
 within each job; artifacts retain logs, text captures and xUnit reports.
-The Linux job allows sixty minutes for the complete gate; macOS allows forty-five.
-The earlier Linux forty-five-minute cap cancelled a run during forward progress
-after its test suites passed. Increasing the job budget preserves all test
-assertions, frame deadlines and terminal workflows.
+Both jobs allow sixty minutes for the complete gate. Earlier forty-five-minute
+caps cancelled runs during forward progress: Linux after its test suites passed,
+and macOS after all debug/release suites and dashboard terminal workflows passed,
+as the map build started. The larger job budget preserves all test assertions,
+frame deadlines and terminal workflows; it does not extend an individual test's
+deadline or establish that a stalled test is healthy.
 
 [0.1.0 verification](Releases/0.1.0.md#platform-verification) records the tested
 platforms. Ordinary Linux executables need the Swift/Foundation runtime libraries.
