@@ -5,7 +5,7 @@ import SwiftTUIViews
 @MainActor
 public struct PageControl {
     private let pagination: Binding<Pagination>
-    @Environment(\.chioTheme) private var theme
+    @Environment(\.chioStyle) private var theme
     @Environment(\.isEnabled) private var isEnabled
 
     public init(pagination: Binding<Pagination>) {

@@ -40,12 +40,14 @@ struct AgentsView: View {
                 Text($0.name)
             }
         }
-        .chioTheme(.default)
+        .style(.default)
     }
 }
 ```
 
-One theme gives your controls consistent colors, spacing, and focus styling.
+One immutable style gives descendants consistent colors, spacing, surfaces and
+focus styling. Start with `.default`, `.light`, `.btop` or `.opencode`, and customize
+with `replacing(...)`.
 [API usage and recipes →](Docs/Usage.md)
 
 ## Try it
@@ -89,7 +91,7 @@ Chio adapts these ideas to native SwiftTUI composition and Swift APIs.
 
 ## Documentation
 
-- [API usage](Docs/Usage.md) — themes and component recipes
+- [API usage](Docs/Usage.md) — styles and component recipes
 - [Examples](Docs/Examples.md) — controls, screenshots, and SSH guidance
 - [Design](Docs/Design.md) — architecture and interaction contracts
 - [Coverage](Docs/Releases/0.1.0.md#component-coverage) · [Plan](Docs/Plan.md) · [Development checks](Docs/Verification.md#running-checks)

@@ -5,7 +5,7 @@ import SwiftTUIViews
 /// Keep focus and current validation rules in the application.
 @MainActor
 public struct FormField<Content: View> {
-    @Environment(\.chioTheme) private var theme
+    @Environment(\.chioStyle) private var theme
     private let title: String
     private let description: String
     private let error: String?

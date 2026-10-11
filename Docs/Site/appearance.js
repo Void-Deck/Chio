@@ -9,9 +9,9 @@
   const status = document.getElementById("playback-status");
   const missing = document.getElementById("preview-missing");
   const treatments = {
-    chio: { title: "Chio", description: "Chio: the default palette and familiar group framing, with its recipe spacing." },
-    opencode: { title: "OpenCode-inspired", description: "OpenCode-inspired: warm accents, restrained surfaces and accent edges, with roomier recipe spacing." },
-    btop: { title: "btop-inspired", description: "btop-inspired: brighter instrument colors and titles set into compact group outlines, with its recipe spacing." },
+    chio: { title: "Chio", description: "ChioStyle.default: the default palette and familiar group framing." },
+    opencode: { title: "OpenCode-inspired", description: "ChioStyle.opencode: warm accents, leading panel/input edges, roomier inputs and compact list rows." },
+    btop: { title: "btop-inspired", description: "ChioStyle.btop: brighter instrument colors and group titles set into compact outlines." },
   };
   const allocations = { wide: { cols: 100, rows: 30 }, narrow: { cols: 36, rows: 64 } };
   let selectedTreatment = "chio";

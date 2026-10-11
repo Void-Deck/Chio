@@ -24,7 +24,7 @@ public struct SearchableChecklist<Item: Identifiable, RowContent: View> where It
     @FocusState private var isSearchFocused: Bool
     @Namespace private var resultsScope
     @Environment(\.resetFocus) private var resetFocus
-    @Environment(\.chioTheme) private var theme
+    @Environment(\.chioStyle) private var theme
 
     public init<Items: RandomAccessCollection>(
         _ items: Items,

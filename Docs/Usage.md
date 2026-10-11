@@ -2,8 +2,8 @@
 
 [Back to Chio](../README.md) · [Runnable examples](Examples.md)
 
-Chio supplies opinionated themes and reusable interactions over SwiftTUI's
-native controls. Apply `.chioTheme(...)` to your view hierarchy; SwiftTUI owns
+Chio supplies immutable styles and reusable interactions over SwiftTUI's
+native controls. Apply `.style(...)` to your view hierarchy; SwiftTUI owns
 rendering, layout, state, input, focus, and scrolling.
 
 The package exports one `Chio` library. Applications also depend on SwiftTUI
@@ -26,7 +26,7 @@ struct AgentsView: View {
         VStack {
             GroupBox("Agents") {
                 SearchableList(agents, selection: $selection, searchText: \.name) {
-                    Text($0.name)
+                    Text($0.name).lineLimit(1).truncationMode(.tail)
                 }
             }
             StatusBar {
@@ -36,7 +36,7 @@ struct AgentsView: View {
                 }
             }
         }
-        .chioTheme(.default)
+        .style(.default)
     }
 }
 ```
@@ -45,6 +45,13 @@ Rows are passive views; use `.onActivate` for opening an item
 and `.onResultKeyPress` for application shortcuts that must not consume search
 text. Native row focus chrome currently remains an upstream styling boundary;
 see [the design](Design.md).
+
+For keyboard navigation in overflowing native lists, keep authored rows to one
+line, as in the example above. Unconstrained text can wrap
+into tall rows at narrow widths. Arbitrary wrapped or multiline
+rows inherit the pinned native collection's [tall-row reveal limitation](Decisions/NativeIntegration.md#tall-list-rows);
+one-line truncation avoids that layout in this recipe but does not fix the native
+issue. Applications own row content and available width.
 
 ## Expanded keyboard help
 
@@ -67,7 +74,7 @@ content
             Button("Close") { showsHelp = false }
         }
     }
-    .chioTheme(.default)
+    .style(.default)
 
 // The same descriptions, without expanded details:
 StatusBar { KeyHints(navigation) }
@@ -78,7 +85,7 @@ accepts historical missing or null details as empty, and encoding always emits
 the detail string. Descriptions do not register key bindings. Derive their visibility
 from your application's current context; keep actions in native handlers. `KeyboardHelp`
 supplies content while native containers supply scrolling, dismissal and focus
-restoration. Apply `.chioTheme` outside the presentation declaration and keep the
+restoration. Apply `.style` outside the presentation declaration and keep the
 presenting controls mounted while help is open. Scope modal key handlers to the
 whole authored cover so they work from both its viewport and its buttons.
 
@@ -88,21 +95,45 @@ ordinary text. See [HelpExampleView](../Examples/AgentDashboard/Presentation/Hel
 for F1 during editing, contextual descriptions, and protection against keys
 arriving before presentation acquires focus.
 
-## Themes
+<a id="themes"></a>
 
-Choose `.default`, `.light`, or `.btop`. The btop-inspired preset uses near-black
-surfaces, cyan accents and compact spacing through the same semantic roles.
+## Styles
 
-Theme values are immutable. Use `replacing(...)` to customize colors, spacing,
-or treatments while preserving the original:
+Choose `ChioStyle.default`, `.light`, `.btop`, or `.opencode`, then apply
+`.style(...)` to any view. Descendants inherit the complete value; the nearest
+style replaces it. These static values combine colors, spacing, treatments and
+surfaces, and each part can be customized.
 
 ```swift
-let base = ChioTheme.default
-let theme = base.replacing(
+let base = ChioStyle.opencode
+let style = base.replacing(
     colors: base.colors.replacing(accent: Color(hexRGB: 0x02BF87)),
-    spacing: base.spacing.replacing(hintGap: 3)
+    spacing: base.spacing.replacing(inputVerticalInset: 1),
+    surfaces: base.surfaces.replacing(input: .color(Color(hexRGB: 0x282522)))
 )
+
+VStack {
+    primaryContent
+    secondaryContent.style(.light) // A complete style for this subtree.
+}
+.style(style)
 ```
+
+`inputVerticalInset` defaults to zero and accepts `0...32` terminal cells.
+A missing key in historical encoded spacing decodes as zero. The original four
+spacing fields keep their existing nonnegative contract. New per-row density
+controls are deferred because of unresolved [native list reveal/focus limitations](Decisions/NativeIntegration.md#tall-list-rows).
+`surfaces.canvas` and `surfaces.input` use `.base` to inherit `colors.surface`,
+or `.color(...)` for an explicit override. `.base` continues to follow later
+palette replacements.
+
+`.btop` now installs border headings on groups; `.opencode` supplies leading
+panel/input edges and roomier inputs, with compact list rows. Default/light appearance
+is preserved. Application layout, breakpoints, column widths, navigation and data
+remain application decisions. Native component style modifiers remain specific
+overrides inside the `.style(...)` scope, and their `theme:` initializer labels
+are retained. `ChioTheme` and `.chioTheme(...)` remain compatibility aliases using
+the same value and environment key. See [the style decision](Decisions/Themes.md).
 
 ## Compact metrics and history
 
@@ -117,7 +148,7 @@ VStack(alignment: .leading) {
     MeasurementGauge(position: 0.64)
         .accessibilityLabel("CPU utilization: 64 percent, scale 0 to 100 percent")
 }
-.chioTheme(.btop)
+.style(.btop)
 ```
 
 `MeasurementGauge` defaults to `.bar`. The existing `.dial` option remains
@@ -131,7 +162,7 @@ VStack(alignment: .leading) {
     MeasurementGauge(position: 0.64, targetBand: target, style: .dial)
     Text("Target 45–60% · Scale 0–100%")
 }
-.chioTheme(.btop)
+.style(.btop)
 ```
 
 `theme.gauge` owns arc, target and needle colors. All Braille dots in a cell share
@@ -159,7 +190,7 @@ or container; labeling an outer container follows SwiftTUI's aggregate semantics
 A native progress view remains useful when its progress-bar semantics fit:
 
 ```swift
-let theme = ChioTheme.btop
+let theme = ChioStyle.btop
 let samples: [Double?] = [0.2, 0.45, nil, 0.55, 0.64]
 
 GroupBox("CPU") {
@@ -175,7 +206,7 @@ GroupBox("CPU") {
     }
 }
 .groupBoxStyle(ChioGroupBoxStyle(theme: theme, titlePlacement: .border))
-.chioTheme(theme)
+.style(theme)
 ```
 
 `.border` puts a display-only title in the top border. Text truncates to one row;
@@ -206,14 +237,15 @@ updates, missing and empty history, theme changes and adaptive composition.
 ## Instruments and time-aware history
 
 The instrumentation expansion merged in [PR #8](https://github.com/echoz/Chio/pull/8).
-It has not been included in a tagged release. These recipes match the merged source.
+It has not been included in a tagged release. The `.style(...)` spelling below
+belongs to the approved unified-style migration in PR #10.
 
 Opt into native labelled-content hierarchy while retaining arbitrary content:
 
 ```swift
 LabeledContent("Temperature", value: "21.4 °C")
     .labeledContentStyle(.instrument)
-    .chioTheme(.btop)
+    .style(.btop)
 ```
 
 The pure style reads the theme, puts a muted heading above accented content and
@@ -290,7 +322,7 @@ allocations over 512 × 64 or native drawing work over 262,144 grid samples. No
 partial history is shown as complete. Applications own collection, retention,
 windows, units and captions; reserve the complete plot and caption height.
 
-`.chioTheme` installs pure `ChioSliderStyle()` and `ChioStepperStyle()` in its
+`.style` installs pure `ChioSliderStyle()` and `ChioStepperStyle()` in its
 scope. Use native bindings and controls:
 
 ```swift
@@ -328,7 +360,7 @@ struct PlacesView: View {
             .mapLabels(true)
             .onActivate { marker in activate(marker) }
             .frame(width: 100, height: 26)
-            .chioTheme(.default)
+            .style(.default)
     }
 }
 ```
@@ -506,7 +538,7 @@ TabView(selection: $selection) {
     Tab("Notes", value: "notes") { NotesView() }
     Tab("Activity", badge: "4", value: "activity") { ActivityView() }
 }
-.chioTheme(.default)
+.style(.default)
 ```
 
 Accent text and the rule show selection; a filled label shows keyboard focus.
@@ -529,7 +561,7 @@ Bind an immutable pagination value to native page actions:
 
 // In the view body, render items[pagination.itemRange] and then:
 PageControl(pagination: $pagination)
-    .chioTheme(.default)
+    .style(.default)
 ```
 
 The control displays the current page and item range. Tab focuses an available
@@ -563,7 +595,7 @@ ScrollView([.horizontal, .vertical], position: $position) {
     ActivityLog()
 }
 .frame(height: 16)
-.chioTheme(.default)
+.style(.default)
 ```
 
 Give the viewport a finite size along its scrolling axes. Use native
@@ -592,7 +624,7 @@ Style native disclosure groups through the theme:
 DisclosureGroup("Details", isExpanded: $expanded) {
     Text("Build settings and notes go here.")
 }
-.chioTheme(.default)
+.style(.default)
 ```
 
 Nest groups to build a hierarchy, or disclose ordinary controls and help text.
@@ -609,7 +641,7 @@ for parent-owned expansion choices and native scrolling.
 
 ## Command palettes
 
-`ChioPaletteStyle` styles SwiftTUI's native command palette. Apply `.chioTheme(...)`
+`ChioPaletteStyle` styles SwiftTUI's native command palette. Apply `.style(...)`
 after `.paletteSheet(...)` so the palette declaration receives the theme's style.
 Keep command registration and presentation in native SwiftTUI APIs; the
 [dashboard example](Examples.md#dashboard) demonstrates filtering and activation.
@@ -672,7 +704,7 @@ VStack {
         TextEditor(text: $notes).frame(height: 8)
     }
 }
-.chioTheme(.default)
+.style(.default)
 ```
 
 `SecureField` inherits `ChioTextFieldStyle`; `ChioTextEditorStyle` surrounds the
@@ -681,20 +713,20 @@ editing, selection, wrapping, and scrolling. Give the editor a bounded height
 when it should scroll. Native `.onSubmit` handles Return in a password field;
 Return in a multiline editor always edits the text.
 
-Apply `.chioTheme(...)` to customize enabled editor text along with its frame.
+Apply `.style(...)` to customize enabled editor text along with its frame.
 The pinned native editor supplies its own disabled text color and dimming, so
 that inner disabled color is not currently a Chio theme token.
 
 ## Confirmation and feedback
 
-`.chioTheme(...)` installs `ChioPromptStyle` for native alerts/confirmation dialogs
+`.style(...)` installs `ChioPromptStyle` for native alerts/confirmation dialogs
 and `ChioSpinnerStyle` for native `Spinner` stages. Toast styles are passed explicitly:
 
 ```swift
 content
     .toast("Saved", isPresented: $showsToast,
            style: ChioToastStyle(theme: theme, tone: .success))
-    .chioTheme(theme)
+    .style(theme)
 ```
 
 Native prompts retain their header paint and modal focus behavior. Custom action
@@ -711,7 +743,7 @@ FilePicker(directory: startingDirectory, selection: $selectedFile,
 }, onCancel: {
     // Dismiss the picker; selectedFile keeps its previous value.
 })
-.chioTheme(.default)
+.style(.default)
 ```
 
 Omit `allowedExtensions` or pass `.all` to allow every regular file; `.only([])`
@@ -742,7 +774,7 @@ struct ReportView: View {
         ScrollView {
             MarkdownView(document)
         }
-        .chioTheme(.default)
+        .style(.default)
     }
 }
 ```
@@ -768,10 +800,10 @@ initializer below and retains its opening action. Customize token colors through
 the theme:
 
 ```swift
-let theme = ChioTheme.default.replacing(
-    syntax: ChioTheme.default.syntax.replacing(keyword: .cyan, comment: .white)
+let theme = ChioStyle.default.replacing(
+    syntax: ChioStyle.default.syntax.replacing(keyword: .cyan, comment: .white)
 )
-MarkdownView(document).chioTheme(theme)
+MarkdownView(document).style(theme)
 ```
 
 `theme.syntax` has `keyword`, `type`, `string`, `number`, and `comment` roles;
@@ -809,7 +841,7 @@ and scroll to reveal links farther down a document or across a wide table.
 Rich labels wrap with surrounding prose and remain one focus stop. Empty
 Markdown destinations stay passive. Table body links can activate; native table
 headers keep their plain readable fallback. `.disabled(true)` suppresses native
-link interaction. `.chioTheme` also styles ordinary SwiftTUI `Link` values;
+link interaction. `.style` also styles ordinary SwiftTUI `Link` values;
 use a nearer `.linkStyle(...)` to customize their presentation. Active Markdown
 code labels inherit link paint so focus remains visible.
 
@@ -827,7 +859,7 @@ DurationText(remaining: .milliseconds(12_250))  // 0:13
 DurationText(elapsed: .seconds(83), style: .segmented)
 ```
 
-Apply `.chioTheme(...)` around the composition. Elapsed fractions round down;
+Apply `.style(...)` around the composition. Elapsed fractions round down;
 positive remaining fractions round up. Formats are `m:ss` and `h:mm:ss`, with
 hours continuing past 24. Inputs range from zero through
 `Duration.seconds(Int64.max)`. Both labels use accent color and readable spoken

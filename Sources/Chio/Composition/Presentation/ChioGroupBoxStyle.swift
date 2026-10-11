@@ -37,8 +37,15 @@ public struct ChioGroupBoxStyle {
 extension ChioGroupBoxStyle: GroupBoxStyle {
     @MainActor
     public func makeBody(configuration: GroupBoxStyleConfiguration) -> some View {
-        VStack(alignment: .leading, spacing: theme.spacing.sectionGap) {
-            if titlePlacement.isInContent, let label = configuration.label {
+        // A border heading needs an actual top border row to mask. Without
+        // that row, keep it in normal flow so it cannot cover authored content.
+        let hasTopBorder = theme.treatments.groupBoxBorder.contains(.top)
+        let effectiveTitlePlacement = titlePlacement.isOnBorder && !hasTopBorder ? TitlePlacement.content : titlePlacement
+        let hasAccentEdge = theme.treatments.groupBoxBorder == .leading
+        let hasIncreasedProminence = configuration.controlProminence == .increased
+        let borderColor = hasAccentEdge || hasIncreasedProminence ? theme.colors.accent : theme.colors.border
+        return VStack(alignment: .leading, spacing: theme.spacing.sectionGap) {
+            if effectiveTitlePlacement.isInContent, let label = configuration.label {
                 label.foregroundStyle(theme.colors.heading)
             }
             configuration.content
@@ -47,12 +54,13 @@ extension ChioGroupBoxStyle: GroupBoxStyle {
         .foregroundStyle(theme.colors.foreground)
         .background(theme.colors.surface)
         .border(
-            configuration.controlProminence == .increased ? theme.colors.accent : theme.colors.border,
+            borderColor,
             style: theme.treatments.borderStyle,
-            placement: .outset
+            placement: .outset,
+            sides: theme.treatments.groupBoxBorder
         )
         .overlay(alignment: .topLeading) {
-            if titlePlacement.isOnBorder, let label = configuration.label {
+            if effectiveTitlePlacement.isOnBorder, let label = configuration.label {
                 GeometryReader { geometry in
                     // Read the bordered allocation, rather than introducing a
                     // geometry container around the authored content. Keep the

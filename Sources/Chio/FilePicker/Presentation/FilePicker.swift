@@ -19,7 +19,7 @@ public struct FilePicker {
     private let cancel: @MainActor () -> Void
     private let injectedOperations: Operations?
 
-    @Environment(\.chioTheme) private var theme
+    @Environment(\.chioStyle) private var theme
     @State private var reader = FileDirectoryReader()
     @State private var phase = Phase.idle
     @State private var candidate: URL?

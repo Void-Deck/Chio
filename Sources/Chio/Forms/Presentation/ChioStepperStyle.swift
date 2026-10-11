@@ -16,7 +16,7 @@ extension ChioStepperStyle: Equatable {}
 
 @MainActor
 private struct StepperBody {
-    @Environment(\.chioTheme) private var theme
+    @Environment(\.chioStyle) private var theme
     let configuration: StepperStyleConfiguration
 }
 

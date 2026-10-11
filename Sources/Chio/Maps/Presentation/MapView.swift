@@ -19,7 +19,7 @@ public struct MapView {
     private let showsLabels: Bool
     private let activation: @MainActor (MapMarker) -> Void
     private let viewportChange: @MainActor (MapViewport?) -> Void
-    @Environment(\.chioTheme) private var theme
+    @Environment(\.chioStyle) private var theme
     @Environment(\.isEnabled) private var isEnabled
     @FocusState private var isFocused: Bool
     @State private var worker: MapPreparationWorker?

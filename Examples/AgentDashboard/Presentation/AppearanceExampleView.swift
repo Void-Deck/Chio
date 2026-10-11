@@ -28,7 +28,7 @@ struct AppearanceExampleView {
     }
 
     private var isWide: Bool { terminalSize.width >= 90 }
-    private var theme: ChioTheme { recipe.theme(density: density, isNarrow: terminalSize.width < 44) }
+    private var style: ChioStyle { recipe.style(density: density, isNarrow: terminalSize.width < 44) }
     private var panelWidth: Int {
         let usable = max(0, terminalSize.width - 3)
         return isWide ? max(0, (usable - 4) / 3) : usable
@@ -50,7 +50,7 @@ struct AppearanceExampleView {
                 }
                 .lineLimit(1)
             }
-            .frame(height: 9 + theme.spacing.sectionGap * 2)
+            .frame(height: 9 + style.spacing.sectionGap * 2)
         }
         .frame(width: panelWidth, alignment: .topLeading)
         .id("agents")
@@ -58,16 +58,16 @@ struct AppearanceExampleView {
 
     private func statusColor(_ phase: Agent.Phase) -> Color {
         switch phase {
-        case .running: theme.colors.accent
-        case .idle: theme.colors.mutedText
-        case .completed: theme.colors.success
-        case .failed: theme.colors.error
+        case .running: style.colors.accent
+        case .idle: style.colors.mutedText
+        case .completed: style.colors.success
+        case .failed: style.colors.error
         }
     }
 
     private var settings: some View {
         GroupBox("Run settings") {
-            VStack(alignment: .leading, spacing: theme.spacing.sectionGap) {
+            VStack(alignment: .leading, spacing: style.spacing.sectionGap) {
                 FormField("Workspace", description: "A name for this run.") {
                     TextField("Workspace", text: $workspace)
                         .accessibilityLabel("Workspace")
@@ -80,7 +80,7 @@ struct AppearanceExampleView {
                 Button("Save settings") {
                     savedMessage = "Saved: \(workspace)"
                 }
-                Text(savedMessage).foregroundStyle(theme.colors.secondaryText)
+                Text(savedMessage).foregroundStyle(style.colors.secondaryText)
             }
         }
         .frame(width: panelWidth, alignment: .topLeading)
@@ -89,21 +89,21 @@ struct AppearanceExampleView {
 
     private var instruments: some View {
         GroupBox("Instruments") {
-            VStack(alignment: .leading, spacing: theme.spacing.sectionGap) {
+            VStack(alignment: .leading, spacing: style.spacing.sectionGap) {
                 VStack(alignment: .leading, spacing: 0) {
                     LabeledContent("Temperature", value: "21.4 °C").labeledContentStyle(.instrument)
                     MeasurementGauge(position: 0.535, targetBand: fixture.target).frame(height: 2)
-                    Text("Target 18–24 °C").foregroundStyle(theme.colors.secondaryText)
+                    Text("Target 18–24 °C").foregroundStyle(style.colors.secondaryText)
                 }
                 VStack(alignment: .leading, spacing: 0) {
                     LabeledContent("Reservoir", value: "58%").labeledContentStyle(.instrument)
                     MeasurementGauge(position: 0.58).frame(height: 1)
                 }
                 VStack(alignment: .leading, spacing: 0) {
-                    Text("Response time").foregroundStyle(theme.colors.heading)
+                    Text("Response time").foregroundStyle(style.colors.heading)
                     HistoryChart(fixture.history, window: fixture.window, scale: .fixed(0...500))
                         .frame(height: 3)
-                    Text("90 seconds · 0–500 ms").foregroundStyle(theme.colors.mutedText)
+                    Text("90 seconds · 0–500 ms").foregroundStyle(style.colors.mutedText)
                 }
             }
         }
@@ -128,12 +128,12 @@ extension AppearanceExampleView: View {
         ScrollViewReader { proxy in
             VStack(alignment: .leading, spacing: 1) {
                 HStack(spacing: 1) {
-                    Text("chio").bold().foregroundStyle(theme.colors.accent)
-                    Text("/ appearance").foregroundStyle(theme.colors.secondaryText)
+                    Text("chio").bold().foregroundStyle(style.colors.accent)
+                    Text("/ appearance").foregroundStyle(style.colors.secondaryText)
                     Spacer(minLength: 0)
                 }
                 Text("\(recipe.title) · spacing: \(density.rawValue)")
-                    .foregroundStyle(theme.colors.heading)
+                    .foregroundStyle(style.colors.heading)
                 ScrollView {
                     panelLayout { agents; settings; instruments }
                         .padding(.vertical, 1)
@@ -145,10 +145,7 @@ extension AppearanceExampleView: View {
             }
             .padding(.horizontal, 1)
             .frame(width: terminalSize.width, height: terminalSize.height, alignment: .topLeading)
-            .background(recipe.canvas)
-            .groupBoxStyle(AppearanceGroupBoxStyle(recipe: recipe, theme: theme))
-            .textFieldStyle(AppearanceTextFieldStyle(recipe: recipe, theme: theme))
-            .chioTheme(theme)
+            .style(style)
             .onKeyPress { press in
                 guard press.modifiers == .ctrl else { return .ignored }
                 switch press.key {

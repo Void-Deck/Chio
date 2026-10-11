@@ -74,7 +74,7 @@ struct ChioThemeTests {
         #expect(customized.spacing == base.spacing)
         #expect(customized.treatments == base.treatments)
         #expect(base.spacing.sectionGap == 0)
-        #expect(base.treatments == ChioTheme.default.treatments)
+        #expect(base.treatments == ChioTheme.default.treatments.replacing(groupBoxTitlePlacement: .border))
         #expect(base.replacing() == base)
         let title = ChioGroupBoxStyle.TitlePlacement.border
         #expect(try JSONDecoder().decode(ChioGroupBoxStyle.TitlePlacement.self,

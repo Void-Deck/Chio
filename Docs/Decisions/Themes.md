@@ -1,32 +1,71 @@
-# Themes and native control styling
+# Styles and native control styling
 
-**Status:** Accepted; shipped in 0.1.0. These contracts remain current.
+**Status:** Accepted. The unified `ChioStyle` API and promotion of the appearance
+recipes are approved; implementation and verification are in progress in
+[PR #10](https://github.com/echoz/Chio/pull/10). This is not a merged or tagged release.
+The theme API shipped in 0.1.0 remains source compatible as described below.
 
-Use semantic themes and native styles to give controls coherent paint while retaining SwiftTUI behavior.
+Use an immutable style and native control styles to give a subtree coherent
+presentation while retaining SwiftTUI behavior.
 
-## Theme
+<a id="theme"></a>
 
-`ChioTheme` contains semantic colors, syntax/map/gauge palettes, spacing and treatments;
-`.chioTheme(...)` applies it through the environment and installs native styles.
-Use `replacing(...)` on the theme and nested values to customize presentation.
-Construction and replacement preserve nonnegative spacing and printable
-single-cell glyph preconditions. Options own component behavior; application
-composition owns content and layout.
+## Style
 
-`GaugeColors` defines `arc`, `target` and `needle` for target-band dials. Customize
-it with `theme.replacing(gauge: theme.gauge.replacing(target: ...))`. These roles
-are independent of status colors and do not recolor ordinary bars or plain dials.
-The palette is immutable, hashable, codable and sendable; theme equality includes
-it. The overall theme retains its existing native-type conformance limitations.
+`ChioStyle` contains semantic colors, syntax/map/gauge palettes, spacing,
+treatments and surfaces. `View.style(_:)` applies one complete value through
+`EnvironmentValues.chioStyle` and installs native styles. Descendants inherit
+that value; the nearest complete style overrides the inherited value rather than
+merging fields. Use `replacing(...)` on a style and its nested values for explicit
+customization. Native modifiers such as `.groupBoxStyle(...)` remain specific
+component overrides; place them inside the enclosing `.style(...)` scope.
 
-The default, light and btop presets share the same interaction policy. The
-executable's `ExampleTheme` is an internal comparison choice, not a public theme
-registry or restriction on custom values. Theme changes preserve query, stable
-selection, focus, entered values and relevant native scroll positions.
+`ChioTheme` is a typealias for `ChioStyle`. `.chioTheme(...)` forwards to
+`.style(...)`, and the compatibility environment accessor forwards to the same
+key. There is no parallel theme/style state. Existing native style initializers
+retain their `theme:` labels for source compatibility.
+
+Static `.default`, `.light`, `.btop` and `.opencode` values are starting points,
+not a registry. Colors, spacing, treatments and surfaces are independently
+customizable. Presets contain ordinary values; rendering never branches on a
+preset name. The default and light appearance remain unchanged. Applying `.btop`
+now gives native groups border headings through the global modifier: this is an
+intentional visual change from the earlier palette-only preset. `.opencode`
+combines warm accents, leading panel/input edges and roomier input padding;
+its list rows remain compact.
+
+`Surface` is `.base` or `.color(Color)`. `surfaces.canvas` and `surfaces.input`
+default to `.base`, resolving from `colors.surface` even after palette replacement.
+An explicit color overrides that role; replacing it with `.base` restores
+inheritance. Ordinary panel content retains the base surface.
+
+`Spacing` measures terminal cells. The new `inputVerticalInset` defaults to zero
+and requires `0...32` through construction, replacement and decoding. A missing
+key in historical encoded spacing decodes as zero. The original four spacing
+fields retain their nonnegative contract and existing values.
+
+All new per-row density controls are deferred and are not public style fields.
+[Native integration](NativeIntegration.md#tall-list-rows) owns the reproduced
+tall-row reveal/intrinsic sizing defect and a separate single-line checklist
+focus failure whose root cause remains unresolved. This deferral does not block
+the unified style API. Applications retain row content and width policy.
+
+Construction and replacement preserve printable single-cell glyph preconditions.
+Options own component behavior. Applications own content, data, breakpoints,
+column widths, navigation and responsive composition. Style changes preserve
+query, stable selection, focus, entered values and relevant native scroll positions
+within the supported native layout contracts.
+
+`GaugeColors` defines independent `arc`, `target` and `needle` roles for target-band
+dials. Customize with `style.replacing(gauge: style.gauge.replacing(target: ...))`.
+These roles do not recolor ordinary bars or plain dials. Native `StrokeStyle`
+retains its conformance limits; `ChioStyle` and `Treatments` are equatable and
+sendable, without lossy hashing or coding of strokes.
 
 Native groups, lists, tables, buttons, links, text fields/editors, pickers, toggles,
 tabs, scroll/disclosure views, progress, spinners and prompts share semantic roles.
-Bordered buttons inherit their surface and use an accent outline for focus/enabled
+When a border heading is requested without a top border, it returns to content
+flow so it cannot cover the first authored row. Bordered buttons inherit their surface and use an accent outline for focus/enabled
 press, or error for destructive actions. Idle borders use the ordinary border
 color; disabled controls retain native dimming. Focus-effect suppression removes
 the focused outline. Authored labels remain native content. Outlines avoid a
@@ -34,35 +73,29 @@ whole-cell rectangular fill behind rounded border glyphs.
 
 ## Implementation and verification
 
-- [ChioTheme.swift](../../Sources/Chio/Theme/Domain/ChioTheme.swift)
-- [View+ChioTheme.swift](../../Sources/Chio/Theme/Presentation/View+ChioTheme.swift)
+- [ChioStyle.swift](../../Sources/Chio/Style/Domain/ChioStyle.swift)
+- [View+ChioStyle.swift](../../Sources/Chio/Style/Presentation/View+ChioStyle.swift)
+- [ChioTheme.swift compatibility alias](../../Sources/Chio/Theme/Domain/ChioTheme.swift)
 - [ChioThemeTests.swift](../../Tests/ChioTests/Theme/Domain/ChioThemeTests.swift)
+- [Required checks](../Verification.md)
 
 ## Appearance study
 
-**Status:** Example-only comparison; public API promotion awaits visual review.
+The earlier example-only recipes are superseded by the approved public style
+values. `chio-dashboard --appearance` compares identical local list, form and
+instrument content using `.default`, `.opencode` and `.btop` through `.style(...)`.
+The retained CLI spelling `--treatment chio|opencode|btop` selects those values;
+`--density compact|roomy` replaces spacing only. Example layout and navigation
+remain application-owned. The separate comparison page shows these three styles;
+the main catalog currently has only default, light and btop captures.
 
-`chio-dashboard --appearance` compares identical local list, form and instrument
-content using Chio, OpenCode-inspired and btop-inspired recipes. Palette, cell
-spacing and framing are separate presentation choices. Existing `ChioTheme`
-values provide colors and spacing; two pure native styles in the example explore
-leading-edge groups/editors and compact border headings. No new public preset,
-style protocol, renderer, focus system or theme registry is introduced.
-
-`--density compact|roomy` overrides spacing while retaining the recipe's palette
-and framing. Narrow padding, three-column versus stacked composition, section
-navigation and form state remain application-owned. Styles consume supplied
-configuration without effects; recipe changes must preserve native editor and
-selection identity, query and entered values. Actual terminal recordings and
-the same-width comparisons are the acceptance material for a later decision
-about shared surface roles and component treatments.
-
-OpenCode's component-authored padding, background surfaces and leading edges
-inspire the roomy recipe; its theme files are primarily semantic color roles.
-btop separates color themes from layout presets and rounded-border configuration.
-Neither reference implies encoding application pane sizes or breakpoints into
-Chio's theme. The experimental colors are an interpretation, not a claim to
-reproduce every upstream theme.
+OpenCode's authored padding, background surfaces and leading edges inspire the
+roomy style; btop informs compact border headings. These are interpretations,
+not integrations or claims of upstream parity. Refresh affected terminal captures
+from the verified candidate, inspect equal-size comparisons and interactive narrow
+sessions, and verify the assembled comparison page before acceptance. No site
+deployment occurs until merge. Current captures alone do not prove the new public
+implementation has passed verification.
 
 ## References
 

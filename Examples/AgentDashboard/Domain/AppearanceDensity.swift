@@ -15,11 +15,13 @@ enum AppearanceDensity: String {
         }
     }
 
-    var spacing: ChioTheme.Spacing {
+    var spacing: ChioStyle.Spacing {
         switch self {
-        case .recipe: ChioTheme.default.spacing
-        case .compact: ChioTheme.Spacing(horizontalInset: 1, verticalInset: 0, sectionGap: 0, hintGap: 1)
-        case .roomy: ChioTheme.Spacing(horizontalInset: 2, verticalInset: 1, sectionGap: 1, hintGap: 2)
+        case .recipe: ChioStyle.default.spacing
+        case .compact: ChioStyle.Spacing(horizontalInset: 1, verticalInset: 0, sectionGap: 0, hintGap: 1)
+        case .roomy:
+            ChioStyle.Spacing(horizontalInset: 2, verticalInset: 1, sectionGap: 1, hintGap: 2,
+                              inputVerticalInset: 1)
         }
     }
 }

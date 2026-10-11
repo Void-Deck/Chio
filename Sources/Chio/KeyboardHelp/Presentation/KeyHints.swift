@@ -3,7 +3,7 @@ import SwiftTUIViews
 /// Arranges whole hints in rows as terminal width permits.
 @MainActor
 public struct KeyHints<Content: View> {
-    @Environment(\.chioTheme) private var theme
+    @Environment(\.chioStyle) private var theme
     private let content: Content
 
     public init(@ViewBuilder content: () -> Content) {

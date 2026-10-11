@@ -241,21 +241,38 @@ missing-asset fallbacks remain supported. The build gives owned CSS/JavaScript
 content-hashed names. The player's NPT-poster limitation is recorded alongside
 the vendored assets.
 
-The separate [appearance study](https://echoz.github.io/Chio/appearance.html)
-compares six actual terminal captures (three recipes at 100 × 30 and 36 × 64).
-It keeps experimental recipes out of the catalog's public theme selector. Native
-hosted tests cover query, selection, editing and focused content across recipe,
-spacing and width changes. The CI terminal probe also exercises every recipe at
-36 × 18, including section shortcuts and clean terminal restoration.
+The separate [style comparison](https://echoz.github.io/Chio/appearance.html)
+compares six actual terminal captures (default, opencode and btop at 100 × 30 and
+36 × 64). The approved unified `ChioStyle` migration is in progress in
+[PR #10](https://github.com/echoz/Chio/pull/10); existing captures must be refreshed
+from the verified candidate. The main catalog retains default/light/btop previews;
+this comparison does not establish opencode previews for every catalog entry.
+
+Verify one inherited environment key, nearest complete-style overrides,
+compatibility aliases and retained `theme:` initializer signatures. Cover explicit
+surface overrides and `.base` inheritance after palette replacement; construct,
+replace and decode bounded input padding, including the historical absent key.
+Use public raster and hosted-session checks for the supported searchable composed
+lists: native focus, selection, query, activation and scroll reveal through width
+and style changes. New per-row density controls are deferred due to unresolved
+[native list limitations](Decisions/NativeIntegration.md#tall-list-rows).
+Single-line truncation limits row height but does not establish that arbitrary
+list/checklist scrolling is safe or fix the separate reproduced focus failure.
+Inspect unchanged default/light presentation, the intentional btop border-heading
+change, and opencode leading edges, roomy inputs and compact list rows.
+The CI terminal probe exercises every comparison style at 36 × 18, including
+section shortcuts and clean terminal restoration.
 
 Regenerate recordings with `python3 -B Scripts/docs/capture-appearance.py
-.build/release/chio-dashboard`. Keep its full logs and evidence under `.build`;
+.build/release/chio-dashboard`. Keep full logs and evidence under `.build`;
 publish only the six clips ending before teardown. Initial-frame casts support
 PNG captures through the pinned local player. Inspect every still and the whole
-session; do not infer color quality from plain-text snapshots. The study page's
-recipe/size controls, matching commands, explicit playback, script-free links,
-390-pixel layout and missing-asset fallback need browser verification alongside
-site assembly. Palette and framing remain example-only until visual acceptance.
+session; do not infer color quality from plain-text snapshots. The comparison
+page's style/size controls, matching commands, explicit playback, script-free
+links, 390-pixel layout and missing-asset fallback require browser verification
+alongside site assembly. Applications own the demonstrated responsive layout.
+No site deployment until merge; documentation or old captures do not prove the
+integrated style migration passed its gates.
 
 Preview the deployable output locally:
 
@@ -280,8 +297,8 @@ Completing a visible example change includes updating the showcase:
 4. Check site assembly, assets/links, playback, pause, forward/backward seeking,
    category and related-entry navigation, shared-theme commands/snippets, URL
    history, focus, a 390-pixel layout and missing-asset/script-free fallbacks.
-5. Commit, deploy and verify the published result before declaring the slice
-   complete. An internal change with no visible difference needs no new capture.
+5. Commit and merge before deployment, then verify the published result before
+   declaring the slice complete. An internal change with no visible difference needs no new capture.
 
 ## Linux and CI
 

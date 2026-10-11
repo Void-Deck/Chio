@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="One local Chio example, three appearance treatments. Compare colors, spacing and framing in real terminal captures.">
   <meta name="theme-color" content="#17131e">
-  <title>Appearance study — Chio</title>
+  <title>Style comparison — Chio</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="vendor/asciinema-player/asciinema-player.css">
   <link rel="stylesheet" href="site.css">
@@ -22,16 +22,17 @@
     </header>
     <main>
       <section class="study-intro" aria-labelledby="study-title">
-        <p class="eyebrow">An example-owned appearance study</p>
+        <p class="eyebrow">Inherited Chio styles</p>
         <h1 id="study-title">Same interface.<br><span>Different character.</span></h1>
         <p class="lede">One local list, form and set of instruments, dressed three ways. Compare color, spacing and framing while the content and controls stay the same.</p>
-        <p class="study-boundary">These are recipes inside the dashboard example. The OpenCode-inspired treatment is a study, not a new public Chio preset or an OpenCode integration.</p>
+        <p class="study-boundary">Apply <code>.style(.default)</code>, <code>.style(.opencode)</code> or <code>.style(.btop)</code> to any view and its descendants. Customize colors, spacing, treatments and surfaces with immutable replacements.</p>
+        <p class="study-note">Descendants inherit the complete style; a nearer <code>.style(...)</code> overrides it. Native component modifiers remain specific overrides. Applications own breakpoints, column widths, navigation and data. The main catalog currently offers default, light and btop captures; this page compares default, opencode and btop.</p>
       </section>
       <section id="comparison" class="comparison" aria-labelledby="comparison-title">
-        <h2 id="comparison-title" class="visually-hidden">Compare terminal treatments</h2>
+        <h2 id="comparison-title" class="visually-hidden">Compare terminal styles</h2>
         <form id="appearance-controls" class="appearance-controls" hidden>
           <fieldset>
-            <legend>Treatment</legend>
+            <legend>Style</legend>
             <div class="study-choices">
               <label><input type="radio" name="treatment" value="chio" checked><span>Chio</span></label>
               <label><input type="radio" name="treatment" value="opencode"><span>OpenCode-inspired</span></label>
@@ -49,11 +50,11 @@
         <div class="capture-heading"><strong id="capture-title">Chio · 100 × 30</strong><span id="capture-kind">Static terminal preview</span></div>
         <div class="capture-stage" data-width="wide">
           <img id="appearance-preview" src="recordings/appearance/chio-wide.png" alt="Chio treatment of the same local list, editable form and instruments, in a 100-column by 30-row terminal.">
-          <div id="appearance-player" hidden aria-label="Appearance study terminal recording"></div>
+          <div id="appearance-player" hidden aria-label="Style comparison terminal recording"></div>
           <p id="preview-missing" hidden>Preview unavailable. Use the recording link below or run the example locally.</p>
         </div>
         <div class="capture-caption">
-          <p id="capture-description" role="status">Chio: the default palette and familiar group framing, with its recipe spacing.</p>
+          <p id="capture-description" role="status">ChioStyle.default: the default palette and familiar group framing.</p>
           <div class="capture-actions"><button id="play-appearance" type="button" hidden>▶ Play this recording</button><button id="show-appearance-preview" type="button" hidden>Show static preview</button><a id="appearance-download" href="recordings/appearance/chio-wide.cast" download>Download recording ↓</a></div>
         </div>
         <p id="playback-status" class="study-note" role="status" hidden></p>
@@ -63,11 +64,11 @@
         <pre><code id="appearance-command">swift run -c release chio-dashboard --appearance --treatment chio --density recipe</code></pre>
         <p id="allocation-note" class="study-note">Use a 100 × 30 terminal for the matching wide capture. Terminal size is chosen in your terminal, not by a command flag.</p>
         <p class="study-note"><kbd>Ctrl+T</kbd> treatment · <kbd>Ctrl+D</kbd> spacing · <kbd>Ctrl+E</kbd> edit · <kbd>Ctrl+G</kbd> graphs · <kbd>Ctrl+L</kbd> list · <kbd>Ctrl+Q</kbd> quit</p>
-        <p class="study-note">Spacing is independent: use <code>--density compact</code> or <code>--density roomy</code> to override recipe spacing. Previews use <code>--density recipe</code>. The narrow capture is taller so the same content can be compared.</p>
+        <p class="study-note">Spacing is independent: use <code>--density compact</code> or <code>--density roomy</code> to override style spacing. Previews use <code>--density recipe</code>. The narrow capture is taller so the same content can be compared.</p>
       </section>
       <details class="capture-links">
         <summary>All six captures and launch commands</summary>
-        <p>Each row links a still image and a real recorded session. Commands select the treatment; set the listed size in your terminal.</p>
+        <p>Each row links a still image and a real recorded session. Commands select the style; set the listed size in your terminal.</p>
         <ul>
           <li><strong>Chio · wide 100 × 30</strong> <a href="recordings/appearance/chio-wide.png">Image</a> · <a href="recordings/appearance/chio-wide.cast" download>Recording</a><code>swift run -c release chio-dashboard --appearance --treatment chio --density recipe</code></li>
           <li><strong>Chio · narrow 36 × 64</strong> <a href="recordings/appearance/chio-narrow.png">Image</a> · <a href="recordings/appearance/chio-narrow.cast" download>Recording</a><code>swift run -c release chio-dashboard --appearance --treatment chio --density recipe</code></li>
@@ -79,7 +80,7 @@
       </details>
       <aside class="study-context" aria-label="Study scope and references">
         <p>Still previews show the composed view. Playback replays terminal output and interactions; it does not run an application in your browser. The list, editable draft and instrument readings use local example data.</p>
-        <p>Visual references: <a href="https://opencode.ai/docs/themes/">OpenCode themes</a> and <a href="https://github.com/aristocratos/btop">btop</a>. The warm, restrained OpenCode-inspired recipe explores accent edges and roomier spacing; btop-inspired framing places titles in compact outlines.</p>
+        <p>Visual references: <a href="https://opencode.ai/docs/themes/">OpenCode themes</a> and <a href="https://github.com/aristocratos/btop">btop</a>. <code>ChioStyle.opencode</code> uses warm accents, leading panel/input edges, roomier inputs and compact list rows. <code>ChioStyle.btop</code> places group titles in compact outlines. These are visual interpretations, not integrations.</p>
         <p><a href="https://github.com/echoz/Chio/tree/main/Examples/AgentDashboard">Example source</a> · <a href="https://github.com/echoz/Chio/blob/main/Docs/Usage.md">Chio usage</a></p>
       </aside>
       <aside class="project-note" aria-label="Development and stability"><p><strong>Personal software, shared openly.</strong> Built with Codex assistance and human curation. APIs and behavior may change; stability and suitability for production are not assured. <a href="https://github.com/echoz/Chio#development-and-stability">Development and stability statement</a>.</p></aside>

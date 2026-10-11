@@ -22,9 +22,11 @@ extension ChioTextFieldStyle: TextFieldStyle {
                 Spacer(minLength: 0)
             }
             .padding(.horizontal, theme.spacing.horizontalInset)
-            .background(theme.colors.surface)
+            .padding(.vertical, theme.spacing.inputVerticalInset)
+            .background(theme.surfaces.input.resolve(base: theme.colors.surface))
             .border(configuration.focusActive && configuration.isEnabled ? theme.colors.accent : theme.colors.border,
-                    style: theme.treatments.borderStyle, placement: .outset)
+                    style: theme.treatments.borderStyle, placement: .outset,
+                    sides: theme.treatments.textFieldBorder)
         }
         .opacity(configuration.isEnabled ? 1 : 0.6)
     }

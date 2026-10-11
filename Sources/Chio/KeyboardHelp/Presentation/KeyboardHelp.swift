@@ -4,7 +4,7 @@ import SwiftTUIViews
 /// The application owns presentation; native containers own scrolling and focus.
 @MainActor
 public struct KeyboardHelp {
-    @Environment(\.chioTheme) private var theme
+    @Environment(\.chioStyle) private var theme
     private let groups: [ShortcutGroup]
 
     public init(_ groups: [ShortcutGroup]) {

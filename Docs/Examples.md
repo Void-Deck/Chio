@@ -34,7 +34,8 @@ SSH, see [Colors over SSH](#colors-over-ssh).
 ### Appearance study
 
 Compare the same searchable list, editable form and supplied measurements with
-three example-owned presentation recipes:
+three public `ChioStyle` values: `.default`, `.opencode` and `.btop`
+applied through `.style(...)`:
 
 ```sh
 swift run -c release chio-dashboard --appearance --treatment chio
@@ -45,8 +46,9 @@ swift run -c release chio-dashboard --appearance --treatment opencode --density 
 ```
 
 Chio uses rounded outlines; OpenCode inspires raised surfaces and leading accent
-edges; btop inspires compact groups with headings on the border. These recipes
-are a visual study, not additional public `ChioTheme` presets. `--theme` and
+edges with roomier input padding and compact list rows; btop uses compact groups
+with border headings.
+The retained `--treatment` spelling selects static style values. `--theme` and
 `--light` do not apply to this study. `--density recipe` uses the recipe's spacing;
 `compact` and `roomy` override only spacing. All values and measurements are local
 fixtures; Save changes only the example's message.
@@ -59,8 +61,10 @@ The **36 × 64** comparison images show the full stack, while **36 × 18** is th
 small interactive check. The application owns this breakpoint and section navigation.
 
 [Compare the rendered treatments](https://echoz.github.io/Chio/appearance.html).
-The [theme decision](Decisions/Themes.md#appearance-study) records what remains
-example-only pending visual review.
+The [style decision](Decisions/Themes.md#appearance-study) owns the accepted API
+and application boundaries. Captures must be refreshed from the verified candidate;
+site deployment waits for merge. The main catalog retains three captured themes,
+so its selector does not yet offer opencode for every example.
 
 ## Maps
 

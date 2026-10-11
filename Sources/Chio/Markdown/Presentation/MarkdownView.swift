@@ -4,7 +4,7 @@ import SwiftTUIViews
 /// Place this content in a native `ScrollView` when it exceeds the available height.
 @MainActor
 public struct MarkdownView {
-    @Environment(\.chioTheme) private var theme
+    @Environment(\.chioStyle) private var theme
     private let document: MarkdownDocument
     private let links: MarkdownLinks
     private let highlighting: CodeHighlighting

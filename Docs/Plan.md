@@ -41,30 +41,39 @@ active plan with completed implementation history.
 
 <a id="current-slice-responsive-instrumentation"></a>
 
-## Current slice: appearance comparison
+## Current slice: unified styles and appearance comparison
 
-**Status:** Example-only comparison implemented for visual review. Public API
-promotion awaits a decision on the rendered comparison; platform results and
-publication state belong in its review PR.
+**Status:** Public API consolidation approved; implementation and verification
+in progress in [PR #10](https://github.com/echoz/Chio/pull/10). Not merged, released
+or deployed. No site deployment until merge.
 
-Responsive instrumentation and high-contrast target dials merged in
+Responsive instrumentation and target dials merged in
 [PR #8](https://github.com/echoz/Chio/pull/8) and
-[PR #9](https://github.com/echoz/Chio/pull/9). Their accepted contracts live in
-[Instrumentation](Decisions/Instrumentation.md); they are not yet in a tagged release.
+[PR #9](https://github.com/echoz/Chio/pull/9); they are not yet in a tagged release.
 
-The appearance study compares the same list, form and instruments with Chio,
-OpenCode-inspired and btop-inspired presentation. Colors, spacing and framing
-remain composable; applications own layout and breakpoints. Existing theme
-values and example-only pure styles keep the public API unchanged while the
-comparison is reviewed. [Themes](Decisions/Themes.md#appearance-study) owns the
-proposal boundary and [Examples](Examples.md#appearance-study) the controls.
+Consolidate themes and example recipes into immutable `ChioStyle` values applied
+with inherited `View.style(_:)`. Keep one environment key and compatible
+`ChioTheme`/`.chioTheme(...)` forwarding. Static default/light/btop/opencode values
+compose colors, spacing, treatments and surfaces. Promote leading edges, input
+surfaces/padding without moving application breakpoints,
+column widths, data or navigation into styles. [Styles](Decisions/Themes.md) owns
+the accepted contract; [Usage](Usage.md#styles) owns customization recipes.
 
-Acceptance evidence includes equal-size actual terminal captures at 100 × 30 and
-36 × 64, plus interactive 36 × 18 checks. Switching recipes, spacing and width
-must retain native focus, query, selection and entered values. The comparison
-page labels its recipes as a study rather than new supported public presets.
-Decide which shared surface roles and component treatments deserve promotion
-only after reviewing these results.
+Required evidence remains pending: compatibility and checked-value tests,
+raster/hosted state, focus and native scroll-reveal preservation,
+macOS/Linux gates and refreshed actual terminal captures at 100 × 30 and 36 × 64,
+plus interactive 36 × 18 checks. Inspect the intentional btop border-heading change
+and opencode leading edges and roomy inputs. The comparison page presents public style values;
+the main catalog still has only three captured themes. Verify links, commands,
+playback, controls and narrow layout against the integrated candidate.
+
+**Deferred list spacing:** all new per-row density controls are excluded from
+this slice's public API. Native tests reproduced incorrect tall-row reveal and
+intrinsic-height clipping, plus a separate single-line checklist focus failure
+while scrolling to row 10 even with horizontal-only padding. The latter root
+cause is not established. [Native integration](Decisions/NativeIntegration.md#tall-list-rows)
+owns these findings and the conditions for revisiting row density. This deferral
+is not a blocker for the unified style API; neither failure is claimed fixed.
 
 Provider archive acquisition remains on hold at the user's request. No archive
 reader or downloader has been adopted; existing local pack APIs remain available.

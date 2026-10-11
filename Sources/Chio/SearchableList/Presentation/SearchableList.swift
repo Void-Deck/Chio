@@ -34,7 +34,7 @@ public struct SearchableList<Item: Identifiable, RowContent: View> where Item.ID
 
     @State private var internalQuery = ""
     @FocusState private var focus: Focus?
-    @Environment(\.chioTheme) private var theme
+    @Environment(\.chioStyle) private var theme
 
     public init<Items: RandomAccessCollection>(
         _ items: Items,

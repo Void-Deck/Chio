@@ -11,7 +11,7 @@ and launch workflows. [Release records](Releases/0.1.0.md) preserve dated eviden
 ## Ownership
 
 SwiftTUI owns rendering, terminal lifecycle, layout, state, input, focus,
-scrolling, scheduling and native presentation. Chio supplies semantic themes,
+scrolling, scheduling and native presentation. Chio supplies immutable styles,
 native control styles and composed views. One SwiftPM package exports the `Chio`
 library and the `chio-dashboard` and `chio-maps` examples; applications compose
 SwiftTUI directly.
@@ -45,6 +45,15 @@ cache's expiry and eviction. Applications own distribution and any management UI
 [Plan](Plan.md#next-slice-offline-pack-acquisition) owns the delivery sequence.
 
 ## Styles and view contracts
+
+The approved unified `ChioStyle` value holds colors, spacing, treatments and
+surfaces. `View.style(_:)` installs native control styles and an inherited subtree
+value through one `EnvironmentValues.chioStyle` key. The nearest complete style
+overrides its ancestor. Legacy `ChioTheme` and `.chioTheme(...)` forward to the
+same value/key. Native component style modifiers remain specific overrides.
+[Styles](Decisions/Themes.md) owns presets, surface inheritance, bounded input
+padding and compatibility; [Plan](Plan.md) records pending implementation and
+verification. Applications retain layout, breakpoints, column widths and navigation.
 
 Prefer a native style when an existing view already expresses the required
 content and behavior. Use composition for grouping and application priorities.
@@ -111,7 +120,7 @@ normalizes missing language/destination text at parsing. Search callbacks have
 neutral defaults; modifier copies retain callbacks and native state identity.
 
 Native `StrokeStyle` is only `Equatable` and `Sendable`, including inaccessible
-state. `ChioTheme` and `Treatments` retain those conformances; `Colors`,
+state. `ChioStyle` and `Treatments` retain those conformances; `Colors`,
 `SyntaxColors`, `MapColors`, `GaugeColors` and `Spacing` also support hashing and coding. Do not
 clone strokes or add lossy coding to gain conformance. Parsed Markdown and report/presentation
 snapshots are immutable, hashable and sendable without a persistence schema:
@@ -161,7 +170,7 @@ Chio deliberately uses component-first organization inside its single library
 target: `Sources/Chio/<Component>/<Responsibility>/<Type>.swift`. This project
 override replaces the default responsibility-first order; it changes neither
 Swift modules nor public names. Maps and Markdown keep their complete implementations
-together. Theme owns shared palette/environment integration, Search owns matching
+together. Style owns shared palette/environment integration, Search owns matching
 used by several controls, and KeyboardHelp owns shortcut values and views. Related
 controls stay in the Forms, Instrumentation, Composition and Feedback families;
 there is no target-wide styles or miscellaneous helper bucket. Only populated
@@ -196,7 +205,7 @@ in Releases; avoid duplicating full contracts across documents.
 
 | Topic | Status and responsibility |
 | --- | --- |
-| <a id="theme"></a>[Themes and native control styling](Decisions/Themes.md) | Accepted |
+| <a id="theme"></a>[Styles and native control styling](Decisions/Themes.md) | Accepted |
 | <a id="compact-instrumentation"></a><a id="duration-presentation-and-example-owned-timekeeping"></a>[Compact instrumentation and duration display](Decisions/Instrumentation.md) | Accepted instrumentation; high-contrast target dial follow-up; tile deferred |
 | <a id="searchable-selection"></a><a id="searchable-multiple-choice"></a>[Searchable selection and membership](Decisions/SearchableSelection.md) | Accepted |
 | <a id="composition-and-layout"></a>[Responsive composition and status](Decisions/Composition.md) | Accepted |
