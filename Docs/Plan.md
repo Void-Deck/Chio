@@ -68,11 +68,12 @@ the main catalog still has only three captured themes. Verify links, commands,
 playback, controls and narrow layout against the integrated candidate.
 
 **Deferred list spacing:** all new per-row density controls are excluded from
-this slice's public API. Native tests reproduced incorrect tall-row reveal and
-intrinsic-height clipping, plus a separate compact-list focus failure: generic
-focus scrolling undoes the list's valid anchor. Both reproduce at native public
-boundaries. A bounded native candidate corrects the single-line journey but is
-not adopted or fully verified; tall-row geometry remains unresolved.
+this slice's public API. Standalone public-API tests reproduce tall-row reveal
+and compact-list focus failures on both Chio's pin and inspected upstream main.
+Upstream has corrected indexed intrinsic layout; eager builder placement still
+overlaps padded rows. The proposed correction starts with per-axis focus reveal,
+then aligns navigation and placement with measured row heights. No native fix or
+dependency update is adopted; upstream and Chio integration gates remain required.
 [Native integration](Decisions/NativeIntegration.md#tall-list-rows)
 owns these findings and the conditions for revisiting row density. This deferral
 is not a blocker for the unified style API; neither failure is claimed fixed.

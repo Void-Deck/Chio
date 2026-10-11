@@ -21,7 +21,7 @@ renderer, focus system or hidden dependency patch.
 | Native style hooks | Table border/background chrome, list focus gutter, palette shell, prompt headers and disabled-editor glyph paint are not fully controlled by Chio. Keep native behavior and resolve missing hooks upstream. |
 | Layout and lifecycle | Scroll focus reveal can move a two-axis viewport by one cell; nested tab strips can receive stale width proposals; expanded disclosure focus includes descendants. Keep the documented native contracts for [scrolling](Scrolling.md#scrolling), [tabs](Tabs.md#tabs) and [disclosure](DisclosureGroups.md#expandable-groups-and-trees). |
 | Choice composition | Changing choice fields inside `GeometryReader` triggered a native debug lifecycle-publication assertion. The full-window example uses `terminalSize`; arbitrary nesting remains unproved. |
-| List density and focus | New per-row density controls are deferred. Tall-row reveal/intrinsic sizing is incorrect; generic focus scrolling also undoes compact lists' valid anchors. See [the findings](#tall-list-rows). |
+| List density and focus | New per-row density controls are deferred. Tall-row reveal and placement remain incorrect; generic focus scrolling also undoes compact lists' valid anchors. Current upstream fixes one indexed intrinsic-layout case, but not these scrolling failures. See [the findings](#tall-list-rows). |
 | Collection measurement | Native ideal-size probes can realize all rows before a bounded viewport commits and emit deferred `collection.unboundedRealization` warnings. Small fixtures do not prove virtualization or large-dataset performance; diagnostics are retained. |
 | Early input | Search, palette and form handoffs cover documented type-ahead/batched paths. Arbitrary multi-control input before presentation settles needs native support, not an application-built editor or focus graph. |
 | Editor navigation | End at the end of a native text field is unhandled when it makes no change, so an enclosing ScrollView can scroll to the bottom. The appearance study reproduced this at 36 × 18; ordinary editing remains focused. Its capture moves Left before End to exercise a real caret movement. Repeated no-op End is unresolved at the native input owner. |
@@ -30,48 +30,82 @@ renderer, focus system or hidden dependency patch.
 
 ## Tall list rows
 
-**Status:** Reproduced native list limitations; unresolved. All new per-row
-density controls are deferred from Chio's unified style API. Opencode keeps
-compact rows while adding roomier input padding and leading frames.
+**Status:** Verified investigation; corrections proposed, not implemented or
+adopted. All new per-row density controls remain deferred from Chio's unified
+style API. Opencode keeps compact rows and roomier input padding/leading frames.
 
-Native tests with vertically padded rows in a short overflowing list found that
-keyboard navigation can leave the selected item offscreen; checklist focus can
-remain stuck because native reveal regards an unpainted next row as visible.
-Nil-height intrinsic sizing can also clip tall rows. Finite-height raster geometry
-alone does not establish keyboard reveal.
+A standalone package importing only public `SwiftTUIRuntime` reproduces these
+failures on macOS with Swift 6.4.0. The same eight parameterized cases ran against
+Chio's pin `2d84ac7083993da2ef52e9d3d30255467efb9553` and upstream main
+`6d7de72701354b9be074f51098d9d8ee1dcefaac` on 2026-10-11. Neither dependency
+checkout was modified. Hosted cases use twelve rows in an eight-line list on a
+32 × 12 surface. Passing journeys visit every row down and back and activate the
+final row; multi-selection cases check that the focused region paints the target.
 
-The pinned native owner is
-`Sources/SwiftTUIViews/Collections/CollectionScrollState.swift` in SwiftTUI.
-`reveal(row:margin:)` uses `CollectionScrollGeometry`, whose line calculation is
-`chromeInset + rowIndex * rowSpan`. Without separators it assumes one content
-cell per row, excluding authored vertical padding, gaps or wrapped/multiline
-content. Visibility and anchor calculations can therefore disagree with painting.
+| Public native case | Chio pin | Inspected upstream main |
+| --- | --- | --- |
+| Automatic style, single and multiple selection, one-line rows | Both pass | Both pass |
+| Compact style, multiple selection, one-line rows | Fails revealing ID 10 | Same failure |
+| Automatic style, single and multiple selection, vertically padded rows | Both fail revealing ID 1 | Same failures |
+| Compact style, multiple selection, vertically padded rows | Fails revealing ID 2 | Same failure |
+| `List(data)`, three padded rows, unbounded height | Allocates nine lines but overlaps row padding | Passes: labels at lines 1, 4, 7 |
+| `List { ForEach(...) }`, same intrinsic-layout fixture | Overlaps row padding | Same failure |
 
-Separately, single-line compact lists lose row focus near the end of an
-overflowing viewport. A public hosted reproduction establishes this with a bare
-native multi-selection `List` and a minimal style with zero insets and no
-separators, without Chio's search composition or styles. Native automatic framed
-lists and single-selection container-focused lists traverse the same twelve
-rows successfully; Chio's searchable checklist reproduces the compact failure.
+IDs and raster lines in this table are zero-based. Padding is one line above and
+below each label. Intrinsic-layout assertions check label positions, not only
+total height or text presence: the failing nine-line rasters put labels on
+adjacent lines 1, 2, 3. Finite-height raster geometry alone does not establish
+keyboard reveal. These are deterministic hosted/raster reproductions, not live
+SSH, Linux or full upstream-gate evidence.
 
-At the pinned SwiftTUI revision `2d84ac7`, native focus synchronization in
-`Sources/SwiftTUIGraph/Runtime/LocalScrollPositionRegistry.swift` clamps the
-collection's valid offset using generic content-minus-viewport geometry, even
-when its focused row is already visible. With twelve rows and an eight-line
-viewport, the collection reserves two indicator lines and permits anchor six;
-generic focus scrolling clamps it back to four. Diagnostic traces confirm both
-opposing writes. The requested row then disappears and native focus falls back
-to the first visible row. This is separate from tall-row arithmetic.
+### Conflicting focus and collection offsets
 
-A temporary native candidate that avoids normalization when no focus-reveal
-movement is needed passed five single-line hosted journeys: native single and
-multiple selection, minimal compact multiple selection, and both Chio searchable
-compositions, including final-row activation or membership toggling. The candidate
-was independently reviewed, then removed from the dependency checkout. It is
-not adopted, published upstream or verified by SwiftTUI's full gate. Axis-specific
-reveal, resize/content shrink, native cursor/scroll regressions and tall-row
-geometry still require upstream work; do not treat this bounded proof as a
-complete collection-scrolling correction.
+`Sources/SwiftTUIGraph/Runtime/LocalScrollPositionRegistry.swift` normalizes both
+axes during focus reveal using generic content-minus-viewport bounds, even when
+the focused row is already visible. A twelve-row collection with an eight-line
+viewport reserves two indicator lines and permits anchor six; generic focus
+scrolling clamps it back to four. The target disappears and focus falls back to
+the first visible row. This remains present in the inspected upstream main.
+
+An earlier temporary native candidate skipped normalization when no reveal
+movement was needed. It passed five single-line native/Chio hosted journeys and
+was removed from the dependency checkout. Review found that a whole-offset guard
+is insufficient: horizontal reveal can still clamp a valid vertical offset.
+The proposed focused correction preserves an already-visible axis independently
+of movement on the other axis. It needs native focus/cursor, resize/shrink and
+two-axis regressions; the earlier candidate is not a complete or adopted fix.
+
+### Row measurement and navigation disagree
+
+`Sources/SwiftTUIViews/Collections/CollectionScrollState.swift` remains identical
+between the two inspected revisions. `CollectionScrollGeometry` calculates a
+row's line as `chromeInset + rowIndex * rowSpan`, with one content line per row
+plus an optional separator. Reveal, offset conversion, paging and target anchors
+therefore omit measured padding and multiline/wrapped content. Rendering already
+knows those heights, so navigation can consider an unpainted next row visible.
+
+Current upstream derives indexed lists' intrinsic layout from the measured size
+in `Sources/SwiftTUICore/Measure/LayoutEngine+HostedCollectionWindowing.swift`,
+correcting the pinned ordering defect. Builder lists bypass that indexed path;
+`Sources/SwiftTUICore/Place/LayoutEngine+PlacementRequests.swift` falls back to
+uniform row placement without their measured heights. Their larger measured
+height does not prevent overlapping child placement.
+
+The proposed follow-up uses the native collection's measured row/window geometry
+consistently for navigation and placement, retaining whole-row scrolling and
+bounded realization. Include eager section headers/footers, separators, fixed
+chrome and indicators when translating rows to cells. Reuse the existing native
+scroll state/registration boundaries; do not introduce a Chio scroll controller.
+Placed and unrealized `scrollTo` targets currently take different routes, and
+explicit proxy offsets also use generic clamps. Their consistency needs coverage
+before claiming the broader collection correction complete.
+
+The fix sequence is the focused per-axis reveal correction, then measured-height
+navigation and eager placement. Required coverage includes mixed-height rows,
+wrapping after resize, same-ID content changes, rows taller than the viewport,
+final-row activation and reverse traversal, section chrome, proxy anchors and
+native Table regressions because it shares collection scroll state. Preserve
+bounded measurement rather than measuring the entire dataset to reveal one row.
 
 Applications can use
 `Text(item.title).lineLimit(1).truncationMode(.tail)` to limit row height, but this
@@ -82,6 +116,10 @@ checkbox focus transfer, activation, scroll reveal and intrinsic sizing. No fix 
 upstream PR is claimed. Keep native ownership; do not conceal failures with hidden
 dependency patches, another focus system, larger verification viewports or weaker
 assertions. The core style consolidation proceeds without new per-row controls.
+
+SwiftTUI's linked `swift-tui-org/docs/swift-tui/DEVELOPMENT.md` returned 404 during
+this investigation. Its additional requirements remain unchecked; obtain it
+before claiming compliance with the complete upstream contribution process.
 
 ## Cooperative shutdown follow-up
 
