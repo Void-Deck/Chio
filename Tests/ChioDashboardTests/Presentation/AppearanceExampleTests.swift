@@ -112,8 +112,8 @@ struct AppearanceExampleTests {
             _ = try await recorder.wait(description: "narrow agents and persistent hints") {
                 $0.appearanceContains("Build Agent") && $0.appearanceContains("^G graphs")
             }
-            let ready = try await recorder.wait(description: "native comparison focus is ready for shortcuts") {
-                $0.focusedIdentity != nil && $0.appearanceContains("Build Agent")
+            let ready = try await recorder.wait(description: "native initial list focus is ready for shortcuts") {
+                $0.appearanceListFocused && $0.appearanceContains("Build Agent")
                     && $0.appearanceContains("^G graphs")
             }
             session.send(.key(.character("e"), modifiers: .ctrl))
@@ -193,6 +193,9 @@ private extension SemanticHostFrame {
     }
     var appearanceSearchFocused: Bool {
         semantics.accessibilityNodes.contains { $0.role == .textField && $0.label != "Workspace" && $0.identity == focusedIdentity }
+    }
+    var appearanceListFocused: Bool {
+        semantics.accessibilityNodes.contains { $0.role == .list && $0.identity == focusedIdentity }
     }
     var appearanceSelectedReview: Bool {
         raster.lines.contains { $0.contains("›") && $0.contains("Review Agent") }
