@@ -91,11 +91,14 @@
     showPreview();
     playButton.focus({ preventScroll: true });
   });
-  preview.addEventListener("error", () => {
+  function previewFailed() {
     preview.hidden = true;
     missing.hidden = false;
-  });
+  }
+  preview.addEventListener("error", previewFailed);
   preview.addEventListener("load", () => { missing.hidden = true; });
+  // The initial image may finish before this deferred script attaches listeners.
+  if (preview.complete && preview.naturalWidth === 0) previewFailed();
   controls.addEventListener("change", updateSelection);
   controls.addEventListener("submit", event => event.preventDefault());
   document.addEventListener("visibilitychange", () => { if (document.hidden) player?.pause(); });
