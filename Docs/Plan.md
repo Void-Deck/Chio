@@ -43,7 +43,8 @@ active plan with completed implementation history.
 
 **Status:** Accepted implementation candidate in [PR #8](https://github.com/echoz/Chio/pull/8).
 Focused debug/release tests, both affected terminal workflows, the pinned rules
-gate and independent review pass for the bar-only annotation revision. The PR
+gate and independent review pass for the bar-only annotation revision and the
+optional plain-dial Metrics example. The PR
 records exact platform and showcase evidence. This work is not merged or released;
 public showcase publication remains pending. The
 [instrumentation decision](Decisions/Instrumentation.md#instrumentation-expansion-assessment)
@@ -62,14 +63,16 @@ rejected dial redesign and annotated dial work are excluded from this slice.
 The local `--instruments` example composes readings, independent references,
 targets, same-time history observations and an explicit break, plus native controls
 with an application-owned playback task. Compact 36 × 18 and expanded 70 × 30
-layouts use numeric readings and bars. `--metrics` uses the same bar-first
-presentation. Supporting/paired readings, trends and responsive collections use
-ordinary native views; `InstrumentTile`, domain widgets, compasses and multi-series
+layouts use numeric readings and bars. `--metrics` defaults to bars and offers
+plain arc-and-needle dials; allocations below 70 × 28 fall back to bars.
+Supporting/paired readings, trends and responsive collections use ordinary native
+views; `InstrumentTile`, domain widgets, compasses and multi-series
 charts remain deferred.
 
 Three-theme previews, monochrome inspection, gallery playback/seeking, shared
 themes/commands and compact browser layout pass locally. Hosted macOS/Linux CI
-remains the qualification gate; see the PR for revision-specific results. Showcase publication follows merge under
+remains the qualification gate; see the PR for revision-specific results.
+Showcase publication follows merge under
 [Verification](Verification.md). Preserve legacy gauge and Sparkline behavior,
 all supplied captions when a support group is displayed, whole-plot budget
 rejection and native focus/interaction routes.

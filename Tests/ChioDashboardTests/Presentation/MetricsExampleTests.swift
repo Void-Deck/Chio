@@ -19,7 +19,7 @@ struct MetricsExampleTests {
         #expect(rendered.rasterSurface.size == size)
         #expect(text.components(separatedBy: "▰▱").count - 1 == 2)
         for value in ["metrics", "simulated", "Processor", "Memory", "CPU", "RAM", "62%", "71%",
-                      "Next sample", "History", "n next", "g history", "^T theme", "^Q quit"] {
+                      "Next sample", "History", "n next", "g history", "v gauge", "^T theme", "^Q quit"] {
             #expect(text.contains(value))
         }
         let nodes = rendered.semanticSnapshot.accessibilityNodes
@@ -34,6 +34,38 @@ struct MetricsExampleTests {
         #expect(rendered.rasterSurface.cells.flatMap { $0 }.contains {
             $0.character == "6" && $0.style?.foregroundColor == theme.colors.accent
         })
+    }
+
+    @Test("Plain dial choice retains current values and uses complete bars in compact allocations",
+          arguments: [CellSize(width: 100, height: 30), CellSize(width: 70, height: 24),
+                      CellSize(width: 70, height: 27), CellSize(width: 70, height: 28),
+                      CellSize(width: 36, height: 18)], ExampleTheme.allCases)
+    func dialLayout(size: CellSize, appearance: ExampleTheme) {
+        let rendered = DefaultRenderer().render(
+            MetricsExampleView(theme: appearance, gaugeStyle: .dial).environment(\.terminalSize, size),
+            proposal: ProposedSize(width: size.width, height: size.height)
+        )
+        let text = rendered.rasterSurface.lines.joined(separator: "\n")
+        #expect(rendered.rasterSurface.size == size)
+        for value in ["Processor", "Memory", "62%", "71%", "Next sample", "History", "v gauge", "^Q quit"] {
+            #expect(text.contains(value))
+        }
+        if size.width >= 70 && size.height >= 28 {
+            #expect(text.contains("Dials"))
+            #expect(!text.contains("▰"))
+            #expect(text.unicodeScalars.contains { (0x2801...0x28FF).contains($0.value) })
+        } else {
+            #expect(text.components(separatedBy: "▰▱").count - 1 == 2)
+            if size.width >= 70 && size.height >= 24 {
+                #expect(text.contains("Dials (compact bars)"))
+            }
+        }
+        for annotation in ["╞", "╡", "╪", "Reference", "target"] {
+            #expect(!text.contains(annotation))
+        }
+        let nodes = rendered.semanticSnapshot.accessibilityNodes
+        #expect(nodes.contains { $0.label == "CPU utilization: 62 percent, scale 0 to 100 percent" })
+        #expect(nodes.contains { $0.label == "RAM utilization: 71 percent, scale 0 to 100 percent" })
     }
 
     @Test("Native actions, shortcuts, theme cycling and resize preserve simulated values and focus")
@@ -68,20 +100,41 @@ struct MetricsExampleTests {
             let advancedEmpty = try await recorder.wait(after: empty.sequence, description: "samples advance even while history is empty") {
                 $0.metricsHistory("empty") && $0.metricsValue("CPU", 28) && $0.metricsValue("RAM", 48)
             }
-            var paletteFrame = advancedEmpty
+            session.send(.key(.character("v")))
+            let dials = try await recorder.wait(after: advancedEmpty.sequence, description: "plain dials retain current values, empty history and native focus") {
+                $0.metricsHavePlainDials() && $0.metricsHistory("empty") && $0.metricsValue("CPU", 28)
+                    && $0.metricsValue("RAM", 48) && $0.metricsFocused("Cycle history")
+                    && $0.focusedIdentity == historyFocus.focusedIdentity
+            }
+            var paletteFrame = dials
             for _ in 0..<3 {
                 session.send(.key(.character("t"), modifiers: .ctrl))
                 let preceding = paletteFrame
                 paletteFrame = try await recorder.wait(after: preceding.sequence, description: "palette cycle retains values, history mode and native focus") {
                     $0.metricsHistory("empty") && $0.metricsValue("CPU", 28) && $0.metricsValue("RAM", 48)
                         && $0.metricsFocused("Cycle history") && $0.focusedIdentity == preceding.focusedIdentity
-                        && $0.raster.cells != preceding.raster.cells && $0.metricsHaveBars()
+                        && $0.raster.cells != preceding.raster.cells && $0.metricsHavePlainDials()
                 }
             }
-            #expect(paletteFrame.raster.cells == advancedEmpty.raster.cells)
+            #expect(paletteFrame.raster.cells == dials.raster.cells)
+            surface.updateSurfaceSize(CellSize(width: 70, height: 27))
+            session.requestSurfaceRefresh()
+            let shortWide = try await recorder.wait(after: paletteFrame.sequence, description: "short wide allocation retains dial preference with complete bars") {
+                $0.raster.size == CellSize(width: 70, height: 27) && $0.metricsHaveBars()
+                    && $0.raster.lines.contains { $0.contains("Dials (compact bars)") }
+                    && $0.metricsFocused("Cycle history") && $0.focusedIdentity == paletteFrame.focusedIdentity
+                    && $0.metricsHistory("empty") && $0.metricsValue("CPU", 28) && $0.metricsValue("RAM", 48)
+            }
+            surface.updateSurfaceSize(CellSize(width: 70, height: 28))
+            session.requestSurfaceRefresh()
+            let tallWide = try await recorder.wait(after: shortWide.sequence, description: "one additional row restores plain dials without changing values or focus") {
+                $0.raster.size == CellSize(width: 70, height: 28) && $0.metricsHavePlainDials()
+                    && $0.metricsFocused("Cycle history") && $0.focusedIdentity == shortWide.focusedIdentity
+                    && $0.metricsHistory("empty") && $0.metricsValue("CPU", 28) && $0.metricsValue("RAM", 48)
+            }
             surface.updateSurfaceSize(CellSize(width: 36, height: 18))
             session.requestSurfaceRefresh()
-            let narrow = try await recorder.wait(after: paletteFrame.sequence, description: "compact stacking retains bars, native history focus and visible hints") {
+            let narrow = try await recorder.wait(after: tallWide.sequence, description: "compact stacking retains bars, native history focus and visible hints") {
                 $0.raster.size == CellSize(width: 36, height: 18) && $0.metricsFocused("Cycle history")
                     && $0.metricsHistory("empty") && $0.metricsValue("CPU", 28) && $0.metricsValue("RAM", 48)
                     && $0.raster.lines.contains { $0.contains("^Q quit") } && $0.metricsHaveBars()
@@ -97,9 +150,15 @@ struct MetricsExampleTests {
             }
             surface.updateSurfaceSize(CellSize(width: 100, height: 30))
             session.requestSurfaceRefresh()
-            _ = try await recorder.wait(after: batched.sequence, description: "widening retains bars and simulated values") {
+            let wide = try await recorder.wait(after: batched.sequence, description: "widening restores plain dials and retains simulated values") {
+                $0.metricsHavePlainDials() && $0.metricsFocused("Next sample") && $0.metricsValue("CPU", 36)
+                    && $0.metricsValue("RAM", 50) && $0.metricsHistory("full")
+            }
+            session.send(.key(.character("v")))
+            _ = try await recorder.wait(after: wide.sequence, description: "switching back to bars retains values, history and native focus") {
                 $0.metricsHaveBars() && $0.metricsFocused("Next sample") && $0.metricsValue("CPU", 36)
                     && $0.metricsValue("RAM", 50) && $0.metricsHistory("full")
+                    && $0.focusedIdentity == wide.focusedIdentity
             }
             session.stop()
             #expect(try await run.value == .inputEnded)
@@ -124,6 +183,15 @@ extension MetricsTestApp: App {
 }
 
 private extension SemanticHostFrame {
+    func metricsHavePlainDials() -> Bool {
+        let text = raster.lines.joined(separator: "\n")
+        let hasDialCaption = text.contains("Dials")
+        let hasBraillePlot = text.unicodeScalars.contains { (0x2801...0x28FF).contains($0.value) }
+        let hasBarTrack = text.contains("▰")
+        let hasAnnotations = ["╞", "╡", "╪", "Reference", "target"].contains { text.contains($0) }
+        return hasDialCaption && hasBraillePlot && !hasBarTrack && !hasAnnotations
+    }
+
     func metricsHaveBars() -> Bool {
         raster.lines.joined(separator: "\n").components(separatedBy: "▰▱").count - 1 == 2
     }

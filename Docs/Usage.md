@@ -121,7 +121,9 @@ VStack(alignment: .leading) {
 ```
 
 `MeasurementGauge` defaults to `.bar`. The existing `.dial` option remains
-available for unannotated readings, but the examples use bars for readability.
+available for unannotated readings: `MeasurementGauge(position: 0.64, style: .dial)`
+draws only an arc and needle. The Metrics example offers this option; bars remain
+the default.
 Supply a finite position in `0...1`, or `nil` for a missing reading. Normalize
 measurements and decide how to handle out-of-range data in your application before
 construction. The bar uses one row, with a one-column minimum, twenty-column

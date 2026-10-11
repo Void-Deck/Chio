@@ -534,12 +534,14 @@ See [duration labels](Usage.md#duration-labels).
 COLORTERM=truecolor swift run -c release chio-dashboard --metrics
 ```
 
-Compact border titles, `MeasurementGauge` bars, segmented numeric
+Compact border titles, `MeasurementGauge` bars or plain dials, segmented numeric
 readouts and single-series sparklines share the
 btop-inspired palette. Press `n` or activate **Next sample** to advance the local
 24-sample history. Press `g` or activate **History** to cycle through full, missing
-and empty readings. Compact layouts keep the bars and omit the large segmented
-readouts; expansion restores the readouts.
+and empty readings. Press `v` to switch between bars and plain arc-and-needle
+dials, without target brackets or reference markers. Compact layouts use bars
+and omit large readouts; expansion restores the chosen presentation. Plain dials
+need at least 70 × 28 cells for the complete example; shorter layouts keep bars.
 Tab/Shift-Tab moves between native buttons; Return/Space
 activates them. Ctrl-T cycles btop, default and light themes; Ctrl-Q quits.
 
@@ -667,8 +669,8 @@ activation does; this demo opens no browser and makes no network requests.
 
 ![Instrumentation panels with segmented numeric readouts, measurement gauges, single-series history graphs and native sample controls](Media/metrics.png)
 
-Advance local readings, show missing or empty history, and
-compare btop, default and light palettes. Gauges remain accented at 100%; the
+Advance local readings, switch between bars and plain dials, show missing or empty
+history, and compare btop, default and light palettes. Gauges remain accented at 100%; the
 application supplies data, normalization and updates.
 [Watch](https://echoz.github.io/Chio/#metrics) · [Download recording](Media/metrics.cast).
 

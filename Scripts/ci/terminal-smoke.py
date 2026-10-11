@@ -246,6 +246,7 @@ def run(binary, choices=False, text_entry=False, feedback=False, files=False, ke
             send(b"\t\r", "History: gaps")
             send(b"g", "History: empty")
             send(b"n", "28%")
+            send(b"v", "Dials")
             send(b"\x14", "History: empty")
             send(b"\x14", "History: empty")
             send(b"\x14", "History: empty")
@@ -260,8 +261,9 @@ def run(binary, choices=False, text_entry=False, feedback=False, files=False, ke
             WIDTH, HEIGHT = 100, 30
             fcntl.ioctl(slave, termios.TIOCSWINSZ, struct.pack("HHHH", HEIGHT, WIDTH, 0, 0))
             process.send_signal(signal.SIGWINCH)
-            until("Readings, bars and history.")
+            until("Dials")
             until("42%")
+            send(b"v", "Bars")
             until("▰▱")
         elif timers:
             until("0:20")

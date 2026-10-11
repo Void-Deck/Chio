@@ -176,9 +176,11 @@ A future container needs repeated shared fitting policy beyond these recipes.
 
 The existing initializer and position preconditions remain intact. The candidate
 adds distinct bar-only overloads. Compact dial redesigns were not sufficiently
-readable, so this slice uses numeric readings, bars and history graphs.
-The existing plain `.dial` API remains available for compatibility; target bands
-and reference marks do not extend it. Draft consumers of the annotated overloads
+readable. Annotated measurements therefore use bars, with numeric readings and
+history graphs alongside them. The existing plain `.dial` API remains available
+as an arc and needle, without a target bracket or reference markers. Metrics
+exposes it as an optional presentation; target bands and reference marks do not
+extend it. Draft consumers of the annotated overloads
 must remove their `style:` argument; no merged initializer is removed.
 
 The public signatures are:
