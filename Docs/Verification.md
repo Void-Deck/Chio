@@ -263,11 +263,27 @@ change, and opencode leading edges, roomy inputs and compact list rows.
 The CI terminal probe exercises every comparison style at 36 × 18, including
 section shortcuts and clean terminal restoration.
 
-Regenerate recordings with `python3 -B Scripts/docs/capture-appearance.py
-.build/release/chio-dashboard`. Keep full logs and evidence under `.build`;
-publish only the six clips ending before teardown. Initial-frame casts support
-PNG captures through the pinned local player. Inspect every still and the whole
-session; do not infer color quality from plain-text snapshots. The comparison
+Capture all six recordings and PNG previews with the existing release binary:
+
+```sh
+python3 -B Scripts/docs/capture-appearance.py .build/release/chio-dashboard \
+  --render-previews --output .build/appearance-review
+```
+
+PNG rendering uses the pinned local player and an externally installed Node,
+Playwright and Chromium browser. Supply `--node /path/to/node` and
+`--playwright /path/to/playwright` for runtimes outside the usual lookup paths.
+Choose a fresh output directory under `.build` or outside the checkout. The
+command checks prerequisites before recording, verifies each terminal's cleanup,
+retains full logs and reports runtime warnings; it does not build or publish.
+Omit `--render-previews` for recordings alone. CI's `--verify-only` needs no Node
+or browser. The standalone `render-terminal-previews.cjs` also accepts existing
+`*-initial.cast` files when only PNG generation is needed.
+
+Inspect every still, full clip and retained log, then copy only the six approved
+`.cast`/`.png` pairs into `Docs/Media/appearance`. Published clips end before
+teardown; this does not fix recorded warnings. Do not infer color quality from
+plain-text snapshots. The comparison
 page's style/size controls, matching commands, explicit playback, script-free
 links, 390-pixel layout and missing-asset fallback require browser verification
 alongside site assembly. Applications own the demonstrated responsive layout.

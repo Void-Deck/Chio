@@ -2,6 +2,8 @@
 """Capture the appearance study from a release binary in real POSIX terminals.
 
 Writes six reviewable casts plus initial-frame casts for browser screenshots.
+Add --render-previews to produce six PNGs with the vendored player and an
+externally installed Node/Playwright runtime. Nothing is built or published.
 Full logs and terminal-restoration evidence stay in the supplied output directory.
 This probe reads only the example's fixed synthetic content; no services are used.
 """
@@ -16,6 +18,7 @@ import os
 from pathlib import Path
 import pty
 import select
+import shutil
 import struct
 import subprocess
 import termios
@@ -38,7 +41,12 @@ def capture(binary, output, recipe, width, height, label, verify_only):
         environment.pop(key, None)
     command = [str(binary), "--appearance", "--treatment", recipe]
     began = time.monotonic()
-    process = subprocess.Popen(command, cwd=ROOT, stdin=slave, stdout=slave, stderr=slave, env=environment)
+    try:
+        process = subprocess.Popen(command, cwd=ROOT, stdin=slave, stdout=slave, stderr=slave, env=environment)
+    except BaseException:
+        os.close(master)
+        os.close(slave)
+        raise
     decoder = codecs.getincrementaldecoder("utf-8")()
     raw, events, phases = bytearray(), [], []
     name = f"{recipe}-{label}"
@@ -120,13 +128,17 @@ def capture(binary, output, recipe, width, height, label, verify_only):
                     termios_restored=True, cursor_restored=True, alternate_screen_restored=True,
                     diagnostics=[line for line in raw.decode("utf-8").splitlines() if "runtime warning" in line.lower()])
     finally:
-        (output / f"{name}-full.log").write_bytes(raw)
-        write_cast(output / f"{name}-full.cast", events)
-        if process.poll() is None:
-            process.kill()
-            process.wait(timeout=5)
-        os.close(master)
-        os.close(slave)
+        try:
+            (output / f"{name}-full.log").write_bytes(raw)
+            write_cast(output / f"{name}-full.cast", events)
+        finally:
+            try:
+                if process.poll() is None:
+                    process.kill()
+                    process.wait(timeout=5)
+            finally:
+                os.close(master)
+                os.close(slave)
 
 
 def main():
@@ -134,7 +146,33 @@ def main():
     parser.add_argument("binary", type=Path)
     parser.add_argument("--output", type=Path, default=ROOT / ".build/appearance-captures")
     parser.add_argument("--verify-only", action="store_true", help="Check three 36×18 sessions; do not produce publishable clips.")
+    parser.add_argument("--render-previews", action="store_true", help="Also render six PNGs; requires Node, Playwright and its Chromium browser.")
+    parser.add_argument("--node", default="node", help="Node executable name or path (default: node on PATH).")
+    parser.add_argument("--playwright", help="Installed Playwright module directory; otherwise Node resolves playwright normally.")
     args = parser.parse_args()
+    args.binary = args.binary.resolve()
+    args.output = args.output.resolve()
+    if not args.binary.is_file() or not os.access(args.binary, os.X_OK):
+        parser.error(f"Executable release binary not found: {args.binary}; build it separately first.")
+    if args.verify_only and args.render_previews:
+        parser.error("--verify-only does not produce the clips needed by --render-previews.")
+    renderer = ROOT / "Scripts/docs/render-terminal-previews.cjs"
+    render_command = None
+    if args.render_previews:
+        if args.output.is_relative_to(ROOT) and not args.output.is_relative_to(ROOT / ".build"):
+            parser.error("Render output must be outside the checkout or beneath its ignored .build directory; copy reviewed media separately.")
+        node = shutil.which(args.node)
+        if node is None:
+            parser.error("Node executable not found; supply --node with an installed runtime path.")
+        if args.output.exists() and (not args.output.is_dir() or any(args.output.iterdir())):
+            parser.error("Rendering requires a fresh output directory; choose a new --output.")
+        render_command = [node, str(renderer)]
+        if args.playwright:
+            render_command.extend(["--playwright", str(Path(args.playwright).resolve())])
+        try:
+            subprocess.run(render_command + ["--check"], check=True, timeout=30)
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as error:
+            parser.error(f"Preview rendering prerequisite failed: {error}")
     args.output.mkdir(parents=True, exist_ok=True)
     sizes = [(36, 18, "compact")] if args.verify_only else [(100, 30, "wide"), (36, 64, "narrow")]
     results = [capture(args.binary.resolve(), args.output, recipe, width, height, label, args.verify_only)
@@ -142,7 +180,14 @@ def main():
     evidence = dict(binary_sha256=hashlib.sha256(args.binary.read_bytes()).hexdigest(),
                     synthetic_only=True, sessions=results)
     (args.output / "evidence.json").write_text(json.dumps(evidence, indent=2) + "\n")
-    print(f"PASS: {len(results)} real terminal sessions with clean exit and restored settings")
+    print(f"PASS: {len(results)} real terminal sessions with clean exit and restored settings", flush=True)
+    diagnostic_count = sum(len(result["diagnostics"]) for result in results)
+    if diagnostic_count:
+        print(f"NOTE: {diagnostic_count} runtime warnings retained in full logs and evidence.json; trimming does not fix them.", flush=True)
+    if render_command:
+        initial_casts = [str(args.output / f"{result['name']}-initial.cast") for result in results]
+        subprocess.run(render_command + initial_casts, check=True, timeout=180)
+        print(f"PASS: six PNG previews in {args.output}; inspect clips, stills and full logs before copying media.")
 
 
 if __name__ == "__main__":

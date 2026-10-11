@@ -69,9 +69,11 @@ playback, controls and narrow layout against the integrated candidate.
 
 **Deferred list spacing:** all new per-row density controls are excluded from
 this slice's public API. Native tests reproduced incorrect tall-row reveal and
-intrinsic-height clipping, plus a separate single-line checklist focus failure
-while scrolling to row 10 even with horizontal-only padding. The latter root
-cause is not established. [Native integration](Decisions/NativeIntegration.md#tall-list-rows)
+intrinsic-height clipping, plus a separate compact-list focus failure: generic
+focus scrolling undoes the list's valid anchor. Both reproduce at native public
+boundaries. A bounded native candidate corrects the single-line journey but is
+not adopted or fully verified; tall-row geometry remains unresolved.
+[Native integration](Decisions/NativeIntegration.md#tall-list-rows)
 owns these findings and the conditions for revisiting row density. This deferral
 is not a blocker for the unified style API; neither failure is claimed fixed.
 
