@@ -30,9 +30,11 @@ renderer, focus system or hidden dependency patch.
 
 ## Tall list rows
 
-**Status:** Verified investigation; corrections proposed, not implemented or
-adopted. All new per-row density controls remain deferred from Chio's unified
-style API. Opencode keeps compact rows and roomier input padding/leading frames.
+**Status:** Verified investigation; a focused upstream candidate is in
+[SwiftTUI PR #46](https://github.com/SwiftTUI/swift-tui/pull/46), not adopted by
+Chio. Measured-height corrections remain proposed. All new per-row density
+controls remain deferred from Chio's unified style API. Opencode keeps compact
+rows and roomier input padding/leading frames.
 
 A standalone package importing only public `SwiftTUIRuntime` reproduces these
 failures on macOS with Swift 6.4.0. The same eight parameterized cases ran against
@@ -71,9 +73,14 @@ An earlier temporary native candidate skipped normalization when no reveal
 movement was needed. It passed five single-line native/Chio hosted journeys and
 was removed from the dependency checkout. Review found that a whole-offset guard
 is insufficient: horizontal reveal can still clamp a valid vertical offset.
-The proposed focused correction preserves an already-visible axis independently
-of movement on the other axis. It needs native focus/cursor, resize/shrink and
-two-axis regressions; the earlier candidate is not a complete or adopted fix.
+The focused correction in PR #46 preserves an already-visible axis independently
+of movement on the other axis. Its regression tests fail on unchanged upstream
+and pass on candidate `fc80a1894ecd0d3d81f7a621ec67427136cab73c`: 50 tests across
+native registry, collection interaction, lazy composition, viewport sizing and
+wheel-scroll suites pass on macOS with Swift 6.4.0. Independent review found no
+issues. The candidate is draft pending broader verification; Chio's dependency
+pin is unchanged. Cursor reveal and unanchored `scrollTo` share the helper;
+explicit anchors and arbitrary binding normalization remain outside this fix.
 
 ### Row measurement and navigation disagree
 
@@ -112,8 +119,9 @@ Applications can use
 is a content policy, not a native scrolling correction. Applications own widths.
 
 Revisiting row density requires native and Chio evidence for overflow, selection,
-checkbox focus transfer, activation, scroll reveal and intrinsic sizing. No fix or
-upstream PR is claimed. Keep native ownership; do not conceal failures with hidden
+checkbox focus transfer, activation, scroll reveal and intrinsic sizing. The
+focused upstream proposal does not establish a complete list-density fix or
+verified Chio adoption. Keep native ownership; do not conceal failures with hidden
 dependency patches, another focus system, larger verification viewports or weaker
 assertions. The core style consolidation proceeds without new per-row controls.
 

@@ -71,9 +71,10 @@ playback, controls and narrow layout against the integrated candidate.
 this slice's public API. Standalone public-API tests reproduce tall-row reveal
 and compact-list focus failures on both Chio's pin and inspected upstream main.
 Upstream has corrected indexed intrinsic layout; eager builder placement still
-overlaps padded rows. The proposed correction starts with per-axis focus reveal,
-then aligns navigation and placement with measured row heights. No native fix or
-dependency update is adopted; upstream and Chio integration gates remain required.
+overlaps padded rows. [SwiftTUI PR #46](https://github.com/SwiftTUI/swift-tui/pull/46)
+contains the focused per-axis reveal candidate; measured-height navigation and
+placement remain follow-ups. No native fix or dependency update is adopted;
+upstream and Chio integration gates remain required.
 [Native integration](Decisions/NativeIntegration.md#tall-list-rows)
 owns these findings and the conditions for revisiting row density. This deferral
 is not a blocker for the unified style API; neither failure is claimed fixed.
