@@ -15,6 +15,7 @@ Update each owning document instead of duplicating contracts or history here.
 - Build an opinionated, declarative design and interaction layer over SwiftTUI.
   SwiftTUI owns rendering, lifecycle, layout, state, focus, input, and scrolling.
   Prefer native control styles and composition; new components must add reusable UX.
+  Follow the [pure style and view contracts](Docs/Design.md#styles-and-view-contracts).
 - Use immutable stored properties for owned domain and view-configuration values.
   Follow the value contracts and explicit state-owner exceptions in
   [Design.md](Docs/Design.md#value-contracts).

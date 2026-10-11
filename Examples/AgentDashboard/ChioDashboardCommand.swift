@@ -59,6 +59,9 @@ struct ChioDashboardCommand {
     @Flag(help: "Run the compact metrics and passive history example.")
     var metrics = false
 
+    @Flag(help: "Run the supplied readings, target bands, history and native playback example.")
+    var instruments = false
+
     @Flag(help: "Run the local review inbox and Markdown preview example.")
     var inbox = false
 
@@ -96,11 +99,12 @@ struct ChioDashboardCommand {
             forms ? .forms : nil,
             timers ? .timers : nil,
             metrics ? .metrics : nil,
+            instruments ? .instruments : nil,
             inbox ? .inbox : nil,
             diff ? .diff : nil,
         ].compactMap { $0 }
         guard requestedExamples.count <= 1 else {
-            throw ValidationError("Choose one example: --choices, --text-entry, --feedback, --files, --keyboard-help, --tabs, --pagination, --viewport, --tree, --forms, --timers, --metrics, --inbox or --diff.")
+            throw ValidationError("Choose one example: --choices, --text-entry, --feedback, --files, --keyboard-help, --tabs, --pagination, --viewport, --tree, --forms, --timers, --metrics, --instruments, --inbox or --diff.")
         }
         let example = requestedExamples.first ?? .dashboard
         if example.isFocusedExample {

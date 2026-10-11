@@ -534,12 +534,14 @@ See [duration labels](Usage.md#duration-labels).
 COLORTERM=truecolor swift run -c release chio-dashboard --metrics
 ```
 
-Compact border titles, `MeasurementGauge` bars or dials, segmented numeric
+Compact border titles, `MeasurementGauge` bars or plain dials, segmented numeric
 readouts and single-series sparklines share the
 btop-inspired palette. Press `n` or activate **Next sample** to advance the local
 24-sample history. Press `g` or activate **History** to cycle through full, missing
-and empty readings. Press `v` to switch between bars and dials. Compact layouts
-use bars and omit the large readouts, retaining the chosen style for expansion.
+and empty readings. Press `v` to switch between bars and plain arc-and-needle
+dials, without target brackets or reference markers. Compact layouts use bars
+and omit large readouts; expansion restores the chosen presentation. Plain dials
+need at least 70 × 28 cells for the complete example; shorter layouts keep bars.
 Tab/Shift-Tab moves between native buttons; Return/Space
 activates them. Ctrl-T cycles btop, default and light themes; Ctrl-Q quits.
 
@@ -548,6 +550,37 @@ no system metrics are collected. Resize to compare wide and compact layouts.
 Use `--metrics --snapshot` for a deterministic initial frame.
 See [compact metrics and history](Usage.md#compact-metrics-and-history) for the APIs
 and scale, gap and accessibility contracts.
+
+## Instruments
+
+```sh
+COLORTERM=truecolor swift run -c release chio-dashboard --instruments
+swift run -c release chio-dashboard --instruments --theme btop --snapshot
+```
+
+**Candidate for PR review; not merged or released.** This
+example passes focused local checks; platform qualification is tracked in
+[Plan](Plan.md#current-slice-responsive-instrumentation). It composes the native instrument style, a
+synthetic temperature reading, a reservoir fact, supplied mean/maximum reference
+marks and a desired band. The response-time history includes distinct same-time
+observations, a missing reading and an explicit segment break; the break does not
+assert outage duration. No system metrics or external data are collected.
+
+Press `m` to toggle the missing temperature, `b` to clear/restore its target band,
+`g` to switch between supplied and empty history, and `n`
+or **Next** to advance the sample. Ctrl-T changes theme and Ctrl-Q quits.
+Native **Play/Pause**, **Next**, **Sample** slider and **Step** stepper retain native
+focus, keyboard and pointer routes. Playback uses an application-owned task;
+Chio's views and styles do not advance time.
+
+Compact composition targets 36 × 18 with bars and a short plot, omitting the whole
+optional reference group. At 70 × 30 it expands to groups, reference captions and
+a taller history plot. The temperature reading sits directly above its annotated
+bar; reservoir and trend information sit alongside it. Displayed plots
+must reserve their complete height and captions. `--snapshot` supplies a
+deterministic initial state. See [usage](Usage.md#instruments-and-time-aware-history),
+[the view](../Examples/AgentDashboard/Presentation/InstrumentsExampleView.swift) and
+[the fixture](../Examples/AgentDashboard/Domain/InstrumentFixture.swift).
 
 ## Gallery and recordings
 
@@ -636,8 +669,8 @@ activation does; this demo opens no browser and makes no network requests.
 
 ![Instrumentation panels with segmented numeric readouts, measurement gauges, single-series history graphs and native sample controls](Media/metrics.png)
 
-Advance local readings, switch bars to dials, show missing or empty history, and
-compare btop, default and light palettes. Gauges remain accented at 100%; the
+Advance local readings, switch between bars and plain dials, show missing or empty
+history, and compare btop, default and light palettes. Gauges remain accented at 100%; the
 application supplies data, normalization and updates.
 [Watch](https://echoz.github.io/Chio/#metrics) · [Download recording](Media/metrics.cast).
 

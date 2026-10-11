@@ -59,6 +59,8 @@ done
     > .build/ci-results/forms-compact.txt
 "$binary" --timers --snapshot --width 36 --height 18 \
     > .build/ci-results/timers-compact.txt
+"$binary" --instruments --snapshot --width 36 --height 18 \
+    > .build/ci-results/instruments-compact.txt
 "$binary" --metrics --snapshot --width 36 --height 18 \
     > .build/ci-results/metrics-compact.txt
 "$binary" --inbox --snapshot --width 36 --height 18 \
@@ -79,6 +81,7 @@ python3 Scripts/ci/terminal-smoke.py "$binary" --viewport
 python3 Scripts/ci/terminal-smoke.py "$binary" --tree
 python3 Scripts/ci/terminal-smoke.py "$binary" --forms
 python3 Scripts/ci/terminal-smoke.py "$binary" --timers
+python3 Scripts/ci/terminal-smoke.py "$binary" --instruments
 python3 Scripts/ci/terminal-smoke.py "$binary" --metrics
 python3 Scripts/ci/terminal-smoke.py "$binary" --inbox
 python3 Scripts/ci/terminal-smoke.py "$binary" --diff

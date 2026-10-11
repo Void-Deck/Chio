@@ -39,10 +39,51 @@ parity remain outside it. Existing polygon cut-edge limitations remain explicit.
 Keep revision-specific results in release records rather than expanding this
 active plan with completed implementation history.
 
+## Current slice: responsive instrumentation
+
+**Status:** Accepted implementation candidate in [PR #8](https://github.com/echoz/Chio/pull/8).
+Focused debug/release tests, both affected terminal workflows, the pinned rules
+gate and independent review pass for the bar-only annotation revision and the
+optional plain-dial Metrics example. The PR
+records exact platform and showcase evidence. This work is not merged or released;
+public showcase publication remains pending. The
+[instrumentation decision](Decisions/Instrumentation.md#instrumentation-expansion-assessment)
+owns the contracts and supersedes the earlier API-only proposals.
+
+The candidate includes the opt-in native `.labeledContentStyle(.instrument)`,
+checked bar-gauge target bands and independent reference marks, one-series
+`HistoryChart` with checked segmented history/window values, and native
+slider/stepper styles installed by `.chioTheme`. Equal timestamps are accepted
+within nondecreasing segments; boundaries prohibit connections without implying
+outage duration. Applications own timing, sampling, retained history and playback.
+Native sizing includes complete bar tracks and captions; applications choose
+fallback composition. The existing plain dial API remains available, but the
+rejected dial redesign and annotated dial work are excluded from this slice.
+
+The local `--instruments` example composes readings, independent references,
+targets, same-time history observations and an explicit break, plus native controls
+with an application-owned playback task. Compact 36 × 18 and expanded 70 × 30
+layouts use numeric readings and bars. `--metrics` defaults to bars and offers
+plain arc-and-needle dials; allocations below 70 × 28 fall back to bars.
+Supporting/paired readings, trends and responsive collections use ordinary native
+views; `InstrumentTile`, domain widgets, compasses and multi-series
+charts remain deferred.
+
+Three-theme previews, monochrome inspection, gallery playback/seeking, shared
+themes/commands and compact browser layout pass locally. Hosted macOS/Linux CI
+remains the qualification gate; see the PR for revision-specific results.
+Showcase publication follows merge under
+[Verification](Verification.md). Preserve legacy gauge and Sparkline behavior,
+all supplied captions when a support group is displayed, whole-plot budget
+rejection and native focus/interaction routes.
+
+Provider archive acquisition is on hold at the user's request. No archive reader
+or downloader has been adopted; existing local pack APIs remain available.
+
 ## Native runtime follow-up
 
-The demonstrated native shutdown issue currently takes priority over the next map
-acquisition slice. [SwiftTUI PR #45](https://github.com/SwiftTUI/swift-tui/pull/45)
+The demonstrated native shutdown issue is tracked separately in
+[SwiftTUI PR #45](https://github.com/SwiftTUI/swift-tui/pull/45), which
 is the current upstream proposal after assessing the limits of an internal
 workaround. It has not been adopted by Chio; the dependency pin remains unchanged.
 [Native integration](Decisions/NativeIntegration.md#cooperative-shutdown-follow-up)
@@ -80,7 +121,8 @@ or implicit network behavior.
 
 ### Next slice: offline pack acquisition
 
-**Status:** Programmatic local preparation and read-only loading implemented.
+**Status:** Provider acquisition paused. Programmatic local preparation and
+read-only loading implemented.
 Delivery requires the platform, process and review gates in [Verification](Verification.md). [Offline packs](Decisions/OfflineTilePacks.md)
 owns the format, limits and lifetime contracts. [Usage](Usage.md#offline-tile-packs)
 and [Examples](Examples.md#maps) contain the public API and runnable commands.
@@ -151,8 +193,9 @@ separate rewrite. Intentional single-case
 filters, extensible upstream/raw-input switches, native wrappers and private
 nested conformances retain their documented roles.
 
-The approved map expansion above is the current feature queue. Real application
-use of the public map remains useful validation. Other component additions and a
+The map expansion above remains approved, with provider acquisition paused while
+the instrumentation candidate is verified and reviewed. Real application use of the public map
+remains useful validation. Other component additions and a
 new stable release remain possible directions, not delivery promises.
 
 Prioritize demonstrated regressions in shipped behavior: focus, selection,

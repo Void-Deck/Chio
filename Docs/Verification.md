@@ -67,8 +67,8 @@ bash Scripts/ci/verify.sh
 ```
 
 The gate serializes builds and hosted tests. It runs all tests in release,
-selected tests in debug, a standalone release build, 20 plain-text snapshots and
-15 dashboard pseudo-terminal workflows, plus the map example's fixture
+selected tests in debug, a standalone release build, 21 plain-text snapshots and
+16 dashboard pseudo-terminal workflows, plus the map example's fixture
 reproduction and PTY workflow. Snapshot files are inspection artifacts;
 Swift tests assert the rendering contracts.
 
@@ -194,9 +194,30 @@ Dependency upgrades also require a paused dashboard comparison (`--paused`) unde
 both without `NO_COLOR`. The indexed run exercises the actual terminal palette;
 the true-color run must preserve authored RGB.
 
+### Instrumentation
+
+Instrument changes additionally verify independent current/target/reference facts,
+checked normalized annotations, coincident marker captions, pure native style slots,
+and native slider/stepper keyboard, pointer and accessibility routes. Retained tests
+cover focus, input replacement, missing observations, theme changes and resizing.
+Gauge sizing checks preserve the legacy plain dial's 20 × 5 plot boundary and
+exercise annotated bars under wide/short and narrow/tall proposals, wrapped
+captions, inherited line limits, complete track height and native numeric
+fallback/recovery. New target/reference overloads are bar-only.
+History tests exercise equal timestamps, separate segments, nil breaks, real time
+and Y intersections, extreme finite arithmetic, dense spikes and whole-plot work
+rejection. A drawing bound does not bound an arbitrary caller's root allocation;
+measure extreme proposals inside a bounded test surface.
+
+The `--instruments` release PTY workflow checks missing/current restoration,
+reference captions, history replacement, native numeric editing, theme changes,
+compact recovery and terminal restoration. The example owns its playback task;
+this is not live telemetry or SSH latency evidence. Inspect all three theme
+previews and an uncolored capture before accepting changes to marker presentation.
+
 ### Demo site
 
-The [showcase](https://echoz.github.io/Chio/) serves fifteen recordings and 45
+The [showcase](https://echoz.github.io/Chio/) assembles sixteen recordings and 48
 three-theme previews from `Docs/Media`, using the pinned local asciinema player
 in `Docs/Site`. Its upstream license remains with the vendored assets. The catalog
 opens on Maps and separates Chio views, styles for native SwiftTUI controls and
@@ -250,6 +271,10 @@ Xcode 27 and the Swift 6.4.0 Ubuntu 24.04 container. The Linux image uses
 pinned to the same image digest verified from Docker Hub, to avoid depending on
 Docker Hub authentication during runner initialization. Builds/tests serialize
 within each job; artifacts retain logs, text captures and xUnit reports.
+The Linux job allows sixty minutes for the complete gate; macOS allows forty-five.
+The earlier Linux forty-five-minute cap cancelled a run during forward progress
+after its test suites passed. Increasing the job budget preserves all test
+assertions, frame deadlines and terminal workflows.
 
 [0.1.0 verification](Releases/0.1.0.md#platform-verification) records the tested
 platforms. Ordinary Linux executables need the Swift/Foundation runtime libraries.

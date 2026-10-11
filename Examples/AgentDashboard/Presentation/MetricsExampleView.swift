@@ -48,6 +48,13 @@ struct MetricsExampleView {
     private var theme: ChioTheme { themeChoice.theme }
     private var isWide: Bool { terminalSize.width >= 70 }
     private var isCompact: Bool { !isWide || terminalSize.height < 24 }
+    // The complete expanded composition needs 28 rows with five-row dials,
+    // compared with 24 rows for one-row bars. Retain the user's preference.
+    private var canDisplayDials: Bool { isWide && terminalSize.height >= 28 }
+    private var displayedGaugeStyle: MeasurementGauge.Style {
+        if canDisplayDials { return gaugeStyle }
+        return .bar
+    }
     private var panelWidth: Int {
         if isWide {
             let panelSpacing = isCompact ? 2 : 4
@@ -59,8 +66,10 @@ struct MetricsExampleView {
     private var meterWidth: Int { max(1, panelWidth - 4) }
     private var gaugeLabel: String {
         switch gaugeStyle {
-        case .bar: "Bars"
-        case .dial: isCompact ? "Dials (compact bars)" : "Dials"
+        case .bar: return "Bars"
+        case .dial:
+            if canDisplayDials { return "Dials" }
+            return "Dials (compact bars)"
         }
     }
 
@@ -110,7 +119,7 @@ struct MetricsExampleView {
                         .foregroundStyle(theme.colors.accent)
                         .accessibilityLabel("\(label) utilization: \(Int(current)) percent")
                 }
-                MeasurementGauge(position: current / 100, style: isCompact ? .bar : gaugeStyle)
+                MeasurementGauge(position: current / 100, style: displayedGaugeStyle)
                     .frame(width: meterWidth)
                     .accessibilityLabel("\(label) utilization: \(Int(current)) percent, scale 0 to 100 percent")
                 Sparkline(history.displaying(samples), scale: .fixed(0...100))
@@ -152,7 +161,7 @@ extension MetricsExampleView: View {
                 Text("/ metrics · simulated").foregroundStyle(theme.colors.secondaryText)
             }
             if !isCompact {
-                Text("Local samples, advanced by you. \(gaugeLabel) · v changes the gauge.")
+                Text("Local samples, advanced by you. \(gaugeLabel) · v toggles.")
                     .foregroundStyle(theme.colors.mutedText)
                 Spacer().frame(height: 1)
             }
