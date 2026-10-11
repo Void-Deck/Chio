@@ -23,6 +23,7 @@ struct ChioDashboardCommandTests {
         ExampleArguments(arguments: ["--forms"], example: .forms, startingTheme: .default),
         ExampleArguments(arguments: ["--timers"], example: .timers, startingTheme: .default),
         ExampleArguments(arguments: ["--metrics"], example: .metrics, startingTheme: .btop),
+        ExampleArguments(arguments: ["--instruments"], example: .instruments, startingTheme: .default),
         ExampleArguments(arguments: ["--inbox"], example: .inbox, startingTheme: .default),
         ExampleArguments(arguments: ["--diff"], example: .diff, startingTheme: .default),
     ]
@@ -30,7 +31,7 @@ struct ChioDashboardCommandTests {
     private static let focusedExamples = Array(examples.dropFirst())
     private static let themeConflict = "Choose --theme or --light, not both."
     private static let dimensionError = "Use --width 20...240 and --height 10...100."
-    private static let exampleConflict = "Choose one example: --choices, --text-entry, --feedback, --files, --keyboard-help, --tabs, --pagination, --viewport, --tree, --forms, --timers, --metrics, --inbox or --diff."
+    private static let exampleConflict = "Choose one example: --choices, --text-entry, --feedback, --files, --keyboard-help, --tabs, --pagination, --viewport, --tree, --forms, --timers, --metrics, --instruments, --inbox or --diff."
     private static let simulationError = "--scenario and --paused describe the dashboard simulation; omit them with a focused example."
     private static let directoryError = "--directory is available only with --files."
     private static let filesSnapshotError = "--files loads folders asynchronously and does not support --snapshot; run the interactive example."

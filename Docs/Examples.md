@@ -549,6 +549,36 @@ Use `--metrics --snapshot` for a deterministic initial frame.
 See [compact metrics and history](Usage.md#compact-metrics-and-history) for the APIs
 and scale, gap and accessibility contracts.
 
+## Instruments
+
+```sh
+COLORTERM=truecolor swift run -c release chio-dashboard --instruments
+swift run -c release chio-dashboard --instruments --theme btop --snapshot
+```
+
+**Candidate for PR review; implementation verification: IN PROGRESS.** This
+example is not merged or released. It composes the native instrument style, a
+synthetic temperature reading, a reservoir fact, supplied mean/maximum reference
+marks and a desired band. The response-time history includes distinct same-time
+observations, a missing reading and an explicit segment break; the break does not
+assert outage duration. No system metrics or external data are collected.
+
+Press `m` to toggle the missing temperature, `b` to clear/restore its target band,
+`g` to switch between supplied and empty history, `v` to choose dial/bar, and `n`
+or **Next** to advance the sample. Ctrl-T changes theme and Ctrl-Q quits.
+Native **Play/Pause**, **Next**, **Sample** slider and **Step** stepper retain native
+focus, keyboard and pointer routes. Playback uses an application-owned task;
+Chio's views and styles do not advance time.
+
+Compact composition targets 36 × 18 with bars and a short plot, omitting the whole
+optional reference group. At 70 × 30 it expands to groups, reference captions and
+a taller history plot, restoring the selected dial style. These layout targets
+are still being verified; they are not passing allocation claims. Displayed plots
+must reserve their complete height and captions. `--snapshot` supplies a
+deterministic initial state. See [usage](Usage.md#instruments-and-time-aware-history),
+[the view](../Examples/AgentDashboard/Presentation/InstrumentsExampleView.swift) and
+[the fixture](../Examples/AgentDashboard/Domain/InstrumentFixture.swift).
+
 ## Gallery and recordings
 
 [Watch the recordings in your browser](https://echoz.github.io/Chio/), with pause,

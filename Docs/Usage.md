@@ -184,6 +184,102 @@ collection, retention, clocks and units.
 See the [compact metrics example](Examples.md#compact-metrics) for local sample
 updates, missing and empty history, theme changes and adaptive composition.
 
+## Instruments and time-aware history
+
+The instrumentation expansion is a candidate for PR review on
+`codex/instrumentation`; **implementation verification is IN PROGRESS**. It has
+not been merged or released. The following recipes match the candidate source.
+
+Opt into native labelled-content hierarchy while retaining arbitrary content:
+
+```swift
+LabeledContent("Temperature", value: "21.4 °C")
+    .labeledContentStyle(.instrument)
+    .chioTheme(.btop)
+```
+
+The pure style reads the theme, puts a muted heading above accented content and
+hosts each authored slot once. It supplies no formatting, sampling or missing
+inference. Use native groups/stacks for paired or supporting facts and an authored
+`Label` for trends. Recorded facts can remain visible when the current reading is
+unavailable. An already-titled group can contain `InstrumentReadout` directly.
+
+Checked gauge annotations are independent of the current reading:
+
+```swift
+let target = try MeasurementGauge.TargetBand(lowerBound: 0.45, upperBound: 0.60)
+let references = try MeasurementGauge.ReferenceMarks([
+    MeasurementGauge.ReferenceMark(id: "mean", label: "Mean 20.8 °C", position: 0.52),
+    MeasurementGauge.ReferenceMark(id: "maximum", label: "Maximum 24.8 °C", position: 0.62)
+])
+MeasurementGauge(position: nil, referenceMarks: references,
+                 targetBand: target, style: .dial)
+```
+
+Target bounds must be finite, in `0...1` and strictly increasing. References need
+finite positions in `0...1`, nonempty complete captions and unique caller IDs;
+at most two are accepted. Caller order supplies ordinals, without sorting positions
+or deriving statistics. Shared reference cells show `*`; every numbered caption
+remains below the plot. Dials reserve whole ordinal cells over other geometry.
+Bars add one row each for a target track and a reference track. Reference captions
+add wrapping height to the bar or five-row dial: reserve the complete plot plus
+captions. Compact composition may omit a whole optional reference group. Pass
+`targetBand: nil` or checked `ReferenceMarks([])` to remove annotations. The legacy
+`MeasurementGauge(position:style:)` remains available.
+
+Use checked segmented history when exact time spacing matters:
+
+```swift
+let series = try HistorySeries(segments: [
+    [HistorySeries.Sample(offset: .seconds(0), value: 72),
+     HistorySeries.Sample(offset: .seconds(7), value: 94),
+     HistorySeries.Sample(offset: .seconds(7), value: 118),
+     HistorySeries.Sample(offset: .seconds(19), value: nil),
+     HistorySeries.Sample(offset: .seconds(26), value: 81)],
+    [HistorySeries.Sample(offset: .seconds(61), value: 310),
+     HistorySeries.Sample(offset: .seconds(83), value: 88)]
+])
+let window = try HistoryInterval(start: .seconds(0), end: .seconds(90))
+VStack(alignment: .leading, spacing: 0) {
+    Text("Response time · milliseconds")
+    HistoryChart(series, window: window, scale: .fixed(0...500))
+        .frame(width: 48, height: 8)
+    Text("0–90 seconds · 0–500 ms")
+}
+```
+
+The outer `try` covers nested constructors. Offsets are exact source `Duration`
+values in `0...Duration.seconds(Int64.max)`, nondecreasing inside each nonempty
+segment; equal timestamps can connect vertically. Separate segments may restart,
+backtrack or overlap and are never connected. A segment boundary asserts no outage
+duration. `nil` breaks both neighboring connections; zero is valid. A blank series
+uses `HistorySeries(samples: [])` or `HistorySeries(segments: [])`; supplied empty
+segments are rejected. Limits are 16,384 samples total and 4,096 segments.
+`HistoryInterval` supplies only the window, with strictly increasing checked bounds.
+There is no `missingIntervals` API. These checked values have no Codable contract.
+
+`HistoryChart` is passive and defaults to `.automatic`, using visible clipped
+geometry; fixed bounds reuse `Sparkline.Scale` and must be finite/increasing.
+It clips real connections without extrapolation. A singleton stays at its timestamp,
+while `Sparkline` retains equally spaced slots. Whole-plot unavailable output replaces
+allocations over 512 × 64 or native drawing work over 262,144 grid samples. No
+partial history is shown as complete. Applications own collection, retention,
+windows, units and captions; reserve the complete plot and caption height.
+
+`.chioTheme` installs pure `ChioSliderStyle()` and `ChioStepperStyle()` in its
+scope. Use native bindings and controls:
+
+```swift
+Slider("Sample", value: $selectedIndex, in: 0...119)
+Stepper("Step", value: $step, in: 1...3)
+```
+
+SwiftTUI retains keyboard/pointer behavior, focus, accessibility, the routed slider
+track and increment/decrement actions. Applications own valid bounds, play/pause,
+seeks and clocks. Local native style overrides remain available. No playback
+framework is added. See [the instruments example](Examples.md#instruments) and
+[the owning decision](Decisions/Instrumentation.md) for contracts and pending gates.
+
 ## Maps
 
 `MapView` draws a north-up world or street map from a retained `MapSource`.

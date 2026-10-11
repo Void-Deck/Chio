@@ -39,38 +39,38 @@ parity remain outside it. Existing polygon cut-edge limitations remain explicit.
 Keep revision-specific results in release records rather than expanding this
 active plan with completed implementation history.
 
-## Current design pass: responsive instrumentation
+## Current slice: responsive instrumentation
 
-The [full instrumentation assessment](Decisions/Instrumentation.md#instrumentation-expansion-assessment)
-now prioritizes [native style API design](Decisions/Instrumentation.md#proposed-instrument-api):
-`LabeledContent` for readings, existing groups and views for richer composition,
-a compatible target-band gauge extension and a separate one-series time-aware
-chart. `InstrumentTile` is deferred until repeated fitting policy justifies it.
-The current pass is API review only; no implementation or rendering spike is in
-progress. Proposed additions are not public APIs, and evaluation does not commit
-to the whole inventory.
+**Status:** Accepted candidate implementation on `codex/instrumentation` for PR
+review. The complete local macOS verification script and pinned SwiftRules gate
+pass. Independent library and example reviews have no remaining findings.
+This work is not merged or released; hosted platform checks and showcase
+publication remain pending.
+The [instrumentation decision](Decisions/Instrumentation.md#instrumentation-expansion-assessment)
+owns the contracts and supersedes the earlier API-only proposals.
 
-The candidate surface is now explicit: `.labeledContentStyle(.instrument)`,
-`MeasurementGauge(position:targetBand:style:)` with checked `TargetBand`, and
-`HistoryChart(_:window:scale:)` with checked `HistorySeries.Sample`, `HistorySeries`
-and `HistoryInterval` values. Styles consume supplied inputs without effects.
-Supporting/paired readings, trends and playback use existing view/control recipes;
-there is no proposed tile, trend, group or playback framework to implement first.
+The candidate includes the opt-in native `.labeledContentStyle(.instrument)`,
+compatible checked gauge target bands and independent reference marks, one-series
+`HistoryChart` with checked segmented history/window values, and native
+slider/stepper styles installed by `.chioTheme`. Equal timestamps are accepted
+within nondecreasing segments; boundaries prohibit connections without implying
+outage duration. Applications own timing, sampling, retained history and playback.
 
-Recommended delivery order:
+The local `--instruments` example composes readings, independent references,
+targets, same-time history observations and an explicit break, plus native controls
+with an application-owned playback task. Compact 36 × 18 and expanded 70 × 30
+layout targets pass release raster checks in all three themes. Supporting/paired readings, trends and
+responsive collections use ordinary native views; `InstrumentTile`, domain
+widgets, compasses and multi-series charts remain deferred.
 
-1. Agree simple, custom, expanded, paired and missing-reading call sites. Then
-   verify a theme-aware native labelled-content style and composition recipes;
-   promote only demonstrated reusable presentation.
-2. Prove target bands in bars/dials, then extend the existing gauge while preserving
-   all no-band behavior.
-3. Prove explicit time spacing, missing intervals, clipping and work limits before
-   promoting the proposed history chart.
-
-Trend indicators, paired/grouped readings and responsive collections remain
-compositions unless the examples reveal a shared missing contract. Native control
-styles are a smaller possible follow-up than a playback framework. Domain-specific
-widgets, compasses and multiple overlaid chart series remain deferred.
+Release terminal workflows, three-theme previews and monochrome captures pass,
+including quitting while playback is active. The gallery includes the new views
+and their native style recipes. Local browser checks pass for playback, seeking,
+shared themes, commands, URL history, 390-pixel layout and script/asset fallbacks.
+Remaining work is hosted macOS/Linux CI, PR review and showcase publication after
+merge under [Verification](Verification.md). Preserve legacy gauge and
+Sparkline behavior, all supplied captions when a support group is displayed,
+whole-plot budget rejection and native focus/interaction routes.
 
 Provider archive acquisition is on hold at the user's request. No archive reader
 or downloader has been adopted; existing local pack APIs remain available.
@@ -189,7 +189,7 @@ filters, extensible upstream/raw-input switches, native wrappers and private
 nested conformances retain their documented roles.
 
 The map expansion above remains approved, with provider acquisition paused while
-the instrumentation proposals are reviewed. Real application use of the public map
+the instrumentation candidate is verified and reviewed. Real application use of the public map
 remains useful validation. Other component additions and a
 new stable release remain possible directions, not delivery promises.
 

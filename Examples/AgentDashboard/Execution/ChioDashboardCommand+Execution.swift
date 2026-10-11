@@ -45,6 +45,8 @@ extension ChioDashboardCommand {
             try await WebHostCLIRunner.run(TimersApplication(theme: theme), configuration: configuration)
         case .metrics:
             try await WebHostCLIRunner.run(MetricsApplication(theme: theme), configuration: configuration)
+        case .instruments:
+            try await WebHostCLIRunner.run(InstrumentsApplication(theme: theme), configuration: configuration)
         case .inbox:
             try await WebHostCLIRunner.run(InboxApplication(theme: theme), configuration: configuration)
         case .diff:
@@ -81,6 +83,8 @@ extension ChioDashboardCommand {
             render(TimerExampleView(theme: theme))
         case .metrics:
             render(MetricsExampleView(theme: theme))
+        case .instruments:
+            render(InstrumentsExampleView(theme: theme))
         case .inbox:
             render(InboxExampleView(theme: theme))
         case .diff:

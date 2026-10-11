@@ -57,6 +57,7 @@
             <a href="#markdown" data-demo="markdown">Markdown</a>
             <a href="#choices" data-demo="choices">Choices</a>
             <a href="#metrics" data-demo="metrics">Metrics</a>
+            <a href="#instruments" data-demo="instruments">Timed instruments</a>
             <a href="#forms" data-demo="forms">Form fields</a>
             <a href="#pagination" data-demo="pagination">Pagination</a>
             <a href="#timers" data-demo="timers">Durations</a>
@@ -229,6 +230,60 @@
               <div><dt>Example code</dt><dd>Choice limits, validation rules, and the two-step workflow.</dd></div>
             </dl>
             <a class="example-source" href="https://github.com/echoz/Chio/blob/main/Examples/AgentDashboard/Presentation/ChoiceExampleView.swift">View example source <span aria-hidden="true">↗</span></a>
+          </div>
+        </article>
+
+        <article id="instruments" class="recording" data-category="views" data-cols="76" data-rows="30">
+          <div class="recording-heading">
+            <h3>HistoryChart · MeasurementGauge</h3>
+            <span class="recording-kind">Reusable views</span>
+          </div>
+          <p class="recording-summary">Time-proportional history and measurements with independent target bands and reference markers. Applications supply every observation and its meaning.</p>
+          <div class="theme-preview-controls" hidden>
+            <button class="play-recording" type="button" hidden><span aria-hidden="true">▶</span> Play original recording</button>
+            <button class="show-theme-preview" type="button" hidden>Show static preview</button>
+            <p id="instruments-preview-status" class="preview-status" role="status"></p>
+          </div>
+          <div class="recording-preview">
+            <img class="recording-image" src="recordings/instruments.png" alt="Synthetic temperature reading with a target band and independent mean and maximum markers, time-proportional response history, and themed native playback controls." width="960" height="798">
+          </div>
+          <div class="player" aria-label="Timed instrument recording"></div>
+          <p class="player-message" role="status" hidden></p>
+          <div class="recording-caption">
+            <p>Keep source references when the current reading is missing, switch bars to dials, and show explicit history breaks. Equal timestamps remain equal. Playback, compact layout and the synthetic data belong to the example.</p>
+            <a class="download" href="recordings/instruments.cast" download>Download recording ↓</a>
+          </div>
+          <div class="recording-run">
+            <div class="run-heading">
+              <h4>Try this example</h4>
+              <a href="https://github.com/echoz/Chio/blob/main/Docs/Examples.md#instruments">Keyboard controls <span aria-hidden="true">↗</span></a>
+            </div>
+            <pre><code>swift run -c release chio-dashboard --instruments</code></pre>
+            <p><kbd>m</kbd> missing · <kbd>b</kbd> band · <kbd>g</kbd> history · <kbd>v</kbd> gauge · <kbd>Ctrl-T</kbd> theme · <kbd>Ctrl-Q</kbd> quit</p>
+          </div>
+          <div class="api-example">
+            <h4>Use in your view</h4>
+            <a class="api-doc-link" href="https://github.com/echoz/Chio/blob/main/Docs/Usage.md#instruments-and-time-aware-history">API guide ↗</a>
+            <p>Construct checked history, window and reference values once when their source inputs change.</p>
+            <pre><code data-theme-code>VStack {
+    LabeledContent(&quot;Temperature&quot;, value: &quot;21.4 °C&quot;)
+        .labeledContentStyle(.instrument)
+    MeasurementGauge(position: 0.535,
+                     referenceMarks: references,
+                     targetBand: target, style: .dial)
+    HistoryChart(history, window: window)
+        .frame(height: 4)
+}
+.chioTheme(.default)</code></pre>
+          </div>
+          <p class="component-options"><strong>Presentation options.</strong> Bar or dial, zero to two references, optional target band, automatic or fixed history scale. Captions and marker tracks need their complete allocation.</p>
+          <div class="recording-details">
+            <dl class="recording-ingredients">
+              <div><dt>Chio views</dt><dd>HistoryChart · MeasurementGauge · KeyHints</dd></div>
+              <div><dt>Native controls with Chio styles</dt><dd>LabeledContent · Slider · Stepper · Button · GroupBox</dd></div>
+              <div><dt>Application owns</dt><dd>Observations · source summaries · layout choices · playback task</dd></div>
+            </dl>
+            <a class="example-source" href="https://github.com/echoz/Chio/blob/main/Examples/AgentDashboard/Presentation/InstrumentsExampleView.swift">View example source <span aria-hidden="true">↗</span></a>
           </div>
         </article>
 
