@@ -109,11 +109,15 @@ struct AppearanceExampleTests {
     @Test("Every recipe exposes settings and instruments through native narrow scrolling", arguments: AppearanceRecipe.allCases)
     func narrowSections(recipe: AppearanceRecipe) async throws {
         try await withAppearance(recipe: recipe, size: CellSize(width: 36, height: 18)) { session, _, recorder in
-            let initial = try await recorder.wait(description: "narrow agents and persistent hints") {
+            _ = try await recorder.wait(description: "narrow agents and persistent hints") {
                 $0.appearanceContains("Build Agent") && $0.appearanceContains("^G graphs")
             }
+            let ready = try await recorder.wait(description: "native comparison focus is ready for shortcuts") {
+                $0.focusedIdentity != nil && $0.appearanceContains("Build Agent")
+                    && $0.appearanceContains("^G graphs")
+            }
             session.send(.key(.character("e"), modifiers: .ctrl))
-            let settings = try await recorder.wait(after: initial.sequence, description: "native edit shortcut reveals workspace") {
+            let settings = try await recorder.wait(after: ready.sequence, description: "native edit shortcut reveals workspace") {
                 $0.appearanceWorkspaceFocused && $0.appearanceContains("Field notes")
                     && $0.appearanceContains("^L list")
             }
