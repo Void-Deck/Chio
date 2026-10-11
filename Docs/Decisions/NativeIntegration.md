@@ -17,6 +17,13 @@ explain the correction and relevant verification. Include a minimal reproducer o
 regression test and keep unverified platforms visible. Review comments and wording
 alongside correctness so maintainers can assess the fix without knowing Chio.
 
+Before publishing or updating a contribution, re-read upstream
+[AGENTS.md](https://github.com/SwiftTUI/swift-tui/blob/main/AGENTS.md) and
+[CONTRIBUTING.md](https://github.com/SwiftTUI/swift-tui/blob/main/CONTRIBUTING.md).
+Audit the full outgoing diff and commit messages, run the applicable upstream
+hooks and gates, and state any unavailable guidance or unverified checks. Keep
+upstream requirements authoritative for its code and contribution metadata.
+
 ## Native chrome
 
 Native list focus chrome uses SwiftTUI's theme; Chio themes selected content and
@@ -144,6 +151,11 @@ report `action_required` with zero jobs, so upstream platform execution awaits
 maintainer approval. Chio integration is not yet verified and its dependency pin
 remains unchanged.
 
+Current PR #47 head is `98560f9354fe00ec97cc209333af3516297b3dfa`. Its only change
+after the tested `3e7c1459` is a comment clarifying the scroll-anchor measurement
+contract. Formatting and applicable upstream hooks pass. Upstream explicitly
+exempts comment-only changes from repeating the full gate.
+
 Applications can use
 `Text(item.title).lineLimit(1).truncationMode(.tail)` to limit row height, but this
 is a content policy, not a native scrolling correction. Applications own widths.
@@ -167,6 +179,11 @@ establishes the native drain issue. The proposal limits cooperative exit to
 final-input presentation and required synchronous UI follow-ups, retaining the
 acquisition cap. Chio has not adopted the patch; any dependency update still
 requires native and Chio integration checks.
+
+Candidate `43672d5a678100ef4304147fac66752e5aa2d1ce` passes the full native macOS
+`bun run test` gate with Swift 6.4.0: all 85 steps, including the runtime shards,
+platform suites, TermUIPerf and soundness scan. Formatting and applicable upstream
+hooks also pass. Linux and Windows execution remain pending upstream CI.
 
 At the pinned revision, `onTerminationRequest` runs after the final render drain
 for exit keys and batched EOF. Cleanup in that callback alone cannot prevent the
