@@ -218,31 +218,34 @@ def run(binary, choices=False, text_entry=False, feedback=False, files=False, ke
             until("^Q quit")
         elif instruments:
             until("Mean 20.8 °C")
+            until("▰▱")
             send(b"\t\r", "22.0 °C")
             send(b"m", "Unavailable")
             until("Maximum 24.8 °C")
             send(b"g", "Response time · empty")
-            send(b"v\x14", "Mean 20.8 °C")
+            send(b"\x14", "Mean 20.8 °C")
             WIDTH, HEIGHT = 36, 18
             fcntl.ioctl(slave, termios.TIOCSWINSZ, struct.pack("HHHH", HEIGHT, WIDTH, 0, 0))
             process.send_signal(signal.SIGWINCH)
             until("^Q quit")
             send(b"m", "22.0 °C")
+            until("▰▱")
             send(b"\t\x1b[C", "19.6 °C")  # Native slider chooses the next observation.
             send(b"\t\x1b[C", "Step ◀ 2 ▶")
             WIDTH, HEIGHT = 100, 30
             fcntl.ioctl(slave, termios.TIOCSWINSZ, struct.pack("HHHH", HEIGHT, WIDTH, 0, 0))
             process.send_signal(signal.SIGWINCH)
             until("Maximum 24.8 °C")
+            until("▰▱")
             send(b"g", "Response time · milliseconds")
             send(b"\x1b[Z\x1b[Z\x1b[Z\r", "Pause")  # Exit while the example task is active.
         elif metrics:
             until("62%")
+            until("▰▱")
             send(b"\r", "22%")
             send(b"\t\r", "History: gaps")
             send(b"g", "History: empty")
             send(b"n", "28%")
-            send(b"v", "Dials")
             send(b"\x14", "History: empty")
             send(b"\x14", "History: empty")
             send(b"\x14", "History: empty")
@@ -251,13 +254,15 @@ def run(binary, choices=False, text_entry=False, feedback=False, files=False, ke
             process.send_signal(signal.SIGWINCH)
             until("^Q quit")
             until("empty")
+            until("▰▱")
             send(b"\r", "full")  # Native history focus survived theme and resize.
             send(b"nn\t\r", "42%")
             WIDTH, HEIGHT = 100, 30
             fcntl.ioctl(slave, termios.TIOCSWINSZ, struct.pack("HHHH", HEIGHT, WIDTH, 0, 0))
             process.send_signal(signal.SIGWINCH)
-            until("Dials")
+            until("Readings, bars and history.")
             until("42%")
+            until("▰▱")
         elif timers:
             until("0:20")
             send(b"\r", "Running")

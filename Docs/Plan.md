@@ -42,37 +42,37 @@ active plan with completed implementation history.
 ## Current slice: responsive instrumentation
 
 **Status:** Accepted implementation candidate in [PR #8](https://github.com/echoz/Chio/pull/8).
-Local tests, release terminal workflows, captures and the pinned SwiftRules gate
-pass. Independent library and example reviews have no remaining findings.
-The PR records exact platform evidence; this work is not merged or released,
-and public showcase publication remains pending.
-The [instrumentation decision](Decisions/Instrumentation.md#instrumentation-expansion-assessment)
+Focused debug/release tests, both affected terminal workflows, the pinned rules
+gate and independent review pass for the bar-only annotation revision. The PR
+records exact platform and showcase evidence. This work is not merged or released;
+public showcase publication remains pending. The
+[instrumentation decision](Decisions/Instrumentation.md#instrumentation-expansion-assessment)
 owns the contracts and supersedes the earlier API-only proposals.
 
 The candidate includes the opt-in native `.labeledContentStyle(.instrument)`,
-compatible checked gauge target bands and independent reference marks, one-series
+checked bar-gauge target bands and independent reference marks, one-series
 `HistoryChart` with checked segmented history/window values, and native
 slider/stepper styles installed by `.chioTheme`. Equal timestamps are accepted
 within nondecreasing segments; boundaries prohibit connections without implying
-outage duration. Applications own timing, sampling, retained history and playback. Dials keep a
-20 × 5 plot centered in surplus width; native sizing includes complete bar tracks
-and captions, while applications choose fallback composition.
+outage duration. Applications own timing, sampling, retained history and playback.
+Native sizing includes complete bar tracks and captions; applications choose
+fallback composition. The existing plain dial API remains available, but the
+rejected dial redesign and annotated dial work are excluded from this slice.
 
 The local `--instruments` example composes readings, independent references,
 targets, same-time history observations and an explicit break, plus native controls
 with an application-owned playback task. Compact 36 × 18 and expanded 70 × 30
-layout targets pass release raster checks in all three themes. Supporting/paired readings, trends and
-responsive collections use ordinary native views; `InstrumentTile`, domain
-widgets, compasses and multi-series charts remain deferred.
+layouts use numeric readings and bars. `--metrics` uses the same bar-first
+presentation. Supporting/paired readings, trends and responsive collections use
+ordinary native views; `InstrumentTile`, domain widgets, compasses and multi-series
+charts remain deferred.
 
-Release terminal workflows, three-theme previews and monochrome captures pass,
-including quitting while playback is active. The gallery includes the new views
-and their native style recipes. Local browser checks pass for playback, seeking,
-shared themes, commands, URL history, 390-pixel layout and script/asset fallbacks.
-Remaining work is hosted macOS/Linux CI, PR review and showcase publication after
-merge under [Verification](Verification.md). Preserve legacy gauge and
-Sparkline behavior, all supplied captions when a support group is displayed,
-whole-plot budget rejection and native focus/interaction routes.
+Three-theme previews, monochrome inspection, gallery playback/seeking, shared
+themes/commands and compact browser layout pass locally. Hosted macOS/Linux CI
+remains the qualification gate; see the PR for revision-specific results. Showcase publication follows merge under
+[Verification](Verification.md). Preserve legacy gauge and Sparkline behavior,
+all supplied captions when a support group is displayed, whole-plot budget
+rejection and native focus/interaction routes.
 
 Provider archive acquisition is on hold at the user's request. No archive reader
 or downloader has been adopted; existing local pack APIs remain available.

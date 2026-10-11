@@ -14,6 +14,7 @@ struct InstrumentsExampleTests {
             proposal: ProposedSize(width: size.width, height: size.height))
         let text = rendered.rasterSurface.lines.joined(separator: "\n")
         #expect(rendered.rasterSurface.size == size)
+        #expect(text.contains("▰▱"))
         for expected in ["instruments", "Temperature", "21.4 °C", "Reservoir", "58%", "Response time",
                          "Play", "Next", "Sample", "Step", "^Q quit"] {
             #expect(text.contains(expected))
@@ -37,6 +38,7 @@ struct InstrumentsExampleTests {
         do {
             let initial = try await recorder.wait(description: "native play is initially focused") {
                 $0.instrumentFocused("Play") && $0.instrumentContains("Mean 20.8 °C")
+                    && $0.instrumentContains("▰▱")
             }
             session.send(.key(.tab))
             let focused = try await recorder.wait(after: initial.sequence, description: "native next takes focus") {
@@ -49,34 +51,36 @@ struct InstrumentsExampleTests {
             session.send(.key(.character("m")))
             let missing = try await recorder.wait(after: next.sequence, description: "missing current retains independent reference captions") {
                 $0.instrumentContains("Unavailable") && $0.instrumentContains("Mean 20.8 °C")
-                    && $0.instrumentContains("Maximum 24.8 °C")
+                    && $0.instrumentContains("Maximum 24.8 °C") && $0.instrumentContains("····")
             }
             session.send(.key(.character("g")))
             let empty = try await recorder.wait(after: missing.sequence, description: "history clears independently of gauge facts") {
                 $0.instrumentContains("Response time · empty") && $0.instrumentContains("Mean 20.8 °C")
             }
-            session.send(.key(.character("v")))
             session.send(.key(.character("t"), modifiers: .ctrl))
-            let themed = try await recorder.wait(after: empty.sequence, description: "theme and dial retain native focus") {
+            let themed = try await recorder.wait(after: empty.sequence, description: "theme retains the missing bar and native focus") {
                 $0.raster.cells != empty.raster.cells && $0.instrumentFocused("Next")
                     && $0.focusedIdentity == focused.focusedIdentity && $0.instrumentContains("Maximum 24.8 °C")
+                    && $0.instrumentContains("····")
             }
             surface.updateSurfaceSize(CellSize(width: 36, height: 18))
             session.requestSurfaceRefresh()
             let compact = try await recorder.wait(after: themed.sequence, description: "compact policy omits the whole reference group while retaining controls") {
                 $0.raster.size == CellSize(width: 36, height: 18) && $0.instrumentFocused("Next")
                     && $0.focusedIdentity == focused.focusedIdentity && $0.instrumentContains("^Q quit")
-                    && !$0.instrumentContains("Mean 20.8 °C")
+                    && !$0.instrumentContains("Mean 20.8 °C") && $0.instrumentContains("····")
             }
             session.send(.key(.character("m")))
             let restored = try await recorder.wait(after: compact.sequence, description: "current observation restores without recomputing source facts") {
                 $0.instrumentContains("22.0 °C") && $0.instrumentFocused("Next")
+                    && $0.instrumentContains("▰▱")
             }
             surface.updateSurfaceSize(CellSize(width: 100, height: 30))
             session.requestSurfaceRefresh()
-            _ = try await recorder.wait(after: restored.sequence, description: "expanded reference group returns intact") {
+            _ = try await recorder.wait(after: restored.sequence, description: "expanded bar and reference group return intact") {
                 $0.instrumentContains("Mean 20.8 °C") && $0.instrumentContains("Maximum 24.8 °C")
                     && $0.instrumentContains("22.0 °C") && $0.instrumentFocused("Next")
+                    && $0.instrumentContains("▰▱")
             }
             session.stop()
             #expect(try await run.value == .inputEnded)

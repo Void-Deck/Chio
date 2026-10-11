@@ -197,7 +197,7 @@ in Releases; avoid duplicating full contracts across documents.
 | Topic | Status and responsibility |
 | --- | --- |
 | <a id="theme"></a>[Themes and native control styling](Decisions/Themes.md) | Accepted |
-| <a id="compact-instrumentation"></a><a id="duration-presentation-and-example-owned-timekeeping"></a>[Compact instrumentation and duration display](Decisions/Instrumentation.md) | Accepted primitives and instrumentation candidate; local gates passed, PR qualification pending; tile deferred |
+| <a id="compact-instrumentation"></a><a id="duration-presentation-and-example-owned-timekeeping"></a>[Compact instrumentation and duration display](Decisions/Instrumentation.md) | Accepted primitives and bar-only annotation candidate; PR qualification pending; tile deferred |
 | <a id="searchable-selection"></a><a id="searchable-multiple-choice"></a>[Searchable selection and membership](Decisions/SearchableSelection.md) | Accepted |
 | <a id="composition-and-layout"></a>[Responsive composition and status](Decisions/Composition.md) | Accepted |
 | <a id="contextual-keyboard-help"></a>[Contextual keyboard help](Decisions/KeyboardHelp.md) | Accepted |

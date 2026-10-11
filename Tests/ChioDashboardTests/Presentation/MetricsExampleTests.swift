@@ -1,5 +1,6 @@
 @testable import ChioDashboard
 import Chio
+import Foundation
 import SwiftTUIRuntime
 import Testing
 
@@ -16,6 +17,7 @@ struct MetricsExampleTests {
         )
         let text = rendered.rasterSurface.lines.joined(separator: "\n")
         #expect(rendered.rasterSurface.size == size)
+        #expect(text.components(separatedBy: "▰▱").count - 1 == 2)
         for value in ["metrics", "simulated", "Processor", "Memory", "CPU", "RAM", "62%", "71%",
                       "Next sample", "History", "n next", "g history", "^T theme", "^Q quit"] {
             #expect(text.contains(value))
@@ -66,29 +68,23 @@ struct MetricsExampleTests {
             let advancedEmpty = try await recorder.wait(after: empty.sequence, description: "samples advance even while history is empty") {
                 $0.metricsHistory("empty") && $0.metricsValue("CPU", 28) && $0.metricsValue("RAM", 48)
             }
-            session.send(.key(.character("v")))
-            let dials = try await recorder.wait(after: advancedEmpty.sequence, description: "dial choice changes presentation without changing current values or history") {
-                $0.raster.lines.contains { $0.contains("Dials") }
-                    && $0.metricsHistory("empty") && $0.metricsValue("CPU", 28)
-                    && $0.metricsValue("RAM", 48) && $0.metricsFocused("Cycle history")
-            }
-            var paletteFrame = dials
+            var paletteFrame = advancedEmpty
             for _ in 0..<3 {
                 session.send(.key(.character("t"), modifiers: .ctrl))
                 let preceding = paletteFrame
                 paletteFrame = try await recorder.wait(after: preceding.sequence, description: "palette cycle retains values, history mode and native focus") {
                     $0.metricsHistory("empty") && $0.metricsValue("CPU", 28) && $0.metricsValue("RAM", 48)
                         && $0.metricsFocused("Cycle history") && $0.focusedIdentity == preceding.focusedIdentity
-                        && $0.raster.cells != preceding.raster.cells
+                        && $0.raster.cells != preceding.raster.cells && $0.metricsHaveBars()
                 }
             }
-            #expect(paletteFrame.raster.cells == dials.raster.cells)
+            #expect(paletteFrame.raster.cells == advancedEmpty.raster.cells)
             surface.updateSurfaceSize(CellSize(width: 36, height: 18))
             session.requestSurfaceRefresh()
-            let narrow = try await recorder.wait(after: paletteFrame.sequence, description: "compact stacking retains native history focus and visible hints") {
+            let narrow = try await recorder.wait(after: paletteFrame.sequence, description: "compact stacking retains bars, native history focus and visible hints") {
                 $0.raster.size == CellSize(width: 36, height: 18) && $0.metricsFocused("Cycle history")
                     && $0.metricsHistory("empty") && $0.metricsValue("CPU", 28) && $0.metricsValue("RAM", 48)
-                    && $0.raster.lines.contains { $0.contains("^Q quit") }
+                    && $0.raster.lines.contains { $0.contains("^Q quit") } && $0.metricsHaveBars()
             }
             session.send(.key(.return))
             let restored = try await recorder.wait(after: narrow.sequence, description: "native action restores the retained populated history") {
@@ -101,9 +97,8 @@ struct MetricsExampleTests {
             }
             surface.updateSurfaceSize(CellSize(width: 100, height: 30))
             session.requestSurfaceRefresh()
-            _ = try await recorder.wait(after: batched.sequence, description: "widening restores the retained dial preference and simulated values") {
-                $0.raster.lines.contains { $0.contains("Dials") }
-                    && $0.metricsFocused("Next sample") && $0.metricsValue("CPU", 36)
+            _ = try await recorder.wait(after: batched.sequence, description: "widening retains bars and simulated values") {
+                $0.metricsHaveBars() && $0.metricsFocused("Next sample") && $0.metricsValue("CPU", 36)
                     && $0.metricsValue("RAM", 50) && $0.metricsHistory("full")
             }
             session.stop()
@@ -129,6 +124,10 @@ extension MetricsTestApp: App {
 }
 
 private extension SemanticHostFrame {
+    func metricsHaveBars() -> Bool {
+        raster.lines.joined(separator: "\n").components(separatedBy: "▰▱").count - 1 == 2
+    }
+
     func metricsFocused(_ label: String) -> Bool {
         semantics.accessibilityNodes.contains {
             $0.identity == focusedIdentity && $0.role == .button && $0.label == label

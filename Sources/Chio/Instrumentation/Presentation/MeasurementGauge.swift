@@ -7,14 +7,15 @@ import SwiftTUIViews
 /// distinct from zero. Applications own normalization, units, out-of-range policy
 /// and surrounding labels. This view owns no clock, sampling or measurement state.
 ///
-/// A target band is independent of the reading and uses the same normalized scale.
+/// Bar target bands and references are independent of the reading and use the
+/// same normalized scale.
 /// The bar requires one row, plus a row each for targets and references. The
 /// dial requires a complete twenty-column, five-row plot to retain its aspect.
 /// Native fitting measures those complete plots; applications choose another
 /// presentation when they do not fit. A caller-forced smaller frame or ancestor
 /// viewport can still clip content through native layout.
-/// Supplied references add a numbered bar track, or numbered dial cells, and
-/// native caption text beneath the plot. A shared reference cell displays `*`;
+/// Supplied references add a numbered bar track and native caption text beneath
+/// the plot. A shared reference cell displays `*`;
 /// every caption remains independently present. Caption wrapping determines its
 /// additional height. Applications reserve the complete plot and caption layout.
 /// Bars adapt to native width, prefer twenty columns, and limit drawing to 512
@@ -40,15 +41,14 @@ public struct MeasurementGauge {
         self.init(position: position, targetBand: nil, referenceMarks: [], style: style)
     }
 
-    /// Presents a reading and an independently authored desired interval.
-    public init(position: Double?, targetBand: TargetBand?, style: Style = .bar) {
-        self.init(position: position, targetBand: targetBand, referenceMarks: [], style: style)
+    /// Presents a bar reading and an independently authored desired interval.
+    public init(position: Double?, targetBand: TargetBand?) {
+        self.init(position: position, targetBand: targetBand, referenceMarks: [], style: .bar)
     }
 
-    /// Presents up to two supplied references, without deriving aggregate values.
-    public init(position: Double?, referenceMarks: ReferenceMarks,
-                targetBand: TargetBand? = nil, style: Style = .bar) {
-        self.init(position: position, targetBand: targetBand, referenceMarks: referenceMarks.marks, style: style)
+    /// Presents a bar with up to two supplied references, without deriving aggregate values.
+    public init(position: Double?, referenceMarks: ReferenceMarks, targetBand: TargetBand? = nil) {
+        self.init(position: position, targetBand: targetBand, referenceMarks: referenceMarks.marks, style: .bar)
     }
 
     private init(position: Double?, targetBand: TargetBand?, referenceMarks: [ReferenceMark], style: Style) {
@@ -202,23 +202,11 @@ private struct MeasurementDrawing {
             else { context.setPixel(at: point) }
             previous = point
         }
-        if let targetBand {
-            drawDialTarget(targetBand, into: &context, center: center,
-                           radiusX: radiusX, radiusY: radiusY, steps: steps)
-        }
-        if let position {
-            let angle = Double.pi * (1 - position)
-            let tip = Point(x: center.x + cos(angle) * radiusX * 0.82,
-                            y: center.y - sin(angle) * radiusY * 0.82)
-            context.line(from: center, to: tip)
-        }
-        let locations = referenceMarks.map { mark in
-            let angle = Double.pi * (1 - mark.position)
-            let x = center.x + cos(angle) * radiusX
-            let y = center.y - sin(angle) * radiusY
-            return CellPoint(x: Int(x.rounded(.down)), y: Int(y.rounded(.down)))
-        }
-        drawReferences(at: locations, into: &context)
+        guard let position else { return }
+        let angle = Double.pi * (1 - position)
+        let tip = Point(x: center.x + cos(angle) * radiusX * 0.82,
+                        y: center.y - sin(angle) * radiusY * 0.82)
+        context.line(from: center, to: tip)
     }
 
     private func drawReferences(at locations: [CellPoint], into context: inout CanvasContext) {
@@ -228,56 +216,7 @@ private struct MeasurementDrawing {
             if sharesCell { glyph = "*" }
             else if index == 0 { glyph = "1" }
             else { glyph = "2" }
-            // Native grid writes overlay direct cells. Reserve the entire cell
-            // for the ordinal; this explicit precedence applies to arc, needle
-            // and target geometry equally and remains legible in monochrome.
-            for x in 0..<2 {
-                for y in 0..<4 {
-                    context.clearSample(GridSample(x: location.x * 2 + x, y: location.y * 4 + y))
-                }
-            }
             context.setCell(at: location, character: glyph, foreground: context.foreground)
-        }
-    }
-
-    private func drawDialTarget(_ targetBand: MeasurementGauge.TargetBand,
-                                into context: inout CanvasContext, center: Point,
-                                radiusX: Double, radiusY: Double, steps: Int) {
-        // A concentric inner arc and radial endpoint marks identify the interval
-        // in monochrome. All grid writes keep the same whole-cell foreground.
-        let lower = targetBand.range.lowerBound
-        let upper = targetBand.range.upperBound
-        let bandSteps = max(1, Int(((upper - lower) * Double(steps)).rounded(.up)))
-        var previous: Point?
-        for index in 0...bandSteps {
-            let position = lower + (upper - lower) * Double(index) / Double(bandSteps)
-            let angle = Double.pi * (1 - position)
-            let point = Point(x: center.x + cos(angle) * radiusX * 0.62,
-                              y: center.y - sin(angle) * radiusY * 0.62)
-            if let previous { context.line(from: previous, to: point) }
-            else { context.setPixel(at: point) }
-            previous = point
-        }
-        for bound in [lower, upper] {
-            let angle = Double.pi * (1 - bound)
-            let inside = Point(x: center.x + cos(angle) * radiusX * 0.48,
-                               y: center.y - sin(angle) * radiusY * 0.48)
-            let outside = Point(x: center.x + cos(angle) * radiusX * 0.76,
-                                y: center.y - sin(angle) * radiusY * 0.76)
-            context.line(from: inside, to: outside)
-            // Tangential caps keep a narrow band visible when its radial mark
-            // coincides with the needle. Clamp before native line submission.
-            let marker = Point(x: center.x + cos(angle) * radiusX * 0.62,
-                               y: center.y - sin(angle) * radiusY * 0.62)
-            let halfWidth = sin(angle) * 0.5
-            let halfHeight = cos(angle) * 0.25
-            let maximumX = center.x * 2 - 0.125
-            let maximumY = Double(min(5, context.size.height)) - 0.125
-            let capStart = Point(x: max(0.125, min(maximumX, marker.x - halfWidth)),
-                                 y: max(0.125, min(maximumY, marker.y - halfHeight)))
-            let capEnd = Point(x: max(0.125, min(maximumX, marker.x + halfWidth)),
-                               y: max(0.125, min(maximumY, marker.y + halfHeight)))
-            context.line(from: capStart, to: capEnd)
         }
     }
 }

@@ -4,8 +4,8 @@
 `DurationText` shipped in 0.1.0; measurement gauges and segmented readouts extend
 those contracts and have not yet been included in a tagged release.
 The expansion below is an accepted implementation candidate on `codex/instrumentation`.
-It is for PR review and has not been merged or released. Local tests,
-independent source reviews and release terminal captures pass; hosted macOS/Linux
+It is for PR review and has not been merged or released. The accepted bar-only
+annotation revision passes focused local tests and separate review; platform
 checks and publication remain tracked in [Plan](../Plan.md).
 
 Present supplied measurements and durations; applications retain sampling, timing and interpretation.
@@ -175,16 +175,22 @@ A future container needs repeated shared fitting policy beyond these recipes.
 <a id="proposed-target-band-gauge"></a>
 
 The existing initializer and position preconditions remain intact. The candidate
-adds distinct overloads:
+adds distinct bar-only overloads. Compact dial redesigns were not sufficiently
+readable, so this slice uses numeric readings, bars and history graphs.
+The existing plain `.dial` API remains available for compatibility; target bands
+and reference marks do not extend it. Draft consumers of the annotated overloads
+must remove their `style:` argument; no merged initializer is removed.
+
+The public signatures are:
 
 ```swift
 // Legacy initializer.
 init(position: Double?, style: Style = .bar)
 
-init(position: Double?, targetBand: TargetBand?, style: Style = .bar)
+init(position: Double?, targetBand: TargetBand?)
 
 init(position: Double?, referenceMarks: ReferenceMarks,
-     targetBand: TargetBand? = nil, style: Style = .bar)
+     targetBand: TargetBand? = nil)
 ```
 
 Position, target and references are independent supplied facts. Missing position
@@ -195,8 +201,8 @@ normalization and complete explanatory captions.
 `MeasurementGauge.TargetBand(lowerBound:upperBound:)` throws its nested
 `ValidationError` unless both bounds are finite, in `0...1` and strictly increasing.
 Its immutable `range` is inclusive. `nil` removes the target. Bars add a separate
-track (`╞═╡`, or `╪` when endpoints share a cell); dials use an inner arc and endpoint
-marks. Tiny geometry may merge marks, so author a target caption when useful.
+track (`╞═╡`, or `╪` when endpoints share a cell). Tiny geometry may merge marks,
+so author a target caption when useful.
 
 `MeasurementGauge.ReferenceMark(id:label:position:)` throws its nested error for
 nonfinite/out-of-range positions or an empty label. The label must be a complete
@@ -207,9 +213,8 @@ impose no relative ordering of positions. The gauge computes no statistics.
 
 Caller order determines ordinals `1` and `2`. A shared reference cell displays
 `*`, while both numbered native text captions remain present below the plot.
-Dials reserve the entire ordinal cell, clearing braille samples before placing
-the glyph; reference text takes precedence over arc, target and needle paint.
-This is an explicit monochrome collision policy, not independently colored overlap.
+Reading, target and reference tracks occupy separate rows, so their marks remain
+distinguishable in monochrome without overlapping paint.
 
 ```swift
 let target = try MeasurementGauge.TargetBand(lowerBound: 0.45, upperBound: 0.60)
@@ -218,29 +223,28 @@ let references = try MeasurementGauge.ReferenceMarks([
     MeasurementGauge.ReferenceMark(id: "maximum", label: "Maximum 24.8 °C", position: 0.62)
 ])
 MeasurementGauge(position: nil, referenceMarks: references,
-                 targetBand: target, style: .dial)
+                 targetBand: target)
 ```
 
 Bars reserve one reading row plus one target row when present and one reference
 track when present. All required plot rows contribute to native minimum sizing;
-a short proposal cannot silently remove the target or reference track. Dials
-reserve their complete 20 × 5 plot independently of caption width. Reference
+a short proposal cannot silently remove the target or reference track. Reference
 captions wrap at the instrument's actual allocation (up to 512 columns), ignore
 inherited line limits and add their full native measured height below the plot.
 
 Applications must admit the complete instrument, including their own units and
-scale. Native `ViewThatFits` can choose passive dial, bar and complete numeric
-alternatives; the application retains the selected style across resizes. Its final
-alternative must itself fit. At this native revision, default two-axis fitting
+scale. Native `ViewThatFits` can choose passive annotated bar and complete numeric
+alternatives. Its final alternative must itself fit. At this native revision,
+default two-axis fitting
 probes ideal width twenty; `.vertical` fitting uses the provided width for caption
 wrapping when the application has already admitted the plot's minimum width.
 A caller can still force clipping with an undersized
 fixed frame or ancestor clip; Chio adds no automatic data-hiding fallback. Compact
 views may omit a complete optional reference group by application policy.
 
-The 20 × 5 dial geometry, bar width behavior, paint and accessibility remain
-compatibility gates. Wide or undersized dials intentionally stop stretching or
-shrinking, and annotated plots expose their complete required height.
+The plain 20 × 5 dial geometry, bar width behavior, paint and accessibility remain
+compatibility gates. Wide or undersized plain dials intentionally stop stretching
+or shrinking, and annotated bars expose their complete required height.
 New checked annotation values are immutable, hashable and sendable, without a
 Codable or persisted representation contract.
 
@@ -378,10 +382,10 @@ keyboard/pointer routes, batched input, focus and resize recovery. Test complete
 compositions and monochrome as well as isolated primitives.
 
 The synthetic `--instruments` example targets compact 36 × 18 and expanded
-70 × 30 layouts. Both allocations pass release raster checks in all three themes;
-real terminal captures additionally exercise 76 × 30 and compact-to-wide recovery.
-Monochrome captures retain marker ordinals and complete captions. These results
-do not establish appearance in every emulator or live SSH responsiveness.
+70 × 30 layouts. Verify both allocations in all three themes and use release
+terminal captures for 76 × 30 and compact-to-wide recovery. Monochrome captures
+must retain marker ordinals and complete captions. These checks do not establish
+appearance in every emulator or live SSH responsiveness.
 Showcase publication and platform qualification are tracked in [Plan](../Plan.md);
 PR review does not constitute merge or release. Provider archive acquisition
 remains paused.

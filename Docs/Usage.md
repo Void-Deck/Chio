@@ -114,13 +114,14 @@ label:
 VStack(alignment: .leading) {
     InstrumentReadout("64") // Segmented numeric lettering by default.
     Text("CPU · 64%")
-    MeasurementGauge(position: 0.64, style: .dial)
+    MeasurementGauge(position: 0.64)
         .accessibilityLabel("CPU utilization: 64 percent, scale 0 to 100 percent")
 }
 .chioTheme(.btop)
 ```
 
-`MeasurementGauge` defaults to `.bar`; `.dial` draws a semicircular needle.
+`MeasurementGauge` defaults to `.bar`. The existing `.dial` option remains
+available for unannotated readings, but the examples use bars for readability.
 Supply a finite position in `0...1`, or `nil` for a missing reading. Normalize
 measurements and decide how to handle out-of-range data in your application before
 construction. The bar uses one row, with a one-column minimum, twenty-column
@@ -215,20 +216,19 @@ let references = try MeasurementGauge.ReferenceMarks([
     MeasurementGauge.ReferenceMark(id: "maximum", label: "Maximum 24.8 °C", position: 0.62)
 ])
 MeasurementGauge(position: nil, referenceMarks: references,
-                 targetBand: target, style: .dial)
+                 targetBand: target)
 ```
 
 Target bounds must be finite, in `0...1` and strictly increasing. References need
 finite positions in `0...1`, nonempty complete captions and unique caller IDs;
 at most two are accepted. Caller order supplies ordinals, without sorting positions
 or deriving statistics. Shared reference cells show `*`; every numbered caption
-remains below the plot. Dials reserve whole ordinal cells over other geometry.
-Bars add one row each for a target track and a reference track. Reference captions
-use the actual instrument width and add their full wrapping height below the
-plot, independently of the dial's fixed plot size. Native fitting sees all required
-tracks and captions, even under an inherited line limit. Use passive
-`ViewThatFits` alternatives when the complete dial, bar or numeric reading should
-be chosen by available space; keep the selected style in application state. Default
+remains below the plot. Annotated gauges use bars, adding one row each for a
+target track and a reference track. Reference captions use the actual instrument
+width and add their full wrapping height below the plot. Native fitting sees all
+required tracks and captions, even under an inherited line limit. Use passive
+`ViewThatFits` alternatives to choose a complete annotated bar or numeric reading
+by available space. Default
 two-axis fitting probes ideal width twenty. If the minimum plot width is already
 met, `.vertical` fitting measures captions at the provided width. A forced
 undersized frame or ancestor clip can still hide content. Compact

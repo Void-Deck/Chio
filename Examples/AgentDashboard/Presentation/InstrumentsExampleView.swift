@@ -13,7 +13,6 @@ struct InstrumentsExampleView {
     @State private var isReadingMissing = false
     @State private var hasTarget = true
     @State private var hasHistory = true
-    @State private var usesDial = false
     private let fixture = InstrumentFixture.example
 
     init(theme: ExampleTheme = .default) {
@@ -30,15 +29,8 @@ struct InstrumentsExampleView {
         if isReadingMissing { return nil }
         return fixture.temperatures[selectedIndex] / 40
     }
-    private var gaugeStyle: MeasurementGauge.Style {
-        if usesDial && isExpanded { return .dial }
-        return .bar
-    }
     private var gaugeHeight: Int {
-        switch gaugeStyle {
-        case .bar: (hasTarget ? 2 : 1) + (isExpanded ? 3 : 0)
-        case .dial: 7
-        }
+        (hasTarget ? 2 : 1) + (isExpanded ? 3 : 0)
     }
 
     private func nextSample() {
@@ -50,7 +42,6 @@ struct InstrumentsExampleView {
             KeyHint("m", "missing")
             KeyHint("b", "band")
             KeyHint("g", "history")
-            KeyHint("v", "dial")
             KeyHint("^T", "theme")
             KeyHint("^Q", "quit")
         }
@@ -77,12 +68,15 @@ struct InstrumentsExampleView {
         HStack(alignment: .top, spacing: 2) {
             VStack(alignment: .leading, spacing: 1) {
                 temperature
+                gauge
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            VStack(alignment: .leading, spacing: 1) {
                 reservoir
                 Label("Falling by 2%") { Text("↓").accessibilityHidden(true) }
                     .foregroundStyle(theme.colors.secondaryText)
             }
             .frame(width: 24, alignment: .leading)
-            gauge.frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
@@ -90,8 +84,7 @@ struct InstrumentsExampleView {
         VStack(alignment: .leading, spacing: 0) {
             MeasurementGauge(position: position,
                              referenceMarks: isExpanded ? fixture.references : fixture.noReferences,
-                             targetBand: hasTarget ? fixture.target : nil,
-                             style: gaugeStyle)
+                             targetBand: hasTarget ? fixture.target : nil)
                 .frame(height: gaugeHeight)
                 .accessibilityLabel("Temperature: \(reading). Scale: zero to forty degrees Celsius."
                     + (hasTarget ? " Desired range: eighteen to twenty-four degrees." : " No desired range.")
@@ -170,7 +163,6 @@ extension InstrumentsExampleView: View {
                 case .character("m"): isReadingMissing.toggle()
                 case .character("b"): hasTarget.toggle()
                 case .character("g"): hasHistory.toggle()
-                case .character("v"): usesDial.toggle()
                 case .character("n"): nextSample()
                 default: return .ignored
                 }

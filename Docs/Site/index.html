@@ -250,7 +250,7 @@
           <div class="player" aria-label="Timed instrument recording"></div>
           <p class="player-message" role="status" hidden></p>
           <div class="recording-caption">
-            <p>Keep source references when the current reading is missing, switch bars to dials, and show explicit history breaks. Equal timestamps remain equal. Playback, compact layout and the synthetic data belong to the example.</p>
+            <p>Keep source references when the current reading is missing, compare the reading with its target band, and show explicit history breaks. Equal timestamps remain equal. Playback, compact layout and the synthetic data belong to the example.</p>
             <a class="download" href="recordings/instruments.cast" download>Download recording ↓</a>
           </div>
           <div class="recording-run">
@@ -259,7 +259,7 @@
               <a href="https://github.com/echoz/Chio/blob/main/Docs/Examples.md#instruments">Keyboard controls <span aria-hidden="true">↗</span></a>
             </div>
             <pre><code>swift run -c release chio-dashboard --instruments</code></pre>
-            <p><kbd>m</kbd> missing · <kbd>b</kbd> band · <kbd>g</kbd> history · <kbd>v</kbd> gauge · <kbd>Ctrl-T</kbd> theme · <kbd>Ctrl-Q</kbd> quit</p>
+            <p><kbd>m</kbd> missing · <kbd>b</kbd> band · <kbd>g</kbd> history · <kbd>Ctrl-T</kbd> theme · <kbd>Ctrl-Q</kbd> quit</p>
           </div>
           <div class="api-example">
             <h4>Use in your view</h4>
@@ -270,13 +270,13 @@
         .labeledContentStyle(.instrument)
     MeasurementGauge(position: 0.535,
                      referenceMarks: references,
-                     targetBand: target, style: .dial)
+                     targetBand: target)
     HistoryChart(history, window: window)
         .frame(height: 4)
 }
 .chioTheme(.default)</code></pre>
           </div>
-          <p class="component-options"><strong>Presentation options.</strong> Bar or dial, zero to two references, optional target band, automatic or fixed history scale. Captions and marker tracks need their complete allocation.</p>
+          <p class="component-options"><strong>Presentation options.</strong> Annotated bars with zero to two references and an optional target band; automatic or fixed history scale. Captions and marker tracks need their complete allocation.</p>
           <div class="recording-details">
             <dl class="recording-ingredients">
               <div><dt>Chio views</dt><dd>HistoryChart · MeasurementGauge · KeyHints</dd></div>
@@ -304,7 +304,7 @@
           <div class="player" aria-label="Compact metrics recording"></div>
           <p class="player-message" role="status" hidden></p>
           <div class="recording-caption">
-            <p>Advance local samples, switch bars to dials, show missing or empty history, and compare segmented readouts and compact border titles across three palettes. Chio presents the readings; the application owns the data and updates.</p>
+            <p>Advance local samples, show missing or empty history, and compare segmented readouts and compact border titles across three palettes. Chio presents the readings; the application owns the data and updates.</p>
             <a class="download" href="recordings/metrics.cast" download>Download recording ↓</a>
           </div>
           <div class="recording-run">
@@ -313,7 +313,7 @@
               <a href="https://github.com/echoz/Chio/blob/main/Docs/Examples.md#compact-metrics">Keyboard controls <span aria-hidden="true">↗</span></a>
             </div>
             <pre><code>swift run -c release chio-dashboard --metrics</code></pre>
-            <p><kbd>n</kbd> next sample · <kbd>g</kbd> history · <kbd>v</kbd> gauge · <kbd>Ctrl-T</kbd> theme · <kbd>Ctrl-Q</kbd> quit</p>
+            <p><kbd>n</kbd> next sample · <kbd>g</kbd> history · <kbd>Ctrl-T</kbd> theme · <kbd>Ctrl-Q</kbd> quit</p>
           </div>
           <div class="api-example">
             <h4>Use in your view</h4>
@@ -321,18 +321,18 @@
             <p>samples: [Double?] is application-owned history; labels supply the measurement units.</p>
             <pre><code data-theme-code>VStack {
     InstrumentReadout(&quot;64&quot;)
-    MeasurementGauge(position: 0.64, style: .dial)
+    MeasurementGauge(position: 0.64)
     Sparkline(samples, scale: .fixed(0...1))
         .frame(width: 24, height: 4)
 }
 .chioTheme(.default)</code></pre>
           </div>
-          <p class="component-options"><strong>Presentation options.</strong> Gauge: bar or dial. Readout: segmented or plain. History: automatic or fixed scale; nil readings leave gaps. These choices are independent of theme.</p>
+          <p class="component-options"><strong>Presentation options.</strong> Gauge: normalized bar. Readout: segmented or plain. History: automatic or fixed scale; nil readings leave gaps. These choices are independent of theme.</p>
           <div class="recording-details">
             <dl class="recording-ingredients">
               <div><dt>Chio</dt><dd><code>MeasurementGauge</code>, <code>InstrumentReadout</code>, <code>Sparkline</code>, <code>ChioTheme.btop</code>, <code>ChioGroupBoxStyle</code></dd></div>
               <div><dt>SwiftTUI</dt><dd><code>Canvas</code>, <code>GroupBox</code>, <code>Button</code></dd></div>
-              <div><dt>Example code</dt><dd>Fixed sample data, normalization, manual updates, gauge selection and adaptive instrument layout.</dd></div>
+              <div><dt>Example code</dt><dd>Fixed sample data, normalization, manual updates and adaptive instrument layout.</dd></div>
             </dl>
             <a class="example-source" href="https://github.com/echoz/Chio/blob/main/Examples/AgentDashboard/Presentation/MetricsExampleView.swift">View example source <span aria-hidden="true">↗</span></a>
           </div>

@@ -9,7 +9,6 @@ struct MetricsExampleView {
     @State private var themeChoice: ExampleTheme
     @State private var history: History = .populated
     @State private var sampleIndex = 0
-    @State private var gaugeStyle: MeasurementGauge.Style
 
     private static let processorFixture: [Double] = [
         22, 28, 24, 36, 42, 34, 48, 57, 45, 38, 52, 67,
@@ -20,9 +19,8 @@ struct MetricsExampleView {
         61, 63, 64, 65, 65, 67, 68, 69, 68, 70, 71, 71,
     ]
 
-    init(theme: ExampleTheme = .btop, gaugeStyle: MeasurementGauge.Style = .bar) {
+    init(theme: ExampleTheme = .btop) {
         _themeChoice = State(wrappedValue: theme)
-        _gaugeStyle = State(wrappedValue: gaugeStyle)
     }
 
     private enum History: String {
@@ -57,20 +55,6 @@ struct MetricsExampleView {
         }
     }
     private var meterWidth: Int { max(1, panelWidth - 4) }
-    private var gaugeLabel: String {
-        switch gaugeStyle {
-        case .bar: "Bars"
-        case .dial: isCompact ? "Dials (compact bars)" : "Dials"
-        }
-    }
-
-    private func toggleGauge() {
-        switch gaugeStyle {
-        case .bar: gaugeStyle = .dial
-        case .dial: gaugeStyle = .bar
-        }
-    }
-
     private var processorSamples: [Double?] { samples(Self.processorFixture) }
     private var memorySamples: [Double?] { samples(Self.memoryFixture) }
 
@@ -110,7 +94,7 @@ struct MetricsExampleView {
                         .foregroundStyle(theme.colors.accent)
                         .accessibilityLabel("\(label) utilization: \(Int(current)) percent")
                 }
-                MeasurementGauge(position: current / 100, style: isCompact ? .bar : gaugeStyle)
+                MeasurementGauge(position: current / 100)
                     .frame(width: meterWidth)
                     .accessibilityLabel("\(label) utilization: \(Int(current)) percent, scale 0 to 100 percent")
                 Sparkline(history.displaying(samples), scale: .fixed(0...100))
@@ -134,7 +118,6 @@ struct MetricsExampleView {
         KeyHints {
             KeyHint("n", "next")
             KeyHint("g", "history")
-            KeyHint("v", "gauge")
             KeyHint("^T", "theme")
             KeyHint("^Q", "quit")
         }
@@ -152,7 +135,7 @@ extension MetricsExampleView: View {
                 Text("/ metrics · simulated").foregroundStyle(theme.colors.secondaryText)
             }
             if !isCompact {
-                Text("Local samples, advanced by you. \(gaugeLabel) · v changes the gauge.")
+                Text("Local samples, advanced by you. Readings, bars and history.")
                     .foregroundStyle(theme.colors.mutedText)
                 Spacer().frame(height: 1)
             }
@@ -192,7 +175,6 @@ extension MetricsExampleView: View {
                 switch press.key {
                 case .character("n"): nextSample()
                 case .character("g"): history = history.next
-                case .character("v"): toggleGauge()
                 default: return .ignored
                 }
             } else { return .ignored }
