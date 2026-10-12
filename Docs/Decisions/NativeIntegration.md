@@ -107,8 +107,8 @@ native registry, collection interaction, lazy composition, viewport sizing and
 wheel-scroll suites pass on macOS with Swift 6.4.0. Independent review found no
 issues. The full native `bun run test` gate also passes on macOS at that revision,
 including all runtime shards, platform suites, TermUIPerf and the soundness scan.
-GitHub workflows report `action_required` without executing; upstream CI remains
-pending. Chio's dependency pin is unchanged.
+Hosted macOS, Linux, Windows arm64/amd64 and Release Soundness workflows also
+pass at that revision. Chio's dependency pin is unchanged.
 Cursor reveal and unanchored `scrollTo` share the helper;
 explicit anchors and arbitrary binding normalization remain outside this fix.
 
@@ -188,7 +188,17 @@ requires native and Chio integration checks.
 Candidate `43672d5a678100ef4304147fac66752e5aa2d1ce` passes the full native macOS
 `bun run test` gate with Swift 6.4.0: all 85 steps, including the runtime shards,
 platform suites, TermUIPerf and soundness scan. Formatting and applicable upstream
-hooks also pass. Linux and Windows execution remain pending upstream CI.
+hooks also pass. Hosted macOS, Windows and release checks pass. The Linux core
+lane exposed a pre-existing PTY test race: a sibling test can reuse a released
+descriptor number before the last-owner cleanup assertion examines it.
+
+Local follow-up `0b4d5654caebca65a47558d45ee3de4c25d32c52` serializes both dedicated
+PTY gate launches, preserving every assertion and concurrency within each test.
+A bounded Linux reproduction failed 5 of 20 parallel runs and none of 20
+serialized runs. The full macOS gate (85 steps), Linux arm64 core gate (23 steps)
+and independent review pass; both gates actually run the 17 PTY tests serially.
+This follow-up is committed locally, not pushed. Hosted Linux amd64 verification
+remains pending, and direct parallel test invocations retain the isolation risk.
 
 At the pinned revision, `onTerminationRequest` runs after the final render drain
 for exit keys and batched EOF. Cleanup in that callback alone cannot prevent the

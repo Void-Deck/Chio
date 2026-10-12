@@ -75,7 +75,8 @@ The per-axis reveal candidate is in
 [Draft PR #47](https://github.com/SwiftTUI/swift-tui/pull/47) carries measured-height
 navigation and builder placement; its full native macOS gate and independent
 review pass. Neither native fix nor a dependency update is adopted by Chio.
-Upstream CI awaits maintainer approval; Chio integration gates remain required.
+PR #46 passes upstream macOS, Linux, Windows and release checks; PR #47 still
+awaits maintainer approval to run CI. Chio integration gates remain required.
 [Native integration](Decisions/NativeIntegration.md#tall-list-rows)
 owns these findings and the conditions for revisiting row density. This deferral
 is not a blocker for the unified style API; neither fix has shipped in Chio.
