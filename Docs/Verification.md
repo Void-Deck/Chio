@@ -163,6 +163,8 @@ An eight-result compact-to-wide workflow checks native scroll reveal and the
 public runtime-issue channel, including bounded measurement of the results list.
 Public raster checks verify semantic light-row colors before and after native
 selection moves, alongside visual inspection of all three theme captures.
+A preloaded-result session verifies native list focus on first mount and that
+Return opens the selected place without resubmitting the query.
 Controlled providers cover one active request, replacement after cancellation
 acknowledgement, latest-pending admission and stale A-B-A completion. The map
 PTY probe's `--place-search` workflow uses synthetic local places without network;

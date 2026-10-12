@@ -24,6 +24,34 @@ struct MapPlaceSearchInteractionTests {
         }
     }
 
+    @Test("Accepted results present at first mount receive native focus before Return activates")
+    func preloadedMatchesFocus() async throws {
+        let frames = PlaceFrames()
+        let surface = HostedRasterSurface(surfaceSize: CellSize(width: 100, height: 30), appearance: .fallback,
+                                          onFrame: { frames.latest = $0 })
+        let query = try MapPlaceQuery(text: "eight")
+        let matches = try await EightResultGeocoder().search(query)
+        let app = PreloadedPlaceSearchApp(query: query, matches: matches)
+        let session = try HostedSceneSession(for: app, sceneID: "preloaded-place-search", surface: surface)
+        let run = Task { try await session.start() }
+        do {
+            let ready = try await frames.wait {
+                $0.placeText.contains("8 matches") && $0.focusesPlaceResults
+            }
+            #expect(ready.placeText.contains("Detail for fixture 1"))
+            session.send(.key(.return))
+            let opened = try await frames.wait(after: ready.sequence) { $0.placeText.contains("Opened Fixture 1") }
+            #expect(opened.placeText.contains("Submissions: 0"))
+            #expect(opened.focusesPlaceResults)
+            session.stop()
+            #expect(try await run.value == .inputEnded)
+        } catch {
+            session.stop()
+            _ = await run.result
+            throw error
+        }
+    }
+
     @Test("Light result rows keep readable semantic colors as native selection moves")
     func lightRowColors() async throws {
         let frames = PlaceFrames()
@@ -441,5 +469,44 @@ extension EightResultGeocoder: MapGeocodingProvider {
             try MapPlace(coordinate: MapCoordinate(latitude: Double(index), longitude: 20 + Double(index)),
                          name: "Fixture \(index)", detail: "Detail for fixture \(index)")
         }, attributions: [MapPlaceMatches.Attribution(text: "Eight result fixtures", link: URL(string: "https://example.test/credits")!)])
+    }
+}
+
+private struct PreloadedPlaceSearchApp {
+    let phase: MapPlaceSearch.Phase
+
+    nonisolated init() { phase = .idle }
+    nonisolated init(query: MapPlaceQuery, matches: MapPlaceMatches) {
+        phase = .matches(query, matches, response: UUID())
+    }
+}
+
+extension PreloadedPlaceSearchApp: App {
+    var body: some Scene {
+        WindowGroup(id: "preloaded-place-search") { PreloadedPlaceSearchView(phase: phase) }.exitOnKeys([])
+    }
+}
+
+@MainActor
+private struct PreloadedPlaceSearchView {
+    let phase: MapPlaceSearch.Phase
+    @State private var draft = "eight"
+    @State private var selection: Int? = 0
+    @State private var submissions = 0
+    @State private var opened = ""
+    @FocusState private var focus: MapExampleView.Focus?
+}
+
+extension PreloadedPlaceSearchView: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            MapPlaceSearchPane(label: "Synthetic fixtures", draft: $draft, phase: phase, selection: $selection,
+                               focus: $focus, submit: { submissions += 1 }, open: { place, _ in opened = place.name })
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            Text("Submissions: \(submissions)")
+            Text("Opened \(opened)")
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .chioTheme(.light)
     }
 }

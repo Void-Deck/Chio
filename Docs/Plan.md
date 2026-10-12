@@ -144,8 +144,9 @@ no new public search view, automatic type-ahead request or provider registry.
 The candidate includes checked values, bounded shared HTTP transport, Photon
 decoding and an opt-in live endpoint. The example defaults to synthetic local
 search fixtures independently of its map source. The required local macOS/Linux
-gates pass, with focused debug/release checks repeated after the final row-color
-correction. The pinned engineering gate and independent review pass. A bounded
+gates pass, with focused debug/release and terminal checks repeated after the
+row-color and first-mount focus corrections. The pinned engineering gate and
+independent review pass. A bounded
 live Photon search returned attributed results and opened a marker with zoom
 retained. This proves adapter integration, not service availability or search
 quality. Refreshed default/light/btop terminal previews and the search recording

@@ -117,10 +117,11 @@ extension MapPlaceSearchPane: View {
                 .frame(height: 1, alignment: .leading).clipped()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .onAppear { focus.wrappedValue = .field }
-        .onChange(of: accepted?.response) { _, response in
-            guard response != nil, !rows.isEmpty else { return }
-            focus.wrappedValue = .results
+        .onChange(of: accepted?.response, initial: true) { _, _ in
+            // A provider may finish before this pane first mounts. Decide focus
+            // from the accepted rows on that first observation as well.
+            if rows.isEmpty { focus.wrappedValue = .field }
+            else { focus.wrappedValue = .results }
         }
     }
 }

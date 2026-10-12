@@ -169,6 +169,9 @@ opens the selected result. Escape cancels the search interaction and restores
 map focus. Highlighting or receiving results alone does not move the map.
 One native focus value selects map, field or results. Keep the results list
 mounted across loading and empty states, with response-scoped row identities.
+Determine initial focus from the accepted rows as well as later response changes:
+a fast provider can finish before the search pane first mounts. Accepted nonempty
+results focus the native list; an empty or pending interaction focuses the editor.
 The map's input path carries batched type-ahead until the native editor receives
 focus; the editor then owns editing. Retain explicit bindings and the request
 owner in event closures so successive events observe the same storage.
