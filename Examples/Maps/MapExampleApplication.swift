@@ -10,16 +10,18 @@ struct MapExampleApplication {
     nonisolated init(fixtures: MapFixtures, scene: MapFixtures.Scene, appearance: MapExampleCommand.Appearance,
                      cellAspect: Double? = nil, detail: MapDetail = .minimal,
                      streetSource: MapFixtures.StreetSource = .overpass,
-                     acquisition: MapExampleAcquisition = .offline) {
+                     acquisition: MapExampleAcquisition = .offline,
+                     geocoder: any MapGeocodingProvider = MapFixtureGeocoder(),
+                     searchLabel: String = "Synthetic fixtures") {
         launch = .map(fixtures: fixtures, scene: scene, appearance: appearance,
-                      cellAspect: cellAspect, detail: detail, streetSource: streetSource, acquisition: acquisition)
+                      cellAspect: cellAspect, detail: detail, streetSource: streetSource, acquisition: acquisition, geocoder: geocoder, searchLabel: searchLabel)
     }
 
     private enum Launch {
         case unconfigured
         case map(fixtures: MapFixtures, scene: MapFixtures.Scene, appearance: MapExampleCommand.Appearance,
                  cellAspect: Double?, detail: MapDetail, streetSource: MapFixtures.StreetSource,
-                 acquisition: MapExampleAcquisition)
+                 acquisition: MapExampleAcquisition, geocoder: any MapGeocodingProvider, searchLabel: String)
     }
 }
 
@@ -29,14 +31,14 @@ extension MapExampleApplication: SwiftTUIRuntime.App {
             switch launch {
             case .unconfigured:
                 Text("Run chio-maps to load the offline examples.")
-            case .map(let fixtures, let scene, let appearance, let cellAspect, let detail, let streetSource, let acquisition):
+            case .map(let fixtures, let scene, let appearance, let cellAspect, let detail, let streetSource, let acquisition, let geocoder, let searchLabel):
                 if let cellAspect {
                     MapExampleView(fixtures: fixtures, scene: scene, appearance: appearance,
-                                   detail: detail, streetSource: streetSource, acquisition: acquisition)
+                                   detail: detail, streetSource: streetSource, acquisition: acquisition, geocoder: geocoder, searchLabel: searchLabel)
                         .environment(\.cellPixelMetrics, CellPixelMetrics(width: 100, height: Int(cellAspect * 100), source: .reported))
                 } else {
                     MapExampleView(fixtures: fixtures, scene: scene, appearance: appearance,
-                                   detail: detail, streetSource: streetSource, acquisition: acquisition)
+                                   detail: detail, streetSource: streetSource, acquisition: acquisition, geocoder: geocoder, searchLabel: searchLabel)
                 }
             }
         }

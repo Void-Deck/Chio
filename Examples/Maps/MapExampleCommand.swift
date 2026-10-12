@@ -18,6 +18,8 @@ struct MapExampleCommand {
     var tilePack = ""
     @Option(help: "Prepare an immutable zoom-one world pack from bundled tiles, then exit.")
     var writeTilePack = ""
+    @Option(help: "Opt-in explicit Photon-compatible /api URL for place search; independent of --online tiles.")
+    var geocoderEndpoint = ""
     @Option(help: "Theme: default, light or btop.") var theme: Appearance = .default
     @Flag(help: "Print a deterministic native raster as text.") var snapshot = false
     @Flag(help: "Export native raster cells as JSON for visual inspection.") var snapshotJSON = false
@@ -77,6 +79,10 @@ extension MapExampleCommand: AsyncParsableCommand {
             throw ValidationError("Choose one output mode: snapshot, snapshot-json or benchmark.")
         }
         let hasOfflineOutput = snapshot || snapshotJSON || benchmark
+        guard geocoderEndpoint.isEmpty || !hasOfflineOutput else {
+            throw ValidationError("Live place search is interactive. Snapshot and benchmark modes use bundled data.")
+        }
+        if !geocoderEndpoint.isEmpty { _ = try configuredGeocoder() }
         guard !online || !hasOfflineOutput else {
             throw ValidationError("Online mode is interactive. Snapshot and benchmark modes use bundled data.")
         }
@@ -108,6 +114,13 @@ extension MapExampleCommand: AsyncParsableCommand {
         guard online || tileCache.isEmpty else {
             throw ValidationError("--tile-cache requires --online.")
         }
+    }
+
+    private func configuredGeocoder() throws -> PhotonGeocoder {
+        guard let endpoint = URL(string: geocoderEndpoint) else {
+            throw ValidationError("--geocoder-endpoint requires an explicit Photon /api URL.")
+        }
+        return try PhotonGeocoder(endpoint: endpoint, userAgent: "ChioMaps/0.1 (https://github.com/echoz/Chio)")
     }
 
     @MainActor
@@ -165,10 +178,14 @@ extension MapExampleCommand: AsyncParsableCommand {
                 cacheOwner = cache
                 liveAcquisition = .cached(MapTileLoader(cache: cache))
             }
+            let geocoder: any MapGeocodingProvider
+            if geocoderEndpoint.isEmpty { geocoder = MapFixtureGeocoder() }
+            else { geocoder = try configuredGeocoder() }
             do {
                 try await WebHostCLIRunner.run(MapExampleApplication(fixtures: fixtures, scene: scene, appearance: theme,
                                                                cellAspect: cellAspect,
-                                                               detail: detail, streetSource: source, acquisition: liveAcquisition),
+                                                               detail: detail, streetSource: source, acquisition: liveAcquisition, geocoder: geocoder,
+                                                               searchLabel: geocoderEndpoint.isEmpty ? "Synthetic fixtures" : "Explicit Photon endpoint"),
                                           configuration: swiftTUIOptions.runtimeConfiguration())
             } catch {
                 await cacheOwner?.close()

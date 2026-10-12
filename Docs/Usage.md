@@ -489,6 +489,45 @@ This is an evictable cache, not an offline tile pack. See the
 [persistence contract](Decisions/OnlineMaps.md#persistent-raw-tile-cache) for file
 bounds, ownership, clock assumptions and process-interruption recovery.
 
+### Place search
+
+`MapGeocodingProvider` is an explicit effect boundary beside `MapView`. The first
+adapter accepts an application-selected Photon **API endpoint**, including `/api`:
+
+```swift
+let geocoder = try PhotonGeocoder(
+    endpoint: URL(string: "https://photon.komoot.io/api")!,
+    userAgent: "MyMapApp/1.0 (contact@example.com)"
+)
+let query = try MapPlaceQuery(text: "Marina Bay", limit: 8)
+let matches = try await geocoder.search(query)
+```
+
+The public Photon demo allows reasonable use without an availability guarantee;
+read its [policy](https://github.com/komoot/photon#demo-server) before selecting it.
+Use a self-hosted or contracted endpoint for workloads needing their own capacity
+or privacy terms. Chio has no default host, key store or automatic requests.
+
+`MapPlaceMatches.places` retains provider order and duplicate matches, with checked
+names, details and coordinates. Empty matches are successful; transport, decoding,
+throttling and cancellation are thrown as `PhotonGeocoder.SearchError`. The
+`httpStatus` case retains a bounded `retryAfter` string when usable; it never
+causes an automatic retry. Each call has a ten-second resource deadline, a 512 KiB
+decompressed response bound and at most three same-origin redirects.
+
+Render `matches.attributions` beside the results, and retain those credits with
+any opened place/marker. Choose an application-owned selection ID; results have
+no promised permanent provider identity. On explicit activation, construct a
+`MapMarker` and new `MapCamera` using `place.coordinate`, retaining the current
+longitude span. A valid geographic pole is outside the camera's Mercator range:
+report that limitation and preserve the previous map rather than clamp it.
+
+The application owns submission, cancellation, stale-result rejection, focus and
+any network-use policy. The [map example](Examples.md#place-search) composes native
+text input and a list without reranking remote matches through `SearchableList`.
+Changing style or moving the map never invokes geocoding automatically. Search
+and tile providers can be replaced independently.
+
 ### Offline tile packs
 
 Prepare a pack programmatically from application-supplied OpenMapTiles-compatible

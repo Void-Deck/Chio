@@ -1,7 +1,7 @@
 # Place search
 
-**Status:** Proposed design, 2026-10-11. No geocoding API is implemented or
-released. This is the first proposed slice of the approved geocoding scope;
+**Status:** Accepted for implementation, 2026-10-12. The candidate is not yet
+released. This is the first slice of the approved geocoding scope;
 [Plan](../Plan.md#approved-map-expansion) retains reverse lookup and routing as
 later work. Provider archive downloads remain paused.
 
@@ -14,12 +14,12 @@ No search request is sent merely by typing, moving the map or changing style.
 
 `SearchableList` owns local matching, ranking and Return-to-results behavior.
 Those contracts do not fit remote submission or preserving provider ranking.
-The example should compose native controls rather than wrap that view, add
-provider callbacks to its style, or create a public map-search widget yet.
+The example composes native controls. It does not wrap that view, add provider
+callbacks to its style, or create a public map-search widget.
 
 ## Provider choice
 
-Recommend a configurable **Photon** forward-search adapter first. Endpoint
+The first adapter is configurable **Photon** forward search. Endpoint
 selection is explicit and independent of the tile source. A Photon-compatible
 endpoint can change without changing the UI; another protocol implementation
 can supply a different provider. This does not imply universal GeoJSON support.
@@ -37,9 +37,9 @@ Use synthetic fixtures for normal examples, tests and Pages recordings.
 Opt-in live probes use public landmarks, with no personal queries or credentials.
 The reviewed Photon documentation provides no demo-specific retention guarantee.
 
-## Proposed public surface
+## Public surface
 
-Illustrative shape, subject to review before implementation:
+The first implementation follows this shape:
 
 ```swift
 public protocol MapGeocodingProvider: Sendable {
@@ -72,15 +72,15 @@ let matches = try await geocoder.search(query)
 - `PhotonGeocoder`: immutable endpoint and application identity; construction
   does no I/O. Require an explicit API URL, without credentials, query or fragment.
   Bound the absolute endpoint URL to 2,048 UTF-8 bytes. Application identity must
-  be nonblank, control-free and at most 256 UTF-8 bytes, suitable for User-Agent.
+  be nonblank printable ASCII and at most 256 bytes, suitable for User-Agent.
   Use HTTPS remotely; HTTP is only for explicit loopback development. No hidden
   default host, credential lookup, global client or shared application state.
 
-Query, place, matches and attribution values should conform to `Hashable`,
+Query, place, matches and attribution values conform to `Hashable`,
 `Codable` and `Sendable`, with decoding enforcing the same construction bounds.
 The provider protocol is an effect boundary, not a pure style or normalization
 adapter. Keep its throws open so third-party providers can retain their error
-contracts. The concrete Photon operation should use a typed failure covering
+contracts. The concrete Photon operation uses a typed failure covering
 cancellation, deadline, HTTP rejection, malformed/oversized data and transport
 failure, preserving underlying causes. Live failures and clients do not acquire
 artificial Codable/Hashable conformances.
@@ -110,17 +110,22 @@ Derive the short name from a valid name or named address component; assemble
 supporting address text from the present string components. Missing detail is
 empty. Non-string present fields, terminal control characters, missing usable
 names or exceeded bounds fail decoding rather than being silently repaired.
-Fix exact address-component precedence with fixtures before implementing it.
+Name precedence is `name`, street plus house number, locality, district, city,
+county, state, then country. Detail uses street plus house number, locality,
+district, postcode plus city, county, state, then country, excluding empty parts
+and exact duplicates of the name or an earlier detail component. Fixtures pin
+this precedence; it does not infer a permanent identity or modify coordinates.
 
-Reuse the internal bounded URLSession transport, which already owns incremental
-byte limits, cancellation acknowledgement, same-origin redirects and Linux
-compatibility. It currently hardcodes a tile User-Agent and tile-loader errors;
-make only the internal request identity/resource/error boundaries reusable.
-Keep existing tile error mappings, cache policy and cancellation behavior intact.
+The internal bounded URLSession transport owns incremental byte limits,
+cancellation acknowledgement, same-origin redirects and Linux compatibility.
+Its request identity, resource bounds and internal failures are shared; tile
+callers retain their existing User-Agent, error mappings, cache policy and
+cancellation behavior.
 Geocoding requires a JSON MIME type (`application/json` or
 `application/geo+json`, allowing parameters); retain the existing tile/catalog
-acceptance of absent MIME. HTTP rejection must retain the status and a bounded
-`Retry-After` value before discarding the body. Limit that value to 256 bytes;
+MIME checks, including Foundation's inferred type when a header is absent.
+Geocoding requires an explicit Content-Type header. HTTP rejection must retain the
+status and a bounded `Retry-After` value before discarding the body. Limit that value to 256 bytes;
 invalid or absent retry metadata supplies no retry hint, without hiding the HTTP
 status. Map rejection back to the unchanged tile-loader status error for tile
 callers. Keep header interpretation and any time-based retry decision outside
@@ -128,9 +133,11 @@ the pure result values and never log the rejected response body.
 No generic networking package or new SwiftPM dependency is needed. Existing
 [static Linux limitations](Dependencies.md#static-linux-blocker) remain.
 
-Proposed per-search limits: at most 512 KiB of decompressed response bytes,
+Per-search limits: at most 512 KiB of decompressed response bytes,
 10-second resource deadline, JSON content type, and at most three same-origin
-redirects. Bound reads before decoding; Content-Length is not authoritative.
+redirects. One transfer-owned deadline spans redirects on both platforms; timeout
+cancels the transport and still awaits its terminal acknowledgement. Bound reads
+before decoding; Content-Length is not authoritative.
 Do not fetch result geometry, paginate, retry, prefetch or persist query history.
 An HTTP error, including throttling, is thrown and shown distinctly from no matches.
 Preserve useful retry timing when supplied, without starting an automatic retry.
@@ -160,6 +167,11 @@ implicitly enable the other or substitute another data source.
 Return in the text field submits; arrows navigate accepted results and Return
 opens the selected result. Escape cancels the search interaction and restores
 map focus. Highlighting or receiving results alone does not move the map.
+One native focus value selects map, field or results. Keep the results list
+mounted across loading and empty states, with response-scoped row identities.
+The map's input path carries batched type-ahead until the native editor receives
+focus; the editor then owns editing. Retain explicit bindings and the request
+owner in event closures so successive events observe the same storage.
 An example-owned enum models idle, loading, matches (including empty) and failed
 states with their required query/result/error payloads. Draft text, accepted
 map camera and marker state stay with their existing owners.
@@ -176,8 +188,13 @@ marker. Do not silently move that place to a different latitude.
 
 Use the existing native responsive layout and map compact fallback. On narrow
 screens, search can replace the map temporarily rather than squeeze both into
-unreadable columns. Keep rows one line with a separate selected-place detail;
-do not depend on the pending SwiftTUI tall-row corrections. Styles change
+unreadable columns. Short search layouts omit map help and selected-place detail
+to retain usable result rows and response credits. Credits for the hidden map's
+opened marker remain retained and reappear with that map. Keep rows one line with a separate selected-place detail;
+give the native results list a finite viewport so measurement and scroll reveal
+remain bounded. Row foreground and selected/unselected surfaces use the inherited
+Chio style, including the light palette. Do not depend on the pending SwiftTUI
+tall-row corrections. Styles change
 presentation only. Offline results outside fixture coverage stay honestly outside
 coverage; there is no fallback to live tiles.
 
@@ -220,5 +237,6 @@ Reviewed official documentation on 2026-10-11:
   [terms](https://www.geoapify.com/terms-and-conditions/) and
   [privacy](https://www.geoapify.com/privacy-policy/).
 
-This is source and API design research. No live geocoding request, executable
-adapter, response-quality comparison or platform/runtime proof was produced.
+The initial proposal was source/API research only. Implementation and verification
+status belongs in [Plan](../Plan.md#next-slice-place-search); neither fixture results
+nor a bounded live probe establishes provider availability or search quality.

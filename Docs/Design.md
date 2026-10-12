@@ -31,7 +31,8 @@ The [approved map expansion](Plan.md#approved-map-expansion) adds disk storage
 and planned downloadable tile packs, geocoding and routing adapters at explicit
 effect boundaries beside the view. Applications retain invocation, storage and
 provider policy, credentials and workflow ownership. These capabilities are
-delivered one slice at a time; provider archive downloads and service APIs remain planned. The current
+delivered one slice at a time. Submitted place search now has an explicit Photon
+adapter; reverse lookup, routing and provider archive downloads remain planned. The current
 map renderer and acquisition contracts remain intact. Opt-in persistence is
 defined in [online acquisition](Decisions/OnlineMaps.md#persistent-raw-tile-cache).
 Its private `ChioFileSystem` target bridges native locking and
@@ -100,7 +101,8 @@ computed observations. Transformations return replacements and leave inputs
 unchanged; local scratch mutation is permitted. Explicit mutable boundaries are
 SwiftTUI state/binding/focus/namespace/environment wrappers, ArgumentParser command
 options, filesystem resource owners, the serial map preparation actor, the online
-tile loader actor and its locked URLSession delegate resource owner, and live
+tile loader actor and its locked URLSession delegate resource owner, the example
+place-search task owner, and live
 test-session recorders with frames, continuations and deadlines.
 
 Prefer synthesized `Hashable`, `Codable` and `Sendable` where their contracts fit.
@@ -224,7 +226,7 @@ in Releases; avoid duplicating full contracts across documents.
 | <a id="references-and-boundaries"></a>[Dependencies and distribution](Decisions/Dependencies.md) | Current pins, toolchain findings and static Linux blocker |
 | [Online tile acquisition](Decisions/OnlineMaps.md) | Accepted explicit loader and opt-in online example |
 | [Programmatic offline packs](Decisions/OfflineTilePacks.md) | Implemented immutable raw-tile backing |
-| [Place search](Decisions/PlaceSearch.md) | Proposed forward-geocoding API and provider choice; not implemented |
+| [Place search](Decisions/PlaceSearch.md) | Accepted explicit Photon adapter, immutable matches and example-owned submission |
 | [Native integration](Decisions/NativeIntegration.md) | Current limitations and ownership |
 | [Terminal colors](Decisions/TerminalColors.md) | Accepted native detection; conversion experiment shelved |
 | [Table rendering](Decisions/TableRendering.md) | Proposed correction; patches unapplied |

@@ -131,19 +131,31 @@ or implicit network behavior.
 | 3 | Geocoding | Forward place/address search and reverse coordinate lookup through an explicit provider adapter. Return bounded results that applications can turn into markers and camera changes; prove no-result/failure distinctions, cancellation and stale-result rejection. |
 | 4 | Routing | Explicit route requests between supplied locations through a provider adapter, returning checked geometry and available distance/duration metadata. Compose with existing route overlays; prove no-route/failure distinctions, cancellation, stale-result rejection and route work limits. |
 
-### Next slice: place search
+<a id="next-slice-place-search"></a>
 
-**Status:** API/provider investigation complete; the
-[place-search design](Decisions/PlaceSearch.md) is proposed for review before
-implementation. Start with submitted forward search through an explicit Photon
-endpoint, immutable matches and attribution, and example-owned native search/list
-composition. Camera and marker activation reuse the existing map API. No new
-public search view, automatic type-ahead requests or provider registry is planned.
+### Current slice: place search
 
-The proposal defines work bounds, cancellation and stale-result ownership,
-transport reuse, deterministic/loopback tests and the visible example workflow.
+**Status:** Implemented and verified locally; not merged or released. The
+[place-search decision](Decisions/PlaceSearch.md) owns the explicit Photon endpoint,
+immutable matches and attribution, and example-owned native search/list
+composition. Camera and marker activation reuse the existing map API. There is
+no new public search view, automatic type-ahead request or provider registry.
+
+The candidate includes checked values, bounded shared HTTP transport, Photon
+decoding and an opt-in live endpoint. The example defaults to synthetic local
+search fixtures independently of its map source. The required local macOS/Linux
+gates pass, with focused debug/release checks repeated after the final row-color
+correction. The pinned engineering gate and independent review pass. A bounded
+live Photon search returned attributed results and opened a marker with zoom
+retained. This proves adapter integration, not service availability or search
+quality. Refreshed default/light/btop terminal previews and the search recording
+pass visual inspection. Safari checks cover matching commands, playback and
+seeking, navigation/history, a 390-pixel viewport and script-free/missing-player
+fallbacks. Hosted PR checks, review/merge and published Pages verification remain
+delivery steps.
+
 Reverse lookup and routing remain later approved scope; provider downloads remain
-paused. No geocoding source, implementation or live-provider proof has shipped.
+paused. This candidate has not been merged, deployed or released.
 
 <a id="next-slice-offline-pack-acquisition"></a>
 
@@ -222,7 +234,7 @@ filters, extensible upstream/raw-input switches, native wrappers and private
 nested conformances retain their documented roles.
 
 The map expansion above remains approved. Provider archive acquisition remains
-paused at the user's request; place search is the next proposed slice.
+paused at the user's request; place search is the current implementation slice.
 Real application use of the public map
 remains useful validation. Other component additions and a
 new stable release remain possible directions, not delivery promises.
