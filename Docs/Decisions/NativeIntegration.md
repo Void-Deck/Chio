@@ -1,6 +1,9 @@
 # Native integration boundaries
 
-**Status:** The 0.17.0 dependency-upgrade candidate is blocked by native disclosure-content overlap and an unresolved narrow inbox allocation regression.
+**Status:** Local native fixes for disclosure-content overlap and Spacer minimum
+allocation pass full native and consumer gates on macOS and Linux arm64. The
+0.17.0 upgrade still requires a published compatible revision and verification of
+that pin; upstream PRs #49 and #50 remain open with unresolved hosted CI failures.
 
 Keep native ownership and visible limitations explicit when composing or extending Chio.
 
@@ -29,8 +32,10 @@ upstream requirements authoritative for its code and contribution metadata.
 The [0.17.0 candidate](Dependencies.md#0170-adoption-candidate) is not verified
 consumer adoption. Its new native accessibility group/button representation is a
 declared contract change; direct disclosure-child overlap is a separate rendering
-regression. Keep the accepted column assertions and native ownership while the
-layout correction is obtained upstream.
+regression. The [local correction candidate](Dependencies.md#local-correction-candidate)
+preserves those column assertions and native ownership. It also corrects an
+ordinary Spacer's stretched allocation being reused as a required minimum,
+restoring the compact inbox width. Neither fix is part of released 0.17.0.
 
 Native list focus chrome uses SwiftTUI's theme; Chio themes selected content and
 controls. The native theme environment is not public. `StatusBar` composes a text

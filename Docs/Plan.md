@@ -90,10 +90,14 @@ reader or downloader has been adopted; existing local pack APIs remain available
 
 ## Native runtime follow-up
 
-**Status:** The SwiftTUI 0.17.0 dependency-upgrade candidate is blocked by native
-disclosure-content overlap and a narrow inbox allocation regression. The operational primary checkout keeps its
-previous pin. [Dependencies](Decisions/Dependencies.md#0170-adoption-candidate)
-owns the failing consumer evidence and required upstream follow-up.
+**Status:** Local native fixes restore disclosure-content layout and narrow inbox
+allocation. Full native and consumer gates pass on macOS and Linux arm64 after the
+accessibility contract migration. Upstream PRs #49 and #50 remain open, each with
+one failed hosted workflow. Adoption requires a published compatible native
+revision and consumer verification of that pin.
+The operational primary checkout keeps its previous pin.
+[Dependencies](Decisions/Dependencies.md#local-correction-candidate) owns candidate
+revisions, verification and the upstream follow-up. This is not consumer rollout.
 
 The merged runtime correction in
 [SwiftTUI PR #48](https://github.com/SwiftTUI/swift-tui/pull/48) supersedes

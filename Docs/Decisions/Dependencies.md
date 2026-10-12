@@ -37,14 +37,15 @@ blocker is below. Ordinary glibc support does not establish static-musl distribu
 **Status:** Blocked consumer upgrade; the candidate pin above is not default-branch
 adoption or a new Chio release. The operational checkout retains its previous pin.
 
-The new graph compiles with Xcode Swift 6.4.0. The focused real-HTTP/online-map
-preflight passes. The full debug gate exposes two distinct changes:
+The initial released-pin run compiled with Xcode Swift 6.4.0 and passed the
+focused real-HTTP/online-map preflight. Its full debug gate exposed two distinct
+changes:
 
 - Native accessibility now represents disclosure as a button trigger inside a
   group with expanded/controls properties, and labeled content supplies a named
-  semantic group. Older Chio assertions that require the `.disclosureGroup` role
-  or count every matching label need contract-aware review; those results alone
-  do not establish a production behavior regression.
+  semantic group. Older Chio assertions required the `.disclosureGroup` role or
+  counted every matching label. Those results called for the contract migration
+  below, rather than establishing a production behavior regression.
 - The accepted multi-child disclosure column no longer places `First`, `Second`
   and `Third row` on separate lines. SwiftTUI's new `DisclosureAccessibilityContent`
   wraps those direct children in an intrinsic `.view` whose placement gives them
@@ -54,7 +55,8 @@ preflight passes. The full debug gate exposes two distinct changes:
 
 Restore the native authored-child column contract upstream, then verify an
 immutable published compatible revision with Chio's complete macOS/Linux and
-terminal gates before rollout. A Chio shim is not the current direction. Release/terminal and Linux proof remain outstanding.
+terminal gates before rollout. A Chio shim is not the current direction. The
+local correction qualification below does not change the released pin's behavior.
 
 On 2026-10-12, `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
 SWIFT_BUILD_JOBS=2 bash Scripts/ci/verify.sh` stopped with exit 1 at the debug gate:
@@ -73,8 +75,8 @@ Dashboard issues comprise eight tab-focus checks, three narrow inbox allocations
 Tab accessibility now exposes a `.group` focus owner and a synthetic `.tabView`
 child whose `parentIdentity` links to that owner; an updated helper must verify
 that relationship rather than accept arbitrary group focus. The inbox allocation
-failure is real; its root cause remains unclassified. Tree overlap is consistent
-with the independently reproduced disclosure-column regression.
+failure is real; the native Spacer correction below addresses its cause. Tree
+overlap is consistent with the independently reproduced disclosure-column regression.
 
 A minimal public-API native fixture imports only `SwiftTUIRuntime` and supplies a
 custom disclosure style with a vertical content stack. Identical source renders
@@ -85,11 +87,93 @@ objects, and retains exact compiler commands and outputs. Separate standard
 SwiftPM manifests are prepared for fresh reproduction but have not been built.
 This is macOS raster evidence, not Linux or live-terminal proof.
 
-The local blocked candidate retains its full verification log and xUnit reports;
-no production/test assertions, baseline or operational primary pin were changed.
-The release suite, release builds, snapshots, PTY/color workflows and Linux gates
-were not reached. Re-run all required gates after an upstream fix and contract-aware
-test migration; passing earlier pins or upstream CI does not prove this candidate.
+That initial run stopped before the release suite, release builds, snapshots,
+PTY/color workflows and Linux gates. Its failures remain baseline evidence.
+
+### Local correction candidate
+
+Two native fixes are prepared on the released 0.17.0 base, without the unmerged
+row-height change in #47:
+
+- Disclosure payload roots remain transparent to authored layout. The semantic
+  extractor publishes the labelled content region separately, preserving native
+  expansion, controls, nested content and pointer routing.
+- An ordinary Spacer's minimum comes from its declared intrinsic size, not a
+  previously stretched measurement. Explicit minimum hints and fixed-size
+  behavior remain intact. This restores the inbox's 36 × 18 allocation.
+
+The combined native candidate is `91133fae27dd1c977a5f6746c1ff8f73008fdf44`.
+[Disclosure PR #49](https://github.com/SwiftTUI/swift-tui/pull/49) is
+`3ecf9a9b0f08a9a413e478ca3fce97e98d6cba8a`;
+[Spacer PR #50](https://github.com/SwiftTUI/swift-tui/pull/50) carries the same
+second patch independently on 0.17.0 at
+`d8b845ae2ad47d6b73c4b7f7a333378b374c2b7a`. Both are open contributions, not changes
+included in the released pin above.
+
+Chio's test migration at `ff870923bd86d9b76195f54cd1f0292c8f7c7174` checks the new
+button/expanded/controls disclosure contract,
+actionable labeled-content slots, and the tab group's related tab-view node.
+Exact layout, focus, pointer, binding and input assertions remain in place.
+No Chio production shim, hidden native patch or weaker interaction deadline is
+introduced. Qualification uses an explicit temporary local package path; the
+committed manifest and lockfile retain the published pin.
+
+The combined native snapshot passes the full `bun run test` gate on macOS and
+Linux arm64 with Swift 6.4.0, including runtime shards, platform suites, TermUIPerf
+and the soundness scan. Both individual PR branches pass upstream pre-commit and
+commit-message hooks. Independent review found no outstanding production findings.
+The required remote maintainer `DEVELOPMENT.md` returned 404; its additional
+requirements remain unchecked. Hosted CI for the individual PR heads is separate
+from these combined-candidate results. Both heads pass macOS, Windows amd64/arm64,
+Public API Baseline and TermUIPerf. PR #49 also passes release soundness; PR #50
+passes the full Linux/WASI Repo Gate. Each has one remaining failed workflow below.
+
+PR #49's first hosted [Repo Gate run](https://github.com/SwiftTUI/swift-tui/actions/runs/38289979373)
+fails one unchanged PTY cleanup assertion: `F_GETFD` on the closed descriptor
+number returns 1 while a separate PTY suite is opening descriptors. Independent
+review identifies a descriptor-reuse race in that assertion; the precise event
+was not traced and a baseline failure was not reproduced. The corresponding
+PR #50 core lane passes. No new skips or weaker assertions were introduced. An unchanged-head
+retry was requested but GitHub requires upstream maintainer rights; none started.
+
+PR #50's [release-soundness run](https://github.com/SwiftTUI/swift-tui/actions/runs/38290024457)
+fails in the serialized `InteractiveRuntimeTests` soak with signal 11 in
+`libdispatch`, while another thread tears down a navigation scene's `RunLoop` and
+`ViewGraph`. Other soundness shards and actor-race checks pass, as does the
+corresponding PR #49 core lane. The repository documents historical runtime-soak
+instability, but this trace alone does not establish the cause or rule out a
+relationship to the Spacer change. Hosted CI is not fully green.
+
+A bounded release comparison in the official Swift 6.4 Linux amd64 image, under
+Rosetta on this arm64 Mac, runs the same serialized `InteractiveRuntimeTests`
+with the CI allocator guards (`MALLOC_CHECK_=3`, `MALLOC_PERTURB_=165`), stress
+settings and soundness probes. Released 0.17.0 passes three launches, each reporting
+94 tests with the existing Linux skip. PR #50's exact head passes two launches,
+then exits 139 with signal 11 at the same navigation-test boundary as hosted CI.
+The local backtracer also crashes, so an identical dispatch stack is not established.
+Preserved baseline binaries, loader traces and runtime environment checks establish
+which revision and settings were exercised. This small sample under translation
+does not prove causation or clear the candidate; the runtime crash remains an
+adoption blocker. No assertion, timeout or source change was made for this probe.
+
+The focused macOS run passes 44 native tests across seven suites and 21 Chio tests
+across five suites, including all compact inbox and tree layout cases. The patched
+macOS debug gate passes all 462 library, 139 map and 146 dashboard tests; release
+passes 462, 139 and 176 respectively (one intentional library skip in each configuration).
+Debug and release paused-dashboard PTY captures preserve
+authored RGB in true-color mode and identical text/layout in indexed mode, with
+clean exit and exact terminal restoration. Indexed color retains the known grey
+background limitation. The complete macOS `Scripts/ci/verify.sh` gate also passes,
+including standalone release products, compact snapshots, dashboard/map terminal
+workflows, loopback HTTP, persistent cache and offline-pack process probes.
+The complete Linux arm64 consumer gate also passes, including the same terminal,
+HTTP, cache and pack workflows. Linux debug passes 461 library, 139 map and 146
+dashboard tests; release passes 461, 139 and 176 respectively. Linux release PTY
+captures also preserve authored true-color RGB, matching indexed text/layout,
+clean exit and exact terminal restoration. These runs establish
+the explicit local combination, not compatibility with unpatched released 0.17.0.
+No consumer should adopt this blocked branch as a verified upgrade. Obtain a
+published compatible native revision and rerun the consumer gates before rollout.
 
 ## macOS toolchain findings
 
