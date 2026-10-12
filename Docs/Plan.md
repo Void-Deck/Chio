@@ -75,31 +75,41 @@ tab/FilePicker failures are not claimed fixed; individual assertions and
 deadlines remain unchanged. Native list and teardown limitations remain explicit
 in [native integration](Decisions/NativeIntegration.md).
 
-**Deferred list spacing:** all new per-row density controls are excluded from
-this slice's public API. Standalone public-API tests reproduce tall-row reveal
-and compact-list focus failures on both Chio's pin and inspected upstream main.
-The per-axis reveal candidate is in
-[SwiftTUI PR #46](https://github.com/SwiftTUI/swift-tui/pull/46).
-[Draft PR #47](https://github.com/SwiftTUI/swift-tui/pull/47) carries measured-height
-navigation and builder placement; its full native macOS gate and independent
-review pass. Neither native fix nor a dependency update is adopted by Chio.
-PR #46 passes upstream macOS, Linux, Windows and release checks; PR #47 still
-awaits maintainer approval to run CI. Chio integration gates remain required.
-[Native integration](Decisions/NativeIntegration.md#tall-list-rows)
-owns these findings and the conditions for revisiting row density. This deferral
-is not a blocker for the unified style API; neither fix has shipped in Chio.
+**Deferred list spacing:** all new per-row density controls remain excluded from
+this slice's public API. SwiftTUI 0.17.0 includes the merged per-axis reveal
+correction in [PR #46](https://github.com/SwiftTUI/swift-tui/pull/46), now pinned
+in this dependency-upgrade candidate. The measured-height navigation and builder
+placement correction in [PR #47](https://github.com/SwiftTUI/swift-tui/pull/47)
+remains unmerged and excluded. Its current head is
+`fbcb8873c8df3aa66ee155afb820e10966f55bfe`; upstream CI passing does not establish
+Chio adoption or a release. [Native integration](Decisions/NativeIntegration.md#tall-list-rows)
+owns the remaining findings and conditions for revisiting row density.
 
 Provider archive acquisition remains on hold at the user's request. No archive
 reader or downloader has been adopted; existing local pack APIs remain available.
 
 ## Native runtime follow-up
 
-The demonstrated native shutdown issue is tracked separately in
-[SwiftTUI PR #45](https://github.com/SwiftTUI/swift-tui/pull/45), which
-is the current upstream proposal after assessing the limits of an internal
-workaround. It has not been adopted by Chio; the dependency pin remains unchanged.
+**Status:** The SwiftTUI 0.17.0 dependency-upgrade candidate is blocked by native
+disclosure-content overlap and a narrow inbox allocation regression. The operational primary checkout keeps its
+previous pin. [Dependencies](Decisions/Dependencies.md#0170-adoption-candidate)
+owns the failing consumer evidence and required upstream follow-up.
+
+The merged runtime correction in
+[SwiftTUI PR #48](https://github.com/SwiftTUI/swift-tui/pull/48) supersedes
+[PR #45](https://github.com/SwiftTUI/swift-tui/pull/45) and ships in 0.17.0.
+This dependency-upgrade candidate pins the released revision
+`ee572e38487284092f367ef5b095460a04374ba3`.
 [Native integration](Decisions/NativeIntegration.md#cooperative-shutdown-follow-up)
-owns the constraints and remaining startup/cancellation and performance follow-ups.
+owns its constraints and remaining startup/cancellation and performance follow-ups.
+Full adoption requires the [consumer gates](Verification.md); the local candidate
+is not default-branch rollout or a new Chio release.
+
+SwiftRules 0.1.4 adoption is deferred: its source-only gate exposes 75 conformance
+placement/order diagnostics across 52 production files. The operational pin remains
+0.1.3 with no baseline expansion. Chio's next conformance-maintenance owner must
+classify and resolve those findings and verify/review the upgrade as described in
+[Verification](Verification.md#deferred-014-adoption).
 
 ## Approved map expansion
 

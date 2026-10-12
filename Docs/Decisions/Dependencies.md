@@ -12,7 +12,7 @@ All four direct dependencies are revision-pinned:
 
 | Dependency | Pin and reason |
 | --- | --- |
-| SwiftTUI | `2d84ac7083993da2ef52e9d3d30255467efb9553`; inspected evolving beta API |
+| SwiftTUI | `ee572e38487284092f367ef5b095460a04374ba3`; published SwiftTUI 0.17.0, including per-axis focus reveal (#46) and cooperative shutdown (#48) |
 | Swift Markdown 0.9.0 | `25cb61d3482054b09ae76ca4f281b1bfe7fe5a43`; revision permits conditional Windows unsafe flags |
 | Tree-sitter 0.26.13 | `d97971e24500218865c05ed1febdee2acf41bae1`; last release with upstream SwiftPM manifest |
 | tree-sitter-swift 0.7.4 | `82bb3a533e0801fd2bbaa11dc49676e10bf41948`; generated C grammar |
@@ -20,12 +20,76 @@ All four direct dependencies are revision-pinned:
 Version-based Chio requirements (`from:` or `exact:`) cannot resolve this
 revision-pinned graph. Consumers of the experimental v0.1.0 source release pin
 Chio's immutable revision `1bcc08ce23747c8c8b1121e3add3c37951f7b09e`.
+SwiftTUI 0.17.0 requires Swift Collections 1.7.2 or later; the lockfile therefore
+advances that transitive dependency from 1.6.0 to 1.7.2. The other direct pins and
+resolved dependencies remain unchanged. The measured-height list correction
+in [PR #47](https://github.com/SwiftTUI/swift-tui/pull/47) is unmerged and excluded.
+
 Swift Markdown brings swift-cmark 0.9.0 built from source, without a separately
 installed library. Tree-sitter/Swift grammar are MIT-licensed C targets requiring
 neither a Swift wrapper nor grammar generation. The grammar copies unused queries;
 Chio does no query-resource I/O and generates no Objective-C/Foundation accessor.
 Build evidence is recorded in [0.1.0](../Releases/0.1.0.md); the current static Linux
 blocker is below. Ordinary glibc support does not establish static-musl distribution.
+
+## 0.17.0 adoption candidate
+
+**Status:** Blocked consumer upgrade; the candidate pin above is not default-branch
+adoption or a new Chio release. The operational checkout retains its previous pin.
+
+The new graph compiles with Xcode Swift 6.4.0. The focused real-HTTP/online-map
+preflight passes. The full debug gate exposes two distinct changes:
+
+- Native accessibility now represents disclosure as a button trigger inside a
+  group with expanded/controls properties, and labeled content supplies a named
+  semantic group. Older Chio assertions that require the `.disclosureGroup` role
+  or count every matching label need contract-aware review; those results alone
+  do not establish a production behavior regression.
+- The accepted multi-child disclosure column no longer places `First`, `Second`
+  and `Third row` on separate lines. SwiftTUI's new `DisclosureAccessibilityContent`
+  wraps those direct children in an intrinsic `.view` whose placement gives them
+  the same origin. Chio's existing public style already composes the content in a
+  vertical stack. Weakening the exact placement assertions or adding a hidden
+  native patch would conceal the regression.
+
+Restore the native authored-child column contract upstream, then verify an
+immutable published compatible revision with Chio's complete macOS/Linux and
+terminal gates before rollout. A Chio shim is not the current direction. Release/terminal and Linux proof remain outstanding.
+
+On 2026-10-12, `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
+SWIFT_BUILD_JOBS=2 bash Scripts/ci/verify.sh` stopped with exit 1 at the debug gate:
+
+| Gate target | Result |
+| --- | --- |
+| Online preflight | Seven library and six map tests pass |
+| Debug library | 462 tests (one skipped), 18 issues across six failing test functions |
+| Debug map | 139 tests pass |
+| Debug dashboard | 146 tests, 22 issues across eleven failing test functions |
+
+The library issues comprise 14 older disclosure-role assertions/timeouts, three
+exact column-placement failures, and one labeled-content all-label count mismatch.
+Dashboard issues comprise eight tab-focus checks, three narrow inbox allocations
+(rendered 43 × 18 instead of 36 × 18), and eleven tree layout/interaction issues.
+Tab accessibility now exposes a `.group` focus owner and a synthetic `.tabView`
+child whose `parentIdentity` links to that owner; an updated helper must verify
+that relationship rather than accept arbitrary group focus. The inbox allocation
+failure is real; its root cause remains unclassified. Tree overlap is consistent
+with the independently reproduced disclosure-column regression.
+
+A minimal public-API native fixture imports only `SwiftTUIRuntime` and supplies a
+custom disclosure style with a vertical content stack. Identical source renders
+`First`, `Second` and `Third row` on lines 1, 2 and 3 against the old pin; against
+0.17.0 it renders `Thirddrow` on line 1 with lines 2 and 3 blank. The comparison
+reuses read-only dependency objects from completed debug builds, excludes Chio
+objects, and retains exact compiler commands and outputs. Separate standard
+SwiftPM manifests are prepared for fresh reproduction but have not been built.
+This is macOS raster evidence, not Linux or live-terminal proof.
+
+The local blocked candidate retains its full verification log and xUnit reports;
+no production/test assertions, baseline or operational primary pin were changed.
+The release suite, release builds, snapshots, PTY/color workflows and Linux gates
+were not reached. Re-run all required gates after an upstream fix and contract-aware
+test migration; passing earlier pins or upstream CI does not prove this candidate.
 
 ## macOS toolchain findings
 
@@ -42,7 +106,9 @@ Chio adds no suppression flags and does not change the global developer selectio
 
 ## Static Linux blocker
 
-Static Linux remains blocked. A Swift 6.4.0 ARM64 cross-build with the matching
+Static Linux remains unverified at the 0.17.0 pin. The retained blocker below
+was reproduced against the earlier `2d84ac7083993da2ef52e9d3d30255467efb9553`
+pin; it is historical evidence, not a fresh build of 0.17.0. A Swift 6.4.0 ARM64 cross-build with the matching
 `swift-6.4.0-RELEASE_static-linux-0.1.0` SDK failed because upstream SwiftFiglet's
 platform imports omit Musl, leaving POSIX symbols such as `access`, `opendir`
 and `fopen` unavailable. Figlet is reached through Chio's library dependency,
