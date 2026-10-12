@@ -131,7 +131,23 @@ or implicit network behavior.
 | 3 | Geocoding | Forward place/address search and reverse coordinate lookup through an explicit provider adapter. Return bounded results that applications can turn into markers and camera changes; prove no-result/failure distinctions, cancellation and stale-result rejection. |
 | 4 | Routing | Explicit route requests between supplied locations through a provider adapter, returning checked geometry and available distance/duration metadata. Compose with existing route overlays; prove no-route/failure distinctions, cancellation, stale-result rejection and route work limits. |
 
-### Next slice: offline pack acquisition
+### Next slice: place search
+
+**Status:** API/provider investigation complete; the
+[place-search design](Decisions/PlaceSearch.md) is proposed for review before
+implementation. Start with submitted forward search through an explicit Photon
+endpoint, immutable matches and attribution, and example-owned native search/list
+composition. Camera and marker activation reuse the existing map API. No new
+public search view, automatic type-ahead requests or provider registry is planned.
+
+The proposal defines work bounds, cancellation and stale-result ownership,
+transport reuse, deterministic/loopback tests and the visible example workflow.
+Reverse lookup and routing remain later approved scope; provider downloads remain
+paused. No geocoding source, implementation or live-provider proof has shipped.
+
+<a id="next-slice-offline-pack-acquisition"></a>
+
+### Paused: offline pack acquisition
 
 **Status:** Provider acquisition paused. Programmatic local preparation and
 read-only loading implemented.
@@ -205,8 +221,9 @@ separate rewrite. Intentional single-case
 filters, extensible upstream/raw-input switches, native wrappers and private
 nested conformances retain their documented roles.
 
-The map expansion above remains approved, with provider acquisition paused while
-the appearance study is verified and reviewed. Real application use of the public map
+The map expansion above remains approved. Provider archive acquisition remains
+paused at the user's request; place search is the next proposed slice.
+Real application use of the public map
 remains useful validation. Other component additions and a
 new stable release remain possible directions, not delivery promises.
 

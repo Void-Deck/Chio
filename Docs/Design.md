@@ -224,6 +224,7 @@ in Releases; avoid duplicating full contracts across documents.
 | <a id="references-and-boundaries"></a>[Dependencies and distribution](Decisions/Dependencies.md) | Current pins, toolchain findings and static Linux blocker |
 | [Online tile acquisition](Decisions/OnlineMaps.md) | Accepted explicit loader and opt-in online example |
 | [Programmatic offline packs](Decisions/OfflineTilePacks.md) | Implemented immutable raw-tile backing |
+| [Place search](Decisions/PlaceSearch.md) | Proposed forward-geocoding API and provider choice; not implemented |
 | [Native integration](Decisions/NativeIntegration.md) | Current limitations and ownership |
 | [Terminal colors](Decisions/TerminalColors.md) | Accepted native detection; conversion experiment shelved |
 | [Table rendering](Decisions/TableRendering.md) | Proposed correction; patches unapplied |
