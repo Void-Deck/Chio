@@ -243,9 +243,10 @@ the vendored assets.
 
 The separate [style comparison](https://echoz.github.io/Chio/appearance.html)
 compares six actual terminal captures (default, opencode and btop at 100 × 30 and
-36 × 64). The approved unified `ChioStyle` migration is in progress in
-[PR #10](https://github.com/echoz/Chio/pull/10); existing captures must be refreshed
-from the verified candidate. The main catalog retains default/light/btop previews;
+36 × 64). [PR #10](https://github.com/echoz/Chio/pull/10) supplies the unified
+`ChioStyle` implementation and refreshed, inspected captures. Refresh affected
+captures from the verified candidate when appearance changes.
+The main catalog retains default/light/btop previews;
 this comparison does not establish opencode previews for every catalog entry.
 
 Verify one inherited environment key, nearest complete-style overrides,
@@ -287,8 +288,8 @@ plain-text snapshots. The comparison
 page's style/size controls, matching commands, explicit playback, script-free
 links, 390-pixel layout and missing-asset fallback require browser verification
 alongside site assembly. Applications own the demonstrated responsive layout.
-No site deployment until merge; documentation or old captures do not prove the
-integrated style migration passed its gates.
+Deploy only after merge; documentation or old captures do not prove that a changed
+implementation passed its gates. [Plan](Plan.md) records the accepted evidence.
 
 Preview the deployable output locally:
 

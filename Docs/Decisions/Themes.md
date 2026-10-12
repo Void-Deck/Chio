@@ -1,8 +1,8 @@
 # Styles and native control styling
 
-**Status:** Accepted. The unified `ChioStyle` API and promotion of the appearance
-recipes are approved; implementation and verification are in progress in
-[PR #10](https://github.com/echoz/Chio/pull/10). This is not a merged or tagged release.
+**Status:** Accepted and implemented. The unified `ChioStyle` API and promotion of
+the appearance recipes are verified in [PR #10](https://github.com/echoz/Chio/pull/10).
+They are not yet in a tagged release; [Plan](../Plan.md) records verification evidence.
 The theme API shipped in 0.1.0 remains source compatible as described below.
 
 Use an immutable style and native control styles to give a subtree coherent
@@ -91,11 +91,12 @@ the main catalog currently has only default, light and btop captures.
 
 OpenCode's authored padding, background surfaces and leading edges inspire the
 roomy style; btop informs compact border headings. These are interpretations,
-not integrations or claims of upstream parity. Refresh affected terminal captures
-from the verified candidate, inspect equal-size comparisons and interactive narrow
-sessions, and verify the assembled comparison page before acceptance. No site
-deployment occurs until merge. Current captures alone do not prove the new public
-implementation has passed verification.
+not integrations or claims of upstream parity. All six comparison captures and
+the affected btop catalog previews were refreshed and inspected alongside
+interactive narrow sessions and assembled-site browser checks. Future appearance
+changes require the same [verification](../Verification.md); captures alone do
+not establish native interaction or platform correctness. Pages publishes from
+`main` after merge.
 
 ## References
 

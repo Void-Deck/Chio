@@ -40,32 +40,40 @@ Keep revision-specific results in release records rather than expanding this
 active plan with completed implementation history.
 
 <a id="current-slice-responsive-instrumentation"></a>
+<a id="current-slice-unified-styles-and-appearance-comparison"></a>
 
-## Current slice: unified styles and appearance comparison
+## Completed implementation: unified styles and appearance comparison
 
-**Status:** Public API consolidation approved; implementation and verification
-in progress in [PR #10](https://github.com/echoz/Chio/pull/10). Not merged, released
-or deployed. No site deployment until merge.
+**Status:** Public API consolidation implemented and verified in
+[PR #10](https://github.com/echoz/Chio/pull/10). It is not yet in a tagged release.
+The Pages workflow publishes the showcase after merge to `main`.
 
 Responsive instrumentation and target dials merged in
 [PR #8](https://github.com/echoz/Chio/pull/8) and
 [PR #9](https://github.com/echoz/Chio/pull/9); they are not yet in a tagged release.
 
-Consolidate themes and example recipes into immutable `ChioStyle` values applied
-with inherited `View.style(_:)`. Keep one environment key and compatible
+Themes and example recipes now use immutable `ChioStyle` values applied
+with inherited `View.style(_:)`, one environment key and compatible
 `ChioTheme`/`.chioTheme(...)` forwarding. Static default/light/btop/opencode values
-compose colors, spacing, treatments and surfaces. Promote leading edges, input
-surfaces/padding without moving application breakpoints,
-column widths, data or navigation into styles. [Styles](Decisions/Themes.md) owns
+compose colors, spacing, treatments and surfaces. Leading edges and input
+surfaces/padding are public style values; applications retain breakpoints,
+column widths, data and navigation. [Styles](Decisions/Themes.md) owns
 the accepted contract; [Usage](Usage.md#styles) owns customization recipes.
 
-Required evidence remains pending: compatibility and checked-value tests,
-raster/hosted state, focus and native scroll-reveal preservation,
-macOS/Linux gates and refreshed actual terminal captures at 100 × 30 and 36 × 64,
-plus interactive 36 × 18 checks. Inspect the intentional btop border-heading change
-and opencode leading edges and roomy inputs. The comparison page presents public style values;
-the main catalog still has only three captured themes. Verify links, commands,
-playback, controls and narrow layout against the integrated candidate.
+Verification passes: compatibility and checked-value tests, public raster/hosted
+state and focus checks, independent API review, pinned SwiftRules, and refreshed
+terminal captures at 100 × 30 and 36 × 64 with interactive 36 × 18 checks.
+Browser verification covers all six comparison clips, matching commands,
+playback, navigation, 390-pixel layout and asset fallbacks. The main catalog
+retains default/light/btop previews; the comparison adds opencode.
+
+At `4ea9e9411cf058a870ae535ca500274458ec9322`, the full hosted
+[macOS and Linux gates](https://github.com/echoz/Chio/actions/runs/38192949634)
+and [site build](https://github.com/echoz/Chio/actions/runs/38192949637) pass.
+The final status refresh changes documentation only. Earlier intermittent
+tab/FilePicker failures are not claimed fixed; individual assertions and
+deadlines remain unchanged. Native list and teardown limitations remain explicit
+in [native integration](Decisions/NativeIntegration.md).
 
 **Deferred list spacing:** all new per-row density controls are excluded from
 this slice's public API. Standalone public-API tests reproduce tall-row reveal

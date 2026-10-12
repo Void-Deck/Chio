@@ -52,8 +52,8 @@ value through one `EnvironmentValues.chioStyle` key. The nearest complete style
 overrides its ancestor. Legacy `ChioTheme` and `.chioTheme(...)` forward to the
 same value/key. Native component style modifiers remain specific overrides.
 [Styles](Decisions/Themes.md) owns presets, surface inheritance, bounded input
-padding and compatibility; [Plan](Plan.md) records pending implementation and
-verification. Applications retain layout, breakpoints, column widths and navigation.
+padding and compatibility; [Plan](Plan.md) records delivery and verification.
+Applications retain layout, breakpoints, column widths and navigation.
 
 Prefer a native style when an existing view already expresses the required
 content and behavior. Use composition for grouping and application priorities.
