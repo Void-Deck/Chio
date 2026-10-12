@@ -192,13 +192,15 @@ hooks also pass. Hosted macOS, Windows and release checks pass. The Linux core
 lane exposed a pre-existing PTY test race: a sibling test can reuse a released
 descriptor number before the last-owner cleanup assertion examines it.
 
-Local follow-up `0b4d5654caebca65a47558d45ee3de4c25d32c52` serializes both dedicated
+Published follow-up `0b4d5654caebca65a47558d45ee3de4c25d32c52` serializes both dedicated
 PTY gate launches, preserving every assertion and concurrency within each test.
 A bounded Linux reproduction failed 5 of 20 parallel runs and none of 20
 serialized runs. The full macOS gate (85 steps), Linux arm64 core gate (23 steps)
 and independent review pass; both gates actually run the 17 PTY tests serially.
-This follow-up is committed locally, not pushed. Hosted Linux amd64 verification
-remains pending, and direct parallel test invocations retain the isolation risk.
+This follow-up is pushed to [PR #45](https://github.com/SwiftTUI/swift-tui/pull/45).
+All six hosted workflows report `action_required`, awaiting maintainer approval.
+Hosted Linux amd64 verification remains pending, and direct parallel test
+invocations retain the isolation risk.
 
 At the pinned revision, `onTerminationRequest` runs after the final render drain
 for exit keys and batched EOF. Cleanup in that callback alone cannot prevent the
