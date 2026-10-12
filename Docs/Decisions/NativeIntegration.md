@@ -58,6 +58,11 @@ by Chio. All new per-row density controls remain deferred from Chio's unified
 style API.
 Opencode keeps compact rows and roomier input padding/leading frames.
 
+Review #46 first. Keep #47 draft until #46 merges, then rebase it onto upstream
+`main` and verify that its diff contains only the measured-height correction
+before marking it ready. The branch already includes #46; its PR currently
+targets `main` because the dependency branch exists only in the contributor fork.
+
 A standalone package importing only public `SwiftTUIRuntime` reproduces these
 failures on macOS with Swift 6.4.0. The same eight parameterized cases ran against
 Chio's pin `2d84ac7083993da2ef52e9d3d30255467efb9553` and upstream main
