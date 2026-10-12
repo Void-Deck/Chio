@@ -16,13 +16,14 @@ enum DashboardExample {
     case instruments
     case inbox
     case diff
+    case appearance
 
     var isFocusedExample: Bool {
         switch self {
         case .dashboard:
             false
         case .choices, .textEntry, .feedback, .files, .keyboardHelp, .tabs,
-             .pagination, .viewport, .tree, .forms, .timers, .metrics, .instruments, .inbox, .diff:
+             .pagination, .viewport, .tree, .forms, .timers, .metrics, .instruments, .inbox, .diff, .appearance:
             true
         }
     }
@@ -31,7 +32,7 @@ enum DashboardExample {
         switch self {
         case .files: true
         case .dashboard, .choices, .textEntry, .feedback, .keyboardHelp, .tabs,
-             .pagination, .viewport, .tree, .forms, .timers, .metrics, .instruments, .inbox, .diff: false
+             .pagination, .viewport, .tree, .forms, .timers, .metrics, .instruments, .inbox, .diff, .appearance: false
         }
     }
 
@@ -39,7 +40,7 @@ enum DashboardExample {
         switch self {
         case .files: false
         case .dashboard, .choices, .textEntry, .feedback, .keyboardHelp, .tabs,
-             .pagination, .viewport, .tree, .forms, .timers, .metrics, .instruments, .inbox, .diff: true
+             .pagination, .viewport, .tree, .forms, .timers, .metrics, .instruments, .inbox, .diff, .appearance: true
         }
     }
 
@@ -48,7 +49,7 @@ enum DashboardExample {
         case .metrics:
             .btop
         case .dashboard, .choices, .textEntry, .feedback, .files, .keyboardHelp,
-             .tabs, .pagination, .viewport, .tree, .forms, .timers, .instruments, .inbox, .diff:
+             .tabs, .pagination, .viewport, .tree, .forms, .timers, .instruments, .inbox, .diff, .appearance:
             .default
         }
     }

@@ -29,7 +29,7 @@ import SwiftTUIViews
 /// the accessibility label to describe an application's scale and units.
 @MainActor
 public struct MeasurementGauge {
-    @Environment(\.chioTheme) private var theme
+    @Environment(\.chioStyle) private var theme
     private let position: Double?
     private let targetBand: TargetBand?
     private let referenceMarks: [ReferenceMark]

@@ -13,7 +13,9 @@ final class HostedFrameRecorder {
         let routes = frame.semantics.scrollRoutes.map {
             "offset=\($0.contentOffset), viewport=\($0.viewportRect.size), content=\($0.contentBounds.size)"
         }.joined(separator: "; ")
-        recentFrames.append("#\(frame.sequence) at \(started.duration(to: .now)): \(routes)")
+        let focusedNode = frame.semantics.accessibilityNodes.first { $0.identity == frame.focusedIdentity }
+        let focus = "focus=\(String(describing: focusedNode?.role))/\(focusedNode?.label ?? "unlabeled")"
+        recentFrames.append("#\(frame.sequence) at \(started.duration(to: .now)): \(focus); \(routes)")
         if recentFrames.count > 8 { recentFrames.removeFirst() }
         latest = frame
         guard let pending, pending.matches(frame) else { return }

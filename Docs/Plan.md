@@ -40,30 +40,54 @@ Keep revision-specific results in release records rather than expanding this
 active plan with completed implementation history.
 
 <a id="current-slice-responsive-instrumentation"></a>
+<a id="current-slice-unified-styles-and-appearance-comparison"></a>
 
-## Current slice: high-contrast target dials
+## Completed implementation: unified styles and appearance comparison
 
-Responsive instrumentation merged in [PR #8](https://github.com/echoz/Chio/pull/8),
-with macOS/Linux checks and the published showcase verified. It has not been
-included in a tagged release. Native instrument styling, annotated bars, checked
-history and native slider/stepper styles retain their accepted contracts.
+**Status:** Public API consolidation implemented and verified in
+[PR #10](https://github.com/echoz/Chio/pull/10). It is not yet in a tagged release.
+The Pages workflow publishes the showcase after merge to `main`.
 
-The accepted follow-up promotes the high-contrast dial prototype through
-`MeasurementGauge(position:targetBand:style:)`, retaining existing initializers,
-bar-only references and plain-dial behavior. The theme owns arc/target/needle
-colors. Numeric captions remain application-authored because Braille cells share
-one foreground and a needle can obscure a narrow target. The
-[instrumentation decision](Decisions/Instrumentation.md#target-bands-and-independent-gauge-references)
-owns these contracts.
+Responsive instrumentation and target dials merged in
+[PR #8](https://github.com/echoz/Chio/pull/8) and
+[PR #9](https://github.com/echoz/Chio/pull/9); they are not yet in a tagged release.
 
-Metrics keeps bars by default; `v` selects target dials where the complete
-70 × 28 example fits. Compact layouts fall back to bars and recover the choice
-on expansion. Refresh its recording and all three theme previews. Instruments'
-bar/reference presentation is unchanged. Focused debug and release gauge/theme/example tests, the pinned rules gate and
-independent public-API review pass. Actual terminal captures pass in all three RGB themes and NO_COLOR, including
-resizing and terminal restoration. The Metrics recording and previews are refreshed;
-platform CI and final showcase results belong in the review PR under
-[Verification](Verification.md). The follow-up is not merged or published yet.
+Themes and example recipes now use immutable `ChioStyle` values applied
+with inherited `View.style(_:)`, one environment key and compatible
+`ChioTheme`/`.chioTheme(...)` forwarding. Static default/light/btop/opencode values
+compose colors, spacing, treatments and surfaces. Leading edges and input
+surfaces/padding are public style values; applications retain breakpoints,
+column widths, data and navigation. [Styles](Decisions/Themes.md) owns
+the accepted contract; [Usage](Usage.md#styles) owns customization recipes.
+
+Verification passes: compatibility and checked-value tests, public raster/hosted
+state and focus checks, independent API review, pinned SwiftRules, and refreshed
+terminal captures at 100 × 30 and 36 × 64 with interactive 36 × 18 checks.
+Browser verification covers all six comparison clips, matching commands,
+playback, navigation, 390-pixel layout and asset fallbacks. The main catalog
+retains default/light/btop previews; the comparison adds opencode.
+
+At `4ea9e9411cf058a870ae535ca500274458ec9322`, the full hosted
+[macOS and Linux gates](https://github.com/echoz/Chio/actions/runs/38192949634)
+and [site build](https://github.com/echoz/Chio/actions/runs/38192949637) pass.
+The final status refresh changes documentation only. Earlier intermittent
+tab/FilePicker failures are not claimed fixed; individual assertions and
+deadlines remain unchanged. Native list and teardown limitations remain explicit
+in [native integration](Decisions/NativeIntegration.md).
+
+**Deferred list spacing:** all new per-row density controls are excluded from
+this slice's public API. Standalone public-API tests reproduce tall-row reveal
+and compact-list focus failures on both Chio's pin and inspected upstream main.
+The per-axis reveal candidate is in
+[SwiftTUI PR #46](https://github.com/SwiftTUI/swift-tui/pull/46).
+[Draft PR #47](https://github.com/SwiftTUI/swift-tui/pull/47) carries measured-height
+navigation and builder placement; its full native macOS gate and independent
+review pass. Neither native fix nor a dependency update is adopted by Chio.
+PR #46 passes upstream macOS, Linux, Windows and release checks; PR #47 still
+awaits maintainer approval to run CI. Chio integration gates remain required.
+[Native integration](Decisions/NativeIntegration.md#tall-list-rows)
+owns these findings and the conditions for revisiting row density. This deferral
+is not a blocker for the unified style API; neither fix has shipped in Chio.
 
 Provider archive acquisition remains on hold at the user's request. No archive
 reader or downloader has been adopted; existing local pack APIs remain available.
@@ -182,7 +206,7 @@ filters, extensible upstream/raw-input switches, native wrappers and private
 nested conformances retain their documented roles.
 
 The map expansion above remains approved, with provider acquisition paused while
-the target-dial follow-up is verified and reviewed. Real application use of the public map
+the appearance study is verified and reviewed. Real application use of the public map
 remains useful validation. Other component additions and a
 new stable release remain possible directions, not delivery promises.
 

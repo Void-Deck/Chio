@@ -16,15 +16,15 @@ from pathlib import Path
 import sys
 
 site = Path(sys.argv[1])
-index = site / "index.html"
-html = index.read_text()
-for name in ("site.css", "recordings.js"):
+pages = {page: page.read_text() for page in site.glob("*.html")}
+for name in ("site.css", "recordings.js", "appearance.css", "appearance.js"):
     asset = site / name
     digest = hashlib.sha256(asset.read_bytes()).hexdigest()[:16]
     versioned = f"{asset.stem}.{digest}{asset.suffix}"
     asset.rename(site / versioned)
-    html = html.replace(f'"{name}"', f'"{versioned}"')
-index.write_text(html)
+    pages = {page: html.replace(f'"{name}"', f'"{versioned}"') for page, html in pages.items()}
+for page, html in pages.items():
+    page.write_text(html)
 PY
 for recording in dashboard choices feedback-light pagination viewport tree forms timers markdown-links metrics instruments inbox diff maps keyboard-help files; do
   cp "$repo_root/Docs/Media/$recording.cast" "$site_output/recordings/"
@@ -34,6 +34,14 @@ mkdir -p "$site_output/recordings/themes"
 for example in choices feedback pagination viewport tree forms timers markdown dashboard metrics instruments inbox diff maps keyboard-help files; do
   for theme in default light btop; do
     cp "$repo_root/Docs/Media/themes/$example-$theme.png" "$site_output/recordings/themes/"
+  done
+done
+mkdir -p "$site_output/recordings/appearance"
+for treatment in chio opencode btop; do
+  for width in wide narrow; do
+    for extension in png cast; do
+      cp "$repo_root/Docs/Media/appearance/$treatment-$width.$extension" "$site_output/recordings/appearance/"
+    done
   done
 done
 touch "$site_output/.nojekyll"

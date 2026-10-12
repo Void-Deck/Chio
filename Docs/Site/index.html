@@ -27,8 +27,9 @@
       <section class="intro" aria-labelledby="tagline">
         <p class="eyebrow">SwiftTUI underneath. Chio on top.</p>
         <h1 id="tagline">Beautiful terminal<br>interfaces for <span>Swift.</span></h1>
-        <p class="lede">Reusable views, native SwiftTUI styles, and one shared theme.
+        <p class="lede">Reusable views, native SwiftTUI controls, and one inherited Chio style.
           Compose them into your own Swift terminal application.</p>
+        <p class="study-discovery"><a href="appearance.html">Compare three styles of the same interface ↗</a></p>
         <p class="definition"><strong>chio</strong> <span>/ Singlish /</span> attractive, pretty, good-looking.</p>
       </section>
 
@@ -116,7 +117,7 @@
         overlays: overlays, detail: .minimal)
     .mapFills(true)
     .frame(width: 100, height: 26)
-    .chioTheme(.default)</code></pre>
+    .style(.default)</code></pre>
           </div>
           <p class="component-options"><strong>Presentation options.</strong> Detail: minimal, silhouette, abstract or source. Fills or outlines and labels are separate options; source zoom chooses input resolution, while theme chooses paint.</p>
           <p class="supporting-apis"><strong>Map acquisition and storage.</strong> <a href="https://github.com/echoz/Chio/blob/main/Docs/Usage.md#online-vectors">MapTileLoader</a> · <a href="https://github.com/echoz/Chio/blob/main/Docs/Usage.md#online-vectors">MapTileCache</a> · <a href="https://github.com/echoz/Chio/blob/main/Docs/Usage.md#offline-tile-packs">MapTilePack</a> — explicit, application-owned opt-ins beside the view.</p>
@@ -167,7 +168,7 @@
     MarkdownView(document)
         .codeHighlighting(.automatic)
 }
-.chioTheme(.default)</code></pre>
+.style(.default)</code></pre>
           </div>
           <p class="component-options"><strong>Presentation options.</strong> Code highlighting: automatic or plain. Links are passive unless you supply an OpenLinkAction; the application decides how to open them.</p>
           <div class="recording-details">
@@ -220,7 +221,7 @@
         Text($0.name)
     }
 }
-.chioTheme(.default)</code></pre>
+.style(.default)</code></pre>
           </div>
           <p class="component-options"><strong>Presentation options.</strong> Single choice or checked set; fuzzy filtering and enabled-row predicates are supported options. Applications own limits and validation. Filtering preserves checked IDs.</p>
           <div class="recording-details">
@@ -274,7 +275,7 @@
     HistoryChart(history, window: window)
         .frame(height: 4)
 }
-.chioTheme(.default)</code></pre>
+.style(.default)</code></pre>
           </div>
           <p class="component-options"><strong>Presentation options.</strong> Annotated bars with zero to two references and an optional target band; automatic or fixed history scale. Captions and marker tracks need their complete allocation.</p>
           <div class="recording-details">
@@ -330,12 +331,12 @@ VStack {
     Sparkline(samples, scale: .fixed(0...1))
         .frame(width: 24, height: 4)
 }
-.chioTheme(.default)</code></pre>
+.style(.default)</code></pre>
           </div>
           <p class="component-options"><strong>Presentation options.</strong> Gauge: normalized bar, plain dial, or segmented dial with an authored target interval. Reference marks remain available on bars. Readout: segmented or plain. History: automatic or fixed scale; nil readings leave gaps. These choices are independent of theme.</p>
           <div class="recording-details">
             <dl class="recording-ingredients">
-              <div><dt>Chio</dt><dd><code>MeasurementGauge</code>, <code>InstrumentReadout</code>, <code>Sparkline</code>, <code>ChioTheme.btop</code>, <code>ChioGroupBoxStyle</code></dd></div>
+              <div><dt>Chio</dt><dd><code>MeasurementGauge</code>, <code>InstrumentReadout</code>, <code>Sparkline</code>, <code>ChioStyle.btop</code>, <code>ChioGroupBoxStyle</code></dd></div>
               <div><dt>SwiftTUI</dt><dd><code>Canvas</code>, <code>GroupBox</code>, <code>Button</code></dd></div>
               <div><dt>Example code</dt><dd>Fixed sample data, normalization, manual updates, bar/target-dial choice, authored numeric captions and adaptive instrument layout.</dd></div>
             </dl>
@@ -377,7 +378,7 @@ VStack {
             <pre><code data-theme-code>FormField(&quot;Name&quot;, description: &quot;Choose a display name.&quot;, error: nameError) {
     TextField(&quot;Name&quot;, text: $name)
 }
-.chioTheme(.default)</code></pre>
+.style(.default)</code></pre>
           </div>
           <p class="component-options"><strong>Presentation options.</strong> Compose TextField, SecureField, TextEditor, Picker or Toggle. FormValidation tracks error visibility; applications own draft values, validation and submit/cancel policy.</p>
           <div class="recording-details">
@@ -422,7 +423,7 @@ VStack {
             <a class="api-doc-link" href="https://github.com/echoz/Chio/blob/main/Docs/Usage.md#pagination">API guide ↗</a>
             <p>pagination: Pagination is application-owned state, initialized with a nonnegative totalCount and positive pageSize.</p>
             <pre><code data-theme-code>PageControl(pagination: $pagination)
-    .chioTheme(.default)</code></pre>
+    .style(.default)</code></pre>
           </div>
           <p class="component-options"><strong>Presentation options.</strong> Pagination supplies the item range. Replacing total count can retain/clamp the page; resizing preserves the first item. Reset policy and data loading belong to the application.</p>
           <div class="recording-details">
@@ -470,7 +471,7 @@ VStack {
     DurationText(elapsed: .seconds(83))
     DurationText(remaining: .milliseconds(12_250), style: .segmented)
 }
-.chioTheme(.default)</code></pre>
+.style(.default)</code></pre>
           </div>
           <p class="component-options"><strong>Presentation options.</strong> Style: plain or segmented. Elapsed fractions round down; positive remaining fractions round up. A native TimelineView can drive updates.</p>
           <div class="recording-details">
@@ -519,7 +520,7 @@ VStack {
     StatusBar { KeyHints(navigation) }
     KeyHints { KeyHint(&quot;F1&quot;, &quot;Help&quot;) }
 }
-.chioTheme(.default)</code></pre>
+.style(.default)</code></pre>
           </div>
           <p class="component-options"><strong>Presentation options.</strong> Compact KeyHints or grouped KeyboardHelp share ShortcutHint values. StatusBar supplies footer presentation. The application chooses context and owns showing, scrolling and closing help.</p>
           <div class="recording-details">
@@ -565,7 +566,7 @@ VStack {
             <p>startingDirectory: URL and selectedFile: URL? are application-owned inputs. Default callbacks allow the binding to receive the confirmed path.</p>
             <pre><code data-theme-code>FilePicker(directory: startingDirectory, selection: $selectedFile,
            allowedExtensions: .only([&quot;swift&quot;, &quot;md&quot;]))
-    .chioTheme(.default)</code></pre>
+    .style(.default)</code></pre>
           </div>
           <p class="component-options"><strong>Presentation options.</strong> Extension filter: all or only specified values. Hidden files are optional. Cancel preserves the prior selection; the starting directory does not restrict navigation. Applications handle opening errors.</p>
           <div class="recording-details">
@@ -610,10 +611,10 @@ VStack {
             <a class="api-doc-link" href="https://github.com/echoz/Chio/blob/main/Docs/Usage.md#confirmation-and-feedback">API guide ↗</a>
             <p>publish() is an application-owned action. This recorded example simulates publishing locally; nothing is sent.</p>
             <pre><code data-theme-code>Button(&quot;Publish&quot;) { publish() }
-    .chioTheme(.default)</code></pre>
+    .style(.default)</code></pre>
           </div>
           <p class="component-options"><strong>Presentation options.</strong> The theme installs default native styles. Toasts use explicit ChioToastStyle; applications choose tone and own completion, confirmation and dismissal.</p>
-          <p class="style-coverage"><code>.chioTheme(...)</code> installs styles for groups, lists, tables, tabs, palettes, fields, editors, progress, spinners, prompts, buttons, links, pickers, toggles, scrolling and disclosure. <a href="https://github.com/echoz/Chio/blob/main/Sources/Chio/Theme/Presentation/View+ChioTheme.swift">See all installed styles</a> · <a href="https://github.com/echoz/Chio/blob/main/Docs/Usage.md#tabs">Tabs</a> · <a href="https://github.com/echoz/Chio/blob/main/Docs/Usage.md#text-entry">Fields & editors</a> · <a href="https://github.com/echoz/Chio/blob/main/Docs/Usage.md#confirmation-and-feedback">Prompts & toasts</a>.</p>
+          <p class="style-coverage"><code>.style(...)</code> installs styles for groups, lists, tables, tabs, palettes, fields, editors, progress, spinners, prompts, buttons, links, pickers, toggles, scrolling and disclosure. <a href="https://github.com/echoz/Chio/blob/main/Sources/Chio/Style/Presentation/View+ChioStyle.swift">See all installed styles</a> · <a href="https://github.com/echoz/Chio/blob/main/Docs/Usage.md#tabs">Tabs</a> · <a href="https://github.com/echoz/Chio/blob/main/Docs/Usage.md#text-entry">Fields & editors</a> · <a href="https://github.com/echoz/Chio/blob/main/Docs/Usage.md#confirmation-and-feedback">Prompts & toasts</a>.</p>
           <div class="recording-details">
             <dl class="recording-ingredients">
               <div><dt>Chio</dt><dd><code>ChioButtonStyle</code>, <code>ChioPromptStyle</code>, <code>ChioSpinnerStyle</code>, <code>ChioToastStyle</code></dd></div>
@@ -659,10 +660,10 @@ VStack {
     ActivityLog()
 }
 .frame(height: 16)
-.chioTheme(.default)</code></pre>
+.style(.default)</code></pre>
           </div>
           <p class="component-options"><strong>Presentation options.</strong> Choose horizontal, vertical or both axes and bound their allocation. Native scrollIndicators controls track visibility; a nearer scrollViewStyle overrides the installed style.</p>
-          <p class="style-coverage"><code>.chioTheme(...)</code> installs styles for groups, lists, tables, tabs, palettes, fields, editors, progress, spinners, prompts, buttons, links, pickers, toggles, scrolling and disclosure. <a href="https://github.com/echoz/Chio/blob/main/Sources/Chio/Theme/Presentation/View+ChioTheme.swift">See all installed styles</a> · <a href="https://github.com/echoz/Chio/blob/main/Docs/Usage.md#tabs">Tabs</a> · <a href="https://github.com/echoz/Chio/blob/main/Docs/Usage.md#text-entry">Fields & editors</a> · <a href="https://github.com/echoz/Chio/blob/main/Docs/Usage.md#confirmation-and-feedback">Prompts & toasts</a>.</p>
+          <p class="style-coverage"><code>.style(...)</code> installs styles for groups, lists, tables, tabs, palettes, fields, editors, progress, spinners, prompts, buttons, links, pickers, toggles, scrolling and disclosure. <a href="https://github.com/echoz/Chio/blob/main/Sources/Chio/Style/Presentation/View+ChioStyle.swift">See all installed styles</a> · <a href="https://github.com/echoz/Chio/blob/main/Docs/Usage.md#tabs">Tabs</a> · <a href="https://github.com/echoz/Chio/blob/main/Docs/Usage.md#text-entry">Fields & editors</a> · <a href="https://github.com/echoz/Chio/blob/main/Docs/Usage.md#confirmation-and-feedback">Prompts & toasts</a>.</p>
           <div class="recording-details">
             <dl class="recording-ingredients">
               <div><dt>Chio</dt><dd><code>ChioScrollViewStyle</code></dd></div>
@@ -707,10 +708,10 @@ VStack {
             <pre><code data-theme-code>DisclosureGroup(&quot;Details&quot;, isExpanded: $expanded) {
     Text(&quot;Build settings and notes go here.&quot;)
 }
-.chioTheme(.default)</code></pre>
+.style(.default)</code></pre>
           </div>
           <p class="component-options"><strong>Presentation options.</strong> Nest groups for authored hierarchies. SwiftTUI owns expansion and geometric focus; the example folder labels are local fixtures and do not read the filesystem.</p>
-          <p class="style-coverage"><code>.chioTheme(...)</code> installs styles for groups, lists, tables, tabs, palettes, fields, editors, progress, spinners, prompts, buttons, links, pickers, toggles, scrolling and disclosure. <a href="https://github.com/echoz/Chio/blob/main/Sources/Chio/Theme/Presentation/View+ChioTheme.swift">See all installed styles</a> · <a href="https://github.com/echoz/Chio/blob/main/Docs/Usage.md#tabs">Tabs</a> · <a href="https://github.com/echoz/Chio/blob/main/Docs/Usage.md#text-entry">Fields & editors</a> · <a href="https://github.com/echoz/Chio/blob/main/Docs/Usage.md#confirmation-and-feedback">Prompts & toasts</a>.</p>
+          <p class="style-coverage"><code>.style(...)</code> installs styles for groups, lists, tables, tabs, palettes, fields, editors, progress, spinners, prompts, buttons, links, pickers, toggles, scrolling and disclosure. <a href="https://github.com/echoz/Chio/blob/main/Sources/Chio/Style/Presentation/View+ChioStyle.swift">See all installed styles</a> · <a href="https://github.com/echoz/Chio/blob/main/Docs/Usage.md#tabs">Tabs</a> · <a href="https://github.com/echoz/Chio/blob/main/Docs/Usage.md#text-entry">Fields & editors</a> · <a href="https://github.com/echoz/Chio/blob/main/Docs/Usage.md#confirmation-and-feedback">Prompts & toasts</a>.</p>
           <div class="recording-details">
             <dl class="recording-ingredients">
               <div><dt>Chio</dt><dd><code>ChioDisclosureGroupStyle</code></dd></div>

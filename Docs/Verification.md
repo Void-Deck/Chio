@@ -67,8 +67,8 @@ bash Scripts/ci/verify.sh
 ```
 
 The gate serializes builds and hosted tests. It runs all tests in release,
-selected tests in debug, a standalone release build, 21 plain-text snapshots and
-16 dashboard pseudo-terminal workflows, plus the map example's fixture
+selected tests in debug, a standalone release build, 24 plain-text snapshots and
+19 dashboard pseudo-terminal workflows, plus the map example's fixture
 reproduction and PTY workflow. Snapshot files are inspection artifacts;
 Swift tests assert the rendering contracts.
 
@@ -241,6 +241,56 @@ missing-asset fallbacks remain supported. The build gives owned CSS/JavaScript
 content-hashed names. The player's NPT-poster limitation is recorded alongside
 the vendored assets.
 
+The separate [style comparison](https://echoz.github.io/Chio/appearance.html)
+compares six actual terminal captures (default, opencode and btop at 100 × 30 and
+36 × 64). [PR #10](https://github.com/echoz/Chio/pull/10) supplies the unified
+`ChioStyle` implementation and refreshed, inspected captures. Refresh affected
+captures from the verified candidate when appearance changes.
+The main catalog retains default/light/btop previews;
+this comparison does not establish opencode previews for every catalog entry.
+
+Verify one inherited environment key, nearest complete-style overrides,
+compatibility aliases and retained `theme:` initializer signatures. Cover explicit
+surface overrides and `.base` inheritance after palette replacement; construct,
+replace and decode bounded input padding, including the historical absent key.
+Use public raster and hosted-session checks for the supported searchable composed
+lists: native focus, selection, query, activation and scroll reveal through width
+and style changes. New per-row density controls are deferred due to unresolved
+[native list limitations](Decisions/NativeIntegration.md#tall-list-rows).
+Single-line truncation limits row height but does not establish that arbitrary
+list/checklist scrolling is safe or fix the separate reproduced focus failure.
+Inspect unchanged default/light presentation, the intentional btop border-heading
+change, and opencode leading edges, roomy inputs and compact list rows.
+The CI terminal probe exercises every comparison style at 36 × 18, including
+section shortcuts and clean terminal restoration.
+
+Capture all six recordings and PNG previews with the existing release binary:
+
+```sh
+python3 -B Scripts/docs/capture-appearance.py .build/release/chio-dashboard \
+  --render-previews --output .build/appearance-review
+```
+
+PNG rendering uses the pinned local player and an externally installed Node,
+Playwright and Chromium browser. Supply `--node /path/to/node` and
+`--playwright /path/to/playwright` for runtimes outside the usual lookup paths.
+Choose a fresh output directory under `.build` or outside the checkout. The
+command checks prerequisites before recording, verifies each terminal's cleanup,
+retains full logs and reports runtime warnings; it does not build or publish.
+Omit `--render-previews` for recordings alone. CI's `--verify-only` needs no Node
+or browser. The standalone `render-terminal-previews.cjs` also accepts existing
+`*-initial.cast` files when only PNG generation is needed.
+
+Inspect every still, full clip and retained log, then copy only the six approved
+`.cast`/`.png` pairs into `Docs/Media/appearance`. Published clips end before
+teardown; this does not fix recorded warnings. Do not infer color quality from
+plain-text snapshots. The comparison
+page's style/size controls, matching commands, explicit playback, script-free
+links, 390-pixel layout and missing-asset fallback require browser verification
+alongside site assembly. Applications own the demonstrated responsive layout.
+Deploy only after merge; documentation or old captures do not prove that a changed
+implementation passed its gates. [Plan](Plan.md) records the accepted evidence.
+
 Preview the deployable output locally:
 
 ```sh
@@ -264,8 +314,8 @@ Completing a visible example change includes updating the showcase:
 4. Check site assembly, assets/links, playback, pause, forward/backward seeking,
    category and related-entry navigation, shared-theme commands/snippets, URL
    history, focus, a 390-pixel layout and missing-asset/script-free fallbacks.
-5. Commit, deploy and verify the published result before declaring the slice
-   complete. An internal change with no visible difference needs no new capture.
+5. Commit and merge before deployment, then verify the published result before
+   declaring the slice complete. An internal change with no visible difference needs no new capture.
 
 ## Linux and CI
 
@@ -275,10 +325,12 @@ Xcode 27 and the Swift 6.4.0 Ubuntu 24.04 container. The Linux image uses
 pinned to the same image digest verified from Docker Hub, to avoid depending on
 Docker Hub authentication during runner initialization. Builds/tests serialize
 within each job; artifacts retain logs, text captures and xUnit reports.
-The Linux job allows sixty minutes for the complete gate; macOS allows forty-five.
-The earlier Linux forty-five-minute cap cancelled a run during forward progress
-after its test suites passed. Increasing the job budget preserves all test
-assertions, frame deadlines and terminal workflows.
+Both jobs allow sixty minutes for the complete gate. Earlier forty-five-minute
+caps cancelled runs during forward progress: Linux after its test suites passed,
+and macOS after all debug/release suites and dashboard terminal workflows passed,
+as the map build started. The larger job budget preserves all test assertions,
+frame deadlines and terminal workflows; it does not extend an individual test's
+deadline or establish that a stalled test is healthy.
 
 [0.1.0 verification](Releases/0.1.0.md#platform-verification) records the tested
 platforms. Ordinary Linux executables need the Swift/Foundation runtime libraries.

@@ -16,7 +16,7 @@ extension ChioSliderStyle: Equatable {}
 
 @MainActor
 private struct SliderBody {
-    @Environment(\.chioTheme) private var theme
+    @Environment(\.chioStyle) private var theme
     let configuration: SliderStyleConfiguration
 }
 

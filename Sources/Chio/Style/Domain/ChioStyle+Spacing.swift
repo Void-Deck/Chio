@@ -1,0 +1,100 @@
+extension ChioStyle {
+    /// Insets and gaps measured in terminal cells.
+    /// Input distances have a finite 0...32-cell styling bound;
+    /// the original four distances retain their nonnegative contract.
+    public struct Spacing {
+        public let horizontalInset: Int
+        public let verticalInset: Int
+        public let sectionGap: Int
+        public let hintGap: Int
+        /// Native text-field padding, bounded to 0...32 terminal cells.
+        public let inputVerticalInset: Int
+
+        public init(
+            horizontalInset: Int = 1,
+            verticalInset: Int = 0,
+            sectionGap: Int = 1,
+            hintGap: Int = 2,
+            inputVerticalInset: Int = 0
+        ) {
+            let isHorizontalInsetNonnegative = horizontalInset >= 0
+            let isVerticalInsetNonnegative = verticalInset >= 0
+            let isSectionGapNonnegative = sectionGap >= 0
+            let isHintGapNonnegative = hintGap >= 0
+            precondition(isHorizontalInsetNonnegative && isVerticalInsetNonnegative
+                         && isSectionGapNonnegative && isHintGapNonnegative,
+                         "Theme spacing must be nonnegative")
+            let isInputInsetBounded = (0...32).contains(inputVerticalInset)
+            precondition(isInputInsetBounded,
+                         "Input spacing must be in 0...32 terminal cells")
+            self.horizontalInset = horizontalInset
+            self.verticalInset = verticalInset
+            self.sectionGap = sectionGap
+            self.hintGap = hintGap
+            self.inputVerticalInset = inputVerticalInset
+        }
+
+        /// Retains the original four-distance initializer's function signature.
+        public init(horizontalInset: Int, verticalInset: Int, sectionGap: Int, hintGap: Int) {
+            self.init(horizontalInset: horizontalInset, verticalInset: verticalInset,
+                      sectionGap: sectionGap, hintGap: hintGap, inputVerticalInset: 0)
+        }
+
+        /// Returns checked spacing; omitted distances retain their current values.
+        public func replacing(
+            horizontalInset: Int? = nil,
+            verticalInset: Int? = nil,
+            sectionGap: Int? = nil,
+            hintGap: Int? = nil,
+            inputVerticalInset: Int? = nil
+        ) -> Self {
+            Spacing(horizontalInset: horizontalInset ?? self.horizontalInset,
+                    verticalInset: verticalInset ?? self.verticalInset,
+                    sectionGap: sectionGap ?? self.sectionGap, hintGap: hintGap ?? self.hintGap,
+                    inputVerticalInset: inputVerticalInset ?? self.inputVerticalInset)
+        }
+
+        /// Retains the original four-distance replacement's function signature.
+        public func replacing(horizontalInset: Int?, verticalInset: Int?, sectionGap: Int?, hintGap: Int?) -> Self {
+            replacing(horizontalInset: horizontalInset, verticalInset: verticalInset,
+                      sectionGap: sectionGap, hintGap: hintGap, inputVerticalInset: nil)
+        }
+    }
+
+}
+
+extension ChioStyle.Spacing: Equatable {}
+extension ChioStyle.Spacing: Hashable {}
+extension ChioStyle.Spacing: Encodable {}
+extension ChioStyle.Spacing: Decodable {
+    public init(from decoder: any Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        let horizontalInset = try values.decode(Int.self, forKey: .horizontalInset)
+        let verticalInset = try values.decode(Int.self, forKey: .verticalInset)
+        let sectionGap = try values.decode(Int.self, forKey: .sectionGap)
+        let hintGap = try values.decode(Int.self, forKey: .hintGap)
+        func boundedDistance(for key: CodingKeys) throws -> Int {
+            let distance = values.contains(key) ? try values.decode(Int.self, forKey: key) : 0
+            guard (0...32).contains(distance) else {
+                throw DecodingError.dataCorruptedError(
+                    forKey: key, in: values,
+                    debugDescription: "Input spacing must be in 0...32 terminal cells"
+                )
+            }
+            return distance
+        }
+        let distances: [(CodingKeys, Int)] = [
+            (.horizontalInset, horizontalInset), (.verticalInset, verticalInset),
+            (.sectionGap, sectionGap), (.hintGap, hintGap),
+        ]
+        for (key, distance) in distances where distance < 0 {
+            throw DecodingError.dataCorruptedError(
+                forKey: key, in: values, debugDescription: "Theme spacing must be nonnegative"
+            )
+        }
+        self.init(horizontalInset: horizontalInset, verticalInset: verticalInset,
+                  sectionGap: sectionGap, hintGap: hintGap,
+                  inputVerticalInset: try boundedDistance(for: .inputVerticalInset))
+    }
+}
+extension ChioStyle.Spacing: Sendable {}

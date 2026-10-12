@@ -17,7 +17,7 @@ jobs:
   macos:
     # Swift 6.4 needs Xcode 27; this runner is currently a public preview.
     runs-on: xcode-27
-    timeout-minutes: 45
+    timeout-minutes: 60
     env:
       DEVELOPER_DIR: /Applications/Xcode_27.0.app/Contents/Developer
     steps:
@@ -36,6 +36,7 @@ jobs:
             ci-verification.log
             .build/ci-results/*.txt
             .build/ci-results/*.xml
+            .build/ci-results/appearance/**
             .build/ci-results/maps/**
 
   linux:
@@ -60,4 +61,5 @@ jobs:
             ci-verification.log
             .build/ci-results/*.txt
             .build/ci-results/*.xml
+            .build/ci-results/appearance/**
             .build/ci-results/maps/**

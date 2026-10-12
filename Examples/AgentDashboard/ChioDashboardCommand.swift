@@ -68,6 +68,15 @@ struct ChioDashboardCommand {
     @Flag(help: "Run the bounded read-only diff prototype with local fixtures.")
     var diff = false
 
+    @Flag(help: "Run the identical-content appearance comparison.")
+    var appearance = false
+
+    @Option(help: "Appearance comparison treatment: chio, opencode or btop (requires --appearance).")
+    var treatment: AppearanceRecipe?
+
+    @Option(help: "Appearance comparison density: recipe, compact or roomy (requires --appearance).")
+    var density: AppearanceDensity?
+
     @Option(help: "Starting folder for --files (defaults to the current working directory).")
     var directory: String?
 
@@ -102,11 +111,24 @@ struct ChioDashboardCommand {
             instruments ? .instruments : nil,
             inbox ? .inbox : nil,
             diff ? .diff : nil,
+            appearance ? .appearance : nil,
         ].compactMap { $0 }
         guard requestedExamples.count <= 1 else {
-            throw ValidationError("Choose one example: --choices, --text-entry, --feedback, --files, --keyboard-help, --tabs, --pagination, --viewport, --tree, --forms, --timers, --metrics, --instruments, --inbox or --diff.")
+            throw ValidationError("Choose one example: --choices, --text-entry, --feedback, --files, --keyboard-help, --tabs, --pagination, --viewport, --tree, --forms, --timers, --metrics, --instruments, --inbox, --diff or --appearance.")
         }
         let example = requestedExamples.first ?? .dashboard
+        let hasComparisonTreatment = treatment != nil
+        let hasComparisonDensity = density != nil
+        if hasComparisonTreatment || hasComparisonDensity {
+            guard appearance else {
+                throw ValidationError("--treatment and --density are available only with --appearance.")
+            }
+        }
+        if appearance {
+            if hasExplicitTheme || light {
+                throw ValidationError("--appearance recipes own their palettes; omit --theme and --light and choose --treatment instead.")
+            }
+        }
         if example.isFocusedExample {
             let hasSimulationScenario = switch scenario {
             case .normal: false

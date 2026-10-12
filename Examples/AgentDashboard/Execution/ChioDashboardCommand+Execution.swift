@@ -49,6 +49,11 @@ extension ChioDashboardCommand {
             try await WebHostCLIRunner.run(InstrumentsApplication(theme: theme), configuration: configuration)
         case .inbox:
             try await WebHostCLIRunner.run(InboxApplication(theme: theme), configuration: configuration)
+        case .appearance:
+            try await WebHostCLIRunner.run(
+                AppearanceApplication(recipe: treatment ?? .chio, density: density ?? .recipe),
+                configuration: configuration
+            )
         case .diff:
             try await WebHostCLIRunner.run(DiffApplication(theme: theme), configuration: configuration)
         }
@@ -87,6 +92,8 @@ extension ChioDashboardCommand {
             render(InstrumentsExampleView(theme: theme))
         case .inbox:
             render(InboxExampleView(theme: theme))
+        case .appearance:
+            render(AppearanceExampleView(recipe: treatment ?? .chio, density: density ?? .recipe))
         case .diff:
             render(DiffExampleView(theme: theme))
         }

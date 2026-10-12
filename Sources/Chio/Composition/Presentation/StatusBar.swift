@@ -3,7 +3,7 @@ import SwiftTUIViews
 /// A separated footer for contextual hints or application status.
 @MainActor
 public struct StatusBar<Content: View> {
-    @Environment(\.chioTheme) private var theme
+    @Environment(\.chioStyle) private var theme
     private let content: Content
 
     public init(@ViewBuilder content: () -> Content) {

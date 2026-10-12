@@ -3,7 +3,7 @@ import SwiftTUIViews
 /// A consistently styled key label and the action it describes.
 @MainActor
 public struct KeyHint {
-    @Environment(\.chioTheme) private var theme
+    @Environment(\.chioStyle) private var theme
     private let shortcut: ShortcutHint
 
     public init(_ key: String, _ label: String) {

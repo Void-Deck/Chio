@@ -14,7 +14,7 @@ public struct InstrumentReadout {
         case segmented
     }
 
-    @Environment(\.chioTheme) private var theme
+    @Environment(\.chioStyle) private var theme
     private let value: String
     private let style: Style
 

@@ -14,7 +14,7 @@ import SwiftTUIViews
 /// applications own retention, sampling, timing, units and thresholds.
 @MainActor
 public struct Sparkline {
-    @Environment(\.chioTheme) private var theme
+    @Environment(\.chioStyle) private var theme
     private let samples: [Double?]
     private let scale: Scale
 

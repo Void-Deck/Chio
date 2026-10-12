@@ -52,7 +52,7 @@
     state.image.alt = `${name} in the ${themeName(state.theme)} theme (static preview).`;
     state.command.textContent = `${state.baseCommand} --theme ${state.theme}`;
     for (const snippet of state.snippets) {
-      snippet.element.textContent = snippet.source.replaceAll(".chioTheme(.default)", `.chioTheme(.${state.theme})`);
+      snippet.element.textContent = snippet.source.replaceAll(".style(.default)", `.style(.${state.theme})`);
     }
     showPreview(recording);
   }

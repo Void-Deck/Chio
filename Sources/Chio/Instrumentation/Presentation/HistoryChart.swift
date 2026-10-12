@@ -16,7 +16,7 @@ import SwiftTUIViews
 /// captions, units and interpretation remain application responsibilities.
 @MainActor
 public struct HistoryChart {
-    @Environment(\.chioTheme) private var theme
+    @Environment(\.chioStyle) private var theme
     private let series: HistorySeries
     private let window: HistoryInterval
     private let scale: Sparkline.Scale

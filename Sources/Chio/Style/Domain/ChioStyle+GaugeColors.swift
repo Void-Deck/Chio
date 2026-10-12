@@ -1,6 +1,6 @@
 import SwiftTUIViews
 
-extension ChioTheme {
+extension ChioStyle {
     /// Distinct arc, target band and needle colors for target-band dials.
     public struct GaugeColors {
         public let arc: Color
@@ -29,6 +29,6 @@ extension ChioTheme {
     }
 }
 
-extension ChioTheme.GaugeColors: Hashable {}
-extension ChioTheme.GaugeColors: Codable {}
-extension ChioTheme.GaugeColors: Sendable {}
+extension ChioStyle.GaugeColors: Hashable {}
+extension ChioStyle.GaugeColors: Codable {}
+extension ChioStyle.GaugeColors: Sendable {}

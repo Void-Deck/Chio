@@ -21,7 +21,7 @@ extension ChioInstrumentLabeledContentStyle: Equatable {}
 
 @MainActor
 private struct InstrumentBody {
-    @Environment(\.chioTheme) private var theme
+    @Environment(\.chioStyle) private var theme
     let configuration: LabeledContentStyleConfiguration
 }
 
