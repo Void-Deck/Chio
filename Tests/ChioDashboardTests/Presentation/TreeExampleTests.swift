@@ -143,7 +143,11 @@ private extension SemanticHostFrame {
     }
     func treeExpanded(_ label: String, _ expanded: Bool) -> Bool {
         semantics.accessibilityNodes.contains {
-            $0.role == .disclosureGroup && $0.label == label && $0.control?.value == .boolean(expanded)
+            let isNamedTrigger = $0.role == .button && $0.label == label
+            let hasExpectedExpansion = $0.properties?.expanded == expanded
+            let hasContentRelationship = $0.properties?.controls != nil
+            let hasExpectedValue = $0.control?.value == .boolean(expanded)
+            return isNamedTrigger && hasExpectedExpansion && hasContentRelationship && hasExpectedValue
         }
     }
 }

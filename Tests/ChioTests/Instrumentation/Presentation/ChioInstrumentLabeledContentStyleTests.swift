@@ -108,8 +108,8 @@ struct ChioInstrumentLabeledContentStyleTests {
                 $0.raster.size.width == 20 && $0.instrumentSlotFocused("Reading=1")
             }
             #expect(resized.focusedIdentity == reading.focusedIdentity)
-            #expect(resized.semantics.accessibilityNodes.filter { $0.label == "Heading=1" }.count == 1)
-            #expect(resized.semantics.accessibilityNodes.filter { $0.label == "Reading=1" }.count == 1)
+            #expect(resized.semantics.accessibilityNodes.filter { $0.isInstrumentSlotAction("Heading=1") }.count == 1)
+            #expect(resized.semantics.accessibilityNodes.filter { $0.isInstrumentSlotAction("Reading=1") }.count == 1)
             session.stop()
             #expect(try await run.value == .inputEnded)
         } catch {
@@ -168,6 +168,14 @@ extension InstrumentSlotCounter: View {
 
 private extension SemanticHostFrame {
     func instrumentSlotFocused(_ label: String) -> Bool {
-        semantics.accessibilityNodes.contains { $0.identity == focusedIdentity && $0.label == label }
+        semantics.accessibilityNodes.contains { $0.identity == focusedIdentity && $0.isInstrumentSlotAction(label) }
+    }
+}
+
+private extension AccessibilityNode {
+    func isInstrumentSlotAction(_ title: String) -> Bool {
+        let isAuthoredButton = role == .button && label == title
+        let supportsActivation = control?.actions.contains(.activate) == true
+        return isAuthoredButton && supportsActivation
     }
 }

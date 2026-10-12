@@ -27,8 +27,11 @@ struct ChioDisclosureGroupStyleTests {
         #expect(openGlyph.style?.foregroundColor == theme.colors.accent)
         #expect(closed.rasterSurface.cells[0].allSatisfy { $0.style?.backgroundColor == theme.colors.selectedSurface })
         #expect(opened.rasterSurface.lines[1].hasPrefix("    Bo"))
-        let node = try #require(closed.semanticSnapshot.accessibilityNodes.first { $0.role == .disclosureGroup })
+        let node = try #require(closed.semanticSnapshot.accessibilityNodes.first { $0.isDisclosureTrigger })
         #expect(node.label == "Details")
+        #expect(node.properties?.expanded == false)
+        #expect(node.control?.value == .boolean(false))
+        #expect(node.properties?.controls == [])
         #expect(closed.rasterSurface.lines[0].filter { $0 == "▸" }.count == 1)
     }
 
@@ -40,8 +43,11 @@ struct ChioDisclosureGroupStyleTests {
                 .chioTheme(.default),
             proposal: ProposedViewSize(width: 24, height: 5)
         )
-        let node = try #require(rendered.semanticSnapshot.accessibilityNodes.first { $0.role == .disclosureGroup })
+        let node = try #require(rendered.semanticSnapshot.accessibilityNodes.first { $0.isDisclosureTrigger })
         #expect(!node.isEnabled)
+        #expect(node.properties?.expanded == expanded)
+        #expect(node.control?.value == .boolean(expanded))
+        #expect(node.properties?.controls?.count == (expanded ? 1 : 0))
         #expect(rendered.semanticSnapshot.focusRegions.isEmpty)
         #expect(rendered.rasterSurface.lines.joined().contains("Body") == expanded)
         #expect(!rendered.rasterSurface.lines.joined().contains("▌"))
@@ -73,7 +79,7 @@ struct ChioDisclosureGroupStyleTests {
             session.send(.key(.return))
             let parentOpen = try await recorder.wait(after: initial.sequence, description: "Return reveals the child disclosure") {
                 $0.disclosureFocused("Parent") && $0.disclosureStatus("O=1 I=0 W=1 N=0 M=0")
-                    && $0.semantics.accessibilityNodes.contains { $0.label == "Child" && $0.role == .disclosureGroup }
+                    && $0.semantics.accessibilityNodes.contains { $0.label == "Child" && $0.isDisclosureTrigger }
             }
             self.expectHeaderPaint(parentOpen, label: "Child", theme: disclosureTestTheme, active: false)
             session.send(.key(.tab))
@@ -100,7 +106,7 @@ struct ChioDisclosureGroupStyleTests {
             let contentClick = try await recorder.wait(after: activated.sequence, description: "plain content click leaves both disclosures expanded") {
                 $0.disclosureStatus("O=1 I=1 W=1 N=1 M=1")
             }
-            let parent = try #require(contentClick.semantics.accessibilityNodes.first { $0.label == "Parent" && $0.role == .disclosureGroup })
+            let parent = try #require(contentClick.semantics.accessibilityNodes.first { $0.label == "Parent" && $0.isDisclosureTrigger })
             let headerPoint = CellPoint(x: parent.rect.origin.x + 4, y: parent.rect.origin.y)
             session.send([
                 .mouse(MouseEvent(kind: .down(.primary), location: .cellFallback(headerPoint))),
@@ -154,7 +160,7 @@ struct ChioDisclosureGroupStyleTests {
     }
 
     private func expectHeaderPaint(_ frame: SemanticHostFrame, label: String, theme: ChioTheme, active: Bool) {
-        guard let node = frame.semantics.accessibilityNodes.first(where: { $0.role == .disclosureGroup && $0.label == label }) else {
+        guard let node = frame.semantics.accessibilityNodes.first(where: { $0.isDisclosureTrigger && $0.label == label }) else {
             Issue.record("Missing disclosure \(label)")
             return
         }
@@ -267,7 +273,7 @@ extension DisclosureStyleTestView: View {
 private extension SemanticHostFrame {
     func disclosureFocused(_ label: String) -> Bool {
         semantics.accessibilityNodes.contains {
-            $0.identity == focusedIdentity && $0.label == label && $0.role == .disclosureGroup
+            $0.identity == focusedIdentity && $0.label == label && $0.isDisclosureTrigger
         }
     }
 
@@ -276,4 +282,13 @@ private extension SemanticHostFrame {
     }
 
     func disclosureStatus(_ status: String) -> Bool { raster.lines[0].contains(status) }
+}
+
+private extension AccessibilityNode {
+    var isDisclosureTrigger: Bool {
+        let isButton = role == .button
+        let hasExpansionState = properties?.expanded != nil
+        let hasContentRelationship = properties?.controls != nil
+        return isButton && hasExpansionState && hasContentRelationship
+    }
 }
