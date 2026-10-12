@@ -145,15 +145,15 @@ The candidate includes checked values, bounded shared HTTP transport, Photon
 decoding and an opt-in live endpoint. The example defaults to synthetic local
 search fixtures independently of its map source. The required local macOS/Linux
 gates pass, with focused debug/release and terminal checks repeated after the
-row-color and first-mount focus corrections. The pinned engineering gate and
+row-color and deferred-focus corrections. The pinned engineering gate and
 independent review pass. A bounded
 live Photon search returned attributed results and opened a marker with zoom
 retained. This proves adapter integration, not service availability or search
 quality. Refreshed default/light/btop terminal previews and the search recording
 pass visual inspection. Safari checks cover matching commands, playback and
 seeking, navigation/history, a 390-pixel viewport and script-free/missing-player
-fallbacks. Hosted PR checks, review/merge and published Pages verification remain
-delivery steps.
+fallbacks. Delivery requires hosted PR checks, review/merge and published Pages
+verification.
 
 Reverse lookup and routing remain later approved scope; provider downloads remain
 paused. This candidate has not been merged, deployed or released.

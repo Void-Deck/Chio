@@ -6,7 +6,11 @@ import SwiftTUI
 struct MapPlaceSearchPane {
     let label: String
     let draft: Binding<String>
+    // Rendering and activation retain their accepted response snapshot. Only
+    // deferred focus delivery reads the parent's current state.
     let phase: MapPlaceSearch.Phase
+    let currentPhase: Binding<MapPlaceSearch.Phase>
+    let isPresented: Binding<Bool>
     let selection: Binding<Int?>
     let focus: FocusState<MapExampleView.Focus?>.Binding
     let submit: @MainActor () -> Void
@@ -118,10 +122,15 @@ extension MapPlaceSearchPane: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .onChange(of: accepted?.response, initial: true) { _, _ in
-            // A provider may finish before this pane first mounts. Decide focus
-            // from the accepted rows on that first observation as well.
-            if rows.isEmpty { focus.wrappedValue = .field }
-            else { focus.wrappedValue = .results }
+            // A retained callback may run after acceptance or dismissal has
+            // advanced the parent. Decide from current storage at delivery.
+            guard isPresented.wrappedValue else { return }
+            switch currentPhase.wrappedValue {
+            case .matches(_, let matches, _) where !matches.places.isEmpty:
+                focus.wrappedValue = .results
+            case .idle, .loading, .failed, .matches:
+                focus.wrappedValue = .field
+            }
         }
     }
 }

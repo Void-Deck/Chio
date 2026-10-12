@@ -172,6 +172,10 @@ mounted across loading and empty states, with response-scoped row identities.
 Determine initial focus from the accepted rows as well as later response changes:
 a fast provider can finish before the search pane first mounts. Accepted nonempty
 results focus the native list; an empty or pending interaction focuses the editor.
+Deferred focus callbacks read current parent-owned phase and presentation bindings;
+a retained callback must not restore search focus after dismissal. Rendering and
+activation retain their immutable response snapshot, so input arriving before a
+pending render cannot open a different response's place at the same row index.
 The map's input path carries batched type-ahead until the native editor receives
 focus; the editor then owns editing. Retain explicit bindings and the request
 owner in event closures so successive events observe the same storage.

@@ -165,6 +165,9 @@ Public raster checks verify semantic light-row colors before and after native
 selection moves, alongside visual inspection of all three theme captures.
 A preloaded-result session verifies native list focus on first mount and that
 Return opens the selected place without resubmitting the query.
+Lifecycle handoffs cover acceptance and dismissal before deferred focus delivery,
+allowing native focus to converge normally. Response replacement during one native
+key dispatch verifies that activation uses the displayed place and its attribution.
 Controlled providers cover one active request, replacement after cancellation
 acknowledgement, latest-pending admission and stale A-B-A completion. The map
 PTY probe's `--place-search` workflow uses synthetic local places without network;

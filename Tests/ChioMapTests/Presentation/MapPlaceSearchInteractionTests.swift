@@ -52,6 +52,95 @@ struct MapPlaceSearchInteractionTests {
         }
     }
 
+    @Test("Initial focus uses the current phase when acceptance precedes lifecycle delivery")
+    func phaseHandoffFocus() async throws {
+        let query = try MapPlaceQuery(text: "eight")
+        let matches = try await EightResultGeocoder().search(query)
+        let handoff = PlaceSearchPhaseHandoff(transition: .accept(.matches(query, matches, response: UUID())))
+        let frames = PlaceFrames()
+        let surface = HostedRasterSurface(surfaceSize: CellSize(width: 100, height: 30), appearance: .fallback,
+                                          onFrame: { frames.latest = $0 })
+        let app = PreloadedPlaceSearchApp(handoff: handoff)
+        let session = try HostedSceneSession(for: app, sceneID: "preloaded-place-search", surface: surface)
+        let run = Task { try await session.start() }
+        do {
+            let accepted = try await frames.wait { $0.placeText.contains("8 matches") && $0.focusesPlaceResults }
+            #expect(handoff.focusObservations == [.results])
+            session.send(.key(.return))
+            let opened = try await frames.wait(after: accepted.sequence) { $0.placeText.contains("Opened Fixture 1") }
+            #expect(opened.placeText.contains("Submissions: 0"))
+            session.stop()
+            #expect(try await run.value == .inputEnded)
+        } catch {
+            session.stop()
+            _ = await run.result
+            throw error
+        }
+    }
+
+    @Test("A departing pane cannot overwrite the current map focus request")
+    func dismissalHandoffFocus() async throws {
+        let handoff = PlaceSearchPhaseHandoff(transition: .dismiss)
+        let frames = PlaceFrames()
+        let surface = HostedRasterSurface(surfaceSize: CellSize(width: 100, height: 30), appearance: .fallback,
+                                          onFrame: { frames.latest = $0 })
+        let app = PreloadedPlaceSearchApp(handoff: handoff)
+        let session = try HostedSceneSession(for: app, sceneID: "preloaded-place-search", surface: surface)
+        let run = Task { try await session.start() }
+        do {
+            _ = try await frames.wait { frame in
+                !frame.placeText.contains("Place search") && frame.semantics.accessibilityNodes.contains {
+                    $0.identity == frame.focusedIdentity && $0.role == .button && $0.label == "Map focus"
+                }
+            }
+            #expect(handoff.focusObservations == [.map])
+            session.stop()
+            #expect(try await run.value == .inputEnded)
+        } catch {
+            session.stop()
+            _ = await run.result
+            throw error
+        }
+    }
+
+    @Test("A retained row activation opens its rendered response and credits after the owner advances")
+    func renderedResponseActivation() async throws {
+        let query = try MapPlaceQuery(text: "original")
+        let original = try await EightResultGeocoder().search(query)
+        let replacementQuery = try MapPlaceQuery(text: "replacement")
+        let replacement = try MapPlaceMatches(places: [MapPlace(coordinate: MapCoordinate(latitude: 40, longitude: 50),
+            name: "Replacement place")], attributions: [MapPlaceMatches.Attribution(text: "Replacement credits",
+            link: URL(string: "https://example.test/replacement")!)])
+        let handoff = PlaceSearchPhaseHandoff(transition: .accept(.matches(replacementQuery, replacement, response: UUID())),
+                                            trigger: .activation)
+        let frames = PlaceFrames()
+        let surface = HostedRasterSurface(surfaceSize: CellSize(width: 100, height: 30), appearance: .fallback,
+                                          onFrame: { frames.latest = $0 })
+        let app = PreloadedPlaceSearchApp(query: query, matches: original, handoff: handoff)
+        let session = try HostedSceneSession(for: app, sceneID: "preloaded-place-search", surface: surface)
+        let run = Task { try await session.start() }
+        do {
+            let ready = try await frames.wait { $0.placeText.contains("8 matches") && $0.focusesPlaceResults }
+            // The outer fixture advances A to B during Return interception,
+            // before the retained pane handles that same synchronous event.
+            session.send(.key(.return))
+            let opened = try await frames.wait(after: ready.sequence) {
+                $0.placeText.contains("Opened Fixture 1") || $0.placeText.contains("Opened Replacement place")
+            }
+            #expect(handoff.didPerform)
+            #expect(opened.placeText.contains("Opened Fixture 1"))
+            #expect(opened.placeText.contains("Credits: Eight result fixtures"))
+            #expect(!opened.placeText.contains("Credits: Replacement credits"))
+            #expect(opened.placeText.contains("Submissions: 0"))
+            session.stop()
+            #expect(try await run.value == .inputEnded)
+        } catch {
+            session.stop()
+            _ = await run.result
+            throw error
+        }
+    }
+
     @Test("Light result rows keep readable semantic colors as native selection moves")
     func lightRowColors() async throws {
         let frames = PlaceFrames()
@@ -472,41 +561,112 @@ extension EightResultGeocoder: MapGeocodingProvider {
     }
 }
 
+@MainActor
+private final class PlaceSearchPhaseHandoff {
+    enum Transition { case accept(MapPlaceSearch.Phase), dismiss }
+    enum Trigger { case appearance, activation }
+    let trigger: Trigger
+    let transition: Transition
+    var perform: (@MainActor () -> Void)?
+    var didPerform = false
+    var focusObservations: [MapExampleView.Focus?] = []
+
+    init(transition: Transition, trigger: Trigger = .appearance) {
+        self.transition = transition
+        self.trigger = trigger
+    }
+
+    func performOnce() {
+        guard !didPerform else { return }
+        didPerform = true
+        perform?()
+    }
+}
+
+@MainActor
 private struct PreloadedPlaceSearchApp {
     let phase: MapPlaceSearch.Phase
+    let handoff: PlaceSearchPhaseHandoff?
 
-    nonisolated init() { phase = .idle }
-    nonisolated init(query: MapPlaceQuery, matches: MapPlaceMatches) {
+    nonisolated init() { phase = .idle; handoff = nil }
+    nonisolated init(query: MapPlaceQuery, matches: MapPlaceMatches, handoff: PlaceSearchPhaseHandoff? = nil) {
         phase = .matches(query, matches, response: UUID())
+        self.handoff = handoff
     }
+    nonisolated init(handoff: PlaceSearchPhaseHandoff) { phase = .idle; self.handoff = handoff }
 }
 
 extension PreloadedPlaceSearchApp: App {
     var body: some Scene {
-        WindowGroup(id: "preloaded-place-search") { PreloadedPlaceSearchView(phase: phase) }.exitOnKeys([])
+        WindowGroup(id: "preloaded-place-search") { PreloadedPlaceSearchView(phase: phase, handoff: handoff) }.exitOnKeys([])
     }
 }
 
 @MainActor
 private struct PreloadedPlaceSearchView {
-    let phase: MapPlaceSearch.Phase
+    @State private var phase: MapPlaceSearch.Phase
+    @State private var presented = true
+    let handoff: PlaceSearchPhaseHandoff?
     @State private var draft = "eight"
     @State private var selection: Int? = 0
     @State private var submissions = 0
     @State private var opened = ""
+    @State private var openedCredits = ""
     @FocusState private var focus: MapExampleView.Focus?
+
+    init(phase: MapPlaceSearch.Phase, handoff: PlaceSearchPhaseHandoff?) {
+        self._phase = State(wrappedValue: phase)
+        self.handoff = handoff
+    }
 }
 
 extension PreloadedPlaceSearchView: View {
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            MapPlaceSearchPane(label: "Synthetic fixtures", draft: $draft, phase: phase, selection: $selection,
-                               focus: $focus, submit: { submissions += 1 }, open: { place, _ in opened = place.name })
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        let phaseStorage = $phase
+        let presentedStorage = $presented
+        let focusStorage = $focus
+        let transition = handoff?.transition
+        handoff?.perform = {
+            switch transition {
+            case .accept(let accepted): phaseStorage.wrappedValue = accepted
+            case .dismiss:
+                presentedStorage.wrappedValue = false
+                focusStorage.wrappedValue = .map
+            case nil: break
+            }
+        }
+        return VStack(alignment: .leading, spacing: 0) {
+            Button("Map focus") {}.focused(focusStorage, equals: .map)
+                // Native appear handlers precede change delivery. Advance the
+                // parent after rendering the pane, before its callback runs.
+                .onAppear {
+                    if handoff?.trigger == .appearance { handoff?.performOnce() }
+                }
+            if presented {
+                MapPlaceSearchPane(label: "Synthetic fixtures", draft: $draft, phase: phaseStorage.wrappedValue, currentPhase: phaseStorage, isPresented: presentedStorage, selection: $selection,
+                                   focus: focusStorage, submit: { submissions += 1 }, open: { place, credits in
+                        opened = place.name
+                        openedCredits = credits.map(\.text).joined(separator: ", ")
+                    })
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
             Text("Submissions: \(submissions)")
+            Text("Credits: \(openedCredits)")
             Text("Opened \(opened)")
+                .onChange(of: 0, initial: true) { _, _ in
+                    // A later sibling observes the authored request after the
+                    // pane's change callback, before another response arrives.
+                    if let handoff, handoff.focusObservations.isEmpty {
+                        handoff.focusObservations.append(focusStorage.wrappedValue)
+                    }
+                }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .chioTheme(.light)
+        .onKeyPress(.return) { _ in
+            guard handoff?.trigger == .activation else { return .ignored }
+            handoff?.performOnce()
+            return .ignored
+        }
     }
 }

@@ -154,7 +154,6 @@ extension MapExampleView: View {
         // closures keep the parent-owned storage through focus transitions.
         let draftStorage = $searchDraft
         let phaseStorage = $searchPhase
-        let phase = phaseStorage.wrappedValue
         let selectionStorage = $resultSelection
         let focusStorage = $focus
         let owner = searchOwner
@@ -182,7 +181,7 @@ extension MapExampleView: View {
                     .clipped()
                     .disabled(isSearching && terminalSize.width < 100)
                 if isSearching {
-                    MapPlaceSearchPane(label: searchLabel, draft: draftStorage, phase: phase, selection: selectionStorage,
+                    MapPlaceSearchPane(label: searchLabel, draft: draftStorage, phase: phaseStorage.wrappedValue, currentPhase: phaseStorage, isPresented: $isSearching, selection: selectionStorage,
                                        focus: focusStorage, submit: submit, open: { openPlace($0, attributions: $1, owner: owner) })
                         .frame(width: terminalSize.width >= 100 ? 38 : nil)
                 }
