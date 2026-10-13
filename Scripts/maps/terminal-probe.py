@@ -40,7 +40,7 @@ def shared_parser():
     return module
 
 
-def probe(binary, output_dir, record=None, online_source=None):
+def probe(binary, output_dir, record=None, online_source=None, place_search=False, theme="default"):
     parser = shared_parser()
     master, slave = pty.openpty()
     original_modes = termios.tcgetattr(slave)
@@ -55,7 +55,7 @@ def probe(binary, output_dir, record=None, online_source=None):
     failure = None
     validations = {}
     recording_completed = False
-    command = [str(binary), "--map", "world", "--theme", "default"]
+    command = [str(binary), "--map", "street" if place_search else "world", "--theme", theme]
     if online_source is not None:
         command.extend(["--online", "--tile-source", str(online_source)])
 
@@ -150,10 +150,11 @@ def probe(binary, output_dir, record=None, online_source=None):
         for key_name in ("NO_COLOR", "CLICOLOR", "CLICOLOR_FORCE", "FORCE_COLOR"):
             environment.pop(key_name, None)
         process = subprocess.Popen(command, stdin=slave, stdout=slave, stderr=slave, env=environment)
-        initial_expected = ("/ maps", "World", "2/4 minimal", "span 360.0000")
+        initial_expected = ("/ maps", "Singapore" if place_search else "World", "2/4 minimal",
+                            "span 0.0300" if place_search else "span 360.0000")
         if online_source is not None:
             initial_expected += ("Online · z1", "OpenFreeMap")
-        observe("world minimal default", initial_expected)
+        observe(f"street minimal {theme}" if place_search else "world minimal default", initial_expected)
         modes = termios.tcgetattr(slave)
         assert not modes[3] & (termios.ECHO | termios.ICANON | termios.ISIG | termios.IEXTEN), "Terminal is not in raw input mode"
         assert modes[6][termios.VMIN] == 1 and modes[6][termios.VTIME] == 0, "Unexpected raw read timing"
@@ -163,7 +164,29 @@ def probe(binary, output_dir, record=None, online_source=None):
         validations["alternate_screen_entered"] = True
         validations["cursor_hidden"] = True
 
-        if online_source is not None:
+        if place_search:
+            key("open place search", b"/", ("Place search", "Return submits"))
+            key("draft does not submit", b"Singapore", ("Place search", "Singapore", "Return submits"))
+            assert "matches" not in current_screen(), "Typing submitted a search"
+            key("submitted fixture matches", b"\r", ("2 matches", "Merlion", "Singapore Flyer", "Chio synthetic place fixtures"))
+            assert "Center 1.289, 103.866" in current_screen(), "Receiving matches moved the camera"
+            key("choose second result", b"\x1b[B", ("2 matches", "Singapore Flyer"))
+            assert "Center 1.289, 103.866" in current_screen(), "Highlighting moved the camera"
+            key("open selected result", b"\r", ("Opened Singapore Flyer", "Center 1.289, 103.863", "span 0.0300", "Place: Chio synthetic place fixtures"))
+            assert "Place search" not in current_screen(), "Opening a result did not restore the map"
+            key("reopen retained query", b"/", ("Place search", "Singapore", "Return submits"))
+            key("empty fixture query", b"\x7f" * 9 + b"absent\r", ("No matches", "Place: Chio synthetic place fixtures"))
+            key("dismiss keeps opened marker", b"\x1b", ("Selected: Singapore Flyer", "Place: Chio synthetic place fixtures"))
+            stop_recording()
+            observe("compact map retains opened place", ("More room for the map", "Selected: Singapore Flyer"), lambda: resize(36, 18))
+            key("compact place search", b"/", ("Place search", "Synthetic fixtures", "Return submit/open · Esc map"))
+            key("compact search submission", b"\x7f" * 6 + b"Merlion\r", ("1 match", "Merlion"))
+            observe("wide recovery retains results", ("1 match", "Merlion"), lambda: resize(100, 30))
+            key("recovered search opens", b"\r", ("Opened Merlion", "Center 1.287, 103.855", "span 0.0300"))
+            key("map focus restored after search", b"\x1b[C", ("Center 1.287, 103.858",))
+            validations.update(submit_only=True, selection_does_not_move_camera=True,
+                               explicit_activation=True, credits_retained=True, search_resize_recovery=True)
+        elif online_source is not None:
             assert "Natural Earth" not in current_screen(), "Online world substituted bundled geography"
             initial_world_samples = map_samples()
             assert sum(char not in (" ", "\u2800") for row in initial_world_samples for char in row) > 100, "Online world lacks braille geography"
@@ -315,7 +338,8 @@ def probe(binary, output_dir, record=None, online_source=None):
         if record is not None:
             record.parent.mkdir(parents=True, exist_ok=True)
             header = {"version": 2, "width": 100, "height": 30,
-                      "title": ("Chio maps · fixed local HTTP replay of real provider geometry"
+                      "title": ("Chio maps · submitted search with synthetic local places" if place_search else
+                                "Chio maps · fixed local HTTP replay of real provider geometry"
                                 if online_source is not None else "Chio maps · offline world and Singapore"),
                       "env": {"TERM": "xterm-256color", "COLORTERM": "truecolor"}}
             if online_source is not None:
@@ -325,9 +349,21 @@ def probe(binary, output_dir, record=None, online_source=None):
             with record.open("w", encoding="utf-8") as cast:
                 for item in [header, *events]:
                     cast.write(json.dumps(item, ensure_ascii=False) + "\n")
+            if place_search and failure is None:
+                # Replay the captured terminal bytes through the first complete
+                # result frame. The shared renderer turns this into a preview;
+                # no separately reconstructed or styled screenshot is involved.
+                result_phase = next(phase for phase in phases if phase["name"] == "submitted fixture matches")
+                frame_bytes = "".join(event[2] for event in events if event[0] <= result_phase["recording_seconds"])
+                preview = record.with_name(record.stem + "-initial.cast")
+                with preview.open("w", encoding="utf-8") as cast:
+                    for item in [header, [0, "o", frame_bytes], [0.1, "o", ""]]:
+                        cast.write(json.dumps(item, ensure_ascii=False) + "\n")
         os.close(master)
         os.close(slave)
-    workflow = ("online HTTP loading, adjacent tiles, failure/retry, native focus, detail, themes, compact recovery"
+    workflow = ("submitted place search, native selection, attribution, camera preservation and compact recovery"
+                if place_search else
+                "online HTTP loading, adjacent tiles, failure/retry, native focus, detail, themes, compact recovery"
                 if online_source is not None else
                 "map pan/zoom, detail limits, marker selection/activation, theme, fills/labels, coverage, resize")
     print(f"PASS: {workflow} and clean exit ({len(output)} bytes)")
@@ -340,9 +376,17 @@ def main():
     arguments.add_argument("--record", type=Path, help="Optional asciinema v2 output; meaningful 100x30 frames only")
     arguments.add_argument("--online-source", type=Path,
                            help="Configured source JSON for the fixed z12 local HTTP fixture workflow")
+    arguments.add_argument("--place-search", action="store_true", help="Exercise offline submitted search and capture its workflow")
+    arguments.add_argument("--theme", choices=("default", "light", "btop"), default="default",
+                           help="Theme for --place-search captures")
     options = arguments.parse_args()
+    if options.place_search and options.online_source is not None:
+        arguments.error("--place-search uses bundled geography and synthetic results")
+    if not options.place_search and options.theme != "default":
+        arguments.error("--theme is only for --place-search captures")
     probe(options.binary.resolve(), options.output_dir, options.record,
-          options.online_source.resolve() if options.online_source is not None else None)
+          options.online_source.resolve() if options.online_source is not None else None,
+          options.place_search, options.theme)
 
 
 if __name__ == "__main__":

@@ -149,7 +149,49 @@ or implicit network behavior.
 | 3 | Geocoding | Forward place/address search and reverse coordinate lookup through an explicit provider adapter. Return bounded results that applications can turn into markers and camera changes; prove no-result/failure distinctions, cancellation and stale-result rejection. |
 | 4 | Routing | Explicit route requests between supplied locations through a provider adapter, returning checked geometry and available distance/duration metadata. Compose with existing route overlays; prove no-route/failure distinctions, cancellation, stale-result rejection and route work limits. |
 
-### Next slice: offline pack acquisition
+<a id="next-slice-place-search"></a>
+
+### Current slice: place search
+
+**Status:** Implemented in [PR #11](https://github.com/echoz/Chio/pull/11);
+integration verification on SwiftTUI 0.17.0 is in progress. Not merged or released. The
+[place-search decision](Decisions/PlaceSearch.md) owns the explicit Photon endpoint,
+immutable matches and attribution, and example-owned native search/list
+composition. Camera and marker activation reuse the existing map API. There is
+no new public search view, automatic type-ahead request or provider registry.
+
+The candidate includes checked values, bounded shared HTTP transport, Photon
+decoding and an opt-in live endpoint. The example defaults to synthetic local
+search fixtures independently of its map source. At `b4b406e`, before the
+SwiftTUI upgrade, the required local and hosted macOS/Linux gates passed, with
+focused debug/release and terminal checks repeated after the row-color and
+deferred-focus corrections. The pinned engineering gate and independent review
+passed for that candidate. A bounded
+live Photon search returned attributed results and opened a marker with zoom
+retained. This proves adapter integration, not service availability or search
+quality. Refreshed default/light/btop terminal previews and the search recording
+pass visual inspection. Safari checks cover matching commands, playback and
+seeking, navigation/history, a 390-pixel viewport and script-free/missing-player
+fallbacks. Those captures and browser checks qualify the earlier dependency pin.
+
+On 2026-10-13, the place-search branch incorporates merged main `a6c881c` and
+released SwiftTUI 0.17.0 without changing map production, example or test code.
+Fresh focused debug and release checks each pass 42 tests across checked values,
+Photon decoding, real HTTP transport, submitted search and online map interactions.
+The pinned engineering gate, site assembly and independent integration review pass.
+The release map PTY workflow passes submitted search, activation, attribution,
+compact resize recovery and exact terminal restoration, with no runtime warnings
+or logs. These are focused local checks; earlier complete gates do not qualify
+this combination. The [accepted native layout limitations](Decisions/Dependencies.md#0170-adoption-candidate)
+remain explicit. Delivery still requires current hosted checks, review/merge and
+published Pages verification.
+
+Reverse lookup and routing remain later approved scope; provider downloads remain
+paused. This candidate has not been merged, deployed or released.
+
+<a id="next-slice-offline-pack-acquisition"></a>
+
+### Paused: offline pack acquisition
 
 **Status:** Provider acquisition paused. Programmatic local preparation and
 read-only loading implemented.
@@ -223,8 +265,9 @@ separate rewrite. Intentional single-case
 filters, extensible upstream/raw-input switches, native wrappers and private
 nested conformances retain their documented roles.
 
-The map expansion above remains approved, with provider acquisition paused while
-the appearance study is verified and reviewed. Real application use of the public map
+The map expansion above remains approved. Provider archive acquisition remains
+paused at the user's request; place search is the current implementation slice.
+Real application use of the public map
 remains useful validation. Other component additions and a
 new stable release remain possible directions, not delivery promises.
 

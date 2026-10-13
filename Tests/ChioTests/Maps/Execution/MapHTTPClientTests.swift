@@ -53,6 +53,150 @@ struct MapHTTPClientTests {
         }
     }
 
+    @Test("Photon sends submitted text and identity, preserves order, and distinguishes empty matches")
+    func photonSearch() async throws {
+        try await withServer { server in
+            let geocoder = try PhotonGeocoder(endpoint: server.url("/photon"), userAgent: "Chio Tests/1.0")
+            let query = try MapPlaceQuery(text: "Café + quay & marina", limit: 2)
+            let matches = try await bounded("Photon query and Unicode decoding") { try await geocoder.search(query) }
+            #expect(matches.places.map(\.name) == ["Café + quay & marina", "Second"])
+            #expect(matches.places[0].coordinate.latitude == 1.3)
+            #expect(matches.places[0].coordinate.longitude == 103.8)
+            #expect(matches.places[0].detail == "Chio Tests/1.0")
+            #expect(matches.attributions.map(\.text).contains("© OpenStreetMap contributors"))
+            let empty = try await bounded("Photon no matches") { try await geocoder.search(MapPlaceQuery(text: "empty")) }
+            #expect(empty.places.isEmpty)
+            #expect(!empty.attributions.isEmpty)
+            let bad = try PhotonGeocoder(endpoint: server.url("/photon-invalid"), userAgent: "Chio Tests/1.0")
+            do {
+                _ = try await bounded("Photon malformed JSON") { try await bad.search(query) }
+                Issue.record("Malformed JSON became successful matches")
+            } catch PhotonGeocoder.SearchError.invalidData { }
+            let cancelled = Task {
+                withUnsafeCurrentTask { $0?.cancel() }
+                return try await geocoder.search(query)
+            }
+            do { _ = try await cancelled.value; Issue.record("Cancelled Photon search succeeded") }
+            catch PhotonGeocoder.SearchError.cancelled { }
+        }
+    }
+
+    @Test("Search transport requires JSON, retains bounded rejection metadata and acknowledges cancellation")
+    func geocodingTransport() async throws {
+        try await withServer { server in
+            for mime in ["application/json", "application/geo+json", "application/json;charset=utf-8"] {
+                var components = URLComponents(url: server.url("/policy"), resolvingAgainstBaseURL: false)!
+                components.queryItems = [URLQueryItem(name: "mime", value: mime), URLQueryItem(name: "bytes", value: "0")]
+                components.percentEncodedQuery = components.percentEncodedQuery?.replacingOccurrences(of: "+", with: "%2B")
+                let url = components.url!
+                let response = try await bounded("geocoding MIME") {
+                    try await MapHTTPClient.fetchResponse(url,
+                                                         resource: .geocoding, userAgent: "Chio Search Tests", timeout: 10)
+                }
+                #expect(response.headers["x-observed-user-agent"] == "Chio Search Tests")
+                #expect(response.headers["x-observed-accept"] == "application/json, application/geo+json")
+            }
+            for path in ["/policy?bytes=0", "/photon-no-mime.json", "/policy?mime=text/json&bytes=0"] {
+                do {
+                    _ = try await MapHTTPClient.fetchResponse(server.url(path), resource: .geocoding,
+                                                              userAgent: "Tests", timeout: 10)
+                    Issue.record("Invalid geocoding MIME accepted")
+                } catch MapHTTPClient.Failure.unexpectedContentType { }
+            }
+            for mime in ["", "   ", "\"application/json\"", "application/json, text/html"] {
+                var components = URLComponents(url: server.url("/policy"), resolvingAgainstBaseURL: false)!
+                components.queryItems = [URLQueryItem(name: "mime", value: mime), URLQueryItem(name: "bytes", value: "0")]
+                do {
+                    _ = try await MapHTTPClient.fetchResponse(components.url!, resource: .geocoding,
+                                                              userAgent: "Tests", timeout: 10)
+                    Issue.record("Malformed explicit Content-Type accepted")
+                } catch MapHTTPClient.Failure.unexpectedContentType { }
+            }
+            let exact = try await MapHTTPClient.fetchResponse(server.url("/policy?mime=application/json&bytes=524288"),
+                                                              resource: .geocoding, userAgent: "Tests", timeout: 10)
+            #expect(exact.data.count == 524_288)
+            for path in ["/policy?mime=application/json&bytes=524289", "/geocoding-stream", "/geocoding-gzip"] {
+                let acknowledgments = Mutex(0)
+                do {
+                    _ = try await bounded("geocoding overflow") {
+                        try await MapHTTPClient.fetchResponse(server.url(path), resource: .geocoding, userAgent: "Tests", timeout: 10,
+                                                              onTerminalAcknowledgement: { acknowledgments.withLock { $0 += 1 } })
+                    }
+                    Issue.record("Oversized geocoding response accepted")
+                } catch MapHTTPClient.Failure.responseTooLarge { }
+                #expect(acknowledgments.withLock { $0 } == 1)
+            }
+            for (hint, expected) in [("30", "30"), ("Wed, 21 Oct 2015 07:28:00 GMT", "Wed, 21 Oct 2015 07:28:00 GMT"),
+                                     ("Sunday, 06-Nov-94 08:49:37 GMT", "Sunday, 06-Nov-94 08:49:37 GMT"),
+                                     ("Sun Nov  6 08:49:37 1994", "Sun Nov  6 08:49:37 1994"),
+                                     ("banana", ""), ("-1", ""), ("", ""), (String(repeating: "1", count: 257), "")] {
+                var components = URLComponents(url: server.url("/photon-status"), resolvingAgainstBaseURL: false)!
+                components.queryItems = [URLQueryItem(name: "retry", value: hint)]
+                do {
+                    _ = try await MapHTTPClient.fetchResponse(components.url!, resource: .geocoding,
+                                                              userAgent: "Tests", timeout: 10)
+                    Issue.record("HTTP 429 became success")
+                } catch MapHTTPClient.Failure.httpStatus(let status, let retryAfter) {
+                    #expect(status == 429)
+                    #expect(retryAfter == expected)
+                }
+            }
+            let throttled = try PhotonGeocoder(endpoint: server.url("/photon-status"), userAgent: "Tests")
+            do { _ = try await throttled.search(MapPlaceQuery(text: "test")); Issue.record("HTTP 429 search succeeded") }
+            catch PhotonGeocoder.SearchError.httpStatus(let status, let retryAfter) {
+                #expect(status == 429)
+                #expect(retryAfter.isEmpty)
+            }
+            let slow = try PhotonGeocoder(endpoint: server.url("/photon-slow"), userAgent: "Tests")
+            let pending = Task { try await slow.search(MapPlaceQuery(text: "test")) }
+            defer { pending.cancel() }
+            try await bounded("geocoding request entered") {
+                while true {
+                    let response = try await MapHTTPClient.fetch(server.url("/started"), resource: .catalog)
+                    if String(decoding: response.data, as: UTF8.self) == "true" { return }
+                    try await Task.sleep(for: .milliseconds(10))
+                }
+            }
+            pending.cancel()
+            do { _ = try await bounded("cancel geocoder") { try await pending.value }; Issue.record("Cancelled search succeeded") }
+            catch PhotonGeocoder.SearchError.cancelled { }
+        }
+    }
+
+    @Test("A geocoding deadline spans redirects and Photon retains timeout and redirect failures")
+    func geocodingDeadlineAndRedirects() async throws {
+        try await withServer { server in
+            let acknowledgments = Mutex(0)
+            do {
+                _ = try await bounded("whole redirect-chain deadline") {
+                    try await MapHTTPClient.fetchResponse(server.url("/delayed-redirect?hop=0"),
+                        resource: .geocoding, userAgent: "Tests", timeout: 2,
+                        onTerminalAcknowledgement: { acknowledgments.withLock { $0 += 1 } })
+                }
+                Issue.record("Redirects extended the transfer deadline")
+            } catch let error as URLError { #expect(error.code == .timedOut) }
+            #expect(acknowledgments.withLock { $0 } == 1)
+            let observed = try await MapHTTPClient.fetch(server.url("/redirect-hops"), resource: .catalog)
+            let hops = try JSONDecoder().decode([Int].self, from: observed.data)
+            #expect(Array(hops.prefix(2)) == [0, 1])
+            for path in ["/cross-host", "/scheme", "/loop"] {
+                let geocoder = try PhotonGeocoder(endpoint: server.url(path), userAgent: "Tests")
+                do {
+                    _ = try await bounded("Photon rejects redirect") { try await geocoder.search(MapPlaceQuery(text: "test")) }
+                    Issue.record("Photon accepted a forbidden redirect")
+                } catch PhotonGeocoder.SearchError.rejectedRedirect { }
+            }
+            let redirected = try PhotonGeocoder(endpoint: server.url("/photon-redirect"), userAgent: "Tests")
+            let matches = try await bounded("Photon same-origin redirect") { try await redirected.search(MapPlaceQuery(text: "test")) }
+            #expect(matches.places.map(\.name) == ["test", "Second"])
+            let slow = try PhotonGeocoder(endpoint: server.url("/photon-deadline"), userAgent: "Tests")
+            // Exercise the public ten-second policy directly. The server would
+            // finish successfully at twelve seconds if the deadline were lost.
+            do { _ = try await slow.search(MapPlaceQuery(text: "test")); Issue.record("Photon deadline did not expire") }
+            catch PhotonGeocoder.SearchError.deadlineExceeded { }
+        }
+    }
+
     @Test("Real localhost transport bounds decompressed bodies and rejects HTTP/MIME/redirect failures")
     func boundedHTTP() async throws {
         try await withServer { server in
@@ -377,15 +521,65 @@ struct MapHTTPClientTests {
         private static let script = #"""
 import sys
 print('fixture: entered; python=%s' % sys.executable, file=sys.stderr, flush=True)
-import gzip, http.server, socketserver, threading, time, urllib.parse
+import gzip, http.server, json, socketserver, threading, time, urllib.parse
 print('fixture: imports complete', file=sys.stderr, flush=True)
 started = threading.Event()
+redirect_hops = []
 class Handler(http.server.BaseHTTPRequestHandler):
     def log_message(self, *args): pass
     def do_GET(self):
         path = self.path
+        route = urllib.parse.urlsplit(path).path
+        query = urllib.parse.parse_qs(urllib.parse.urlsplit(path).query)
+        if route == '/redirect-hops':
+            body = json.dumps(redirect_hops).encode()
+            self.send_response(200); self.send_header('Content-Type','application/json')
+            self.send_header('Content-Length',str(len(body))); self.end_headers(); self.wfile.write(body); return
+        if route == '/delayed-redirect':
+            hop = int(query.get('hop', ['0'])[0]); redirect_hops.append(hop); time.sleep(0.75)
+            if hop < 2:
+                self.send_response(302); self.send_header('Location', '/delayed-redirect?hop=%s' % (hop+1))
+                self.send_header('Content-Length','0'); self.end_headers(); return
+            self.send_response(200); self.send_header('Content-Type','application/json')
+            self.send_header('Content-Length','0'); self.end_headers(); return
+        if route == '/photon-redirect':
+            self.send_response(302); self.send_header('Location', '/photon?' + urllib.parse.urlsplit(path).query)
+            self.send_header('Content-Length','0'); self.end_headers(); return
+        if route == '/photon-status':
+            self.send_response(429)
+            if 'retry' in query: self.send_header('Retry-After', query['retry'][0])
+            self.send_header('Content-Length','0'); self.end_headers(); return
+        if route in ('/photon', '/photon-invalid', '/photon-slow', '/photon-deadline'):
+            text = query.get('q', [''])[0]
+            names = [] if text == 'empty' else [text, 'Second']
+            features = [{'type':'Feature','geometry':{'type':'Point','coordinates':[103.8,1.3]},
+                         'properties':{'name':name,'city':self.headers.get('User-Agent','')}} for name in names]
+            body = json.dumps({'type':'FeatureCollection','features':features}).encode()
+            if route == '/photon-invalid': body = b'not json'
+            self.send_response(200); self.send_header('Content-Type','application/json')
+            self.send_header('Content-Length',str(len(body))); self.end_headers()
+            if route == '/photon-slow': started.set(); time.sleep(4)
+            if route == '/photon-deadline': time.sleep(12)
+            try: self.wfile.write(body)
+            except (BrokenPipeError, ConnectionResetError): pass
+            return
+        if route == '/photon-no-mime.json':
+            body = b'{"features":[]}'
+            self.send_response(200); self.send_header('Content-Length', str(len(body))); self.end_headers()
+            self.wfile.write(body); return
+        if route == '/geocoding-gzip':
+            body = gzip.compress(b' ' * (512*1024+1))
+            self.send_response(200); self.send_header('Content-Type','application/json'); self.send_header('Content-Encoding','gzip')
+            self.send_header('Content-Length',str(len(body))); self.end_headers(); self.wfile.write(body); return
+        if route == '/geocoding-stream':
+            self.send_response(200); self.send_header('Content-Type','application/json'); self.send_header('Transfer-Encoding','chunked'); self.end_headers()
+            try:
+                for i in range(9): self.wfile.write(b'10000\r\n' + b'x'*65536 + b'\r\n'); self.wfile.flush()
+                self.wfile.write(b'0\r\n\r\n')
+            except (BrokenPipeError, ConnectionResetError): pass
+            return
         if path.startswith('/policy?'):
-            query = urllib.parse.parse_qs(urllib.parse.urlsplit(path).query)
+            query = urllib.parse.parse_qs(urllib.parse.urlsplit(path).query, keep_blank_values=True)
             size = int(query['bytes'][0])
             self.send_response(200)
             if 'mime' in query: self.send_header('Content-Type', query['mime'][0])
@@ -395,8 +589,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
             try: self.wfile.write(b'x' * size)
             except (BrokenPipeError, ConnectionResetError): pass
             return
-        if path in ('/redirect', '/cross-host', '/scheme', '/loop'):
-            location = {'/redirect':'/empty', '/loop':'/loop', '/cross-host':'http://localhost:%s/empty' % self.server.server_port, '/scheme':'https://127.0.0.1:%s/empty' % self.server.server_port}[path]
+        if route in ('/redirect', '/cross-host', '/scheme', '/loop'):
+            location = {'/redirect':'/empty', '/loop':'/loop', '/cross-host':'http://localhost:%s/empty' % self.server.server_port, '/scheme':'https://127.0.0.1:%s/empty' % self.server.server_port}[route]
             self.send_response(302); self.send_header('Location', location); self.send_header('Content-Length','0'); self.end_headers(); return
         if path == '/oversize-header':
             self.send_response(200); self.send_header('Content-Type','application/octet-stream'); self.send_header('Content-Length',str(16*1024*1024+1)); self.end_headers(); return

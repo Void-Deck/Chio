@@ -173,6 +173,29 @@ location meaning and route calculation. The example’s `--snapshot`,
 establish live SSH latency or appearance in every terminal. For a true-color
 SSH terminal, prefix the launch with `COLORTERM=truecolor`.
 
+### Place search
+
+Press `/` in `chio-maps` to search the fixed local place fixtures. Type a name,
+press Return to submit, navigate results, then press Return again to open one.
+Escape returns to the map. Search does not run while typing; selection alone
+does not move the camera. The example owns this workflow and uses Chio styles
+with native SwiftTUI controls.
+
+For live search, supply the complete Photon API endpoint explicitly:
+
+```sh
+swift run -c release chio-maps --map street \
+  --geocoder-endpoint https://photon.komoot.io/api
+```
+
+Read the [public Photon demo policy](https://github.com/komoot/photon#demo-server)
+before using that service. It permits reasonable use, may throttle excessive use,
+and has no availability guarantee. Queries leave your machine only with the
+explicit endpoint option. Default examples, tests and recordings use local data.
+Live search does not enable online tiles; add `--online` separately if wanted.
+Offline geography still reports its limited coverage when opening a result
+outside the bundled area. [Place-search API](Usage.md#place-search).
+
 ## Dashboard
 
 Use Swift 6.4 or later on macOS 15 or later, matching the pinned upstream requirements:

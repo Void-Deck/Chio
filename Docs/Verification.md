@@ -179,6 +179,36 @@ across detail levels, themes and narrow allocations. CI uses no
 live provider. Separately inspect bounded OpenFreeMap acquisition and adjacent
 tile rendering; this is integration evidence, not an availability guarantee.
 
+Place-search changes additionally verify checked query/result values and decoding,
+provider order and attribution, exact/over response limits, required JSON headers,
+redirect restrictions, cancellation and HTTP failure metadata through real
+loopback HTTP. Hosted example checks distinguish editing from submitting and
+selecting from opening, retain camera zoom and attribution, reject unsupported
+polar projection, and preserve native focus through narrow/wide resizing.
+An eight-result compact-to-wide workflow checks native scroll reveal and the
+public runtime-issue channel, including bounded measurement of the results list.
+Public raster checks verify semantic light-row colors before and after native
+selection moves, alongside visual inspection of all three theme captures.
+A preloaded-result session verifies native list focus on first mount and that
+Return opens the selected place without resubmitting the query.
+Lifecycle handoffs cover acceptance and dismissal before deferred focus delivery,
+allowing native focus to converge normally. Response replacement during one native
+key dispatch verifies that activation uses the displayed place and its attribution.
+Controlled providers cover one active request, replacement after cancellation
+acknowledgement, latest-pending admission and stale A-B-A completion. The map
+PTY probe's `--place-search` workflow uses synthetic local places without network;
+refresh its default/light/btop previews when that presentation changes. A separate
+bounded Photon request establishes live adapter integration only, never service
+availability or permission for unrestricted use.
+
+To record the search workflow, run the map probe with `--place-search --theme
+default --record .build/captures/maps-default.cast` and an explicit `--output-dir`.
+It also saves `maps-default-initial.cast` from the actual submitted-results frame.
+Repeat with `light` and `btop`, then pass those initial casts to
+`Scripts/docs/render-terminal-previews.cjs` using its documented Playwright option.
+Inspect all three rendered images and the complete recording before replacing
+the gallery assets. Keep reports and intermediate captures under ignored `.build`.
+
 Both HTTP fixtures bind numeric loopback directly, preserving the OS-selected
 ephemeral port without Python HTTPServer's reverse-DNS lookup. Fixture readiness
 must not depend on the runner's DNS configuration. Startup failure diagnostics

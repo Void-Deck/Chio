@@ -99,6 +99,7 @@ swift build --force-resolved-versions --jobs "${SWIFT_BUILD_JOBS:-2}" \
   -c release --product chio-maps
 map_binary="$(swift build -c release --show-bin-path)/chio-maps"
 python3 Scripts/maps/terminal-probe.py "$map_binary" --output-dir .build/ci-results/maps
+python3 Scripts/maps/terminal-probe.py "$map_binary" --place-search --output-dir .build/ci-results/maps/search
 
 # Real HTTP acquisition against retained bytes, never a live provider in CI.
 python3 Scripts/maps/online-fixture-server.py --verify
