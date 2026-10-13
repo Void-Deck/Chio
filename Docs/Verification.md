@@ -57,7 +57,33 @@ EngineeringRules is private. This local gate does not add credentials or a priva
 fetch to Chio's public CI or package build. Hosted lint requires a separate tool
 distribution/access decision; the public platform gate below remains required.
 
+### Deferred 0.1.4 adoption
+
+On 2026-10-12, authenticated published release metadata resolved the latest stable
+[EngineeringRules v0.1.4](https://github.com/echoz/EngineeringRules/releases/tag/v0.1.4)
+to `fc3de546794e7e4b0429b0b03e282ac7218bde8b`. An isolated source-only check
+reported 75 conformance placement/order diagnostics across 52 production files.
+Representative genuine findings include `FileEntry`'s empty `Hashable` extension
+preceding `Codable`, empty extensions preceding ordinary helper extensions, and
+inline `Codable` on the extendable `MapTileCacheFormat.Manifest` and top-level
+private GeoJSON types. These match the release's documented contract; no checker
+defect was established. Compiler-backed witnesses were not checked.
+
+The focused SwiftTUI dependency upgrade retains the operational 0.1.3 pin and
+unchanged baseline. Chio's next conformance-maintenance owner must classify all
+findings, correct permitted placements/order without widening access or changing
+isolation, run compiler/test/platform gates, and obtain independent review before
+adopting 0.1.4. This is a blocked checker upgrade, not verified latest-stable adoption.
+
 ## Running checks
+
+The 2026-10-13 personal-client rollout explicitly accepts the released SwiftTUI
+0.17.0 [disclosure and compact-layout regressions](Decisions/Dependencies.md#0170-adoption-candidate).
+Keep their failing assertions and the normal gate unchanged. Record the failed
+cases and any checks not reached; do not call that result a passing full gate.
+Consumers update Chio and SwiftTUI together and verify their own affected paths.
+This scoped acceptance does not cover new regressions or imply qualification of
+the unmerged upstream fixes.
 
 After the shared local check, with Swift 6.4 and Python 3 installed, run from the
 repository root:

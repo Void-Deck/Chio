@@ -341,7 +341,12 @@ private func withTabsExample(
 
 private extension SemanticHostFrame {
     func workspaceContains(_ text: String) -> Bool { raster.lines.contains { $0.contains(text) } }
-    var workspaceStripFocused: Bool { workspaceFocused(.tabView) }
+    var workspaceStripFocused: Bool {
+        guard let focusedIdentity, workspaceFocused(.group) else { return false }
+        return semantics.accessibilityNodes.contains {
+            $0.role == .tabView && $0.parentIdentity == focusedIdentity
+        }
+    }
     var workspaceAgentResultsReady: Bool {
         workspaceContains("Agent directory") && workspaceContains("F6 tabs")
             && !workspaceStripFocused && !workspaceFocused(.textField)

@@ -75,31 +75,49 @@ tab/FilePicker failures are not claimed fixed; individual assertions and
 deadlines remain unchanged. Native list and teardown limitations remain explicit
 in [native integration](Decisions/NativeIntegration.md).
 
-**Deferred list spacing:** all new per-row density controls are excluded from
-this slice's public API. Standalone public-API tests reproduce tall-row reveal
-and compact-list focus failures on both Chio's pin and inspected upstream main.
-The per-axis reveal candidate is in
-[SwiftTUI PR #46](https://github.com/SwiftTUI/swift-tui/pull/46).
-[Draft PR #47](https://github.com/SwiftTUI/swift-tui/pull/47) carries measured-height
-navigation and builder placement; its full native macOS gate and independent
-review pass. Neither native fix nor a dependency update is adopted by Chio.
-PR #46 passes upstream macOS, Linux, Windows and release checks; PR #47 still
-awaits maintainer approval to run CI. Chio integration gates remain required.
-[Native integration](Decisions/NativeIntegration.md#tall-list-rows)
-owns these findings and the conditions for revisiting row density. This deferral
-is not a blocker for the unified style API; neither fix has shipped in Chio.
+**Deferred list spacing:** all new per-row density controls remain excluded from
+this slice's public API. SwiftTUI 0.17.0 includes the merged per-axis reveal
+correction in [PR #46](https://github.com/SwiftTUI/swift-tui/pull/46), now pinned
+in this dependency-upgrade candidate. The measured-height navigation and builder
+placement correction in [PR #47](https://github.com/SwiftTUI/swift-tui/pull/47)
+merged after 0.17.0 and remains excluded from this pin. Its upstream merge does
+not establish Chio adoption or a release. [Native integration](Decisions/NativeIntegration.md#tall-list-rows)
+owns the remaining findings and conditions for revisiting row density.
 
 Provider archive acquisition remains on hold at the user's request. No archive
 reader or downloader has been adopted; existing local pack APIs remain available.
 
 ## Native runtime follow-up
 
-The demonstrated native shutdown issue is tracked separately in
-[SwiftTUI PR #45](https://github.com/SwiftTUI/swift-tui/pull/45), which
-is the current upstream proposal after assessing the limits of an internal
-workaround. It has not been adopted by Chio; the dependency pin remains unchanged.
+**Status:** Personal-client rollout of released SwiftTUI 0.17.0 is approved with
+the known disclosure and compact-layout regressions. Publish the compatible Chio
+revision and coordinate downstream upgrades through their owning tasks,
+retaining failing regression coverage and requiring client-specific
+verification. [Dependencies](Decisions/Dependencies.md#0170-adoption-candidate)
+owns the accepted limits and qualification evidence.
+
+Local native fixes restore both layouts and pass full native and consumer gates
+on macOS and Linux arm64. Upstream PRs #49 and #50 remain open; their current heads
+pass all hosted checks. Adopt their corrections separately once published and
+verified. The measured-height correction in #47 has merged but is absent from
+0.17.0; it is not part of this rollout.
+
+The merged runtime correction in
+[SwiftTUI PR #48](https://github.com/SwiftTUI/swift-tui/pull/48) supersedes
+[PR #45](https://github.com/SwiftTUI/swift-tui/pull/45) and ships in 0.17.0.
+This dependency-upgrade candidate pins the released revision
+`ee572e38487284092f367ef5b095460a04374ba3`.
 [Native integration](Decisions/NativeIntegration.md#cooperative-shutdown-follow-up)
-owns the constraints and remaining startup/cancellation and performance follow-ups.
+owns its constraints and remaining startup/cancellation and performance follow-ups.
+Run the [consumer gates](Verification.md), reporting known failures rather than
+weakening them. Publishing a compatibility revision is distinct from a versioned
+Chio release and from completed adoption by every consumer.
+
+SwiftRules 0.1.4 adoption is deferred: its source-only gate exposes 75 conformance
+placement/order diagnostics across 52 production files. The operational pin remains
+0.1.3 with no baseline expansion. Chio's next conformance-maintenance owner must
+classify and resolve those findings and verify/review the upgrade as described in
+[Verification](Verification.md#deferred-014-adoption).
 
 ## Approved map expansion
 
@@ -135,7 +153,8 @@ or implicit network behavior.
 
 ### Current slice: place search
 
-**Status:** Implemented and verified locally; not merged or released. The
+**Status:** Implemented in [PR #11](https://github.com/echoz/Chio/pull/11);
+integration verification on SwiftTUI 0.17.0 is in progress. Not merged or released. The
 [place-search decision](Decisions/PlaceSearch.md) owns the explicit Photon endpoint,
 immutable matches and attribution, and example-owned native search/list
 composition. Camera and marker activation reuse the existing map API. There is
@@ -143,17 +162,29 @@ no new public search view, automatic type-ahead request or provider registry.
 
 The candidate includes checked values, bounded shared HTTP transport, Photon
 decoding and an opt-in live endpoint. The example defaults to synthetic local
-search fixtures independently of its map source. The required local macOS/Linux
-gates pass, with focused debug/release and terminal checks repeated after the
-row-color and deferred-focus corrections. The pinned engineering gate and
-independent review pass. A bounded
+search fixtures independently of its map source. At `b4b406e`, before the
+SwiftTUI upgrade, the required local and hosted macOS/Linux gates passed, with
+focused debug/release and terminal checks repeated after the row-color and
+deferred-focus corrections. The pinned engineering gate and independent review
+passed for that candidate. A bounded
 live Photon search returned attributed results and opened a marker with zoom
 retained. This proves adapter integration, not service availability or search
 quality. Refreshed default/light/btop terminal previews and the search recording
 pass visual inspection. Safari checks cover matching commands, playback and
 seeking, navigation/history, a 390-pixel viewport and script-free/missing-player
-fallbacks. Delivery requires hosted PR checks, review/merge and published Pages
-verification.
+fallbacks. Those captures and browser checks qualify the earlier dependency pin.
+
+On 2026-10-13, the place-search branch incorporates merged main `a6c881c` and
+released SwiftTUI 0.17.0 without changing map production, example or test code.
+Fresh focused debug and release checks each pass 42 tests across checked values,
+Photon decoding, real HTTP transport, submitted search and online map interactions.
+The pinned engineering gate, site assembly and independent integration review pass.
+The release map PTY workflow passes submitted search, activation, attribution,
+compact resize recovery and exact terminal restoration, with no runtime warnings
+or logs. These are focused local checks; earlier complete gates do not qualify
+this combination. The [accepted native layout limitations](Decisions/Dependencies.md#0170-adoption-candidate)
+remain explicit. Delivery still requires current hosted checks, review/merge and
+published Pages verification.
 
 Reverse lookup and routing remain later approved scope; provider downloads remain
 paused. This candidate has not been merged, deployed or released.

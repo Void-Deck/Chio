@@ -11,10 +11,10 @@ let package = Package(
         .executable(name: "chio-maps", targets: ["ChioMaps"]),
     ],
     dependencies: [
-        // Pin the inspected beta API while the first vertical slice is developed.
+        // SwiftTUI 0.17.0, including per-axis focus reveal and cooperative shutdown.
         .package(
             url: "https://github.com/SwiftTUI/swift-tui.git",
-            revision: "2d84ac7083993da2ef52e9d3d30255467efb9553"
+            revision: "ee572e38487284092f367ef5b095460a04374ba3"
         ),
         // Swift Markdown 0.9.0. A revision pin also permits its conditional
         // Windows build flags without modifying the upstream package.

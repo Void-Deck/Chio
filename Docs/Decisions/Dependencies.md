@@ -12,7 +12,7 @@ All four direct dependencies are revision-pinned:
 
 | Dependency | Pin and reason |
 | --- | --- |
-| SwiftTUI | `2d84ac7083993da2ef52e9d3d30255467efb9553`; inspected evolving beta API |
+| SwiftTUI | `ee572e38487284092f367ef5b095460a04374ba3`; published SwiftTUI 0.17.0, including per-axis focus reveal (#46) and cooperative shutdown (#48) |
 | Swift Markdown 0.9.0 | `25cb61d3482054b09ae76ca4f281b1bfe7fe5a43`; revision permits conditional Windows unsafe flags |
 | Tree-sitter 0.26.13 | `d97971e24500218865c05ed1febdee2acf41bae1`; last release with upstream SwiftPM manifest |
 | tree-sitter-swift 0.7.4 | `82bb3a533e0801fd2bbaa11dc49676e10bf41948`; generated C grammar |
@@ -20,12 +20,202 @@ All four direct dependencies are revision-pinned:
 Version-based Chio requirements (`from:` or `exact:`) cannot resolve this
 revision-pinned graph. Consumers of the experimental v0.1.0 source release pin
 Chio's immutable revision `1bcc08ce23747c8c8b1121e3add3c37951f7b09e`.
+SwiftTUI 0.17.0 requires Swift Collections 1.7.2 or later; the lockfile therefore
+advances that transitive dependency from 1.6.0 to 1.7.2. The other direct pins and
+resolved dependencies remain unchanged. The measured-height list correction
+in [PR #47](https://github.com/SwiftTUI/swift-tui/pull/47) merged after 0.17.0 and
+is not included in this pin.
+
 Swift Markdown brings swift-cmark 0.9.0 built from source, without a separately
 installed library. Tree-sitter/Swift grammar are MIT-licensed C targets requiring
 neither a Swift wrapper nor grammar generation. The grammar copies unused queries;
 Chio does no query-resource I/O and generates no Objective-C/Foundation accessor.
 Build evidence is recorded in [0.1.0](../Releases/0.1.0.md); the current static Linux
 blocker is below. Ordinary glibc support does not establish static-musl distribution.
+
+## 0.17.0 adoption candidate
+
+**Status:** Personal-client rollout approved on 2026-10-13 with the known
+regressions below. Publish and consume an immutable Chio revision with this exact
+SwiftTUI 0.17.0 pin; this is not a new versioned Chio release or a claim that every
+component passes qualification.
+
+Downstream applications previously stopped at dependency resolution because
+their Chio revision required the older SwiftTUI pin. They must update both
+manifest pins and the lockfile together, then verify their own builds, tests and
+terminal workflows. Each owning task preserves unrelated work and records its
+actual adoption status. Chio's accepted layout failures alone no longer block
+those upgrades; unrelated failures still require investigation.
+
+The accepted limitations are expanded disclosure/tree children overlapping and
+some narrow input/list compositions exceeding their requested width (the inbox
+fixture renders 43 × 18 instead of 36 × 18). The 0.17.0 accessibility migration
+below retains the layout, focus and input assertions. Do not skip tests, enlarge
+viewports, weaken deadlines or insert private native patches to make the full
+gate green. Consumer upgrade evidence must identify any affected user workflow.
+
+Fresh macOS verification on 2026-10-13 uses the clean released dependency and
+the migrated assertions. All debug products compile, and the HTTP preflight
+passes seven library and six map tests. The library run reports 462 tests
+(one existing skip) with three disclosure-placement issues; all 139 map tests
+pass. The dashboard run reports 146 tests with 13 issues: three compact inbox
+allocations, nine tree layouts and one tree interaction timeout. These match
+the accepted limitations. The unchanged `Scripts/ci/verify.sh` exits 1 at debug;
+release and later terminal/process checks are not reached in this run. Pinned
+SwiftRules 0.1.3 passes with no new findings; independent publication review found
+no blockers within the approved scope. Prior patched-dependency evidence remains
+separate below.
+
+The initial released-pin run compiled with Xcode Swift 6.4.0 and passed the
+focused real-HTTP/online-map preflight. Its full debug gate exposed two distinct
+changes:
+
+- Native accessibility now represents disclosure as a button trigger inside a
+  group with expanded/controls properties, and labeled content supplies a named
+  semantic group. Older Chio assertions required the `.disclosureGroup` role or
+  counted every matching label. Those results called for the contract migration
+  below, rather than establishing a production behavior regression.
+- The accepted multi-child disclosure column no longer places `First`, `Second`
+  and `Third row` on separate lines. SwiftTUI's new `DisclosureAccessibilityContent`
+  wraps those direct children in an intrinsic `.view` whose placement gives them
+  the same origin. Chio's existing public style already composes the content in a
+  vertical stack. Weakening the exact placement assertions or adding a hidden
+  native patch would conceal the regression.
+
+Restore the native authored-child column contract upstream, then verify the
+published correction with Chio's complete macOS/Linux and terminal gates before
+claiming those regressions resolved. A Chio shim is not the current direction.
+The local correction qualification below does not change the released pin's behavior.
+
+On 2026-10-12, `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
+SWIFT_BUILD_JOBS=2 bash Scripts/ci/verify.sh` stopped with exit 1 at the debug gate:
+
+| Gate target | Result |
+| --- | --- |
+| Online preflight | Seven library and six map tests pass |
+| Debug library | 462 tests (one skipped), 18 issues across six failing test functions |
+| Debug map | 139 tests pass |
+| Debug dashboard | 146 tests, 22 issues across eleven failing test functions |
+
+The library issues comprise 14 older disclosure-role assertions/timeouts, three
+exact column-placement failures, and one labeled-content all-label count mismatch.
+Dashboard issues comprise eight tab-focus checks, three narrow inbox allocations
+(rendered 43 × 18 instead of 36 × 18), and eleven tree layout/interaction issues.
+Tab accessibility now exposes a `.group` focus owner and a synthetic `.tabView`
+child whose `parentIdentity` links to that owner; an updated helper must verify
+that relationship rather than accept arbitrary group focus. The inbox allocation
+failure is real; the native Spacer correction below addresses its cause. Tree
+overlap is consistent with the independently reproduced disclosure-column regression.
+
+A minimal public-API native fixture imports only `SwiftTUIRuntime` and supplies a
+custom disclosure style with a vertical content stack. Identical source renders
+`First`, `Second` and `Third row` on lines 1, 2 and 3 against the old pin; against
+0.17.0 it renders `Thirddrow` on line 1 with lines 2 and 3 blank. The comparison
+reuses read-only dependency objects from completed debug builds, excludes Chio
+objects, and retains exact compiler commands and outputs. Separate standard
+SwiftPM manifests are prepared for fresh reproduction but have not been built.
+This is macOS raster evidence, not Linux or live-terminal proof.
+
+That initial run stopped before the release suite, release builds, snapshots,
+PTY/color workflows and Linux gates. Its failures remain baseline evidence.
+
+### Local correction candidate
+
+Two native fixes were prepared on the released 0.17.0 base, without the
+then-unmerged row-height change in #47:
+
+- Disclosure payload roots remain transparent to authored layout. The semantic
+  extractor publishes the labelled content region separately, preserving native
+  expansion, controls, nested content and pointer routing.
+- An ordinary Spacer's minimum comes from its declared intrinsic size, not a
+  previously stretched measurement. Explicit minimum hints and fixed-size
+  behavior remain intact. This restores the inbox's 36 × 18 allocation.
+
+The combined native candidate is `91133fae27dd1c977a5f6746c1ff8f73008fdf44`.
+[Disclosure PR #49](https://github.com/SwiftTUI/swift-tui/pull/49) is
+`3ecf9a9b0f08a9a413e478ca3fce97e98d6cba8a`;
+[Spacer PR #50](https://github.com/SwiftTUI/swift-tui/pull/50) carries the same
+second patch independently on 0.17.0 at
+`d8b845ae2ad47d6b73c4b7f7a333378b374c2b7a`. Both are open contributions, not changes
+included in the released pin above.
+
+On 2026-10-13, both PRs remain open and have incorporated upstream `main`:
+#49 is `74bdd6c7a3015ec1f3f5bc647bec068052054949`, and #50 is
+`40c1bd8f2f7e73c3bde3630f4fcb21c2481e32ff`. All 24 checks pass on each current
+head across macOS, Linux/WASI, Windows, public API, performance and release
+soundness. The maintainer merged the separate descriptor-reuse test correction
+in [#51](https://github.com/SwiftTUI/swift-tui/pull/51). These heads are not used
+by this rollout. Earlier failure evidence below belongs to the original heads;
+passing newer CI does not itself establish the original release crash's cause.
+
+Chio's test migration at `ff870923bd86d9b76195f54cd1f0292c8f7c7174` checks the new
+button/expanded/controls disclosure contract,
+actionable labeled-content slots, and the tab group's related tab-view node.
+Exact layout, focus, pointer, binding and input assertions remain in place.
+No Chio production shim, hidden native patch or weaker interaction deadline is
+introduced. Qualification uses an explicit temporary local package path; the
+committed manifest and lockfile retain the published pin.
+
+The combined native snapshot passes the full `bun run test` gate on macOS and
+Linux arm64 with Swift 6.4.0, including runtime shards, platform suites, TermUIPerf
+and the soundness scan. Both individual PR branches pass upstream pre-commit and
+commit-message hooks. Independent review found no outstanding production findings.
+The required remote maintainer `DEVELOPMENT.md` returned 404; its additional
+requirements remain unchecked. Hosted CI for the individual PR heads is separate
+from these combined-candidate results. The original heads passed macOS, Windows
+amd64/arm64, Public API Baseline and TermUIPerf. PR #49 also passed release
+soundness; PR #50 passed the full Linux/WASI Repo Gate. Each originally had one
+failed workflow below; the later current-head results above supersede that status.
+
+PR #49's first hosted [Repo Gate run](https://github.com/SwiftTUI/swift-tui/actions/runs/38289979373)
+fails one unchanged PTY cleanup assertion: `F_GETFD` on the closed descriptor
+number returns 1 while a separate PTY suite is opening descriptors. Independent
+review identifies a descriptor-reuse race in that assertion; the precise event
+was not traced and a baseline failure was not reproduced. The corresponding
+PR #50 core lane passes. No new skips or weaker assertions were introduced. An unchanged-head
+retry was requested but GitHub requires upstream maintainer rights; none started.
+
+PR #50's [release-soundness run](https://github.com/SwiftTUI/swift-tui/actions/runs/38290024457)
+fails in the serialized `InteractiveRuntimeTests` soak with signal 11 in
+`libdispatch`, while another thread tears down a navigation scene's `RunLoop` and
+`ViewGraph`. Other soundness shards and actor-race checks pass, as does the
+corresponding PR #49 core lane. The repository documents historical runtime-soak
+instability, but this trace alone does not establish the cause or rule out a
+relationship to the Spacer change. That original head's hosted CI was not fully green.
+
+A bounded release comparison in the official Swift 6.4 Linux amd64 image, under
+Rosetta on this arm64 Mac, runs the same serialized `InteractiveRuntimeTests`
+with the CI allocator guards (`MALLOC_CHECK_=3`, `MALLOC_PERTURB_=165`), stress
+settings and soundness probes. Released 0.17.0 passes three launches, each reporting
+94 tests with the existing Linux skip. PR #50's exact head passes two launches,
+then exits 139 with signal 11 at the same navigation-test boundary as hosted CI.
+The local backtracer also crashes, so an identical dispatch stack is not established.
+Preserved baseline binaries, loader traces and runtime environment checks establish
+which revision and settings were exercised. This small sample under translation
+does not prove causation or clear the candidate; the runtime crash remains an
+unresolved historical finding. No assertion, timeout or source change was made
+for this probe. The subsequent approval above allows personal-client adoption
+of released 0.17.0 while the upstream corrections are pending.
+
+The focused macOS run passes 44 native tests across seven suites and 21 Chio tests
+across five suites, including all compact inbox and tree layout cases. The patched
+macOS debug gate passes all 462 library, 139 map and 146 dashboard tests; release
+passes 462, 139 and 176 respectively (one intentional library skip in each configuration).
+Debug and release paused-dashboard PTY captures preserve
+authored RGB in true-color mode and identical text/layout in indexed mode, with
+clean exit and exact terminal restoration. Indexed color retains the known grey
+background limitation. The complete macOS `Scripts/ci/verify.sh` gate also passes,
+including standalone release products, compact snapshots, dashboard/map terminal
+workflows, loopback HTTP, persistent cache and offline-pack process probes.
+The complete Linux arm64 consumer gate also passes, including the same terminal,
+HTTP, cache and pack workflows. Linux debug passes 461 library, 139 map and 146
+dashboard tests; release passes 461, 139 and 176 respectively. Linux release PTY
+captures also preserve authored true-color RGB, matching indexed text/layout,
+clean exit and exact terminal restoration. These runs establish
+the explicit local combination, not compatibility with unpatched released 0.17.0.
+The approved rollout uses released 0.17.0 with its known limitations. These
+patched-candidate results must not be presented as passing qualification of that
+released pin; each consumer owns its actual upgrade checks.
 
 ## macOS toolchain findings
 
@@ -42,7 +232,9 @@ Chio adds no suppression flags and does not change the global developer selectio
 
 ## Static Linux blocker
 
-Static Linux remains blocked. A Swift 6.4.0 ARM64 cross-build with the matching
+Static Linux remains unverified at the 0.17.0 pin. The retained blocker below
+was reproduced against the earlier `2d84ac7083993da2ef52e9d3d30255467efb9553`
+pin; it is historical evidence, not a fresh build of 0.17.0. A Swift 6.4.0 ARM64 cross-build with the matching
 `swift-6.4.0-RELEASE_static-linux-0.1.0` SDK failed because upstream SwiftFiglet's
 platform imports omit Musl, leaving POSIX symbols such as `access`, `opendir`
 and `fopen` unavailable. Figlet is reached through Chio's library dependency,
