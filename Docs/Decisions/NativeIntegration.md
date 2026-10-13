@@ -1,9 +1,9 @@
 # Native integration boundaries
 
-**Status:** Local native fixes for disclosure-content overlap and Spacer minimum
-allocation pass full native and consumer gates on macOS and Linux arm64. The
-0.17.0 upgrade still requires a published compatible revision and verification of
-that pin; upstream PRs #49 and #50 remain open with unresolved hosted CI failures.
+**Status:** Personal-client adoption of released 0.17.0 is approved with known
+disclosure-content and compact-layout regressions. Local native corrections pass
+full native and consumer gates on macOS and Linux arm64. Upstream PRs #49 and #50
+remain open with passing CI on their current heads; they are not included in this pin.
 
 Keep native ownership and visible limitations explicit when composing or extending Chio.
 
@@ -29,8 +29,9 @@ upstream requirements authoritative for its code and contribution metadata.
 
 ## Native chrome
 
-The [0.17.0 candidate](Dependencies.md#0170-adoption-candidate) is not verified
-consumer adoption. Its new native accessibility group/button representation is a
+The [0.17.0 rollout](Dependencies.md#0170-adoption-candidate) accepts the known
+layout limitations and requires each consumer's verification. Its new native
+accessibility group/button representation is a
 declared contract change; direct disclosure-child overlap is a separate rendering
 regression. The [local correction candidate](Dependencies.md#local-correction-candidate)
 preserves those column assertions and native ownership. It also corrects an
@@ -52,7 +53,7 @@ renderer, focus system or hidden dependency patch.
 | Native style hooks | Table border/background chrome, list focus gutter, palette shell, prompt headers and disabled-editor glyph paint are not fully controlled by Chio. Keep native behavior and resolve missing hooks upstream. |
 | Layout and lifecycle | Scroll focus reveal can move a two-axis viewport by one cell; nested tab strips can receive stale width proposals; expanded disclosure focus includes descendants. Keep the documented native contracts for [scrolling](Scrolling.md#scrolling), [tabs](Tabs.md#tabs) and [disclosure](DisclosureGroups.md#expandable-groups-and-trees). |
 | Choice composition | Changing choice fields inside `GeometryReader` triggered a native debug lifecycle-publication assertion. The full-window example uses `terminalSize`; arbitrary nesting remains unproved. |
-| List density and focus | New per-row density controls are deferred. The 0.17.0 pin includes #46's per-axis reveal correction; measured-height navigation and builder placement remain pending in #47. See [the findings](#tall-list-rows). |
+| List density and focus | New per-row density controls are deferred. The 0.17.0 pin includes #46's per-axis reveal correction; #47's measured-height navigation and builder placement merged later and are excluded. See [the findings](#tall-list-rows). |
 | Collection measurement | Native ideal-size probes can realize all rows before a bounded viewport commits and emit deferred `collection.unboundedRealization` warnings. Small fixtures do not prove virtualization or large-dataset performance; diagnostics are retained. |
 | Early input | Search, palette and form handoffs cover documented type-ahead/batched paths. Arbitrary multi-control input before presentation settles needs native support, not an application-built editor or focus graph. |
 | Editor navigation | End at the end of a native text field is unhandled when it makes no change, so an enclosing ScrollView can scroll to the bottom. The appearance study reproduced this at 36 × 18; ordinary editing remains focused. Its capture moves Left before End to exercise a real caret movement. Repeated no-op End is unresolved at the native input owner. |
@@ -65,8 +66,8 @@ renderer, focus system or hidden dependency patch.
 [PR #46](https://github.com/SwiftTUI/swift-tui/pull/46), merge
 `3701604e009bc113e4c6f01b25e3d5e7aa7b00eb`. This Chio upgrade candidate pins that
 release. The measured-height correction in
-[PR #47](https://github.com/SwiftTUI/swift-tui/pull/47) remains unmerged at
-`fbcb8873c8df3aa66ee155afb820e10966f55bfe` and is excluded. All new per-row density
+[PR #47](https://github.com/SwiftTUI/swift-tui/pull/47) merged on 2026-10-12,
+after 0.17.0, and is excluded from this pin. All new per-row density
 controls remain deferred from Chio's unified style API.
 Opencode keeps compact rows and roomier input padding/leading frames.
 
@@ -141,8 +142,8 @@ uniform row placement without their measured heights. Their larger measured
 height does not prevent overlapping child placement.
 
 The earlier measured-height candidate `3e7c1459b565e438a7f5d5fac9a9e74a4a7b7f8c`
-was based on PR #46 while PR #47 was draft. The current unmerged head above is
-rebased onto 0.17.0 and is no longer draft. Layout publishes measured row geometry and
+was based on PR #46 while PR #47 was draft. The reviewed candidate below was
+rebased onto 0.17.0 before the maintainer's final changes. Layout publishes measured row geometry and
 the usable viewport through the existing collection registration. Navigation, paging, wheel movement
 and target anchors use those cells; unrealized indexed rows retain the existing
 one-line estimate. A programmatic target receives one correction after measurement,
@@ -165,8 +166,10 @@ The full native `bun run test` gate passes on macOS with Swift 6.4.0 at that
 revision: all 85 steps, including every runtime shard, platform suites, TermUIPerf
 and the soundness scan. Focused collection, focus and host-wire contract checks
 also pass; independent review found no remaining issues. At the earlier candidate, upstream platform execution awaited maintainer approval.
-The rebased current PR #47 head is `fbcb8873c8df3aa66ee155afb820e10966f55bfe`;
-its upstream CI now passes, but it remains unmerged and has no Chio adoption evidence.
+The reviewed rebased PR #47 head was `fbcb8873c8df3aa66ee155afb820e10966f55bfe`;
+that reviewed head passed upstream CI. A subsequent maintainer revision was
+approved and merged, with a PTY test flake addressed separately in #51. None of
+this establishes Chio adoption of the measured-height correction.
 
 Applications can use
 `Text(item.title).lineLimit(1).truncationMode(.tail)` to limit row height, but this

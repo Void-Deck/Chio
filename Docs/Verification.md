@@ -77,6 +77,14 @@ adopting 0.1.4. This is a blocked checker upgrade, not verified latest-stable ad
 
 ## Running checks
 
+The 2026-10-13 personal-client rollout explicitly accepts the released SwiftTUI
+0.17.0 [disclosure and compact-layout regressions](Decisions/Dependencies.md#0170-adoption-candidate).
+Keep their failing assertions and the normal gate unchanged. Record the failed
+cases and any checks not reached; do not call that result a passing full gate.
+Consumers update Chio and SwiftTUI together and verify their own affected paths.
+This scoped acceptance does not cover new regressions or imply qualification of
+the unmerged upstream fixes.
+
 After the shared local check, with Swift 6.4 and Python 3 installed, run from the
 repository root:
 

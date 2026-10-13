@@ -54,6 +54,9 @@ with `replacing(...)`.
 
 Requires **Swift 6.4+**, on **macOS 15+ or Linux**. From a repository checkout:
 
+This revision uses SwiftTUI 0.17.0. Expanded disclosure content and some narrow
+layouts have [known upstream regressions](Docs/Decisions/Dependencies.md#0170-adoption-candidate).
+
 ```sh
 swift run -c release chio-dashboard
 ```

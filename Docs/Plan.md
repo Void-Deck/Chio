@@ -80,9 +80,8 @@ this slice's public API. SwiftTUI 0.17.0 includes the merged per-axis reveal
 correction in [PR #46](https://github.com/SwiftTUI/swift-tui/pull/46), now pinned
 in this dependency-upgrade candidate. The measured-height navigation and builder
 placement correction in [PR #47](https://github.com/SwiftTUI/swift-tui/pull/47)
-remains unmerged and excluded. Its current head is
-`fbcb8873c8df3aa66ee155afb820e10966f55bfe`; upstream CI passing does not establish
-Chio adoption or a release. [Native integration](Decisions/NativeIntegration.md#tall-list-rows)
+merged after 0.17.0 and remains excluded from this pin. Its upstream merge does
+not establish Chio adoption or a release. [Native integration](Decisions/NativeIntegration.md#tall-list-rows)
 owns the remaining findings and conditions for revisiting row density.
 
 Provider archive acquisition remains on hold at the user's request. No archive
@@ -90,14 +89,18 @@ reader or downloader has been adopted; existing local pack APIs remain available
 
 ## Native runtime follow-up
 
-**Status:** Local native fixes restore disclosure-content layout and narrow inbox
-allocation. Full native and consumer gates pass on macOS and Linux arm64 after the
-accessibility contract migration. Upstream PRs #49 and #50 remain open, each with
-one failed hosted workflow. Adoption requires a published compatible native
-revision and consumer verification of that pin.
-The operational primary checkout keeps its previous pin.
-[Dependencies](Decisions/Dependencies.md#local-correction-candidate) owns candidate
-revisions, verification and the upstream follow-up. This is not consumer rollout.
+**Status:** Personal-client rollout of released SwiftTUI 0.17.0 is approved with
+the known disclosure and compact-layout regressions. Publish the compatible Chio
+revision and coordinate downstream upgrades through their owning tasks,
+retaining failing regression coverage and requiring client-specific
+verification. [Dependencies](Decisions/Dependencies.md#0170-adoption-candidate)
+owns the accepted limits and qualification evidence.
+
+Local native fixes restore both layouts and pass full native and consumer gates
+on macOS and Linux arm64. Upstream PRs #49 and #50 remain open; their current heads
+pass all hosted checks. Adopt their corrections separately once published and
+verified. The measured-height correction in #47 has merged but is absent from
+0.17.0; it is not part of this rollout.
 
 The merged runtime correction in
 [SwiftTUI PR #48](https://github.com/SwiftTUI/swift-tui/pull/48) supersedes
@@ -106,8 +109,9 @@ This dependency-upgrade candidate pins the released revision
 `ee572e38487284092f367ef5b095460a04374ba3`.
 [Native integration](Decisions/NativeIntegration.md#cooperative-shutdown-follow-up)
 owns its constraints and remaining startup/cancellation and performance follow-ups.
-Full adoption requires the [consumer gates](Verification.md); the local candidate
-is not default-branch rollout or a new Chio release.
+Run the [consumer gates](Verification.md), reporting known failures rather than
+weakening them. Publishing a compatibility revision is distinct from a versioned
+Chio release and from completed adoption by every consumer.
 
 SwiftRules 0.1.4 adoption is deferred: its source-only gate exposes 75 conformance
 placement/order diagnostics across 52 production files. The operational pin remains
