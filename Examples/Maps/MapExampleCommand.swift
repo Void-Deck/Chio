@@ -20,6 +20,8 @@ struct MapExampleCommand {
     var writeTilePack = ""
     @Option(help: "Opt-in explicit Photon-compatible /api URL for place search; independent of --online tiles.")
     var geocoderEndpoint = ""
+    @Option(help: "Opt-in explicit Photon-compatible /reverse URL for centre lookup; independent of forward search and tiles.")
+    var reverseGeocoderEndpoint = ""
     @Option(help: "Theme: default, light or btop.") var theme: Appearance = .default
     @Flag(help: "Print a deterministic native raster as text.") var snapshot = false
     @Flag(help: "Export native raster cells as JSON for visual inspection.") var snapshotJSON = false
@@ -79,10 +81,12 @@ extension MapExampleCommand: AsyncParsableCommand {
             throw ValidationError("Choose one output mode: snapshot, snapshot-json or benchmark.")
         }
         let hasOfflineOutput = snapshot || snapshotJSON || benchmark
-        guard geocoderEndpoint.isEmpty || !hasOfflineOutput else {
+        let usesLivePlaces = !geocoderEndpoint.isEmpty || !reverseGeocoderEndpoint.isEmpty
+        guard !usesLivePlaces || !hasOfflineOutput else {
             throw ValidationError("Live place search is interactive. Snapshot and benchmark modes use bundled data.")
         }
         if !geocoderEndpoint.isEmpty { _ = try configuredGeocoder() }
+        if !reverseGeocoderEndpoint.isEmpty { _ = try configuredReverseGeocoder() }
         guard !online || !hasOfflineOutput else {
             throw ValidationError("Online mode is interactive. Snapshot and benchmark modes use bundled data.")
         }
@@ -121,6 +125,13 @@ extension MapExampleCommand: AsyncParsableCommand {
             throw ValidationError("--geocoder-endpoint requires an explicit Photon /api URL.")
         }
         return try PhotonGeocoder(endpoint: endpoint, userAgent: "ChioMaps/0.1 (https://github.com/echoz/Chio)")
+    }
+
+    private func configuredReverseGeocoder() throws -> PhotonReverseGeocoder {
+        guard let endpoint = URL(string: reverseGeocoderEndpoint) else {
+            throw ValidationError("--reverse-geocoder-endpoint requires an explicit Photon /reverse URL.")
+        }
+        return try PhotonReverseGeocoder(endpoint: endpoint, userAgent: "ChioMaps/0.1 (https://github.com/echoz/Chio)")
     }
 
     @MainActor
@@ -181,11 +192,16 @@ extension MapExampleCommand: AsyncParsableCommand {
             let geocoder: any MapGeocodingProvider
             if geocoderEndpoint.isEmpty { geocoder = MapFixtureGeocoder() }
             else { geocoder = try configuredGeocoder() }
+            let reverseGeocoder: any MapReverseGeocodingProvider
+            if reverseGeocoderEndpoint.isEmpty { reverseGeocoder = MapFixtureGeocoder() }
+            else { reverseGeocoder = try configuredReverseGeocoder() }
             do {
                 try await WebHostCLIRunner.run(MapExampleApplication(fixtures: fixtures, scene: scene, appearance: theme,
                                                                cellAspect: cellAspect,
                                                                detail: detail, streetSource: source, acquisition: liveAcquisition, geocoder: geocoder,
-                                                               searchLabel: geocoderEndpoint.isEmpty ? "Synthetic fixtures" : "Explicit Photon endpoint"),
+                                                               searchLabel: geocoderEndpoint.isEmpty ? "Synthetic fixtures" : "Explicit Photon endpoint",
+                                                               reverseGeocoder: reverseGeocoder,
+                                                               lookupLabel: reverseGeocoderEndpoint.isEmpty ? "Synthetic fixtures" : "Explicit Photon endpoint"),
                                           configuration: swiftTUIOptions.runtimeConfiguration())
             } catch {
                 await cacheOwner?.close()

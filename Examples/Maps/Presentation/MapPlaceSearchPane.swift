@@ -5,6 +5,7 @@ import SwiftTUI
 @MainActor
 struct MapPlaceSearchPane {
     let label: String
+    let lookupLabel: String
     let draft: Binding<String>
     // Rendering and activation retain their accepted response snapshot. Only
     // deferred focus delivery reads the parent's current state.
@@ -38,6 +39,17 @@ struct MapPlaceSearchPane {
         guard let accepted, accepted.matches.places.indices.contains(index) else { return }
         open(accepted.matches.places[index], accepted.matches.attributions)
     }
+
+    private var lookupSubject: String {
+        switch phase {
+        case .loading(let request), .matches(let request, _, _):
+            switch request {
+            case .search: return ""
+            case .reverse: return request.subject
+            }
+        case .failed, .idle: return ""
+        }
+    }
 }
 
 extension MapPlaceSearchPane: View {
@@ -56,6 +68,10 @@ extension MapPlaceSearchPane: View {
         VStack(alignment: .leading, spacing: 0) {
             Text("Place search").bold().foregroundStyle(theme.colors.accent)
                 .frame(height: 1, alignment: .leading)
+            if !lookupSubject.isEmpty {
+                Text(lookupSubject).foregroundStyle(theme.colors.secondaryText)
+                    .frame(height: 1, alignment: .leading).clipped()
+            }
             TextField("Place name", text: draft)
                 .focused(focus, equals: .field)
                 .onSubmit(submit)
@@ -68,8 +84,13 @@ extension MapPlaceSearchPane: View {
                 switch phase {
                 case .idle:
                     Text("\(label) · Return submits").foregroundStyle(theme.colors.mutedText)
-                case .loading(let query):
-                    Text("Searching: \(query.text)").foregroundStyle(theme.colors.secondaryText)
+                case .loading(let request):
+                    switch request {
+                    case .search(let query):
+                        Text("Searching: \(query.text)").foregroundStyle(theme.colors.secondaryText)
+                    case .reverse:
+                        Text("Looking up · \(lookupLabel)").foregroundStyle(theme.colors.secondaryText)
+                    }
                 case .failed(_, let message):
                     Text(message).foregroundStyle(theme.colors.warning)
                 case .matches(_, let matches, _):
@@ -118,6 +139,8 @@ extension MapPlaceSearchPane: View {
                 }
             }
             Text("Return submit/open · Esc map").foregroundStyle(theme.colors.accent)
+                .frame(height: 1, alignment: .leading).clipped()
+            Text("^L look up centre").foregroundStyle(theme.colors.mutedText)
                 .frame(height: 1, alignment: .leading).clipped()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)

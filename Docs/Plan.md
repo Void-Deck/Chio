@@ -123,7 +123,8 @@ classify and resolve those findings and verify/review the upgrade as described i
 
 **Status:** Scope approved on 2026-10-09. Persistent caching is implemented;
 programmatic local packs are implemented.
-Provider downloads, geocoding and routing remain planned. The following order keeps
+Forward and reverse geocoding candidates are under verification; routing remains
+planned and provider downloads remain paused. The following order keeps
 one testable slice at a time; current contracts live in the owning decisions.
 
 The preceding robustness slice fixes the two reproduced audit defects:
@@ -183,11 +184,48 @@ The release map PTY workflow passes submitted search, activation, attribution,
 compact resize recovery and exact terminal restoration, with no runtime warnings
 or logs. These are focused local checks; earlier complete gates do not qualify
 this combination. The [accepted native layout limitations](Decisions/Dependencies.md#0170-adoption-candidate)
-remain explicit. Delivery still requires current hosted checks, review/merge and
-published Pages verification.
+remain explicit. At `00462d5`, the [site build](https://github.com/echoz/Chio/actions/runs/38464226914)
+passes. The [macOS/Linux gate](https://github.com/echoz/Chio/actions/runs/38464227036)
+reports the same 16 accepted debug issues on both platforms: disclosure placement
+(3), compact inbox dimensions (3), tree contents (9) and nested expansion (1).
+All 154 map tests pass on both platforms. The debug failure prevents the script's
+release and terminal stages from running; focused local release evidence above
+is separate. Delivery still requires review/merge and published Pages verification.
 
-Reverse lookup and routing remain later approved scope; provider downloads remain
-paused. This candidate has not been merged, deployed or released.
+Reverse lookup is the next approved slice below; routing remains later scope
+and provider downloads remain paused. This candidate has not been merged, deployed or released.
+
+### Current slice: reverse lookup
+
+**Status:** Separate capability and Photon client approved on 2026-10-13;
+implemented and locally verified on top of place-search PR #11.
+Not merged, deployed or released.
+
+`MapPlaceLookup` composes a checked coordinate and bounded limit;
+`MapReverseGeocodingProvider` keeps forward-only providers compatible.
+`PhotonReverseGeocoder` requires its own complete endpoint and reuses the existing
+attributed matches and bounded transport. The example adds explicit **Look up
+centre** through the same cancellation owner and native result list, with local
+fixtures by default. [Place search](Decisions/PlaceSearch.md#separate-reverse-lookup)
+owns the accepted contract; [Verification](Verification.md) owns the checks.
+
+Focused debug and release checks each pass 51 tests on macOS and Linux arm64,
+covering values, real HTTP, mixed-direction cancellation and native interactions.
+The final presentation refinement also passes its 13 release interaction tests.
+The full local debug run passes all 157 map tests and retains the same 16 accepted
+disclosure/inbox/tree issues as the forward candidate; the script stops before its
+release/terminal stages. The separate standalone release build and three-theme
+PTY workflows pass, including lookup, compact recovery, exact terminal restoration
+and no runtime logs. Pinned SwiftRules and independent API/concurrency review pass.
+
+A single live public-landmark lookup returned an attributed Photon match and
+opened it with zoom retained; this establishes integration, not availability or
+geographic accuracy. Refreshed default/light/btop previews and the complete local
+Safari recording pass visual inspection, including seeking, the clean final frame,
+matching theme commands and the new API link. Existing unaffected mobile/fallback
+evidence is reused; no fresh mobile browser run is claimed. Delivery still requires
+current hosted checks, review/merge and published Pages verification. No tile
+acquisition or routing is added.
 
 <a id="next-slice-offline-pack-acquisition"></a>
 
@@ -225,8 +263,9 @@ Resumable preparation and combined pack/network fallback remain separate decisio
   revision string alone does not establish immutable bytes or an atomic snapshot.
   Choose pack format, schema/versioning and migration behavior during storage design;
   PMTiles/MBTiles support is not decided by approving downloadable packs.
-- Choose the first geocoding and routing providers after evaluating their actual
-  contracts, terms, attribution, rate limits and static-Linux dependency impact.
+- Photon is the first explicit geocoding adapter. Choose the first routing provider
+  after evaluating its actual contracts, terms, attribution, rate limits and
+  static-Linux dependency impact.
   Keep tile, geocoding and routing capabilities independently replaceable; changing
   a provider must not redefine visual detail. Provider credentials, when needed,
   are explicitly supplied by the application; no credential store is implied.

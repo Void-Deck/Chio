@@ -32,7 +32,9 @@ and planned downloadable tile packs, geocoding and routing adapters at explicit
 effect boundaries beside the view. Applications retain invocation, storage and
 provider policy, credentials and workflow ownership. These capabilities are
 delivered one slice at a time. Submitted place search now has an explicit Photon
-adapter; reverse lookup, routing and provider archive downloads remain planned. The current
+adapter; the approved reverse slice adds a separate capability and Photon client
+using the same attributed place values. Routing and provider archive downloads
+remain planned. The current
 map renderer and acquisition contracts remain intact. Opt-in persistence is
 defined in [online acquisition](Decisions/OnlineMaps.md#persistent-raw-tile-cache).
 Its private `ChioFileSystem` target bridges native locking and
