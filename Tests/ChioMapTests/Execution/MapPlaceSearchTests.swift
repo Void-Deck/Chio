@@ -32,6 +32,44 @@ struct MapPlaceSearchTests {
         owner.close()
     }
 
+    @Test("Forward and reverse submissions share one cancellation slot and retain the submitted coordinate")
+    func mixedSubmissions() async throws {
+        let provider = HeldPlaceProvider()
+        let owner = MapPlaceSearch(provider: provider, reverseProvider: provider)
+        let published = PlacePublications()
+        let first = try MapCoordinate(latitude: 1, longitude: 2)
+        let latest = try MapCoordinate(latitude: 3, longitude: 4)
+        owner.open()
+        owner.submit(text: "A", publish: published.record)
+        try await provider.waitForRequests(1)
+        owner.lookup(coordinate: first, publish: published.record)
+        owner.submit(text: "discard", publish: published.record)
+        owner.lookup(coordinate: latest, publish: published.record)
+        #expect(await provider.texts == ["A"])
+        await provider.release(0)
+        try await provider.waitForRequests(2)
+        #expect(await provider.coordinates == [latest])
+        #expect(await provider.texts == ["A", "reverse"])
+        #expect(await provider.maximumActive == 1)
+        #expect(published.names.isEmpty)
+        await provider.release(1)
+        try await published.waitForMatches(1)
+        #expect(published.names == ["reverse response 1"])
+        #expect(published.subjects == ["Near 3.0000, 4.0000"])
+        owner.lookup(coordinate: latest, publish: published.record)
+        #expect(published.names.count == 2)
+        #expect(await provider.texts.count == 2)
+        owner.submit(text: "A", publish: published.record)
+        try await provider.waitForRequests(3)
+        owner.lookup(coordinate: first, publish: published.record)
+        owner.close()
+        await provider.release(2)
+        try await provider.waitForCompletions(3)
+        await Task.yield()
+        #expect(published.names.count == 2)
+        #expect(await provider.coordinates == [latest])
+    }
+
     @Test("Dismissal discards queued work and racing completion; reopening starts only newly submitted work")
     func dismissal() async throws {
         let provider = HeldPlaceProvider()
@@ -75,6 +113,12 @@ struct MapPlaceSearchTests {
         let empty = try await provider.search(MapPlaceQuery(text: "not a fixture"))
         #expect(empty.places.isEmpty)
         #expect(empty.attributions.map(\.text) == ["Chio synthetic place fixtures"])
+        let nearby = try await provider.reverse(MapPlaceLookup(coordinate: MapCoordinate(latitude: 1.289, longitude: 103.866)))
+        #expect(nearby.places.map(\.name) == ["Singapore Flyer"])
+        #expect(nearby.attributions.map(\.text) == ["Chio synthetic place fixtures"])
+        let noNearby = try await provider.reverse(MapPlaceLookup(coordinate: MapCoordinate(latitude: 0, longitude: 0)))
+        #expect(noNearby.places.isEmpty)
+        #expect(noNearby.attributions.map(\.text) == ["Chio synthetic place fixtures"])
         let matches = try await provider.search(MapPlaceQuery(text: "Singapore"))
         #expect(matches.places.map(\.name) == ["Merlion", "Singapore Flyer"])
         let opened = try MapOpenedPlace(place: matches.places[0], attributions: matches.attributions, overlays: .empty)
@@ -87,6 +131,7 @@ struct MapPlaceSearchTests {
 
 private actor HeldPlaceProvider {
     private(set) var texts: [String] = []
+    private(set) var coordinates: [MapCoordinate] = []
     private var held: [Int: CheckedContinuation<Void, Never>] = [:]
     private var active = 0
     private(set) var maximumActive = 0
@@ -112,15 +157,28 @@ private actor HeldPlaceProvider {
 
 extension HeldPlaceProvider: MapGeocodingProvider {
     func search(_ query: MapPlaceQuery) async throws -> MapPlaceMatches {
+        try await respond(text: query.text)
+    }
+}
+
+extension HeldPlaceProvider: MapReverseGeocodingProvider {
+    func reverse(_ query: MapPlaceLookup) async throws -> MapPlaceMatches {
+        coordinates.append(query.coordinate)
+        return try await respond(text: "reverse")
+    }
+}
+
+private extension HeldPlaceProvider {
+    func respond(text: String) async throws -> MapPlaceMatches {
         let index = texts.count
-        texts.append(query.text)
+        texts.append(text)
         active += 1
         maximumActive = max(maximumActive, active)
         await withCheckedContinuation { held[index] = $0 }
         active -= 1
         completed += 1
         return try MapPlaceMatches(places: [
-            MapPlace(coordinate: MapCoordinate(latitude: 1, longitude: 2), name: "\(query.text) response \(index)")
+            MapPlace(coordinate: MapCoordinate(latitude: 1, longitude: 2), name: "\(text) response \(index)")
         ], attributions: [MapPlaceMatches.Attribution(text: "Held fixtures", link: URL(string: "https://example.test/credits")!)])
     }
 }
@@ -129,10 +187,13 @@ extension HeldPlaceProvider: MapGeocodingProvider {
 private final class PlacePublications {
     var names: [String] = []
     var failures = 0
+    var subjects: [String] = []
 
     func record(_ phase: MapPlaceSearch.Phase) {
         switch phase {
-        case .matches(_, let matches, _): names.append(contentsOf: matches.places.map(\.name))
+        case .matches(let request, let matches, _):
+            names.append(contentsOf: matches.places.map(\.name))
+            subjects.append(request.subject)
         case .failed: failures += 1
         case .idle, .loading: break
         }

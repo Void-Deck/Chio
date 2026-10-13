@@ -528,6 +528,27 @@ text input and a list without reranking remote matches through `SearchableList`.
 Changing style or moving the map never invokes geocoding automatically. Search
 and tile providers can be replaced independently.
 
+### Reverse lookup
+
+`MapReverseGeocodingProvider` is separate from forward search. Choose its complete
+Photon reverse endpoint explicitly; it need not share a host with search or tiles:
+
+```swift
+let reverseGeocoder = try PhotonReverseGeocoder(
+    endpoint: URL(string: "https://photon.komoot.io/reverse")!,
+    userAgent: "MyMapApp/1.0 (contact@example.com)"
+)
+let lookup = try MapPlaceLookup(coordinate: camera.center, limit: 1)
+let matches = try await reverseGeocoder.reverse(lookup)
+```
+
+The result is the same attributed `MapPlaceMatches`: retain its credits even when
+empty, and explicitly decide whether to open a place. Provider ordering does not
+promise that an address contains the coordinate. Limits are `1...10`, defaulting
+to one; no network access occurs during construction or map movement. The adapter
+shares the forward client's byte, deadline, redirect and validation bounds;
+`PhotonReverseGeocoder.LookupError` aliases `PhotonGeocoder.SearchError`.
+
 ### Offline tile packs
 
 Prepare a pack programmatically from application-supplied OpenMapTiles-compatible

@@ -177,15 +177,21 @@ def probe(binary, output_dir, record=None, online_source=None, place_search=Fals
             key("reopen retained query", b"/", ("Place search", "Singapore", "Return submits"))
             key("empty fixture query", b"\x7f" * 9 + b"absent\r", ("No matches", "Place: Chio synthetic place fixtures"))
             key("dismiss keeps opened marker", b"\x1b", ("Selected: Singapore Flyer", "Place: Chio synthetic place fixtures"))
+            key("pan without lookup", b"\x1b[D" * 2, ("Center 1.289, 103.856",))
+            key("explicit centre lookup", b"c", ("Near 1.2893, 103.8559", "1 match", "Merlion", "Chio synthetic place fixtures"))
+            assert "Center 1.289, 103.856" in current_screen(), "Reverse results moved the camera"
+            key("open reverse result", b"\r", ("Opened Merlion", "Center 1.287, 103.855", "span 0.0300", "Place: Chio synthetic place fixtures"))
+            assert "Place search" not in current_screen(), "Opening a reverse result did not restore the map"
             stop_recording()
-            observe("compact map retains opened place", ("More room for the map", "Selected: Singapore Flyer"), lambda: resize(36, 18))
+            observe("compact map retains opened place", ("More room for the map", "Selected: Merlion"), lambda: resize(36, 18))
             key("compact place search", b"/", ("Place search", "Synthetic fixtures", "Return submit/open · Esc map"))
             key("compact search submission", b"\x7f" * 6 + b"Merlion\r", ("1 match", "Merlion"))
             observe("wide recovery retains results", ("1 match", "Merlion"), lambda: resize(100, 30))
             key("recovered search opens", b"\r", ("Opened Merlion", "Center 1.287, 103.855", "span 0.0300"))
             key("map focus restored after search", b"\x1b[C", ("Center 1.287, 103.858",))
             validations.update(submit_only=True, selection_does_not_move_camera=True,
-                               explicit_activation=True, credits_retained=True, search_resize_recovery=True)
+                               explicit_activation=True, credits_retained=True, search_resize_recovery=True,
+                               explicit_centre_lookup=True, reverse_results_preserve_camera=True)
         elif online_source is not None:
             assert "Natural Earth" not in current_screen(), "Online world substituted bundled geography"
             initial_world_samples = map_samples()

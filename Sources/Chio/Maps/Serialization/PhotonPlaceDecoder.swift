@@ -2,10 +2,10 @@ import Foundation
 
 /// Photon-specific normalization, independent of transport and map geometry codecs.
 enum PhotonPlaceDecoder {
-    static func decode(_ data: Data, query: MapPlaceQuery) throws -> MapPlaceMatches {
+    static func decode(_ data: Data, limit: Int) throws -> MapPlaceMatches {
         guard data.count <= 512 * 1_024 else { throw DecodeError.oversizedData }
         let response = try JSONDecoder().decode(Response.self, from: data)
-        guard response.features.count <= query.limit else { throw DecodeError.tooManyPlaces }
+        guard response.features.count <= limit else { throw DecodeError.tooManyPlaces }
         let places = try response.features.map { try $0.place() }
         let photonURL = URL(string: "https://photon.komoot.io")
         let osmURL = URL(string: "https://www.openstreetmap.org/copyright")

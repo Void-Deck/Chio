@@ -1,9 +1,9 @@
 # Place search
 
 **Status:** Accepted for implementation, 2026-10-12. The candidate is not yet
-released. This is the first slice of the approved geocoding scope;
-[Plan](../Plan.md#approved-map-expansion) retains reverse lookup and routing as
-later work. Provider archive downloads remain paused.
+released. Forward search is the first slice of the approved geocoding scope.
+Separate reverse lookup was approved on 2026-10-13 and is implemented in the candidate;
+[Plan](../Plan.md#approved-map-expansion) retains routing as later work. Provider archive downloads remain paused.
 
 ## First useful outcome
 
@@ -98,6 +98,53 @@ Do not reuse `MapCoverage.Bounds` for provider extents: it promises a strictly
 nonwrapping coverage box, not every possible place extent. Omit extents and
 automatic fit-to-place zoom in this slice; keep the application's current zoom.
 
+## Separate reverse lookup
+
+Reverse lookup is an independent capability. Existing forward-only providers keep
+working without an unsupported-operation default or a new protocol requirement:
+
+```swift
+public protocol MapReverseGeocodingProvider: Sendable {
+    func reverse(_ query: MapPlaceLookup) async throws -> MapPlaceMatches
+}
+
+let reverseGeocoder = try PhotonReverseGeocoder(
+    endpoint: reverseEndpoint,
+    userAgent: applicationIdentity
+)
+let query = try MapPlaceLookup(coordinate: camera.center) // limit defaults to 1
+let matches = try await reverseGeocoder.reverse(query)
+```
+
+`MapPlaceLookup` composes the existing checked geographic coordinate and a limit
+in `1...10`. It is immutable, hashable, codable and sendable; decoding validates
+both fields. Poles remain valid geographic requests. Reuse `MapPlaceMatches` and
+its required attribution, empty-success semantics, provider order and duplicates.
+Do not imply address containment, an exact location identity or a universal
+nearest-distance guarantee from the provider's ordering.
+
+`PhotonReverseGeocoder` takes a complete reverse endpoint such as `/reverse`.
+It never derives that URL from a forward endpoint or a tile provider. Both Photon
+clients share private configuration validation, bounded HTTP and point decoding;
+reverse sends explicit `lat`, `lon` and `limit`. Its `LookupError` and
+`ConfigurationError` aliases reuse the forward client's existing failures.
+No radius, language, filter, retry or history policy is added in this slice.
+
+The example's **Look up centre** action snapshots the current coordinate only
+when invoked: `c` from the map, or Ctrl-L inside search. The submitted coordinate
+remains visible with its result even if the camera later changes. Receiving or
+highlighting a result does not move the map; opening it reuses the existing
+camera/marker/credit transaction and preserves zoom. Forward and reverse requests
+share the same active slot, latest-pending replacement, cancellation acknowledgement,
+publication generation and accepted-request reuse. Switching request direction
+cannot create parallel work or revive a cancelled response.
+
+Live reverse lookup has its own explicit `--reverse-geocoder-endpoint`; omitted
+means synthetic fixtures, independently of forward search and tiles. Fixture
+lookup returns nearby authored landmarks within a 0.05-degree per-axis window,
+ordered by squared angular distance, or attributed empty results. This is demo
+policy, not a real geodesic distance calculation or a Photon contract.
+
 ## Adapter and execution boundaries
 
 Decode Photon responses privately. Their points use `[longitude, latitude]`;
@@ -133,7 +180,7 @@ the pure result values and never log the rejected response body.
 No generic networking package or new SwiftPM dependency is needed. Existing
 [static Linux limitations](Dependencies.md#static-linux-blocker) remain.
 
-Per-search limits: at most 512 KiB of decompressed response bytes,
+Per-operation limits: at most 512 KiB of decompressed response bytes,
 10-second resource deadline, JSON content type, and at most three same-origin
 redirects. One transfer-owned deadline spans redirects on both platforms; timeout
 cancels the transport and still awaits its terminal acknowledgement. Bound reads
@@ -143,7 +190,7 @@ An HTTP error, including throttling, is thrown and shown distinctly from no matc
 Preserve useful retry timing when supplied, without starting an automatic retry.
 Avoid logging query URLs, response bodies or future provider credentials.
 
-The application owns one active search task and at most one latest pending
+The application owns one active geocoding task and at most one latest pending
 submitted query while cancellation drains. A newer submission replaces that
 pending value; never create a waiting task or queue entry per submission.
 Replacement, Escape, mode changes and teardown invalidate the current publication
@@ -160,9 +207,9 @@ without another request; it does not claim an application-wide provider quota.
 
 ## Example interaction
 
-The existing map example gains a fixture-backed place-search mode. Live tile
-acquisition and live search are separate opt-ins: enabling either does not
-implicitly enable the other or substitute another data source.
+The map example composes fixture-backed forward search and reverse lookup.
+Live tiles, forward search and reverse lookup are independent opt-ins: enabling
+one does not implicitly enable another or substitute a data source.
 
 Return in the text field submits; arrows navigate accepted results and Return
 opens the selected result. Escape cancels the search interaction and restores
@@ -233,7 +280,8 @@ existing transport fixtures rather than add test-only production interfaces.
 
 ## Sources and limits of evidence
 
-Reviewed official documentation on 2026-10-11:
+Reviewed official documentation on 2026-10-11, with the Photon reverse contract
+checked again on 2026-10-13:
 
 - [Photon API](https://github.com/komoot/photon/blob/master/docs/api-v1.md)
   and [public demo policy](https://github.com/komoot/photon#demo-server).

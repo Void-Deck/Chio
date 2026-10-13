@@ -81,6 +81,101 @@ struct MapHTTPClientTests {
         }
     }
 
+    @Test("Photon reverse lookup sends only latitude, longitude and limit to its explicit path")
+    func photonReverseLookup() async throws {
+        try await withServer { server in
+            let provider = try PhotonReverseGeocoder(endpoint: server.url("/custom/reverse"), userAgent: "Chio Reverse Tests/1.0")
+            let query = try MapPlaceLookup(coordinate: MapCoordinate(latitude: 1.25, longitude: -73.5), limit: 3)
+            let matches = try await bounded("Photon reverse wire coordinates") { try await provider.reverse(query) }
+            #expect(matches.places.map(\.name) == ["Reverse", "Pole", "Reverse"])
+            #expect(matches.places[0].coordinate.latitude == 1.3)
+            #expect(matches.places[0].coordinate.longitude == 103.8)
+            #expect(matches.places[0].detail == "lat=1.25;lon=-73.5;limit=3;keys=lat,limit,lon;ua=Chio Reverse Tests/1.0")
+            #expect(matches.places[1].coordinate.latitude == -90)
+            #expect(matches.places[1].coordinate.longitude == 180)
+            #expect(matches.places[0] == matches.places[2])
+            #expect(matches.attributions.map(\.text) == ["Photon", "© OpenStreetMap contributors"])
+            let polar = try MapPlaceLookup(coordinate: MapCoordinate(latitude: 90, longitude: -180))
+            let one = try await bounded("Photon reverse default limit and polar input") { try await provider.reverse(polar) }
+            #expect(one.places.count == 1)
+            #expect(one.places[0].detail == "lat=90.0;lon=-180.0;limit=1;keys=lat,limit,lon;ua=Chio Reverse Tests/1.0")
+            let emptyQuery = try MapPlaceLookup(coordinate: MapCoordinate(latitude: 0, longitude: 0))
+            let empty = try await bounded("Photon reverse no matches") { try await provider.reverse(emptyQuery) }
+            #expect(empty.places.isEmpty)
+            #expect(empty.attributions.map { $0.link.absoluteString } == ["https://photon.komoot.io", "https://www.openstreetmap.org/copyright"])
+            let redirected = try PhotonReverseGeocoder(endpoint: server.url("/reverse-redirect"), userAgent: "Tests")
+            let redirectMatches = try await bounded("Photon reverse same-origin redirect") { try await redirected.reverse(query) }
+            #expect(redirectMatches.places.map(\.name) == ["Reverse", "Pole", "Reverse"])
+            #expect(redirectMatches.places[0].detail == "lat=1.25;lon=-73.5;limit=3;keys=lat,limit,lon;ua=Tests")
+            let cancelled = Task {
+                withUnsafeCurrentTask { $0?.cancel() }
+                return try await provider.reverse(query)
+            }
+            do { _ = try await cancelled.value; Issue.record("Precancelled reverse lookup succeeded") }
+            catch PhotonReverseGeocoder.LookupError.cancelled { }
+        }
+    }
+
+    @Test("Reverse lookup preserves shared HTTP, MIME, byte, redirect and malformed-response failures")
+    func photonReverseFailures() async throws {
+        try await withServer { server in
+            let query = try MapPlaceLookup(coordinate: MapCoordinate(latitude: 1, longitude: 103))
+            for path in ["/photon-invalid", "/photon"] {
+                let provider = try PhotonReverseGeocoder(endpoint: server.url(path), userAgent: "Tests")
+                do {
+                    _ = try await bounded("reverse invalid or over-limit response") { try await provider.reverse(query) }
+                    Issue.record("Malformed or requested-limit overflow became reverse matches")
+                } catch PhotonReverseGeocoder.LookupError.invalidData { }
+            }
+            let missingMIME = try PhotonReverseGeocoder(endpoint: server.url("/photon-no-mime.json"), userAgent: "Tests")
+            do { _ = try await missingMIME.reverse(query); Issue.record("Reverse lookup accepted missing MIME") }
+            catch PhotonReverseGeocoder.LookupError.unexpectedContentType { }
+            for path in ["/geocoding-stream", "/geocoding-gzip"] {
+                let provider = try PhotonReverseGeocoder(endpoint: server.url(path), userAgent: "Tests")
+                do {
+                    _ = try await bounded("reverse streamed or decompressed byte limit") { try await provider.reverse(query) }
+                    Issue.record("Reverse lookup accepted oversized data")
+                } catch PhotonReverseGeocoder.LookupError.responseTooLarge { }
+            }
+            for path in ["/cross-host", "/scheme", "/loop"] {
+                let provider = try PhotonReverseGeocoder(endpoint: server.url(path), userAgent: "Tests")
+                do {
+                    _ = try await bounded("reverse forbidden redirect") { try await provider.reverse(query) }
+                    Issue.record("Reverse lookup accepted forbidden redirect")
+                } catch PhotonReverseGeocoder.LookupError.rejectedRedirect { }
+            }
+            let throttled = try PhotonReverseGeocoder(endpoint: server.url("/reverse-status"), userAgent: "Tests")
+            do { _ = try await throttled.reverse(query); Issue.record("Reverse HTTP rejection became success") }
+            catch PhotonReverseGeocoder.LookupError.httpStatus(let status, let retryAfter) {
+                #expect(status == 429)
+                #expect(retryAfter == "30")
+            }
+        }
+    }
+
+    @Test("Reverse lookup acknowledges in-flight cancellation and retains the public ten-second deadline")
+    func photonReverseCancellationAndDeadline() async throws {
+        try await withServer { server in
+            let query = try MapPlaceLookup(coordinate: MapCoordinate(latitude: 1, longitude: 103))
+            let slow = try PhotonReverseGeocoder(endpoint: server.url("/photon-slow"), userAgent: "Tests")
+            let pending = Task { try await slow.reverse(query) }
+            defer { pending.cancel() }
+            try await bounded("reverse transfer started") {
+                while true {
+                    let response = try await MapHTTPClient.fetch(server.url("/started"), resource: .catalog)
+                    if String(decoding: response.data, as: UTF8.self) == "true" { return }
+                    try await Task.sleep(for: .milliseconds(10))
+                }
+            }
+            pending.cancel()
+            do { _ = try await bounded("reverse cancellation acknowledgment") { try await pending.value }; Issue.record("Cancelled reverse lookup succeeded") }
+            catch PhotonReverseGeocoder.LookupError.cancelled { }
+            let deadline = try PhotonReverseGeocoder(endpoint: server.url("/photon-deadline"), userAgent: "Tests")
+            do { _ = try await deadline.reverse(query); Issue.record("Reverse lookup exceeded its deadline") }
+            catch PhotonReverseGeocoder.LookupError.deadlineExceeded { }
+        }
+    }
+
     @Test("Search transport requires JSON, retains bounded rejection metadata and acknowledges cancellation")
     func geocodingTransport() async throws {
         try await withServer { server in
@@ -545,6 +640,23 @@ class Handler(http.server.BaseHTTPRequestHandler):
         if route == '/photon-redirect':
             self.send_response(302); self.send_header('Location', '/photon?' + urllib.parse.urlsplit(path).query)
             self.send_header('Content-Length','0'); self.end_headers(); return
+        if route == '/reverse-redirect':
+            self.send_response(302); self.send_header('Location', '/custom/reverse?' + urllib.parse.urlsplit(path).query)
+            self.send_header('Content-Length','0'); self.end_headers(); return
+        if route == '/reverse-status':
+            self.send_response(429); self.send_header('Retry-After','30')
+            self.send_header('Content-Length','0'); self.end_headers(); return
+        if route == '/custom/reverse':
+            lat = query.get('lat', ['missing'])[0]; lon = query.get('lon', ['missing'])[0]
+            limit = query.get('limit', ['missing'])[0]
+            observed = 'lat=%s;lon=%s;limit=%s;keys=%s;ua=%s' % (lat, lon, limit, ','.join(sorted(query)), self.headers.get('User-Agent',''))
+            first = {'type':'Feature','geometry':{'type':'Point','coordinates':[103.8,1.3]},
+                     'properties':{'name':'Reverse','city':observed}}
+            pole = {'type':'Feature','geometry':{'type':'Point','coordinates':[180,-90]},'properties':{'name':'Pole'}}
+            features = [] if lat == '0.0' and lon == '0.0' else [first, pole, first][:int(limit)]
+            body = json.dumps({'type':'FeatureCollection','features':features}).encode()
+            self.send_response(200); self.send_header('Content-Type','application/geo+json')
+            self.send_header('Content-Length',str(len(body))); self.end_headers(); self.wfile.write(body); return
         if route == '/photon-status':
             self.send_response(429)
             if 'retry' in query: self.send_header('Retry-After', query['retry'][0])

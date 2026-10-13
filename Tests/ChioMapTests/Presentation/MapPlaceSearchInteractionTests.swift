@@ -24,6 +24,91 @@ struct MapPlaceSearchInteractionTests {
         }
     }
 
+    @Test("Reverse endpoint is explicit and independent of forward search, tiles and offline output")
+    func reverseCommandLine() throws {
+        #expect(try MapExampleCommand.parse([]).reverseGeocoderEndpoint.isEmpty)
+        let endpoint = "https://example.test/custom/reverse"
+        let lookup = try MapExampleCommand.parse(["--reverse-geocoder-endpoint", endpoint])
+        #expect(lookup.reverseGeocoderEndpoint == endpoint)
+        #expect(lookup.geocoderEndpoint.isEmpty)
+        #expect(!lookup.online)
+        let both = try MapExampleCommand.parse(["--online", "--geocoder-endpoint", "https://other.test/api",
+                                                "--reverse-geocoder-endpoint", endpoint])
+        #expect(both.online)
+        #expect(both.geocoderEndpoint == "https://other.test/api")
+        for arguments in [["--reverse-geocoder-endpoint", endpoint, "--snapshot"],
+                          ["--reverse-geocoder-endpoint", endpoint, "--benchmark"],
+                          ["--reverse-geocoder-endpoint", "https://user:password@example.test/reverse"],
+                          ["--reverse-geocoder-endpoint", "http://example.test/reverse"],
+                          ["--reverse-geocoder-endpoint", "https://example.test/reverse?lat=1"]] {
+            #expect(throws: (any Error).self) { try MapExampleCommand.parse(arguments) }
+        }
+    }
+
+    @Test("Explicit centre lookup retains coordinates, credits, zoom and native focus through compact recovery")
+    func reverseInteraction() async throws {
+        let provider = CountedFixtureGeocoder()
+        let frames = PlaceFrames()
+        let surface = HostedRasterSurface(surfaceSize: CellSize(width: 100, height: 30), appearance: .fallback,
+                                          onFrame: { frames.latest = $0 })
+        let app = MapExampleApplication(fixtures: try MapFixtures.load(), scene: .street, appearance: .default,
+                                        geocoder: provider, reverseGeocoder: provider)
+        let session = try HostedSceneSession(for: app, sceneID: WindowIdentifier("Chio maps"), surface: surface)
+        let run = Task { try await session.start() }
+        do {
+            let initial = try await frames.wait { $0.placeText.contains("Center 1.289, 103.866") && $0.focusedIdentity != nil }
+            session.send([.key(.character("+")), .key(.character("t"))])
+            let zoomed = try await frames.wait(after: initial.sequence) { $0.placeText.contains("span 0.0210°") && $0.placeText.contains("light") }
+            #expect(await provider.lookups.isEmpty)
+            session.send(.key(.character("c")))
+            let results = try await frames.wait(after: zoomed.sequence) {
+                $0.placeText.contains("1 match") && $0.placeText.contains("Near 1.2890, 103.8660") && $0.focusesPlaceResults
+            }
+            #expect(results.placeText.contains("Singapore Flyer"))
+            #expect(results.placeText.contains("Center 1.289, 103.866 · span 0.0210°"))
+            #expect(try await provider.lookups == [MapCoordinate(latitude: 1.289, longitude: 103.866)])
+            #expect(await provider.queries.isEmpty)
+            surface.updateSurfaceSize(CellSize(width: 36, height: 18))
+            session.requestSurfaceRefresh()
+            let compact = try await frames.wait(after: results.sequence) {
+                $0.raster.size.width == 36 && $0.placeText.contains("Near 1.2890, 103.8660")
+            }
+            #expect(compact.placeText.contains("Chio synthetic place fixtures"))
+            #expect(compact.focusesPlaceResults)
+            session.send(.key(.character("l"), modifiers: .ctrl))
+            let repeated = try await frames.wait(after: compact.sequence) { $0.focusesPlaceResults && $0.placeText.contains("1 match") }
+            #expect(await provider.lookups.count == 1)
+            surface.updateSurfaceSize(CellSize(width: 100, height: 30))
+            session.requestSurfaceRefresh()
+            let expanded = try await frames.wait(after: repeated.sequence) { $0.raster.size.width == 100 && $0.focusesPlaceResults }
+            session.send(.key(.return))
+            let opened = try await frames.wait(after: expanded.sequence) {
+                !$0.placeText.contains("Place search") && $0.placeText.contains("Opened Singapore Flyer")
+            }
+            #expect(opened.placeText.contains("Center 1.289, 103.863 · span 0.0210°"))
+            #expect(opened.placeText.contains("Place: Chio synthetic place fixtures"))
+            session.send(.key(.arrowRight))
+            let panned = try await frames.wait(after: opened.sequence) { !$0.placeText.contains("Center 1.289, 103.863") }
+            #expect(await provider.lookups.count == 1)
+            session.send(.key(.space))
+            let world = try await frames.wait(after: panned.sequence) { $0.placeText.contains("Center 0.000, 0.000") }
+            session.send(.key(.character("c")))
+            let empty = try await frames.wait(after: world.sequence) { $0.placeText.contains("No matches") }
+            #expect(empty.placeText.contains("Near 0.0000, 0.0000"))
+            #expect(empty.placeText.contains("Chio synthetic place fixtures"))
+            #expect(await provider.queries.isEmpty)
+            #expect(await provider.lookups.count == 2)
+            session.send(.key(.escape))
+            _ = try await frames.wait(after: empty.sequence) { !$0.placeText.contains("Place search") && $0.focusedIdentity != nil }
+            session.stop()
+            #expect(try await run.value == .inputEnded)
+        } catch {
+            session.stop()
+            _ = await run.result
+            throw error
+        }
+    }
+
     @Test("Accepted results present at first mount receive native focus before Return activates")
     func preloadedMatchesFocus() async throws {
         let frames = PlaceFrames()
@@ -56,7 +141,7 @@ struct MapPlaceSearchInteractionTests {
     func phaseHandoffFocus() async throws {
         let query = try MapPlaceQuery(text: "eight")
         let matches = try await EightResultGeocoder().search(query)
-        let handoff = PlaceSearchPhaseHandoff(transition: .accept(.matches(query, matches, response: UUID())))
+        let handoff = PlaceSearchPhaseHandoff(transition: .accept(.matches(.search(query), matches, response: UUID())))
         let frames = PlaceFrames()
         let surface = HostedRasterSurface(surfaceSize: CellSize(width: 100, height: 30), appearance: .fallback,
                                           onFrame: { frames.latest = $0 })
@@ -111,7 +196,7 @@ struct MapPlaceSearchInteractionTests {
         let replacement = try MapPlaceMatches(places: [MapPlace(coordinate: MapCoordinate(latitude: 40, longitude: 50),
             name: "Replacement place")], attributions: [MapPlaceMatches.Attribution(text: "Replacement credits",
             link: URL(string: "https://example.test/replacement")!)])
-        let handoff = PlaceSearchPhaseHandoff(transition: .accept(.matches(replacementQuery, replacement, response: UUID())),
+        let handoff = PlaceSearchPhaseHandoff(transition: .accept(.matches(.search(replacementQuery), replacement, response: UUID())),
                                             trigger: .activation)
         let frames = PlaceFrames()
         let surface = HostedRasterSurface(surfaceSize: CellSize(width: 100, height: 30), appearance: .fallback,
@@ -434,12 +519,20 @@ struct MapPlaceSearchInteractionTests {
 
 private actor CountedFixtureGeocoder {
     private(set) var queries: [String] = []
+    private(set) var lookups: [MapCoordinate] = []
 }
 
 extension CountedFixtureGeocoder: MapGeocodingProvider {
     func search(_ query: MapPlaceQuery) async throws -> MapPlaceMatches {
         queries.append(query.text)
         return try await MapFixtureGeocoder().search(query)
+    }
+}
+
+extension CountedFixtureGeocoder: MapReverseGeocodingProvider {
+    func reverse(_ query: MapPlaceLookup) async throws -> MapPlaceMatches {
+        lookups.append(query.coordinate)
+        return try await MapFixtureGeocoder().reverse(query)
     }
 }
 
@@ -590,7 +683,7 @@ private struct PreloadedPlaceSearchApp {
 
     nonisolated init() { phase = .idle; handoff = nil }
     nonisolated init(query: MapPlaceQuery, matches: MapPlaceMatches, handoff: PlaceSearchPhaseHandoff? = nil) {
-        phase = .matches(query, matches, response: UUID())
+        phase = .matches(.search(query), matches, response: UUID())
         self.handoff = handoff
     }
     nonisolated init(handoff: PlaceSearchPhaseHandoff) { phase = .idle; self.handoff = handoff }
@@ -643,7 +736,7 @@ extension PreloadedPlaceSearchView: View {
                     if handoff?.trigger == .appearance { handoff?.performOnce() }
                 }
             if presented {
-                MapPlaceSearchPane(label: "Synthetic fixtures", draft: $draft, phase: phaseStorage.wrappedValue, currentPhase: phaseStorage, isPresented: presentedStorage, selection: $selection,
+                MapPlaceSearchPane(label: "Synthetic fixtures", lookupLabel: "Synthetic fixtures", draft: $draft, phase: phaseStorage.wrappedValue, currentPhase: phaseStorage, isPresented: presentedStorage, selection: $selection,
                                    focus: focusStorage, submit: { submissions += 1 }, open: { place, credits in
                         opened = place.name
                         openedCredits = credits.map(\.text).joined(separator: ", ")

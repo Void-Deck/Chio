@@ -188,6 +188,21 @@ swift run -c release chio-maps --map street \
   --geocoder-endpoint https://photon.komoot.io/api
 ```
 
+Press `c` on the map to **look up its centre**, or Ctrl-L inside the search pane.
+The result shows the submitted coordinate; Return explicitly opens the selected
+place. Pan, zoom and theme changes send no lookup. The default reverse provider
+uses the same synthetic local landmarks and returns no matches elsewhere.
+
+Live reverse lookup is a separate opt-in, accepting the full reverse URL:
+
+```sh
+swift run -c release chio-maps --map street \
+  --reverse-geocoder-endpoint https://photon.komoot.io/reverse
+```
+
+Supply both endpoint options to enable both live capabilities. Neither derives
+an endpoint from the other or enables online tiles.
+
 Read the [public Photon demo policy](https://github.com/komoot/photon#demo-server)
 before using that service. It permits reasonable use, may throttle excessive use,
 and has no availability guarantee. Queries leave your machine only with the

@@ -201,6 +201,17 @@ refresh its default/light/btop previews when that presentation changes. A separa
 bounded Photon request establishes live adapter integration only, never service
 availability or permission for unrestricted use.
 
+Reverse lookup additionally checks coordinate/limit construction and decoding,
+explicit reverse paths and independent latitude/longitude query assertions,
+attributed empty responses, poles and the shared transfer limits. Mixed-direction
+submissions must retain one active operation, wait for cancellation acknowledgement,
+replace only the latest pending request and reject stale publication. Hosted
+interaction checks explicit centre lookup, submitted-coordinate captions,
+no request on pan/style/zoom, retained credits, activation without zoom changes,
+and compact focus recovery. Reverse endpoint configuration must not enable
+forward search or tiles. The same fixture-only PTY workflow records centre lookup
+alongside forward search; no public provider is used by tests or captures.
+
 To record the search workflow, run the map probe with `--place-search --theme
 default --record .build/captures/maps-default.cast` and an explicit `--output-dir`.
 It also saves `maps-default-initial.cast` from the actual submitted-results frame.

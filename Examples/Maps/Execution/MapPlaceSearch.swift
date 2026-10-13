@@ -5,24 +5,41 @@ import Foundation
 @MainActor
 final class MapPlaceSearch {
     private let provider: any MapGeocodingProvider
+    private let reverseProvider: any MapReverseGeocodingProvider
     private var isActive = false
     private var generation = UUID()
     private var active: Task<Void, Never>?
     private var pending: Work?
     private var lastStarted: ContinuousClock.Instant?
-    private var accepted: (query: MapPlaceQuery, matches: MapPlaceMatches)?
+    private var accepted: (request: Request, matches: MapPlaceMatches)?
 
-    init(provider: any MapGeocodingProvider) { self.provider = provider }
+    init(provider: any MapGeocodingProvider, reverseProvider: any MapReverseGeocodingProvider = MapFixtureGeocoder()) {
+        self.provider = provider
+        self.reverseProvider = reverseProvider
+    }
+
+    enum Request {
+        case search(MapPlaceQuery)
+        case reverse(MapPlaceLookup)
+
+        var subject: String {
+            switch self {
+            case .search(let query): return query.text
+            case .reverse(let query):
+                return String(format: "Near %.4f, %.4f", query.coordinate.latitude, query.coordinate.longitude)
+            }
+        }
+    }
 
     enum Phase {
         case idle
-        case loading(MapPlaceQuery)
-        case matches(MapPlaceQuery, MapPlaceMatches, response: UUID)
+        case loading(Request)
+        case matches(Request, MapPlaceMatches, response: UUID)
         case failed(text: String, message: String)
     }
 
     private struct Work {
-        let query: MapPlaceQuery
+        let request: Request
         let generation: UUID
         let publish: @MainActor (Phase) -> Void
     }
@@ -48,21 +65,36 @@ final class MapPlaceSearch {
 
     func submit(text: String, publish: @escaping @MainActor (Phase) -> Void) {
         guard isActive else { return }
+        do { submit(.search(try MapPlaceQuery(text: text)), publish: publish) }
+        catch {
+            invalidate()
+            publish(.failed(text: text, message: "Enter a place name of at most 512 bytes, without control characters."))
+        }
+    }
+
+    func lookup(coordinate: MapCoordinate, publish: @escaping @MainActor (Phase) -> Void) {
+        guard isActive else { return }
+        do { submit(.reverse(try MapPlaceLookup(coordinate: coordinate)), publish: publish) }
+        catch {
+            invalidate()
+            publish(.failed(text: "Map centre", message: "Could not prepare the place lookup."))
+        }
+    }
+
+    private func invalidate() {
         generation = UUID()
         pending = nil
         active?.cancel()
-        let query: MapPlaceQuery
-        do { query = try MapPlaceQuery(text: text) }
-        catch {
-            publish(.failed(text: text, message: "Enter a place name of at most 512 bytes, without control characters."))
+    }
+
+    private func submit(_ request: Request, publish: @escaping @MainActor (Phase) -> Void) {
+        invalidate()
+        if let accepted, accepted.request == request {
+            publish(.matches(request, accepted.matches, response: generation))
             return
         }
-        if let accepted, accepted.query == query {
-            publish(.matches(query, accepted.matches, response: generation))
-            return
-        }
-        let work = Work(query: query, generation: generation, publish: publish)
-        publish(.loading(query))
+        let work = Work(request: request, generation: generation, publish: publish)
+        publish(.loading(request))
         if active != nil { pending = work }
         else { start(work) }
     }
@@ -76,14 +108,18 @@ final class MapPlaceSearch {
                 }
                 try Task.checkCancellation()
                 lastStarted = ContinuousClock.now
-                let matches = try await provider.search(work.query)
+                let matches: MapPlaceMatches
+                switch work.request {
+                case .search(let query): matches = try await provider.search(query)
+                case .reverse(let query): matches = try await reverseProvider.reverse(query)
+                }
                 if isActive, generation == work.generation, !Task.isCancelled {
-                    accepted = (work.query, matches)
-                    work.publish(.matches(work.query, matches, response: work.generation))
+                    accepted = (work.request, matches)
+                    work.publish(.matches(work.request, matches, response: work.generation))
                 }
             } catch {
                 if isActive, generation == work.generation, !Task.isCancelled {
-                    work.publish(.failed(text: work.query.text, message: message(for: error)))
+                    work.publish(.failed(text: work.request.subject, message: message(for: error)))
                 }
             }
             // Only this task clears ownership. Cancellation itself does not release the slot.
@@ -113,3 +149,6 @@ final class MapPlaceSearch {
         }
     }
 }
+
+extension MapPlaceSearch.Request: Hashable {}
+extension MapPlaceSearch.Request: Sendable {}

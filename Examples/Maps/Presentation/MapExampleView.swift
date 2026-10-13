@@ -29,17 +29,21 @@ struct MapExampleView {
     private let streetSource: MapFixtures.StreetSource
     private let acquisition: MapExampleAcquisition
     private let searchLabel: String
+    private let lookupLabel: String
 
     init(fixtures: MapFixtures, scene: MapFixtures.Scene, appearance: MapExampleCommand.Appearance,
          detail: MapDetail = .minimal,
          streetSource: MapFixtures.StreetSource = .overpass, acquisition: MapExampleAcquisition = .offline,
          geocoder: any MapGeocodingProvider = MapFixtureGeocoder(),
-         searchLabel: String = "Synthetic fixtures") {
+         searchLabel: String = "Synthetic fixtures",
+         reverseGeocoder: any MapReverseGeocodingProvider = MapFixtureGeocoder(),
+         lookupLabel: String = "Synthetic fixtures") {
         self.fixtures = fixtures
         self.streetSource = streetSource
         self.acquisition = acquisition
         self.searchLabel = searchLabel
-        _searchOwner = State(wrappedValue: MapPlaceSearch(provider: geocoder))
+        self.lookupLabel = lookupLabel
+        _searchOwner = State(wrappedValue: MapPlaceSearch(provider: geocoder, reverseProvider: reverseGeocoder))
         _scene = State(wrappedValue: scene)
         _camera = State(wrappedValue: scene.camera)
         _selection = State(wrappedValue: nil)
@@ -71,6 +75,21 @@ struct MapExampleView {
         focus = .map
         searchPhase = .idle
         resultSelection = nil
+    }
+
+    private func lookupCentre(owner: MapPlaceSearch) {
+        owner.open()
+        isSearching = true
+        let phaseStorage = $searchPhase
+        let selectionStorage = $resultSelection
+        // Snapshot the submitted centre; later camera movement never retargets it.
+        owner.lookup(coordinate: camera.center) { update in
+            phaseStorage.wrappedValue = update
+            switch update {
+            case .matches(_, let matches, _): selectionStorage.wrappedValue = matches.places.isEmpty ? nil : 0
+            case .idle, .loading, .failed: selectionStorage.wrappedValue = nil
+            }
+        }
     }
 
     private func openPlace(_ place: MapPlace, attributions: [MapPlaceMatches.Attribution], owner: MapPlaceSearch) {
@@ -115,6 +134,10 @@ struct MapExampleView {
 
     /// MapView handles pan, zoom, marker traversal and activation through native focus.
     private func handle(_ press: KeyPress, owner: MapPlaceSearch) -> KeyPressResult {
+        if press.key == .character("l"), press.modifiers == .ctrl {
+            lookupCentre(owner: owner)
+            return .handled
+        }
         guard press.modifiers.isEmpty else { return .ignored }
         if isSearching {
             if press.key == .escape { dismissSearch(owner: owner); return .handled }
@@ -126,6 +149,7 @@ struct MapExampleView {
             isSearching = true
             // Keep the existing map focus until the field has a native registration.
             // Clearing it here drops subsequent events in the opening input batch.
+        case .character("c"): lookupCentre(owner: owner)
         case .character("q"): owner.close(); _ = requestTermination()
         case .space, .character(" "):
             owner.close()
@@ -181,7 +205,7 @@ extension MapExampleView: View {
                     .clipped()
                     .disabled(isSearching && terminalSize.width < 100)
                 if isSearching {
-                    MapPlaceSearchPane(label: searchLabel, draft: draftStorage, phase: phaseStorage.wrappedValue, currentPhase: phaseStorage, isPresented: $isSearching, selection: selectionStorage,
+                    MapPlaceSearchPane(label: searchLabel, lookupLabel: lookupLabel, draft: draftStorage, phase: phaseStorage.wrappedValue, currentPhase: phaseStorage, isPresented: $isSearching, selection: selectionStorage,
                                        focus: focusStorage, submit: submit, open: { openPlace($0, attributions: $1, owner: owner) })
                         .frame(width: terminalSize.width >= 100 ? 38 : nil)
                 }
@@ -206,8 +230,8 @@ extension MapExampleView: View {
                     .foregroundStyle(theme.colors.accent)
                     .frame(height: 1, alignment: .leading)
                 Text(terminalSize.width >= 80
-                     ? "[] detail  d cycle  t theme  f outline/fill  l labels  r reset"
-                     : "[] detail  t theme  r reset")
+                     ? "c look up centre  [] detail  t theme  f outline/fill  l labels  r reset"
+                     : "c look up centre  [] detail  t theme")
                     .foregroundStyle(theme.colors.mutedText)
                     .frame(height: 1, alignment: .leading)
             }
