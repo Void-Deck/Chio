@@ -14,12 +14,12 @@ enum MapCapture {
     static func snapshot(fixtures: MapFixtures, scene: MapFixtures.Scene,
                          appearance: MapExampleCommand.Appearance, width: Int, height: Int,
                          cellAspect: Double? = nil, detail: MapDetail = .minimal,
-                         streetSource: MapFixtures.StreetSource = .overpass) async throws -> CapturedFrame {
-        let recorder = FrameRecorder(size: CellSize(width: width, height: height))
+                         streetSource: MapFixtures.StreetSource = .overpass, routeDemo: Bool = false) async throws -> CapturedFrame {
+        let recorder = FrameRecorder(size: CellSize(width: width, height: height), expectsRoute: routeDemo)
         let surface = HostedRasterSurface(surfaceSize: CellSize(width: width, height: height),
                                           appearance: .fallback, onFrame: { recorder.receive($0) })
         let app = MapExampleApplication(fixtures: fixtures, scene: scene, appearance: appearance,
-                                        cellAspect: cellAspect, detail: detail, streetSource: streetSource)
+                                        cellAspect: cellAspect, detail: detail, streetSource: streetSource, routeDemo: routeDemo)
         let session = try HostedSceneSession(for: app, sceneID: WindowIdentifier("Chio maps"), surface: surface)
         let run = Task {
             do {
@@ -91,12 +91,13 @@ enum MapCapture {
     @MainActor
     private final class FrameRecorder {
         private let size: CellSize
+        private let expectsRoute: Bool
         private let clock = ContinuousClock()
         private let began = ContinuousClock.now
         private var completed: CapturedFrame?
         private var failure: (any Error)?
 
-        init(size: CellSize) { self.size = size }
+        init(size: CellSize, expectsRoute: Bool) { self.size = size; self.expectsRoute = expectsRoute }
 
         func receive(_ frame: SemanticHostFrame) {
             let hasCompletedFrame = completed != nil
@@ -109,7 +110,11 @@ enum MapCapture {
             let hasApplicationName = text.contains("chio")
             let hasMapHeader = text.contains("/ maps")
             let isPreparingMap = text.contains("Preparing map")
-            guard hasApplicationName, hasMapHeader, !isPreparingMap else { return }
+            let hasReadyRoute = text.contains("Route ready")
+            let hasSelectedRouteStart = text.contains("Routed start")
+            let hasCompactMap = text.contains("More room")
+            let hasExpectedRoute = !expectsRoute || (hasReadyRoute && (hasSelectedRouteStart || hasCompactMap))
+            guard hasApplicationName, hasMapHeader, !isPreparingMap, hasExpectedRoute else { return }
             completed = CapturedFrame(raster: frame.raster,
                                       firstFrameMS: MapCapture.milliseconds(began.duration(to: clock.now)))
         }

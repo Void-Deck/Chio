@@ -69,7 +69,7 @@ Add `--choices`, `--text-entry`, `--feedback`, or `--files` to try a focused exa
 Try world and street maps with locations and routes:
 
 ```sh
-swift run -c release chio-maps --map street
+swift run -c release chio-maps --map street --route-demo
 # Add --online to load neighboring OpenFreeMap tiles as you pan.
 ```
 

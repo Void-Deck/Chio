@@ -587,6 +587,34 @@ the reopened reader after its consumers stop, just as above. See the
 [storage contract](Decisions/OfflineTilePacks.md) for integrity, publication and
 process-interruption limits. Provider archive downloads are not implemented.
 
+### Routing
+
+Request explicitly, then give the accepted geometry an application-owned overlay ID:
+
+```swift
+let router = try OSRMRouter(
+    endpoint: serviceEndpoint, // complete /route/v1/{profile} prefix
+    userAgent: applicationIdentity,
+    attributions: serviceCredits // [MapAttribution], required even for no route
+)
+let request = MapRouteRequest(origin: start, destination: finish)
+let response = try await router.route(request)
+if let route = response.route {
+    let overlay = try MapRoute(id: "selected-route", title: "Route", path: route.path)
+    // Supply overlay through MapOverlays and show response.attributions nearby.
+    // route.distanceMeters and route.durationSeconds are optional estimates.
+}
+```
+
+Implement `MapRoutingProvider` to use another service. An absent route is a
+successful no-route response; network, decoding and snapping failures throw.
+Geometry endpoints can differ from requested points after snapping. The server's
+prepared graph determines travel mode. Chio does not add turn instructions,
+automatic rerouting, a default endpoint or hidden requests from `MapView`.
+See [routing contracts and bounds](Decisions/Routing.md) and the
+[offline example](Examples.md#routing).
+
+
 ## Tabs
 
 Use SwiftTUI's tab declarations with stable values; the theme supplies their style:

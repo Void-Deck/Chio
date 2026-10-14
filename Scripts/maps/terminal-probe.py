@@ -40,7 +40,7 @@ def shared_parser():
     return module
 
 
-def probe(binary, output_dir, record=None, online_source=None, place_search=False, theme="default"):
+def probe(binary, output_dir, record=None, online_source=None, place_search=False, theme="default", routing=False):
     parser = shared_parser()
     master, slave = pty.openpty()
     original_modes = termios.tcgetattr(slave)
@@ -55,7 +55,7 @@ def probe(binary, output_dir, record=None, online_source=None, place_search=Fals
     failure = None
     validations = {}
     recording_completed = False
-    command = [str(binary), "--map", "street" if place_search else "world", "--theme", theme]
+    command = [str(binary), "--map", "street" if place_search or routing else "world", "--theme", theme]
     if online_source is not None:
         command.extend(["--online", "--tile-source", str(online_source)])
 
@@ -150,11 +150,11 @@ def probe(binary, output_dir, record=None, online_source=None, place_search=Fals
         for key_name in ("NO_COLOR", "CLICOLOR", "CLICOLOR_FORCE", "FORCE_COLOR"):
             environment.pop(key_name, None)
         process = subprocess.Popen(command, stdin=slave, stdout=slave, stderr=slave, env=environment)
-        initial_expected = ("/ maps", "Singapore" if place_search else "World", "2/4 minimal",
-                            "span 0.0300" if place_search else "span 360.0000")
+        initial_expected = ("/ maps", "Singapore" if place_search or routing else "World", "2/4 minimal",
+                            "span 0.0300" if place_search or routing else "span 360.0000")
         if online_source is not None:
             initial_expected += ("Online · z1", "OpenFreeMap")
-        observe(f"street minimal {theme}" if place_search else "world minimal default", initial_expected)
+        observe(f"street minimal {theme}" if place_search or routing else "world minimal default", initial_expected)
         modes = termios.tcgetattr(slave)
         assert not modes[3] & (termios.ECHO | termios.ICANON | termios.ISIG | termios.IEXTEN), "Terminal is not in raw input mode"
         assert modes[6][termios.VMIN] == 1 and modes[6][termios.VTIME] == 0, "Unexpected raw read timing"
@@ -164,7 +164,26 @@ def probe(binary, output_dir, record=None, online_source=None, place_search=Fals
         validations["alternate_screen_entered"] = True
         validations["cursor_hidden"] = True
 
-        if place_search:
+        if routing:
+            key("submitted route ready", b"g", ("Route ready", "synthetic road trace", "span 0.0400"))
+            initial_route_samples = map_samples()
+            assert sum(char not in (" ", "\u2800") for row in initial_route_samples for char in row) > 100, "Route map lacks geometry"
+            key("route zoom", b"+", ("Route ready", "span 0.0280"))
+            key("route pan", b"\x1b[C", ("Route ready", "span 0.0280"))
+            assert map_samples() != initial_route_samples, "Route map did not move with the camera"
+            key("route search opens", b"/", ("Place search", "Return submits"))
+            key("route search dismisses", b"\x1b", ("Route ready", "synthetic road trace"))
+            key("set another requested start", b"1", ("Requested start set",))
+            key("explicit unsupported fixture request", b"2", ("No route for these locations", "Route: © OpenStreetMap contributors"))
+            key("restore route demo", b"g", ("Route ready", "span 0.0400"))
+            stop_recording()
+            observe("compact route fallback", ("More room for the map",), lambda: resize(36, 18))
+            observe("route recovers at wide size", ("Route ready", "synthetic road trace", "span 0.0400"), lambda: resize(100, 30))
+            key("clear routing", b"x", ("g route demo",))
+            assert "Route ready" not in current_screen(), "Clear retained a computed route"
+            validations.update(explicit_route_submission=True, route_pan_and_zoom=True,
+                               no_route_distinct=True, attributed_no_route=True, route_resize_recovery=True)
+        elif place_search:
             key("open place search", b"/", ("Place search", "Return submits"))
             key("draft does not submit", b"Singapore", ("Place search", "Singapore", "Return submits"))
             assert "matches" not in current_screen(), "Typing submitted a search"
@@ -344,7 +363,8 @@ def probe(binary, output_dir, record=None, online_source=None, place_search=Fals
         if record is not None:
             record.parent.mkdir(parents=True, exist_ok=True)
             header = {"version": 2, "width": 100, "height": 30,
-                      "title": ("Chio maps · submitted search with synthetic local places" if place_search else
+                      "title": ("Chio maps · explicit routing with a synthetic road trace" if routing else
+                                "Chio maps · submitted search with synthetic local places" if place_search else
                                 "Chio maps · fixed local HTTP replay of real provider geometry"
                                 if online_source is not None else "Chio maps · offline world and Singapore"),
                       "env": {"TERM": "xterm-256color", "COLORTERM": "truecolor"}}
@@ -355,11 +375,12 @@ def probe(binary, output_dir, record=None, online_source=None, place_search=Fals
             with record.open("w", encoding="utf-8") as cast:
                 for item in [header, *events]:
                     cast.write(json.dumps(item, ensure_ascii=False) + "\n")
-            if place_search and failure is None:
+            if (place_search or routing) and failure is None:
                 # Replay the captured terminal bytes through the first complete
                 # result frame. The shared renderer turns this into a preview;
                 # no separately reconstructed or styled screenshot is involved.
-                result_phase = next(phase for phase in phases if phase["name"] == "submitted fixture matches")
+                preview_phase = "submitted route ready" if routing else "submitted fixture matches"
+                result_phase = next(phase for phase in phases if phase["name"] == preview_phase)
                 frame_bytes = "".join(event[2] for event in events if event[0] <= result_phase["recording_seconds"])
                 preview = record.with_name(record.stem + "-initial.cast")
                 with preview.open("w", encoding="utf-8") as cast:
@@ -367,7 +388,8 @@ def probe(binary, output_dir, record=None, online_source=None, place_search=Fals
                         cast.write(json.dumps(item, ensure_ascii=False) + "\n")
         os.close(master)
         os.close(slave)
-    workflow = ("submitted place search, native selection, attribution, camera preservation and compact recovery"
+    workflow = ("submitted routing, route pan/zoom, no-route attribution and compact recovery" if routing else
+                "submitted place search, native selection, attribution, camera preservation and compact recovery"
                 if place_search else
                 "online HTTP loading, adjacent tiles, failure/retry, native focus, detail, themes, compact recovery"
                 if online_source is not None else
@@ -383,16 +405,19 @@ def main():
     arguments.add_argument("--online-source", type=Path,
                            help="Configured source JSON for the fixed z12 local HTTP fixture workflow")
     arguments.add_argument("--place-search", action="store_true", help="Exercise offline submitted search and capture its workflow")
+    arguments.add_argument("--routing", action="store_true", help="Exercise offline submitted routing and capture its workflow")
     arguments.add_argument("--theme", choices=("default", "light", "btop"), default="default",
                            help="Theme for --place-search captures")
     options = arguments.parse_args()
+    if options.routing and (options.place_search or options.online_source is not None):
+        arguments.error("--routing uses its own offline fixture workflow")
     if options.place_search and options.online_source is not None:
         arguments.error("--place-search uses bundled geography and synthetic results")
-    if not options.place_search and options.theme != "default":
-        arguments.error("--theme is only for --place-search captures")
+    if not (options.place_search or options.routing) and options.theme != "default":
+        arguments.error("--theme is only for --place-search or --routing captures")
     probe(options.binary.resolve(), options.output_dir, options.record,
           options.online_source.resolve() if options.online_source is not None else None,
-          options.place_search, options.theme)
+          options.place_search, options.theme, options.routing)
 
 
 if __name__ == "__main__":

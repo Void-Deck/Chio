@@ -1,4 +1,5 @@
-/// An application-authored path; Chio does not calculate routes.
+/// An application-identified path overlay. Geometry can be authored directly or
+/// supplied by an explicitly invoked MapRoutingProvider.
 public struct MapRoute {
     public let id: String
     /// An empty title omits the supporting route label.

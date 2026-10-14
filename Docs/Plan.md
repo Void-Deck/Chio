@@ -113,11 +113,11 @@ Run the [consumer gates](Verification.md), reporting known failures rather than
 weakening them. Publishing a compatibility revision is distinct from a versioned
 Chio release and from completed adoption by every consumer.
 
-SwiftRules 0.1.4 adoption is in a separate reviewed maintenance candidate. It corrects
-conformance placement/order and adds a repeatable compiler-backed witness check,
-preserving behavior, access and isolation with no baseline expansion. Compiler
-checks pass on macOS and Linux; application gates retain the accepted native
-failures. A candidate pin is not default-branch adoption.
+SwiftRules 0.1.4 was adopted on `main` through
+[PR #15](https://github.com/echoz/Chio/pull/15) at `38fc258`. It corrects conformance
+placement/order and adds a repeatable compiler-backed witness check, preserving
+behavior, access and isolation with no baseline expansion. Compiler checks pass
+on macOS and Linux; application gates retain the accepted native failures.
 [Verification](Verification.md#014-adoption-candidate) owns the procedure,
 platform evidence and remaining limits.
 
@@ -125,8 +125,8 @@ platform evidence and remaining limits.
 
 **Status:** Scope approved on 2026-10-09. Persistent caching is implemented;
 programmatic local packs are implemented.
-Forward and reverse geocoding candidates are under verification; routing remains
-planned and provider downloads remain paused. The following order keeps
+Forward and reverse geocoding are merged; the approved routing service slice is
+in progress after its readability spike. Provider downloads remain paused. The following order keeps
 one testable slice at a time; current contracts live in the owning decisions.
 
 The preceding robustness slice fixes the two reproduced audit defects:
@@ -154,10 +154,10 @@ or implicit network behavior.
 
 <a id="next-slice-place-search"></a>
 
-### Current slice: place search
+### Delivered: place search
 
-**Status:** Implemented in [PR #11](https://github.com/echoz/Chio/pull/11);
-integration verification on SwiftTUI 0.17.0 is in progress. Not merged or released. The
+**Status:** [PR #11](https://github.com/echoz/Chio/pull/11) merged on 2026-10-13
+at `ec41b3f`. This is merged source, not a new versioned release. The
 [place-search decision](Decisions/PlaceSearch.md) owns the explicit Photon endpoint,
 immutable matches and attribution, and example-owned native search/list
 composition. Camera and marker activation reuse the existing map API. There is
@@ -192,16 +192,16 @@ reports the same 16 accepted debug issues on both platforms: disclosure placemen
 (3), compact inbox dimensions (3), tree contents (9) and nested expansion (1).
 All 154 map tests pass on both platforms. The debug failure prevents the script's
 release and terminal stages from running; focused local release evidence above
-is separate. Delivery still requires review/merge and published Pages verification.
+is separate. The merge retains those accepted native limitations.
 
-Reverse lookup is the next approved slice below; routing remains later scope
-and provider downloads remain paused. This candidate has not been merged, deployed or released.
+Reverse lookup is delivered below; routing follows and provider downloads remain paused.
 
-### Current slice: reverse lookup
+### Delivered: reverse lookup
 
 **Status:** Separate capability and Photon client approved on 2026-10-13;
-implemented and locally verified on top of place-search PR #11.
-Not merged, deployed or released.
+implemented on top of place-search PR #11 and merged in
+[PR #13](https://github.com/echoz/Chio/pull/13) at `d940d56` on 2026-10-13.
+This is merged source, not a new versioned release.
 
 `MapPlaceLookup` composes a checked coordinate and bounded limit;
 `MapReverseGeocodingProvider` keeps forward-only providers compatible.
@@ -225,9 +225,28 @@ opened it with zoom retained; this establishes integration, not availability or
 geographic accuracy. Refreshed default/light/btop previews and the complete local
 Safari recording pass visual inspection, including seeking, the clean final frame,
 matching theme commands and the new API link. Existing unaffected mobile/fallback
-evidence is reused; no fresh mobile browser run is claimed. Delivery still requires
-current hosted checks, review/merge and published Pages verification. No tile
-acquisition or routing is added.
+evidence is reused; no fresh mobile browser run is claimed. No tile acquisition or
+routing is added by those geocoding changes.
+
+### Current slice: submitted routing
+
+**Status:** The muted-map, bright-route visual treatment is approved. The first
+service slice is implemented as a candidate: an explicit OSRM endpoint, checked two-point route
+requests and attributed geometry/estimates, composed through existing overlays.
+[Routing](Decisions/Routing.md) owns the API, limits and example behavior.
+
+The example remains fixture-backed by default and owns submission, cancellation,
+latest-pending replacement and stale-result rejection. No default live service,
+automatic rerouting, turn-by-turn navigation or renderer changes are included.
+Focused macOS/Linux checks and browser review pass; terminal captures are refreshed.
+Hosted verification retains an intermittent place-search focus timeout on Linux
+beyond the known SwiftTUI failures. The fresh macOS map suite passes; the initial
+registry failure was cleared. Merge/deployment remain outstanding; see
+[verification evidence](Verification.md#running-checks). Known SwiftTUI 0.17.0
+failures remain explicit. Routing is rebased onto the merged SwiftRules upgrade;
+[PR #14](https://github.com/echoz/Chio/pull/14) tracks the integrated checks and
+the unresolved search-focus failure.
+Provider downloads stay paused.
 
 <a id="next-slice-offline-pack-acquisition"></a>
 
@@ -265,9 +284,10 @@ Resumable preparation and combined pack/network fallback remain separate decisio
   revision string alone does not establish immutable bytes or an atomic snapshot.
   Choose pack format, schema/versioning and migration behavior during storage design;
   PMTiles/MBTiles support is not decided by approving downloadable packs.
-- Photon is the first explicit geocoding adapter. Choose the first routing provider
-  after evaluating its actual contracts, terms, attribution, rate limits and
-  static-Linux dependency impact.
+- Photon is the first explicit geocoding adapter; OSRM is the first routing
+  adapter. Applications supply their service endpoints and credits. No public
+  service is enabled by default; permission, quotas and privacy depend on the
+  selected operator. Neither adapter adds a dependency.
   Keep tile, geocoding and routing capabilities independently replaceable; changing
   a provider must not redefine visual detail. Provider credentials, when needed,
   are explicitly supplied by the application; no credential store is implied.
@@ -307,7 +327,7 @@ filters, extensible upstream/raw-input switches, native wrappers and private
 nested conformances retain their documented roles.
 
 The map expansion above remains approved. Provider archive acquisition remains
-paused at the user's request; place search is the current implementation slice.
+paused at the user's request; submitted routing is the current implementation slice.
 Real application use of the public map
 remains useful validation. Other component additions and a
 new stable release remain possible directions, not delivery promises.

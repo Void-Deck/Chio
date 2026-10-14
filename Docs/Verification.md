@@ -7,7 +7,7 @@ and preservation of current contracts.
 
 ## Shared engineering rules
 
-This adoption candidate pins [EngineeringRules v0.1.4](https://github.com/echoz/EngineeringRules/releases/tag/v0.1.4)
+Chio pins [EngineeringRules v0.1.4](https://github.com/echoz/EngineeringRules/releases/tag/v0.1.4)
 (`fc3de546794e7e4b0429b0b03e282ac7218bde8b`) through
 [.swift-rules.json](../.swift-rules.json). This is a required local development
 gate alongside the compiler, tests and platform checks below. It is not a package
@@ -73,7 +73,9 @@ EngineeringRules is private. This local gate does not add credentials or a priva
 fetch to Chio's public CI or package build. Hosted lint requires a separate tool
 distribution/access decision; the public platform gate below remains required.
 
-### 0.1.4 adoption candidate
+<a id="014-adoption-candidate"></a>
+
+### 0.1.4 adoption
 
 On 2026-10-12, authenticated published release metadata resolved the stable target
 [EngineeringRules v0.1.4](https://github.com/echoz/EngineeringRules/releases/tag/v0.1.4)
@@ -105,8 +107,12 @@ passes all three themes. These are local fixture checks, not live-provider or
 SSH qualification; snapshots are inspection artifacts. No assertions, deadlines,
 dependency pins, test files or baseline entries changed.
 
-The complete gate is not green. This reviewed candidate retains the previously
-accepted native limitations and is not yet default-branch adoption.
+The complete gate is not green. The user approved adoption with these previously
+accepted native limitations. [PR #15](https://github.com/echoz/Chio/pull/15) merged
+on 2026-10-13 at `38fc258`, whose tree matches the reviewed `14edf069` candidate.
+Its [hosted macOS/Linux checks](https://github.com/echoz/Chio/actions/runs/38510440943)
+also report only the same 16 issues, with all 157 map tests passing. This records
+default-branch adoption of the tool, not a new Chio release or repaired native layouts.
 
 ## Running checks
 
@@ -244,6 +250,73 @@ no request on pan/style/zoom, retained credits, activation without zoom changes,
 and compact focus recovery. Reverse endpoint configuration must not enable
 forward search or tiles. The same fixture-only PTY workflow records centre lookup
 alongside forward search; no public provider is used by tests or captures.
+
+Routing adds checked two-point requests, finite optional estimates, attributed
+no-route responses and source/wire-compatible shared credits. OSRM decoding checks
+ordered longitude/latitude, exact one-route admission, full geometry bounds and
+status/code consistency. Real loopback tests exercise 200/400 body handling,
+unchanged Photon/tile rejection, decompressed limits, MIME, cancellation and the
+ten-second deadline. Controlled routing providers cover latest-pending replacement,
+acknowledgement and stale publication; native tests cover explicit keys, retained
+credits, search coexistence and resize. Run the routing PTY workflow with:
+
+```sh
+python3 Scripts/maps/terminal-probe.py .build/release/chio-maps --routing \
+  --record .build/routing/maps-default.cast --output-dir .build/routing/default
+```
+
+Repeat with `--theme light` and `--theme btop`. Render their `-initial.cast` files
+with the shared player renderer and inspect the complete recordings before
+replacing public assets. These fixtures do not prove live route correctness.
+Known SwiftTUI failures and the deferred checker upgrade still apply.
+
+The 2026-10-13 routing candidate passed 324 selected map/Photon/OSRM tests in
+release on macOS. After the final framing and decoder-boundary correction,
+20 affected tests passed again in both debug and release. Linux Swift 6.4.0
+on Ubuntu 24.04 arm64 passed all 325 selected release tests, including that new
+framing regression. Real macOS PTY runs passed default/light/btop routing and
+the existing forward/reverse search workflow, including terminal restoration
+and diagnostic checks. The pinned SwiftRules check reported no new findings
+across 351 files, retaining 414 baseline findings.
+
+The refreshed preview images use the recorded terminal output and the vendored
+player. Inspection confirmed readable route contrast in all three themes and
+both endpoints inside the standard 100 × 30 frame. The unselected destination
+is intentionally muted; tight bends and same-cell color collisions remain
+terminal limitations. Site assembly passes. Safari inspection passed theme previews,
+matching commands/snippets, playback, pause, seeking, category navigation and
+browser history. The actual page also fits an embedded 390-pixel viewport;
+isolated script-free and missing-theme-image fixtures retain the preview,
+download and command fallbacks. The updated showcase has not been deployed.
+No public routing endpoint or SSH terminal was exercised.
+
+The normal macOS gate at `bf39e2ff` reproduced exactly the 16 accepted SwiftTUI
+issues: three disclosure placements, three compact inbox allocations, nine tree
+layouts and one nested-tree interaction timeout. All 166 map/example tests pass
+locally. The fresh hosted [run at `ed85b1e`](https://github.com/echoz/Chio/actions/runs/38506314063)
+reports only those 16 issues on macOS, with all 166 map tests passing. Linux
+reports the same 16 plus one place-search `nativeInteraction` timeout: the North
+Pole result appears, but native result-list focus does not arrive within the
+unchanged five-second wait. The new routing suites pass on both platforms.
+
+An earlier run had six additional macOS timeouts; none recurred there, while the
+same focus-wait context recurred on Linux. Six focused macOS repetitions also
+pass (three debug and three release). These are intermittent observations, not
+a demonstrated cause or fix. The next diagnostic boundary is actual semantic
+focus and runtime issues during the native TextField/List reopen workflow; no
+application polling or longer deadline has been introduced. The initial Linux
+image-registry failure was cleared; it supplies no test evidence. Both hosted
+scripts stop at their debug failures, so the separate local release and terminal
+results above remain distinct. [PR #14](https://github.com/echoz/Chio/pull/14)
+tracks current readiness; hosted verification is not claimed to pass.
+
+Routing was rebased onto the merged rules upgrade at `38fc258`. The overlapping
+attribution and HTTP conformance declarations retain their existing public and
+transport behavior. Independent integration review found no actionable issues;
+the rebased macOS compiler-backed gate passes across 351 Swift files with the
+same 414 baseline findings. Dependency pins, tests and visual assets are unchanged
+by the rebase. [PR #14](https://github.com/echoz/Chio/pull/14) records subsequent
+platform results; reorganization does not claim to repair the search-focus failure.
 
 To record the search workflow, run the map probe with `--place-search --theme
 default --record .build/captures/maps-default.cast` and an explicit `--output-dir`.

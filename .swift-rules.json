@@ -5,7 +5,8 @@
   "sourceRoots": [
     "Sources",
     "Examples",
-    "Tests"
+    "Tests",
+    "Spikes"
   ],
   "excludedPaths": [],
   "applicationRoots": [
@@ -29,6 +30,10 @@
     "Presentation"
   ],
   "importPolicies": [
+    {
+      "path": "Spikes/MapRouting",
+      "allowed": ["Chio", "Foundation", "Swift", "SwiftTUI"]
+    },
     {
       "path": "Sources/Chio/Maps/Execution/MapTilePack.swift",
       "allowed": ["Foundation", "Swift", "Darwin", "Glibc"]

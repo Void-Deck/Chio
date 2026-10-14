@@ -22,6 +22,8 @@ struct MapExampleView {
     @State private var resultSelection: Int?
     @State private var searchOwner: MapPlaceSearch
     @State private var openedPlace: MapOpenedPlace?
+    @State private var routePhase = MapExampleRouting.Phase.idle
+    @State private var routeOwner: MapExampleRouting
     @FocusState private var focus: Focus?
 
     enum Focus: Hashable { case map, field, results }
@@ -30,6 +32,8 @@ struct MapExampleView {
     private let acquisition: MapExampleAcquisition
     private let searchLabel: String
     private let lookupLabel: String
+    private let routerLabel: String
+    private let routeDemo: Bool
 
     init(fixtures: MapFixtures, scene: MapFixtures.Scene, appearance: MapExampleCommand.Appearance,
          detail: MapDetail = .minimal,
@@ -37,12 +41,17 @@ struct MapExampleView {
          geocoder: any MapGeocodingProvider = MapFixtureGeocoder(),
          searchLabel: String = "Synthetic fixtures",
          reverseGeocoder: any MapReverseGeocodingProvider = MapFixtureGeocoder(),
-         lookupLabel: String = "Synthetic fixtures") {
+         lookupLabel: String = "Synthetic fixtures",
+         router: any MapRoutingProvider = MapFixtureRouter(),
+         routerLabel: String = "Synthetic road trace", routeDemo: Bool = false) {
         self.fixtures = fixtures
         self.streetSource = streetSource
         self.acquisition = acquisition
         self.searchLabel = searchLabel
         self.lookupLabel = lookupLabel
+        self.routerLabel = routerLabel
+        self.routeDemo = routeDemo
+        _routeOwner = State(wrappedValue: MapExampleRouting(provider: router))
         _searchOwner = State(wrappedValue: MapPlaceSearch(provider: geocoder, reverseProvider: reverseGeocoder))
         _scene = State(wrappedValue: scene)
         _camera = State(wrappedValue: scene.camera)
@@ -54,8 +63,124 @@ struct MapExampleView {
     private var theme: ChioTheme { appearance.theme }
     private var source: MapSource { fixtures.source(for: scene, streetSource: streetSource) }
     private var overlays: MapOverlays {
-        guard let openedPlace else { return scene.overlays }
-        return openedPlace.overlays
+        let base = openedPlace?.overlays ?? scene.overlays
+        switch routePhase {
+        case .idle: return base
+        case .ready(_, _, _, let route):
+            // Remove the authored synthetic guide while a routed path is visible.
+            return try! MapOverlays(markers: base.markers + route.markers, routes: route.routes)
+        case .start(let origin): return requestedStart(origin, base: base)
+        case .loading(let request), .noRoute(let request, _), .failed(let request, _):
+            return requestedStart(request.origin, base: base)
+        }
+    }
+
+    private func requestedStart(_ origin: MapCoordinate, base: MapOverlays) -> MapOverlays {
+        let marker = try! MapMarker(id: "requested-route-start", coordinate: origin, title: "Requested start")
+        return try! MapOverlays(markers: base.markers + [marker], routes: [])
+    }
+
+    private var mapStyle: ChioStyle {
+        guard case .ready = routePhase else { return theme }
+        let surface = theme.colors.surface
+        let surfaceBrightness = (surface.red + surface.green + surface.blue) / 3
+        let route = surfaceBrightness > 0.5 ? Color(hexRGB: 0x00606B) : Color(hexRGB: 0x7DFFF3)
+        let roads = Self.faded(theme.colors.mutedText, toward: surface, keeping: 0.55)
+        return theme.replacing(
+            colors: theme.colors.replacing(
+                accent: route, foreground: roads, secondaryText: roads,
+                selectedSurface: Self.faded(theme.colors.selectedSurface, toward: surface, keeping: 0.45),
+                border: Self.faded(theme.colors.border, toward: surface, keeping: 0.55)),
+            map: theme.map.replacing(
+                water: Self.faded(theme.map.water, toward: surface, keeping: 0.45),
+                park: Self.faded(theme.map.park, toward: surface, keeping: 0.45)))
+    }
+
+    private static func faded(_ color: Color, toward surface: Color, keeping fraction: Double) -> Color {
+        Color(red: surface.red + (color.red - surface.red) * fraction,
+              green: surface.green + (color.green - surface.green) * fraction,
+              blue: surface.blue + (color.blue - surface.blue) * fraction)
+    }
+
+    private var hasRouting: Bool {
+        if case .idle = routePhase { return false }
+        return true
+    }
+
+    private var usesCompactRouting: Bool { hasRouting && !isSearching && terminalSize.width < 80 }
+
+    private var routeAttributions: [MapAttribution] {
+        switch routePhase {
+        case .idle, .start, .loading, .failed: []
+        case .ready(_, _, let attributions, _), .noRoute(_, let attributions): attributions
+        }
+    }
+
+    private var routeStatus: String? {
+        switch routePhase {
+        case .idle: return nil
+        case .start: return "Requested start set · pan, then 2 to route · x clear"
+        case .loading: return "Routing… · \(routerLabel) · x cancel"
+        case .noRoute: return "No route for these locations · \(routerLabel) · g demo · x clear"
+        case .failed(_, let message): return message
+        case .ready(_, let route, _, _):
+            let distance = route.distanceMeters.map { String(format: "%.0f m", $0) } ?? "distance unknown"
+            let duration = route.durationSeconds.map { String(format: "%.0f s", $0) } ?? "duration unknown"
+            return "Route ready · \(routerLabel) · \(distance) · \(duration)"
+        }
+    }
+
+    private var routeCaption: String? {
+        switch routePhase {
+        case .idle, .start: return nil
+        case .loading(let request), .noRoute(let request, _), .failed(let request, _):
+            return requestedCaption(request)
+        case .ready(let request, _, _, _):
+            return "Requested " + requestedCaption(request) + " · path endpoints may snap"
+        }
+    }
+
+    private func requestedCaption(_ request: MapRouteRequest) -> String {
+        String(format: "%.4f, %.4f → %.4f, %.4f", request.origin.latitude, request.origin.longitude,
+               request.destination.latitude, request.destination.longitude)
+    }
+
+    private func routeKey(_ press: KeyPress, owner: MapExampleRouting,
+                          phase: Binding<MapExampleRouting.Phase>, selection: Binding<String?>) -> KeyPressResult {
+        guard press.modifiers.isEmpty else { return .ignored }
+        switch press.key {
+        case .character("g"):
+            openedPlace = nil
+            scene = .street
+            camera = MapRoutingDemo.camera
+            showsLabels = false
+            submitRoute(MapRoutingDemo.request, owner: owner, phase: phase, selection: selection)
+        case .character("1"):
+            owner.cancel()
+            phase.wrappedValue = .start(camera.center)
+            selection.wrappedValue = nil
+        case .character("2"):
+            guard let origin = phase.wrappedValue.origin else { return .handled }
+            let request = MapRouteRequest(origin: origin, destination: camera.center)
+            submitRoute(request, owner: owner, phase: phase, selection: selection)
+        case .character("x"):
+            owner.cancel()
+            phase.wrappedValue = .idle
+            selection.wrappedValue = nil
+        default: return .ignored
+        }
+        return .handled
+    }
+
+    private func submitRoute(_ request: MapRouteRequest, owner: MapExampleRouting,
+                             phase: Binding<MapExampleRouting.Phase>, selection: Binding<String?>) {
+        owner.submit(request) { update in
+            phase.wrappedValue = update
+            switch update {
+            case .ready: selection.wrappedValue = "routed-start"
+            case .idle, .start, .loading, .noRoute, .failed: selection.wrappedValue = nil
+            }
+        }
     }
 
     private func submitSearch(text: String, owner: MapPlaceSearch,
@@ -127,9 +252,10 @@ struct MapExampleView {
     }
     private var context: String {
         let areaPresentation = fillsAreas ? "filled" : "outlines"
-        if acquisition.usesTiles { return "\(acquisition.title) · \(detail.levelNumber)/\(MapDetail.allCases.count) \(detail.rawValue) · \(appearance.rawValue) · \(areaPresentation) · synthetic guide" }
+        let overlayPresentation = hasRouting ? "routing" : "synthetic guide"
+        if acquisition.usesTiles { return "\(acquisition.title) · \(detail.levelNumber)/\(MapDetail.allCases.count) \(detail.rawValue) · \(appearance.rawValue) · \(areaPresentation) · \(overlayPresentation)" }
         let sourceTitle = scene.sourceTitle(streetSource: streetSource)
-        return "Offline · \(sourceTitle) · \(detail.levelNumber)/\(MapDetail.allCases.count) \(detail.rawValue) · \(appearance.rawValue) · \(areaPresentation) · synthetic guide"
+        return "Offline · \(sourceTitle) · \(detail.levelNumber)/\(MapDetail.allCases.count) \(detail.rawValue) · \(appearance.rawValue) · \(areaPresentation) · \(overlayPresentation)"
     }
 
     /// MapView handles pan, zoom, marker traversal and activation through native focus.
@@ -150,9 +276,11 @@ struct MapExampleView {
             // Keep the existing map focus until the field has a native registration.
             // Clearing it here drops subsequent events in the opening input batch.
         case .character("c"): lookupCentre(owner: owner)
-        case .character("q"): owner.close(); _ = requestTermination()
+        case .character("q"): owner.close(); routeOwner.close(); _ = requestTermination()
         case .space, .character(" "):
             owner.close()
+            routeOwner.cancel()
+            routePhase = .idle
             openedPlace = nil
             scene = scene.next
             camera = scene.camera
@@ -181,6 +309,9 @@ extension MapExampleView: View {
         let selectionStorage = $resultSelection
         let focusStorage = $focus
         let owner = searchOwner
+        let routingOwner = routeOwner
+        let routingStorage = $routePhase
+        let routeSelectionStorage = $selection
         let submit: @MainActor @Sendable () -> Void = {
             submitSearch(text: draftStorage.wrappedValue, owner: owner, phase: phaseStorage, selection: selectionStorage)
         }
@@ -189,7 +320,7 @@ extension MapExampleView: View {
                 Text("chio").bold().foregroundStyle(theme.colors.accent)
                 Text("/ maps · \(scene.title)")
             }.frame(height: 1, alignment: .leading)
-            if !isSearching || terminalSize.height >= 24 {
+            if (!isSearching || terminalSize.height >= 24) && !usesCompactRouting {
                 Text(context).foregroundStyle(theme.colors.mutedText)
                     .frame(height: 1, alignment: .leading)
             }
@@ -197,8 +328,10 @@ extension MapExampleView: View {
                 mapContent
                     .focused(focusStorage, equals: .map)
                     .onKeyPress { press in
-                        guard isSearching else { return .ignored }
-                        return mapSearchKey(press, draft: draftStorage, owner: owner, submit: submit)
+                        if isSearching {
+                            return mapSearchKey(press, draft: draftStorage, owner: owner, submit: submit)
+                        }
+                        return routeKey(press, owner: routingOwner, phase: routingStorage, selection: routeSelectionStorage)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .frame(width: isSearching && terminalSize.width < 100 ? 0 : nil)
@@ -210,28 +343,47 @@ extension MapExampleView: View {
                         .frame(width: terminalSize.width >= 100 ? 38 : nil)
                 }
             }.frame(maxWidth: .infinity, maxHeight: .infinity)
-            Text(String(format: "Center %.3f, %.3f · span %.4f°", camera.center.latitude,
-                        camera.center.longitude, camera.longitudeSpan))
-                .foregroundStyle(theme.colors.secondaryText)
-                .frame(height: 1, alignment: .leading)
-            Text("Selected: \(selectedTitle) · \(activation)")
-                .foregroundStyle(theme.colors.secondaryText)
-                .frame(height: 1, alignment: .leading)
+            if !usesCompactRouting {
+                Text(String(format: "Center %.3f, %.3f · span %.4f°", camera.center.latitude,
+                            camera.center.longitude, camera.longitudeSpan))
+                    .foregroundStyle(theme.colors.secondaryText)
+                    .frame(height: 1, alignment: .leading)
+                Text("Selected: \(selectedTitle) · \(activation)")
+                    .foregroundStyle(theme.colors.secondaryText)
+                    .frame(height: 1, alignment: .leading)
+            }
+            if !isSearching || terminalSize.width >= 100 {
+                if let routeStatus {
+                    Text(routeStatus).foregroundStyle(theme.colors.secondaryText)
+                        .frame(height: 1, alignment: .leading).clipped()
+                }
+                if let routeCaption, terminalSize.width >= 80 {
+                    Text(routeCaption).foregroundStyle(theme.colors.mutedText)
+                        .frame(height: 1, alignment: .leading).clipped()
+                }
+                ForEach(Array(routeAttributions.indices), id: \.self) { index in
+                    Link("Route: \(routeAttributions[index].text)", destination: LinkDestination(routeAttributions[index].link.absoluteString))
+                        .foregroundStyle(theme.colors.mutedText).frame(height: 1, alignment: .leading).clipped()
+                }
+            }
             if let openedPlace, !isSearching || terminalSize.width >= 100 {
                 ForEach(Array(openedPlace.attributions.indices), id: \.self) { index in
                     Link("Place: \(openedPlace.attributions[index].text)", destination: LinkDestination(openedPlace.attributions[index].link.absoluteString))
                         .foregroundStyle(theme.colors.mutedText).frame(height: 1, alignment: .leading).clipped()
                 }
             }
-            if !isSearching {
+            if usesCompactRouting {
+                Text("g demo  1 start  2 route  x clear  q")
+                    .foregroundStyle(theme.colors.accent).frame(height: 1, alignment: .leading).clipped()
+            } else if !isSearching {
                 Text(terminalSize.width >= 80
                      ? "↑↓←→ pan  +/- zoom  n/p place  Return open  / search  space map  q quit"
                      : "/ search  q quit  space map  n/p place")
                     .foregroundStyle(theme.colors.accent)
                     .frame(height: 1, alignment: .leading)
                 Text(terminalSize.width >= 80
-                     ? "c look up centre  [] detail  t theme  f outline/fill  l labels  r reset"
-                     : "c look up centre  [] detail  t theme")
+                     ? "g route demo  1 start  2 route to centre  x clear  c lookup  [] detail  t theme"
+                     : "g demo  1 start  2 route  x clear")
                     .foregroundStyle(theme.colors.mutedText)
                     .frame(height: 1, alignment: .leading)
             }
@@ -239,9 +391,18 @@ extension MapExampleView: View {
         .padding(1)
         .frame(width: terminalSize.width, height: terminalSize.height, alignment: .topLeading)
         .onKeyPress { handle($0, owner: owner) }
-        .onAppear { focusStorage.wrappedValue = .map }
-        .onDisappear { owner.close() }
+        .onAppear {
+            focusStorage.wrappedValue = .map
+            if routeDemo {
+                scene = .street
+                camera = MapRoutingDemo.camera
+                showsLabels = false
+                submitRoute(MapRoutingDemo.request, owner: routingOwner, phase: routingStorage, selection: routeSelectionStorage)
+            }
+        }
+        .onDisappear { owner.close(); routingOwner.close() }
         .task { await owner.observeLifetime() }
+        .task { await routingOwner.observeLifetime() }
         .chioTheme(theme)
     }
 
@@ -252,6 +413,7 @@ extension MapExampleView: View {
                     selection: $selection, overlays: overlays, detail: detail, fillsAreas: fillsAreas,
                     showsLabels: showsLabels, retry: retry, sourceLabel: acquisition.title, activate: { activation = "Opened \($0.title)" },
                     makeLoader: { try await acquisition.makeLoader() })
+                    .style(mapStyle)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 MapView(source: source, camera: $camera, selection: $selection,
@@ -259,6 +421,7 @@ extension MapExampleView: View {
                     .mapFills(fillsAreas)
                     .mapLabels(showsLabels)
                     .onActivate { marker in activation = "Opened \(marker.title)" }
+                    .style(mapStyle)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
     }

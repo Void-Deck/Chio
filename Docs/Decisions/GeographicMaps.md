@@ -90,8 +90,9 @@ because all eight Braille dots in a cell share one foreground. A one-dot halo
 clears adjacent linework; existing area fills remain underneath. Marker glyph
 cells clear route/geography dots without an additional marker halo, keeping
 route endpoints closer to the ring. Label backgrounds remain native Text.
-They are synthetic guides in the example, not
-navigation instructions or calculated routes.
+Default example guides remain synthetic. The explicit [routing adapter](Routing.md)
+can supply calculated geometry to the same overlays; the view itself never
+calculates or acquires a route, and does not present navigation instructions.
 
 `mapFills(false)` selects outlines independently of `MapDetail`; it is not another
 detail level. The Braille area-texture experiment was rejected after visual
