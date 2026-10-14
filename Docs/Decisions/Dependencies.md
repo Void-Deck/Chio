@@ -6,13 +6,13 @@ Keep dependency choices reproducible and distinguish supported execution from un
 
 ## Dependency choices
 
-The library uses published `SwiftTUIViews`; the executable uses `SwiftTUI` and tests
+The library uses `SwiftTUIViews`; the executable uses `SwiftTUI` and tests
 use public `SwiftTUIRuntime` raster/hosted APIs, without testing SPI or private APIs.
 All four direct dependencies are revision-pinned:
 
 | Dependency | Pin and reason |
 | --- | --- |
-| SwiftTUI | `ee572e38487284092f367ef5b095460a04374ba3`; published SwiftTUI 0.17.0, including per-axis focus reveal (#46) and cooperative shutdown (#48) |
+| SwiftTUI | `bf9a697f2a5da4d0392730d0cba9e3ddcbbfa5d1`; immutable upstream revision with merged disclosure (#49), Spacer (#50) and measured-row (#47) corrections; not a published release |
 | Swift Markdown 0.9.0 | `25cb61d3482054b09ae76ca4f281b1bfe7fe5a43`; revision permits conditional Windows unsafe flags |
 | Tree-sitter 0.26.13 | `d97971e24500218865c05ed1febdee2acf41bae1`; last release with upstream SwiftPM manifest |
 | tree-sitter-swift 0.7.4 | `82bb3a533e0801fd2bbaa11dc49676e10bf41948`; generated C grammar |
@@ -22,9 +22,9 @@ revision-pinned graph. Consumers of the experimental v0.1.0 source release pin
 Chio's immutable revision `1bcc08ce23747c8c8b1121e3add3c37951f7b09e`.
 SwiftTUI 0.17.0 requires Swift Collections 1.7.2 or later; the lockfile therefore
 advances that transitive dependency from 1.6.0 to 1.7.2. The other direct pins and
-resolved dependencies remain unchanged. The measured-height list correction
-in [PR #47](https://github.com/SwiftTUI/swift-tui/pull/47) merged after 0.17.0 and
-is not included in this pin.
+resolved dependencies remain unchanged by the follow-up pin below. It includes
+the measured-height list correction in [PR #47](https://github.com/SwiftTUI/swift-tui/pull/47),
+which merged after 0.17.0. New Chio row-density controls remain deferred.
 
 Swift Markdown brings swift-cmark 0.9.0 built from source, without a separately
 installed library. Tree-sitter/Swift grammar are MIT-licensed C targets requiring
@@ -33,9 +33,30 @@ Chio does no query-resource I/O and generates no Objective-C/Foundation accessor
 Build evidence is recorded in [0.1.0](../Releases/0.1.0.md); the current static Linux
 blocker is below. Ordinary glibc support does not establish static-musl distribution.
 
+## Merged layout corrections
+
+**Status:** On 2026-10-14, the user approved adopting the immutable upstream
+revision `bf9a697f2a5da4d0392730d0cba9e3ddcbbfa5d1` after Chio verification.
+This is the first upstream commit containing both #49 and #50. It also contains
+#47, PTY-test isolation and intervening benchmark/dead-code changes. The public
+API baseline and dependency graph are unchanged. SwiftTUI 0.17.0 remains the
+latest published release at this decision; the candidate is explicitly unreleased.
+
+The previous released pin has 16 retained disclosure/tree/compact-inbox failures.
+Adopting the owning native fixes preserves the original layout and interaction
+assertions without a Chio workaround. Upstream checks passed on the exact revision;
+Chio's full macOS/Linux, release and terminal gates remain separate requirements.
+The intermittent map, tab and appearance timeouts require their own evidence;
+this dependency change does not by itself establish their cause or resolution.
+[Verification](../Verification.md#merged-layout-corrections) records qualification.
+
+Applications with their own exact SwiftTUI requirement must align that revision
+with the Chio revision they adopt, then resolve and verify their own workflows.
+Chio qualification does not establish downstream adoption or a new tagged release.
+
 ## 0.17.0 adoption candidate
 
-**Status:** Personal-client rollout approved on 2026-10-13 with the known
+**Historical status:** Personal-client rollout approved on 2026-10-13 with the known
 regressions below. Publish and consume an immutable Chio revision with this exact
 SwiftTUI 0.17.0 pin; this is not a new versioned Chio release or a claim that every
 component passes qualification.
@@ -83,7 +104,7 @@ changes:
   native patch would conceal the regression.
 
 Restore the native authored-child column contract upstream, then verify the
-published correction with Chio's complete macOS/Linux and terminal gates before
+adopted correction with Chio's complete macOS/Linux and terminal gates before
 claiming those regressions resolved. A Chio shim is not the current direction.
 The local correction qualification below does not change the released pin's behavior.
 
@@ -151,8 +172,8 @@ passing newer CI does not itself establish the original release crash's cause.
 The subsequent 2026-10-13 status check confirms #49 and #50 are merged. Their
 final heads are `50b29b147ca07f825863b141aebad4a36637f382` and
 `40c1bd8f2f7e73c3bde3630f4fcb21c2481e32ff`; the maintainer added a semantic
-accessibility follow-up to #49. SwiftTUI 0.17.0 remains the latest published
-stable release and Chio's pin. Upstream merge does not establish released
+accessibility follow-up to #49. At that check, SwiftTUI 0.17.0 remained the latest
+published stable release and Chio's pin. Upstream merge does not establish released
 availability or Chio qualification of those final trees.
 
 Chio's test migration at `ff870923bd86d9b76195f54cd1f0292c8f7c7174` checks the new
@@ -161,7 +182,7 @@ actionable labeled-content slots, and the tab group's related tab-view node.
 Exact layout, focus, pointer, binding and input assertions remain in place.
 No Chio production shim, hidden native patch or weaker interaction deadline is
 introduced. Qualification uses an explicit temporary local package path; the
-committed manifest and lockfile retain the published pin.
+manifest and lockfile at that historical candidate retain the published pin.
 
 The combined native snapshot passes the full `bun run test` gate on macOS and
 Linux arm64 with Swift 6.4.0, including runtime shards, platform suites, TermUIPerf
@@ -220,7 +241,7 @@ dashboard tests; release passes 461, 139 and 176 respectively. Linux release PTY
 captures also preserve authored true-color RGB, matching indexed text/layout,
 clean exit and exact terminal restoration. These runs establish
 the explicit local combination, not compatibility with unpatched released 0.17.0.
-The approved rollout uses released 0.17.0 with its known limitations. These
+That approved rollout used released 0.17.0 with its known limitations. These
 patched-candidate results must not be presented as passing qualification of that
 released pin; each consumer owns its actual upgrade checks.
 
@@ -239,7 +260,7 @@ Chio adds no suppression flags and does not change the global developer selectio
 
 ## Static Linux blocker
 
-Static Linux remains unverified at the 0.17.0 pin. The retained blocker below
+Static Linux remains unverified at the current pin. The retained blocker below
 was reproduced against the earlier `2d84ac7083993da2ef52e9d3d30255467efb9553`
 pin; it is historical evidence, not a fresh build of 0.17.0. A Swift 6.4.0 ARM64 cross-build with the matching
 `swift-6.4.0-RELEASE_static-linux-0.1.0` SDK failed because upstream SwiftFiglet's

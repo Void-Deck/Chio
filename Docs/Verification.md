@@ -114,6 +114,32 @@ Its [hosted macOS/Linux checks](https://github.com/echoz/Chio/actions/runs/38510
 also report only the same 16 issues, with all 157 map tests passing. This records
 default-branch adoption of the tool, not a new Chio release or repaired native layouts.
 
+## Merged layout corrections
+
+The 2026-10-14 candidate pins SwiftTUI
+`bf9a697f2a5da4d0392730d0cba9e3ddcbbfa5d1`, with explicit approval to use this
+unreleased upstream revision after verification. Only the SwiftTUI revision and
+manifest hash change in the lockfile. Qualification uses the complete gate
+below under the existing verification policy, retaining all 16 previously accepted failing assertions and the
+five-second interaction waits. Scroll-style expectations migrate to the corrected
+vertical focus reveal: the first row stays visible. Mouse release moves to the
+track midpoint so that it still verifies a real offset change. All other keyboard,
+wheel, drag, theme and resize assertions remain exact; the automatic style checks
+the same native behavior. The viewport example and its terminal probe retain
+the same first-row contract on initial focus and F6 restoration. Twelve constructor spellings in the two
+touched suites are made explicit, removing exactly seven baseline entries
+covering twelve findings.
+No passing outcome is implied by the dependency change; platform results must
+identify the tested tree.
+
+Before the change, PR #16's hosted run at `95d80ae` reports the accepted 16 issues
+on each platform, plus a Linux map-search timeout and three macOS tab/appearance
+timeouts. The map trace records a native results-list focus callback but no
+subsequent delivered frame in the timeout snapshot. Its event clock does not
+record the wait start/deadline, so it cannot prove a lost request or a precise
+deadline race. Twenty separate unchanged macOS tab-test launches pass locally;
+that bounded result does not explain the hosted failures.
+
 ## Running checks
 
 The 2026-10-13 personal-client rollout explicitly accepts the released SwiftTUI
@@ -121,8 +147,8 @@ The 2026-10-13 personal-client rollout explicitly accepts the released SwiftTUI
 Keep their failing assertions and the normal gate unchanged. Record the failed
 cases and any checks not reached; do not call that result a passing full gate.
 Consumers update Chio and SwiftTUI together and verify their own affected paths.
-This scoped acceptance does not cover new regressions or imply qualification of
-the unmerged upstream fixes.
+This historical scoped acceptance does not cover new regressions or establish
+qualification of the current upstream-revision candidate.
 
 After the shared local check, with Swift 6.4 and Python 3 installed, run from the
 repository root:

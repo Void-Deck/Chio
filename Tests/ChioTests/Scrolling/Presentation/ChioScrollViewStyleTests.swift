@@ -14,7 +14,7 @@ struct ChioScrollViewStyleTests {
                 .frame(width: 12, height: 7)
                 .background(theme.colors.selectedSurface)
                 .chioTheme(theme),
-            proposal: .init(width: 12, height: 7)
+            proposal: ProposedViewSize(width: 12, height: 7)
         )
         let native = DefaultRenderer().render(
             ScrollView(axes) { scrollTestContent }
@@ -22,7 +22,7 @@ struct ChioScrollViewStyleTests {
                 .frame(width: 12, height: 7)
                 .background(theme.colors.selectedSurface)
                 .chioTheme(theme),
-            proposal: .init(width: 12, height: 7)
+            proposal: ProposedViewSize(width: 12, height: 7)
         )
         #expect(rendered.rasterSurface.lines == native.rasterSurface.lines)
         let route = try #require(rendered.semanticSnapshot.scrollRoutes.first)
@@ -47,7 +47,7 @@ struct ChioScrollViewStyleTests {
             ScrollView([.vertical, .horizontal]) { scrollTestContent }
                 .scrollIndicators(.hidden)
                 .chioTheme(.default),
-            proposal: .init(width: 12, height: 7)
+            proposal: ProposedViewSize(width: 12, height: 7)
         )
         let route = try #require(rendered.semanticSnapshot.scrollRoutes.first)
         #expect(route.viewportRect.size.width == 12)
@@ -65,7 +65,7 @@ struct ChioScrollViewStyleTests {
             ScrollView([.vertical, .horizontal]) { scrollTestContent }
                 .disabled(true)
                 .chioTheme(scrollTestTheme),
-            proposal: .init(width: 12, height: 7)
+            proposal: ProposedViewSize(width: 12, height: 7)
         )
         let node = try #require(rendered.semanticSnapshot.accessibilityNodes.first {
             $0.role == .scrollViewWithIndicators
@@ -82,7 +82,7 @@ struct ChioScrollViewStyleTests {
     func nativeInteraction(suppressed: Bool) async throws {
         let recorder = HostedFrameRecorder()
         let surface = HostedRasterSurface(
-            surfaceSize: .init(width: 24, height: 10), appearance: .fallback,
+            surfaceSize: CellSize(width: 24, height: 10), appearance: .fallback,
             onFrame: { recorder.receive($0) }
         )
         let session = try HostedSceneSession(
@@ -90,14 +90,14 @@ struct ChioScrollViewStyleTests {
         )
         let run = Task { try await session.start() }
         do {
-            let initial = try await recorder.wait(description: "native viewport focus after its initial reveal") {
-                $0.scrollTestBodyFocused && $0.scrollTestOffset(x: 1, y: 1)
+            let initial = try await recorder.wait(description: "native viewport focus preserves its first row") {
+                $0.scrollTestBodyFocused && $0.scrollTestOffset(x: 1, y: 0)
             }
             expectIndicatorPaint(initial, vertical: suppressed ? scrollTestTheme.colors.mutedText : scrollTestTheme.colors.accent,
                                  horizontal: suppressed ? scrollTestTheme.colors.mutedText : scrollTestTheme.colors.accent)
-            // The pinned native focus reveal includes its own reserved tracks,
-            // shifting both offsets by one. Establish the origin with native keys;
-            // the automatic-style regression below records this upstream boundary.
+            // Native horizontal reveal still includes the reserved track column.
+            // An oversized vertical target keeps its first row visible instead.
+            // Establish the origin with native keys before exercising both axes.
             session.send([.key(.home), .key(.arrowLeft)])
             _ = try await recorder.wait(after: initial.sequence, description: "native keys establish the origin") {
                 $0.scrollTestOffset(x: 0, y: 0)
@@ -136,7 +136,7 @@ struct ChioScrollViewStyleTests {
             #expect(themed.focusedIdentity == initial.focusedIdentity)
             expectIndicatorPaint(themed, vertical: suppressed ? ChioTheme.light.colors.mutedText : ChioTheme.light.colors.accent,
                                  horizontal: suppressed ? ChioTheme.light.colors.mutedText : ChioTheme.light.colors.accent)
-            surface.updateSurfaceSize(.init(width: 18, height: 8))
+            surface.updateSurfaceSize(CellSize(width: 18, height: 8))
             session.requestSurfaceRefresh()
             let resized = try await recorder.wait(after: themed.sequence, description: "compact viewport keeps the bound offset") {
                 $0.raster.size.width == 18 && $0.scrollTestBodyFocused && $0.scrollTestOffset(x: 5, y: 4)
@@ -151,17 +151,21 @@ struct ChioScrollViewStyleTests {
                     && $0.rect.origin.y == route.viewportRect.origin.y
             })
             let top = track.rect.origin
+            let middle = CellPoint(x: top.x, y: top.y + 3)
             let bottom = CellPoint(x: top.x, y: track.rect.maxY - 1)
-            // Track focus reveals the reserved column and bottom corner. Observe
-            // that frame before release, which then maps the pointer back to row 0.
-            // Batching both events races release against the one-shot focus reveal.
+            #expect(track.rect.size.height == 7)
+            #expect(route.viewportRect.size.height == 6)
+            #expect(route.contentBounds.size.height == 20)
+            // Track focus reveals its reserved column but keeps the first row.
+            // Release halfway along the seven-cell track: 3/6 of its 14-row range.
+            // A changed offset verifies release routing without waiting on a no-op.
             session.send(.mouse(MouseEvent(kind: .down(.primary), location: .cellFallback(top))))
-            let trackPressed = try await recorder.wait(after: resized.sequence, description: "native track focus reveals its reserved corner") {
-                $0.focusedIdentity == track.identity && $0.scrollTestOffset(x: 6, y: 1)
-            }
-            session.send(.mouse(MouseEvent(kind: .up(.primary), location: .cellFallback(top))))
-            let trackFocused = try await recorder.wait(after: trackPressed.sequence, description: "release on the focused track restores its top row") {
+            let trackPressed = try await recorder.wait(after: resized.sequence, description: "native track focus keeps the first row visible") {
                 $0.focusedIdentity == track.identity && $0.scrollTestOffset(x: 6, y: 0)
+            }
+            session.send(.mouse(MouseEvent(kind: .up(.primary), location: .cellFallback(middle))))
+            let trackFocused = try await recorder.wait(after: trackPressed.sequence, description: "release halfway along the track selects row seven") {
+                $0.focusedIdentity == track.identity && $0.scrollTestOffset(x: 6, y: 7)
             }
             session.send([
                 .mouse(MouseEvent(kind: .down(.primary), location: .cellFallback(top))),
@@ -179,11 +183,11 @@ struct ChioScrollViewStyleTests {
                 $0.focusedIdentity == track.identity && $0.scrollTestOffset(x: 6, y: 0)
             }
             session.send(.key(.tab, modifiers: .shift))
-            let body = try await recorder.wait(after: trackHome.sequence, description: "Shift-Tab returns to the viewport with native track reveal") {
-                $0.scrollTestBodyFocused && $0.scrollTestOffset(x: 7, y: 1)
+            let body = try await recorder.wait(after: trackHome.sequence, description: "Shift-Tab returns to the viewport without skipping its first row") {
+                $0.scrollTestBodyFocused && $0.scrollTestOffset(x: 7, y: 0)
             }
             #expect(body.focusedIdentity == initial.focusedIdentity)
-            #expect(body.scrollTestOffset(x: 7, y: 1))
+            #expect(body.scrollTestOffset(x: 7, y: 0))
             session.stop()
             #expect(try await run.value == .inputEnded)
         } catch {
@@ -193,16 +197,16 @@ struct ChioScrollViewStyleTests {
         }
     }
 
-    @Test("The pinned automatic style has the same one-cell initial focus reveal")
+    @Test("The automatic style also preserves the first row during initial focus reveal")
     func automaticFocusReveal() async throws {
         let recorder = HostedFrameRecorder()
-        let surface = HostedRasterSurface(surfaceSize: .init(width: 24, height: 10), appearance: .fallback,
+        let surface = HostedRasterSurface(surfaceSize: CellSize(width: 24, height: 10), appearance: .fallback,
                                           onFrame: { recorder.receive($0) })
         let session = try HostedSceneSession(for: ScrollStyleTestApp(native: true), sceneID: "scroll-style", surface: surface)
         let run = Task { try await session.start() }
         do {
-            _ = try await recorder.wait(description: "automatic native style reveals its reserved tracks") {
-                $0.scrollTestBodyFocused && $0.scrollTestOffset(x: 1, y: 1)
+            _ = try await recorder.wait(description: "automatic native style preserves its first row") {
+                $0.scrollTestBodyFocused && $0.scrollTestOffset(x: 1, y: 0)
             }
             session.stop()
             #expect(try await run.value == .inputEnded)

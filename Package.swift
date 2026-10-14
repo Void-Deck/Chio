@@ -11,10 +11,11 @@ let package = Package(
         .executable(name: "chio-maps", targets: ["ChioMaps"]),
     ],
     dependencies: [
-        // SwiftTUI 0.17.0, including per-axis focus reveal and cooperative shutdown.
+        // Merged SwiftTUI fixes for disclosure layout, Spacer sizing and tall rows.
+        // This immutable revision follows 0.17.0; it is not a published release.
         .package(
             url: "https://github.com/SwiftTUI/swift-tui.git",
-            revision: "ee572e38487284092f367ef5b095460a04374ba3"
+            revision: "bf9a697f2a5da4d0392730d0cba9e3ddcbbfa5d1"
         ),
         // Swift Markdown 0.9.0. A revision pin also permits its conditional
         // Windows build flags without modifying the upstream package.
