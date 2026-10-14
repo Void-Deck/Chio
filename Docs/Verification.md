@@ -7,23 +7,39 @@ and preservation of current contracts.
 
 ## Shared engineering rules
 
-Chio pins [EngineeringRules v0.1.3](https://github.com/echoz/EngineeringRules/releases/tag/v0.1.3)
-(`659a84a286ae81321304058de44dc67b64146014`) through
+This adoption candidate pins [EngineeringRules v0.1.4](https://github.com/echoz/EngineeringRules/releases/tag/v0.1.4)
+(`fc3de546794e7e4b0429b0b03e282ac7218bde8b`) through
 [.swift-rules.json](../.swift-rules.json). This is a required local development
 gate alongside the compiler, tests and platform checks below. It is not a package
 dependency or a guarantee of purity, correct enum policy or API compatibility.
 
-Install the pinned tool from its repository using its README. On this Mac, run:
+Install the pinned tool from its repository using its README. Keep a local
+EngineeringRules checkout containing that release tag. On this Mac, run:
 
 ```sh
 DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
-  ~/.local/bin/swift-rules check --root .
+  bash Scripts/ci/check-rules.sh /path/to/EngineeringRules
 ```
 
 Full Xcode supplies the required Swift/SourceKit. On Linux, omit `DEVELOPER_DIR`
 and follow the pinned tool's Swift 6.4 and Ubuntu Noble requirements. The normal
-check does not install tools or edit source, configuration or baselines; a missing
-pinned installation is a failed prerequisite.
+gate does not install tools or edit source, configuration or baselines; a missing
+pinned installation is a failed prerequisite. It verifies the release commit,
+exports the shared compiler-context helper from that immutable revision, builds
+the actual `Chio` target with SwiftPM's native backend, and supplies its real
+compiler arguments to the checker. The helper stays in EngineeringRules; Chio
+does not copy or maintain its implementation.
+
+Generated build settings and compiler context stay under ignored
+`.build/swift-rules`. The gate removes the old context before rebuilding; a build,
+export or compiler-analysis failure cannot fall back to syntax-only success.
+The repository configuration also requires that context for a direct checker
+invocation. Run the script after source, dependency or toolchain changes instead
+of reusing a prior build description. Witness evidence covers the supplied
+platform and build configuration; it does not prove other conditional branches.
+Swift 6.4 warns that the native backend is deprecated. This pinned exporter
+requires its build description; support for a different backend belongs in the
+shared tool rather than a guessed set of compiler flags in Chio.
 
 The gate scans all retained Swift files in `Sources`, `Examples` and `Tests`,
 with no path exclusions and explicit target import allowlists. Its production
@@ -32,7 +48,7 @@ layout and file-scope checks apply to `Sources`. The explicit
 and selects the nested `Domain` groups for immutability and direct-effect checks.
 Other targets retain the default responsibility-first layout. Moving files only
 translates their existing baseline paths; anchors, rules, counts and reasons stay
-unchanged. In v0.1.3 those production rules cannot
+unchanged. Those production rules cannot
 target `Examples`, whose syntax, constructors, ternaries, imports and selected
 SwiftLint rules are still checked. Tests receive the latter checks too. Extend
 the configuration when introducing retained source roots such as new spikes;
@@ -57,23 +73,40 @@ EngineeringRules is private. This local gate does not add credentials or a priva
 fetch to Chio's public CI or package build. Hosted lint requires a separate tool
 distribution/access decision; the public platform gate below remains required.
 
-### Deferred 0.1.4 adoption
+### 0.1.4 adoption candidate
 
-On 2026-10-12, authenticated published release metadata resolved the latest stable
+On 2026-10-12, authenticated published release metadata resolved the stable target
 [EngineeringRules v0.1.4](https://github.com/echoz/EngineeringRules/releases/tag/v0.1.4)
-to `fc3de546794e7e4b0429b0b03e282ac7218bde8b`. An isolated source-only check
-reported 75 conformance placement/order diagnostics across 52 production files.
-Representative genuine findings include `FileEntry`'s empty `Hashable` extension
-preceding `Codable`, empty extensions preceding ordinary helper extensions, and
-inline `Codable` on the extendable `MapTileCacheFormat.Manifest` and top-level
-private GeoJSON types. These match the release's documented contract; no checker
-defect was established. Compiler-backed witnesses were not checked.
+to `fc3de546794e7e4b0429b0b03e282ac7218bde8b`. The focused adoption starts from
+`d940d56`; its source-only check reports 86 placement/order diagnostics across
+57 production files. The change keeps synthesis, visibility, actor isolation,
+initialization and serialized representations intact. Private nested types that
+cannot be named from a file-scope extension retain their language exception.
+The existing baseline must not expand.
 
-The focused SwiftTUI dependency upgrade retains the operational 0.1.3 pin and
-unchanged baseline. Chio's next conformance-maintenance owner must classify all
-findings, correct permitted placements/order without widening access or changing
-isolation, run compiler/test/platform gates, and obtain independent review before
-adopting 0.1.4. This is a blocked checker upgrade, not verified latest-stable adoption.
+The macOS and Linux arm64 debug compiler-backed gates pass over all 122 Swift
+production files; the complete source check covers 332 Swift files. The 329
+baseline entries remain byte-identical and account for 414 tracked findings.
+Independent source and gate review reports no actionable findings.
+
+The unchanged macOS and Linux arm64 gates report exactly the accepted 16 SwiftTUI
+issues: three disclosure assertions and 13 compact-inbox/tree issues. Debug runs
+cover 482 library tests on macOS and 481 on Linux, 157 map tests on each platform,
+and 146 dashboard tests. Both scripts exit 1 before release and terminal stages.
+Separate full release runs cover the same library/map counts and 176 dashboard
+tests, with the same 16 issues and no additional failures. All map tests pass.
+
+Separate release builds and 24 snapshot commands succeed on each platform.
+Fifteen dashboard PTY modes and all three appearance workflows pass; the tree
+mode fails waiting for `SearchableList.swift`, matching the accepted missing-child
+layout defect. Offline maps, forward/reverse search, local online acquisition,
+cache and pack process probes pass on both platforms. Linux search additionally
+passes all three themes. These are local fixture checks, not live-provider or
+SSH qualification; snapshots are inspection artifacts. No assertions, deadlines,
+dependency pins, test files or baseline entries changed.
+
+The complete gate is not green. This reviewed candidate retains the previously
+accepted native limitations and is not yet default-branch adoption.
 
 ## Running checks
 

@@ -63,9 +63,6 @@ extension ChioStyle {
 
 }
 
-extension ChioStyle.Spacing: Equatable {}
-extension ChioStyle.Spacing: Hashable {}
-extension ChioStyle.Spacing: Encodable {}
 extension ChioStyle.Spacing: Decodable {
     public init(from decoder: any Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
@@ -97,4 +94,8 @@ extension ChioStyle.Spacing: Decodable {
                   inputVerticalInset: try boundedDistance(for: .inputVerticalInset))
     }
 }
+
+extension ChioStyle.Spacing: Encodable {}
+extension ChioStyle.Spacing: Equatable {}
+extension ChioStyle.Spacing: Hashable {}
 extension ChioStyle.Spacing: Sendable {}

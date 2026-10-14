@@ -40,7 +40,7 @@ struct MapHTTPClient {
             }
         }
     }
-    enum Failure: Error {
+    enum Failure {
         case invalidResponse, unexpectedContentType, responseTooLarge, rejectedRedirect
         case httpStatus(Int, retryAfter: String)
     }
@@ -238,11 +238,13 @@ struct MapHTTPClient {
 }
 
 extension MapHTTPClient: Sendable {}
-extension MapHTTPClient.Resource: Sendable {}
-extension MapHTTPClient.Resource: Equatable {}
-extension MapHTTPClient.Response: Sendable {}
-extension MapHTTPClient.Transfer: @unchecked Sendable {}
 
+extension MapHTTPClient.Failure: Error {}
+
+extension MapHTTPClient.Resource: Equatable {}
+extension MapHTTPClient.Resource: Sendable {}
+
+extension MapHTTPClient.Response: Sendable {}
 extension MapHTTPClient.Transfer: URLSessionDataDelegate {
     func urlSession(_ session: URLSession, dataTask: URLSessionDataTask,
                     didReceive response: URLResponse,
@@ -356,3 +358,5 @@ extension MapHTTPClient.Transfer: URLSessionDataDelegate {
         } else { completionHandler(.cancelAuthenticationChallenge, nil) }
     }
 }
+
+extension MapHTTPClient.Transfer: @unchecked Sendable {}

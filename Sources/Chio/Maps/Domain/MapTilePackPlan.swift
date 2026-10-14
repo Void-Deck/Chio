@@ -71,8 +71,6 @@ public struct MapTilePackPlan {
     }
 }
 
-extension MapTilePackPlan: Hashable {}
-extension MapTilePackPlan: Sendable {}
 extension MapTilePackPlan: Codable {
     private enum CodingKeys: String, CodingKey { case bounds, zoomRange, maximumBytes }
 
@@ -84,6 +82,9 @@ extension MapTilePackPlan: Codable {
     }
 }
 
-extension MapTilePackPlan.ValidationError: Error {}
+extension MapTilePackPlan: Hashable {}
+extension MapTilePackPlan: Sendable {}
+
 extension MapTilePackPlan.ValidationError: Equatable {}
+extension MapTilePackPlan.ValidationError: Error {}
 extension MapTilePackPlan.ValidationError: Sendable {}

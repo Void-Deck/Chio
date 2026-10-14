@@ -18,8 +18,6 @@ public struct MapPlaceQuery {
     public enum ValidationError { case invalidText, invalidLimit }
 }
 
-extension MapPlaceQuery: Hashable {}
-extension MapPlaceQuery: Sendable {}
 extension MapPlaceQuery: Codable {
     private enum CodingKeys: String, CodingKey { case text, limit }
 
@@ -30,6 +28,9 @@ extension MapPlaceQuery: Codable {
     }
 }
 
-extension MapPlaceQuery.ValidationError: Error {}
+extension MapPlaceQuery: Hashable {}
+extension MapPlaceQuery: Sendable {}
+
 extension MapPlaceQuery.ValidationError: Equatable {}
+extension MapPlaceQuery.ValidationError: Error {}
 extension MapPlaceQuery.ValidationError: Sendable {}

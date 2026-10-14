@@ -44,6 +44,6 @@ public struct MapTileRequest {
     }
 }
 
-extension MapTileRequest: Hashable {}
 extension MapTileRequest: Codable {}
+extension MapTileRequest: Hashable {}
 extension MapTileRequest: Sendable {}

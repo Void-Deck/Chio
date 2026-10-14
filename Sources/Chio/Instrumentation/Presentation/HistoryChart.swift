@@ -324,7 +324,7 @@ private struct HistoryPlot {
 }
 
 private struct HistoryDrawing {
-    struct Stroke: Equatable, Sendable {
+    struct Stroke {
         let start: CellPoint
         let end: CellPoint
     }
@@ -341,3 +341,6 @@ extension HistoryDrawing: CanvasDrawing {
         }
     }
 }
+
+extension HistoryDrawing.Stroke: Equatable {}
+extension HistoryDrawing.Stroke: Sendable {}

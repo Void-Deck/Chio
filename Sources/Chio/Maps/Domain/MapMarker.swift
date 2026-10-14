@@ -16,9 +16,6 @@ public struct MapMarker {
     }
 }
 
-extension MapMarker: Hashable {}
-extension MapMarker: Identifiable {}
-extension MapMarker: Sendable {}
 extension MapMarker: Codable {
     private enum CodingKeys: String, CodingKey { case id, coordinate, title }
 
@@ -29,3 +26,7 @@ extension MapMarker: Codable {
                       title: values.decode(String.self, forKey: .title))
     }
 }
+
+extension MapMarker: Hashable {}
+extension MapMarker: Identifiable {}
+extension MapMarker: Sendable {}

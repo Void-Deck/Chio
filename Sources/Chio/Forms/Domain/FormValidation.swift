@@ -47,13 +47,14 @@ public struct FormValidation<Field: Hashable> {
     }
 }
 
+extension FormValidation: Decodable where Field: Decodable {}
+extension FormValidation: Encodable where Field: Encodable {}
 extension FormValidation: Equatable {}
 extension FormValidation: Hashable {}
 extension FormValidation: Sendable where Field: Sendable {}
-extension FormValidation: Encodable where Field: Encodable {}
-extension FormValidation: Decodable where Field: Decodable {}
+
+extension FormValidation.Issue: Decodable where Field: Decodable {}
+extension FormValidation.Issue: Encodable where Field: Encodable {}
 extension FormValidation.Issue: Equatable {}
 extension FormValidation.Issue: Hashable {}
 extension FormValidation.Issue: Sendable where Field: Sendable {}
-extension FormValidation.Issue: Encodable where Field: Encodable {}
-extension FormValidation.Issue: Decodable where Field: Decodable {}

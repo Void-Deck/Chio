@@ -16,9 +16,6 @@ public struct MapRoute {
     }
 }
 
-extension MapRoute: Hashable {}
-extension MapRoute: Identifiable {}
-extension MapRoute: Sendable {}
 extension MapRoute: Codable {
     private enum CodingKeys: String, CodingKey { case id, title, path }
 
@@ -29,3 +26,7 @@ extension MapRoute: Codable {
                       path: values.decode(MapPolyline.self, forKey: .path))
     }
 }
+
+extension MapRoute: Hashable {}
+extension MapRoute: Identifiable {}
+extension MapRoute: Sendable {}

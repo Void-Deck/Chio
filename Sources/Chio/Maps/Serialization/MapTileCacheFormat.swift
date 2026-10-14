@@ -8,7 +8,7 @@ enum MapTileCacheFormat {
     static let maximumManifestBytes = 16 * 1_024
     private static let magic = Data("CHIOTILE".utf8)
 
-    struct Manifest: Codable {
+    struct Manifest {
         let version: Int
         let source: OpenMapTilesSource
     }
@@ -98,3 +98,5 @@ enum MapTileCacheFormat {
 
 
 }
+
+extension MapTileCacheFormat.Manifest: Codable {}

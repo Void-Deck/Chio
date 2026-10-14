@@ -31,6 +31,7 @@ extension MeasurementGauge {
 
 extension MeasurementGauge.TargetBand: Hashable {}
 extension MeasurementGauge.TargetBand: Sendable {}
-extension MeasurementGauge.TargetBand.ValidationError: Error {}
+
 extension MeasurementGauge.TargetBand.ValidationError: Equatable {}
+extension MeasurementGauge.TargetBand.ValidationError: Error {}
 extension MeasurementGauge.TargetBand.ValidationError: Sendable {}

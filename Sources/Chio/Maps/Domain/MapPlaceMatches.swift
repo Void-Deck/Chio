@@ -38,8 +38,6 @@ public struct MapPlaceMatches {
     public enum ValidationError { case tooManyPlaces, invalidAttributionCount }
 }
 
-extension MapPlaceMatches: Hashable {}
-extension MapPlaceMatches: Sendable {}
 extension MapPlaceMatches: Codable {
     private enum CodingKeys: String, CodingKey { case places, attributions }
 
@@ -61,8 +59,9 @@ extension MapPlaceMatches: Codable {
     }
 }
 
-extension MapPlaceMatches.Attribution: Hashable {}
-extension MapPlaceMatches.Attribution: Sendable {}
+extension MapPlaceMatches: Hashable {}
+extension MapPlaceMatches: Sendable {}
+
 extension MapPlaceMatches.Attribution: Codable {
     private enum CodingKeys: String, CodingKey { case text, link }
 
@@ -73,9 +72,13 @@ extension MapPlaceMatches.Attribution: Codable {
     }
 }
 
-extension MapPlaceMatches.ValidationError: Error {}
+extension MapPlaceMatches.Attribution: Hashable {}
+extension MapPlaceMatches.Attribution: Sendable {}
+
 extension MapPlaceMatches.ValidationError: Equatable {}
+extension MapPlaceMatches.ValidationError: Error {}
 extension MapPlaceMatches.ValidationError: Sendable {}
-extension MapPlaceMatches.Attribution.ValidationError: Error {}
+
 extension MapPlaceMatches.Attribution.ValidationError: Equatable {}
+extension MapPlaceMatches.Attribution.ValidationError: Error {}
 extension MapPlaceMatches.Attribution.ValidationError: Sendable {}

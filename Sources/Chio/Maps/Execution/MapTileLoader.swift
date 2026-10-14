@@ -383,7 +383,8 @@ public actor MapTileLoader {
     }
 }
 
-extension MapTileLoader.LoadingError: Error {}
 extension MapTileLoader.LoadingError: Equatable {}
+extension MapTileLoader.LoadingError: Error {}
 extension MapTileLoader.LoadingError: Sendable {}
+
 extension MapTileLoader.Statistics: Sendable {}

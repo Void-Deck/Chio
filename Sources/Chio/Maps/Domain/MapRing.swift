@@ -18,8 +18,6 @@ public struct MapRing {
     }
 }
 
-extension MapRing: Hashable {}
-extension MapRing: Sendable {}
 extension MapRing: Codable {
     private enum CodingKeys: String, CodingKey { case coordinates }
 
@@ -40,3 +38,6 @@ extension MapRing: Codable {
         try self.init(coordinates: coordinates)
     }
 }
+
+extension MapRing: Hashable {}
+extension MapRing: Sendable {}

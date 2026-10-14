@@ -31,11 +31,6 @@ public struct PhotonGeocoder {
     }
 }
 
-extension PhotonGeocoder: Sendable {}
-extension PhotonGeocoder.ConfigurationError: Error {}
-extension PhotonGeocoder.ConfigurationError: Equatable {}
-extension PhotonGeocoder.SearchError: Error {}
-
 extension PhotonGeocoder: MapGeocodingProvider {
     /// Returns provider order and attribution, including an attributed empty set.
     /// At most 512 KiB is read with a ten-second resource deadline and three
@@ -54,3 +49,10 @@ extension PhotonGeocoder: MapGeocodingProvider {
         return try await PhotonGeocodingRequest.matches(at: url, userAgent: userAgent, limit: query.limit)
     }
 }
+
+extension PhotonGeocoder.ConfigurationError: Equatable {}
+extension PhotonGeocoder.ConfigurationError: Error {}
+
+extension PhotonGeocoder.SearchError: Error {}
+
+extension PhotonGeocoder: Sendable {}

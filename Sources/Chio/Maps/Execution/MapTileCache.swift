@@ -366,7 +366,8 @@ public actor MapTileCache {
     }
 }
 
-extension MapTileCache.CacheError: Error {}
 extension MapTileCache.CacheError: Equatable {}
+extension MapTileCache.CacheError: Error {}
 extension MapTileCache.CacheError: Sendable {}
+
 extension MapTileCache.Entry: Sendable {}

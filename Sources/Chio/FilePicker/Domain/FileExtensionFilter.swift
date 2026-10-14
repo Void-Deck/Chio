@@ -16,7 +16,7 @@ public enum FileExtensionFilter {
     }
 }
 
+extension FileExtensionFilter: Codable {}
 extension FileExtensionFilter: Equatable {}
 extension FileExtensionFilter: Hashable {}
-extension FileExtensionFilter: Codable {}
 extension FileExtensionFilter: Sendable {}

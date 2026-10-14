@@ -100,23 +100,6 @@ public struct Pagination {
     }
 }
 
-extension Pagination: Hashable {}
-
-extension Pagination: Sendable {}
-
-extension Pagination: Encodable {
-    public func encode(to encoder: any Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(totalCount, forKey: .totalCount)
-        try container.encode(pageSize, forKey: .pageSize)
-        if let pageIndex {
-            try container.encode(pageIndex, forKey: .pageIndex)
-        } else {
-            try container.encodeNil(forKey: .pageIndex)
-        }
-    }
-}
-
 extension Pagination: Decodable {
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -131,3 +114,19 @@ extension Pagination: Decodable {
         self.init(totalCount: totalCount, pageSize: pageSize, pageIndex: pageIndex)
     }
 }
+
+extension Pagination: Encodable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(totalCount, forKey: .totalCount)
+        try container.encode(pageSize, forKey: .pageSize)
+        if let pageIndex {
+            try container.encode(pageIndex, forKey: .pageIndex)
+        } else {
+            try container.encodeNil(forKey: .pageIndex)
+        }
+    }
+}
+
+extension Pagination: Hashable {}
+extension Pagination: Sendable {}

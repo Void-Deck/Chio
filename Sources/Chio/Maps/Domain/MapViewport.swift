@@ -57,8 +57,6 @@ public struct MapViewport {
     }
 }
 
-extension MapViewport: Hashable {}
-extension MapViewport: Sendable {}
 extension MapViewport: Codable {
     private enum CodingKeys: String, CodingKey { case columns, rows, cellAspectRatio }
 
@@ -69,3 +67,6 @@ extension MapViewport: Codable {
                       cellAspectRatio: values.decode(Double.self, forKey: .cellAspectRatio))
     }
 }
+
+extension MapViewport: Hashable {}
+extension MapViewport: Sendable {}

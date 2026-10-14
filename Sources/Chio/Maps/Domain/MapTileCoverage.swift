@@ -37,8 +37,6 @@ public struct MapTileCoverage {
     }
 }
 
-extension MapTileCoverage: Hashable {}
-extension MapTileCoverage: Sendable {}
 extension MapTileCoverage: Codable {
     private enum CodingKeys: String, CodingKey { case tiles, region }
 
@@ -53,3 +51,6 @@ extension MapTileCoverage: Codable {
         try self.init(tiles: tiles, region: values.decode(MapTileRequest.self, forKey: .region))
     }
 }
+
+extension MapTileCoverage: Hashable {}
+extension MapTileCoverage: Sendable {}

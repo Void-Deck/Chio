@@ -22,8 +22,6 @@ public struct MapPlace {
     public enum ValidationError { case invalidName, invalidDetail }
 }
 
-extension MapPlace: Hashable {}
-extension MapPlace: Sendable {}
 extension MapPlace: Codable {
     private enum CodingKeys: String, CodingKey { case coordinate, name, detail }
 
@@ -35,6 +33,9 @@ extension MapPlace: Codable {
     }
 }
 
-extension MapPlace.ValidationError: Error {}
+extension MapPlace: Hashable {}
+extension MapPlace: Sendable {}
+
 extension MapPlace.ValidationError: Equatable {}
+extension MapPlace.ValidationError: Error {}
 extension MapPlace.ValidationError: Sendable {}

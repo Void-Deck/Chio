@@ -50,8 +50,8 @@ public struct Sparkline {
     }
 }
 
-extension Sparkline.Scale: Hashable {}
 extension Sparkline.Scale: Codable {}
+extension Sparkline.Scale: Hashable {}
 extension Sparkline.Scale: Sendable {}
 
 extension Sparkline: View {

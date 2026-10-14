@@ -186,8 +186,6 @@ actor FileDirectoryReader {
     }
 }
 
-extension FileDirectoryReader.Failure: Error {}
-
 extension FileDirectoryReader.Failure: LocalizedError {
     var errorDescription: String? {
         switch self {
@@ -200,3 +198,5 @@ extension FileDirectoryReader.Failure: LocalizedError {
         }
     }
 }
+
+extension FileDirectoryReader.Failure: Error {}

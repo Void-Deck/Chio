@@ -14,8 +14,6 @@ public struct MapCoordinate {
     }
 }
 
-extension MapCoordinate: Hashable {}
-extension MapCoordinate: Sendable {}
 extension MapCoordinate: Codable {
     private enum CodingKeys: String, CodingKey { case latitude, longitude }
 
@@ -25,3 +23,6 @@ extension MapCoordinate: Codable {
                       longitude: values.decode(Double.self, forKey: .longitude))
     }
 }
+
+extension MapCoordinate: Hashable {}
+extension MapCoordinate: Sendable {}

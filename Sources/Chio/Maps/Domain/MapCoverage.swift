@@ -33,11 +33,9 @@ public enum MapCoverage {
     }
 }
 
+extension MapCoverage: Codable {}
 extension MapCoverage: Hashable {}
 extension MapCoverage: Sendable {}
-extension MapCoverage: Codable {}
-extension MapCoverage.Bounds: Hashable {}
-extension MapCoverage.Bounds: Sendable {}
 extension MapCoverage.Bounds: Codable {
     private enum CodingKeys: String, CodingKey { case southwest, northeast }
 
@@ -48,6 +46,9 @@ extension MapCoverage.Bounds: Codable {
     }
 }
 
-extension MapCoverage.ValidationError: Error {}
+extension MapCoverage.Bounds: Hashable {}
+extension MapCoverage.Bounds: Sendable {}
+
 extension MapCoverage.ValidationError: Equatable {}
+extension MapCoverage.ValidationError: Error {}
 extension MapCoverage.ValidationError: Sendable {}

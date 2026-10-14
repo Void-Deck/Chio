@@ -150,6 +150,6 @@ public enum MapDetail: String {
 }
 
 extension MapDetail: CaseIterable {}
-extension MapDetail: Hashable {}
 extension MapDetail: Codable {}
+extension MapDetail: Hashable {}
 extension MapDetail: Sendable {}

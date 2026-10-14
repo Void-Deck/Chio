@@ -28,8 +28,6 @@ public struct MapTileSnapshot {
     }
 }
 
-extension MapTileSnapshot: Hashable {}
-extension MapTileSnapshot: Sendable {}
 extension MapTileSnapshot: Codable {
     private enum CodingKeys: String, CodingKey { case request, source, requestedZoom }
 
@@ -40,3 +38,6 @@ extension MapTileSnapshot: Codable {
                       requestedZoom: values.decode(Int.self, forKey: .requestedZoom))
     }
 }
+
+extension MapTileSnapshot: Hashable {}
+extension MapTileSnapshot: Sendable {}

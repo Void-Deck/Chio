@@ -35,7 +35,7 @@ extension MapDataset: Codable {
     }
 }
 
-private struct GeoJSONFeature: Codable {
+private struct GeoJSONFeature {
     let feature: MapFeature
     private enum CodingKeys: String, CodingKey { case type, id, properties, geometry }
     private enum PropertyKeys: String, CodingKey { case kind, name }
@@ -53,19 +53,9 @@ private struct GeoJSONFeature: Codable {
                                  name: properties.decodeIfPresent(String.self, forKey: .name) ?? "",
                                  geometry: values.decode(GeoJSONGeometry.self, forKey: .geometry).geometry)
     }
-
-    func encode(to encoder: any Encoder) throws {
-        var values = encoder.container(keyedBy: CodingKeys.self)
-        try values.encode("Feature", forKey: .type)
-        try values.encode(feature.id, forKey: .id)
-        var properties = values.nestedContainer(keyedBy: PropertyKeys.self, forKey: .properties)
-        try properties.encode(feature.kind, forKey: .kind)
-        try properties.encode(feature.name, forKey: .name)
-        try values.encode(GeoJSONGeometry(geometry: feature.geometry), forKey: .geometry)
-    }
 }
 
-private struct GeoJSONGeometry: Codable {
+private struct GeoJSONGeometry {
     let geometry: MapGeometry
     private enum CodingKeys: String, CodingKey { case type, coordinates }
 
@@ -106,7 +96,21 @@ private struct GeoJSONGeometry: Codable {
         }
         return coordinates
     }
+}
 
+extension GeoJSONFeature: Codable {
+    func encode(to encoder: any Encoder) throws {
+        var values = encoder.container(keyedBy: CodingKeys.self)
+        try values.encode("Feature", forKey: .type)
+        try values.encode(feature.id, forKey: .id)
+        var properties = values.nestedContainer(keyedBy: PropertyKeys.self, forKey: .properties)
+        try properties.encode(feature.kind, forKey: .kind)
+        try properties.encode(feature.name, forKey: .name)
+        try values.encode(GeoJSONGeometry(geometry: feature.geometry), forKey: .geometry)
+    }
+}
+
+extension GeoJSONGeometry: Codable {
     func encode(to encoder: any Encoder) throws {
         var values = encoder.container(keyedBy: CodingKeys.self)
         switch geometry {

@@ -15,6 +15,6 @@ public enum MapValidationError {
     case tileLimitExceeded
 }
 
-extension MapValidationError: Error {}
 extension MapValidationError: Equatable {}
+extension MapValidationError: Error {}
 extension MapValidationError: Sendable {}
