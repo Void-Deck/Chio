@@ -125,8 +125,8 @@ platform evidence and remaining limits.
 
 **Status:** Scope approved on 2026-10-09. Persistent caching is implemented;
 programmatic local packs are implemented.
-Forward and reverse geocoding candidates are under verification; routing remains
-planned and provider downloads remain paused. The following order keeps
+Forward and reverse geocoding are merged; routing starts with an isolated
+readability spike and provider downloads remain paused. The following order keeps
 one testable slice at a time; current contracts live in the owning decisions.
 
 The preceding robustness slice fixes the two reproduced audit defects:
@@ -154,10 +154,10 @@ or implicit network behavior.
 
 <a id="next-slice-place-search"></a>
 
-### Current slice: place search
+### Delivered: place search
 
-**Status:** Implemented in [PR #11](https://github.com/echoz/Chio/pull/11);
-integration verification on SwiftTUI 0.17.0 is in progress. Not merged or released. The
+**Status:** [PR #11](https://github.com/echoz/Chio/pull/11) merged on 2026-10-13
+at `ec41b3f`. This is merged source, not a new versioned release. The
 [place-search decision](Decisions/PlaceSearch.md) owns the explicit Photon endpoint,
 immutable matches and attribution, and example-owned native search/list
 composition. Camera and marker activation reuse the existing map API. There is
@@ -192,16 +192,16 @@ reports the same 16 accepted debug issues on both platforms: disclosure placemen
 (3), compact inbox dimensions (3), tree contents (9) and nested expansion (1).
 All 154 map tests pass on both platforms. The debug failure prevents the script's
 release and terminal stages from running; focused local release evidence above
-is separate. Delivery still requires review/merge and published Pages verification.
+is separate. The merge retains those accepted native limitations.
 
-Reverse lookup is the next approved slice below; routing remains later scope
-and provider downloads remain paused. This candidate has not been merged, deployed or released.
+Reverse lookup is delivered below; routing follows and provider downloads remain paused.
 
-### Current slice: reverse lookup
+### Delivered: reverse lookup
 
 **Status:** Separate capability and Photon client approved on 2026-10-13;
-implemented and locally verified on top of place-search PR #11.
-Not merged, deployed or released.
+implemented on top of place-search PR #11 and merged in
+[PR #13](https://github.com/echoz/Chio/pull/13) at `d940d56` on 2026-10-13.
+This is merged source, not a new versioned release.
 
 `MapPlaceLookup` composes a checked coordinate and bounded limit;
 `MapReverseGeocodingProvider` keeps forward-only providers compatible.
@@ -225,9 +225,30 @@ opened it with zoom retained; this establishes integration, not availability or
 geographic accuracy. Refreshed default/light/btop previews and the complete local
 Safari recording pass visual inspection, including seeking, the clean final frame,
 matching theme commands and the new API link. Existing unaffected mobile/fallback
-evidence is reused; no fresh mobile browser run is claimed. Delivery still requires
-current hosted checks, review/merge and published Pages verification. No tile
-acquisition or routing is added.
+evidence is reused; no fresh mobile browser run is claimed. No tile acquisition or
+routing is added by those geocoding changes.
+
+### Current slice: routing readability
+
+The user approved trying routing on 2026-10-13, with route legibility as the first
+risk to resolve. The isolated [spike](../Spikes/MapRouting/README.md) uses public
+`MapView` and its existing route/marker drawing. It compares unchanged geometry,
+camera and allocation with ordinary and muted map styles, then exercises dense
+backgrounds, outlines, narrow sizes, switchbacks and self-crossings. No public
+API or renderer change is implied by the experiment.
+
+Local native captures show that muted geography helps the route stand out; tight
+switchbacks, self-crossing direction and subtle unselected endpoints remain
+explicit limits. The spike README owns its fixture provenance and bounded macOS
+verification. These findings do not establish a navigation display or a shipped
+routing service; production presentation choices remain open.
+
+The next service design pass must settle endpoint/profile selection, snapping,
+required attribution, finite geometry and metadata, no-route versus failure,
+and cancellation before implementing a provider. OSRM is a candidate from its
+[documented API](https://project-osrm.org/docs/v5.24.0/api/), not a chosen public
+endpoint. Its HTTP 400 provider codes need bounded response-body handling without
+weakening the existing tile/geocoder HTTP contracts. Downloads remain paused.
 
 <a id="next-slice-offline-pack-acquisition"></a>
 

@@ -34,6 +34,13 @@ let package = Package(
         ),
     ],
     targets: [
+        .executableTarget(
+            name: "RouteReadability",
+            dependencies: ["Chio", .product(name: "SwiftTUI", package: "swift-tui")],
+            path: "Spikes/MapRouting",
+            exclude: ["README.md"],
+            resources: [.copy("Fixtures")]
+        ),
         // Private POSIX bridge; no additional public library product.
         .target(name: "ChioFileSystem"),
         .target(
