@@ -55,7 +55,7 @@ renderer, focus system or hidden dependency patch.
 | Native style hooks | Table border/background chrome, list focus gutter, palette shell, prompt headers and disabled-editor glyph paint are not fully controlled by Chio. Keep native behavior and resolve missing hooks upstream. |
 | Layout and lifecycle | Scroll focus reveal can move a viewport horizontally by one cell; nested tab strips can receive stale width proposals; expanded disclosure focus includes descendants. Keep the documented native contracts for [scrolling](Scrolling.md#scrolling), [tabs](Tabs.md#tabs) and [disclosure](DisclosureGroups.md#expandable-groups-and-trees). |
 | Choice composition | Changing choice fields inside `GeometryReader` triggered a native debug lifecycle-publication assertion. The full-window example uses `terminalSize`; arbitrary nesting remains unproved. |
-| List density and focus | New per-row density controls are deferred. The current candidate includes #46's per-axis reveal and #47's measured-height navigation/builder placement corrections. These do not establish a fix for every focus handoff. See [the findings](#tall-list-rows). |
+| List density and focus | New per-row density controls remain deferred. The adopted pin includes #46 and #47; compact/uniform padding now passes the focused journeys, but mixed-height reverse navigation still loses focus. See [current qualification](#current-row-qualification). |
 | Collection measurement | Native ideal-size probes can realize all rows before a bounded viewport commits and emit deferred `collection.unboundedRealization` warnings. Small fixtures do not prove virtualization or large-dataset performance; diagnostics are retained. |
 | Early input | Search, palette and form handoffs cover documented type-ahead/batched paths. Arbitrary multi-control input before presentation settles needs native support, not an application-built editor or focus graph. |
 | Editor navigation | End at the end of a native text field is unhandled when it makes no change, so an enclosing ScrollView can scroll to the bottom. The appearance study reproduced this at 36 × 18; ordinary editing remains focused. Its capture moves Left before End to exercise a real caret movement. Repeated no-op End is unresolved at the native input owner. |
@@ -68,12 +68,50 @@ renderer, focus system or hidden dependency patch.
 [PR #46](https://github.com/SwiftTUI/swift-tui/pull/46), merge
 `3701604e009bc113e4c6f01b25e3d5e7aa7b00eb`. The measured-height correction in
 [PR #47](https://github.com/SwiftTUI/swift-tui/pull/47) merged on 2026-10-12,
-after 0.17.0, and is included in the current upstream-revision candidate. All new per-row density
+after 0.17.0, and is included in the adopted upstream revision. All new per-row density
 controls remain deferred from Chio's unified style API.
 Opencode keeps compact rows and roomier input padding/leading frames.
 
-The investigation below describes the earlier pins and candidates. Its failure
-table is historical baseline evidence; it is not a new test run against 0.17.0.
+### Current row qualification
+
+The 2026-10-14 qualification uses Chio base `b79f009` and unchanged SwiftTUI
+`bf9a697f2a5da4d0392730d0cba9e3ddcbbfa5d1`. The retained
+`Tests/ChioTests/List/Presentation/ChioListStyleTests.swift` reproducer adds no
+production seam or dependency patch. It uses native row focus, stable IDs,
+selection/membership bindings and painted labels inside native focus regions.
+
+| Public case | macOS debug result |
+| --- | --- |
+| Automatic and Chio native styles, single/multiple selection, compact or uniformly padded rows | Eight cases pass all twelve rows down and back, then activation or membership checks |
+| Same styles and selection modes with mixed-height rows | Four cases fail upward reversal: automatic requests ID 6 but focuses ID 5; Chio requests ID 2 but focuses ID 1 |
+| SearchableChecklist, compact or uniformly padded rows | Both pass overflow, reversal, filter handoff, Space/Return toggles and retained offscreen membership |
+| SearchableChecklist, mixed-height rows | Fails reversal from ID 3 to ID 2; ID 2 disappears and native focus falls to ID 1 |
+| Indexed and builder lists, three padded rows at intrinsic height | Both pass height 9 and exact label lines 1, 4, 7 |
+| Wrapped rows resized 32 → 18 → 32 columns with stable IDs | Focus and selection remain on ID 7; Return activates it |
+
+IDs and raster lines are zero-based. Native journeys use twelve rows in an
+eight-line list on a 32 × 12 surface; the checklist reserves fourteen lines on a
+32 × 18 surface so its editor, gaps and footer leave the same list allocation.
+Mixed rows contain a title plus `id % 3` detail lines, with `id % 2` lines of
+vertical padding on each side. Uniform padded rows add one line on each side.
+The mixed fixture therefore varies from one to five lines per row.
+
+The historical compact checklist failure is not reproduced in this qualification.
+The remaining mixed-height failure also occurs using automatic native styling,
+so it is not established as a Chio padding or palette defect. Selection and focus
+diverge in the single-selection failure; the five-second wait is unchanged.
+Native row reveal and whole-row fitting require further diagnosis before a fix
+is claimed. No Chio focus/scroll workaround or public spacing control is added.
+
+These are focused macOS debug raster/hosted observations. Release, Linux, live
+SSH/PTY, pointer interaction and comprehensive resize/style-change coverage are
+not established by them. [Verification](../Verification.md#list-row-spacing-qualification)
+owns the reproducer command and remaining gates.
+
+### Historical baseline
+
+The investigation below describes earlier pins and candidates. Its failure
+table is historical evidence, distinct from the current qualification above.
 Chio's full consumer verification remains distinct from upstream fix verification.
 
 A standalone package importing only public `SwiftTUIRuntime` reproduces these

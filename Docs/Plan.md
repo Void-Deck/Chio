@@ -75,46 +75,41 @@ tab/FilePicker failures are not claimed fixed; individual assertions and
 deadlines remain unchanged. Native list and teardown limitations remain explicit
 in [native integration](Decisions/NativeIntegration.md).
 
-**Deferred list spacing:** all new per-row density controls remain excluded from
-this slice's public API. SwiftTUI 0.17.0 includes the merged per-axis reveal
-correction in [PR #46](https://github.com/SwiftTUI/swift-tui/pull/46). The
-measured-height navigation and builder placement correction in [PR #47](https://github.com/SwiftTUI/swift-tui/pull/47)
-merged after 0.17.0 and is included in the current upstream-revision candidate.
-Its upstream merge does not establish Chio qualification or a release.
-[Native integration](Decisions/NativeIntegration.md#tall-list-rows)
-owns the remaining findings and conditions for revisiting row density.
+**List spacing follow-up:** per-row density controls were excluded from this
+slice's public API. The current pin includes SwiftTUI's merged per-axis reveal
+correction in [#46](https://github.com/SwiftTUI/swift-tui/pull/46) and
+measured-height navigation/builder correction in
+[#47](https://github.com/SwiftTUI/swift-tui/pull/47).
+[Native integration](Decisions/NativeIntegration.md#tall-list-rows) owns the
+remaining qualification conditions; the current list-spacing slice below
+must establish Chio's padded and multiline row contracts before adding a token.
 
 Provider archive acquisition remains on hold at the user's request. No archive
 reader or downloader has been adopted; existing local pack APIs remain available.
 
-## Native runtime follow-up
+<a id="native-runtime-follow-up"></a>
 
-**Status:** On 2026-10-14, the user approved qualifying the immutable upstream
-revision `bf9a697f2a5da4d0392730d0cba9e3ddcbbfa5d1` to repair CI. It contains
-merged #49/#50 layout corrections and #47 measured-row navigation. This revision
-is not a published release. Retain the failing layout assertions and exact input
-coverage; migrate the scroll expectations to the corrected first-row reveal.
-The prior approval of known 0.17.0 failures does not make the new gate green.
-[Dependencies](Decisions/Dependencies.md#merged-layout-corrections) owns the
-dependency decision and downstream exact-pin compatibility requirement.
+## Delivered: native runtime and CI corrections
 
-The merged runtime correction in
-[SwiftTUI PR #48](https://github.com/SwiftTUI/swift-tui/pull/48) supersedes
-[PR #45](https://github.com/SwiftTUI/swift-tui/pull/45) and ships in 0.17.0.
-The current candidate retains those corrections in its upstream ancestry.
-[Native integration](Decisions/NativeIntegration.md#cooperative-shutdown-follow-up)
-owns its constraints and remaining startup/cancellation and performance follow-ups.
-Run the [consumer gates](Verification.md), reporting known failures rather than
-weakening them. Publishing a compatibility revision is distinct from a versioned
-Chio release and from completed adoption by every consumer.
+**Status:** [PR #16](https://github.com/echoz/Chio/pull/16) merged on 2026-10-14
+at `b79f0096fbc19872bd91cc887b03048e7e9d2a47`, with the same tree as the verified
+`0d42bfd41a0316c85c95fbb520641df3785f6eb5` candidate. The complete hosted
+[macOS/Linux gates](https://github.com/echoz/Chio/actions/runs/38546312684) pass.
+The approved immutable SwiftTUI revision contains the merged disclosure, Spacer
+and measured-row corrections. All sixteen retained layout failures are resolved;
+accepted map results now publish desired native focus together, and the example's
+functional periodic clock continues under CI's reduced-motion policy.
+[Verification](Verification.md#merged-layout-corrections) owns exact evidence and
+limits; [Dependencies](Decisions/Dependencies.md#merged-layout-corrections)
+owns the pin and future published-release qualification. Historical intermittent
+tab failures passed the final gate, but their cause remains unproved.
 
-SwiftRules 0.1.4 was adopted on `main` through
-[PR #15](https://github.com/echoz/Chio/pull/15) at `38fc258`. It corrects conformance
-placement/order and adds a repeatable compiler-backed witness check, preserving
-behavior, access and isolation with no baseline expansion. Compiler checks pass
-on macOS and Linux; application gates retain the accepted native failures.
-[Verification](Verification.md#014-adoption-candidate) owns the procedure,
-platform evidence and remaining limits.
+SwiftRules 0.1.4 is adopted on `main` through
+[PR #15](https://github.com/echoz/Chio/pull/15). The final #16 candidate passes the
+compiler-backed gate with 351 files and 398 retained baseline findings, without
+baseline expansion. [Verification](Verification.md#014-adoption-candidate)
+retains the adoption evidence. These merged changes are not a new tagged Chio
+release or proof of completed downstream adoption.
 
 ## Approved map expansion
 
@@ -235,25 +230,36 @@ The example remains fixture-backed by default and owns submission, cancellation,
 latest-pending replacement and stale-result rejection. No default live service,
 automatic rerouting, turn-by-turn navigation or renderer changes are included.
 Focused macOS/Linux checks and browser review pass; terminal captures are refreshed.
-The routing showcase is deployed. Known SwiftTUI 0.17.0 failures and the
-intermittent place-search focus timeout remain explicit; see
-[verification evidence](Verification.md#running-checks).
+The routing showcase is deployed. Its original SwiftTUI 0.17.0 failures and
+intermittent place-search focus timeout preceded the completed
+[native and CI corrections](Verification.md#merged-layout-corrections).
 Provider downloads stay paused.
 
-### Current slice: restore CI and diagnose interaction timeouts
+<a id="current-slice-restore-ci-and-diagnose-interaction-timeouts"></a>
 
-Qualify the approved merged SwiftTUI revision with the complete
-macOS/Linux, release and terminal gates under the existing verification policy. Resolve remaining tab, appearance and
-map interaction failures at their owning boundary; do not assume the native
-layout corrections fix those timeouts.
+### Current slice: list row spacing
 
-Investigate the intermittent native search reopen timeout before changing focus
-behavior. Preserve the complete resize/reopen workflow, exact list-focus assertion
-and five-second wait. Retain bounded committed-frame, focus-presentation and
-runtime-issue observations so a failure distinguishes displayed results from
-native focus delivery. Use public hosted-session APIs; no polling workaround,
-forced redraw, hidden dependency patch or new production hook is authorized by
-this slice. Passing repetitions do not establish a cause or a fix.
+**Status:** BLOCKED BY MIXED-HEIGHT ROW REVEAL. Qualification on the current
+SwiftTUI pin passes compact and uniformly padded native list/checklist journeys,
+intrinsic padded placement and one same-ID wrapped resize journey. Mixed-height
+rows still lose native focus while reversing upward: the selected row can be
+absent while focus falls back to a different row. No new spacing token, example
+treatment or showcase recording is introduced while this remains unresolved.
+[Native integration](Decisions/NativeIntegration.md#current-row-qualification)
+owns the reproduction and [Verification](Verification.md#list-row-spacing-qualification)
+owns the checks and limits.
+
+Complete qualification of native padded and multiline list/checklist rows, including exact
+focus, selection, keyboard/pointer activation, scroll reveal and resize recovery.
+Use public raster and hosted-session APIs and preserve native interaction
+ownership. If those contracts hold, add the bounded style spacing token and its
+compatibility coverage, then validate the affected examples and showcase through
+[the existing verification workflow](Verification.md#demo-site). Record actual
+results before declaring implementation or qualification complete.
+
+Provider downloads remain paused. Future adoption of a published SwiftTUI release
+containing the merged fixes requires a separate verified dependency update; no
+automatic release monitoring is requested.
 
 <a id="next-slice-offline-pack-acquisition"></a>
 
@@ -334,7 +340,7 @@ filters, extensible upstream/raw-input switches, native wrappers and private
 nested conformances retain their documented roles.
 
 The map expansion above remains approved. Provider archive acquisition remains
-paused at the user's request; CI repair and interaction qualification are the current slice.
+paused at the user's request; list row spacing is the current qualification slice.
 Real application use of the public map
 remains useful validation. Other component additions and a
 new stable release remain possible directions, not delivery promises.

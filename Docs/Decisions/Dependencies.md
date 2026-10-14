@@ -24,7 +24,8 @@ SwiftTUI 0.17.0 requires Swift Collections 1.7.2 or later; the lockfile therefor
 advances that transitive dependency from 1.6.0 to 1.7.2. The other direct pins and
 resolved dependencies remain unchanged by the follow-up pin below. It includes
 the measured-height list correction in [PR #47](https://github.com/SwiftTUI/swift-tui/pull/47),
-which merged after 0.17.0. New Chio row-density controls remain deferred.
+which merged after 0.17.0. New Chio row-density controls are in qualification;
+[Plan](../Plan.md#current-slice-list-row-spacing) records the active scope.
 
 Swift Markdown brings swift-cmark 0.9.0 built from source, without a separately
 installed library. Tree-sitter/Swift grammar are MIT-licensed C targets requiring
@@ -35,20 +36,28 @@ blocker is below. Ordinary glibc support does not establish static-musl distribu
 
 ## Merged layout corrections
 
-**Status:** On 2026-10-14, the user approved adopting the immutable upstream
+**Status:** Adopted on `main` through
+[PR #16](https://github.com/echoz/Chio/pull/16), merged on 2026-10-14 at
+`b79f0096fbc19872bd91cc887b03048e7e9d2a47`. The user approved the immutable upstream
 revision `bf9a697f2a5da4d0392730d0cba9e3ddcbbfa5d1` after Chio verification.
 This is the first upstream commit containing both #49 and #50. It also contains
 #47, PTY-test isolation and intervening benchmark/dead-code changes. The public
-API baseline and dependency graph are unchanged. SwiftTUI 0.17.0 remains the
-latest published release at this decision; the candidate is explicitly unreleased.
+API baseline and dependency graph are unchanged. This revision is not a published
+SwiftTUI release; 0.17.0 was the latest published release at this decision.
 
-The previous released pin has 16 retained disclosure/tree/compact-inbox failures.
-Adopting the owning native fixes preserves the original layout and interaction
-assertions without a Chio workaround. Upstream checks passed on the exact revision;
-Chio's full macOS/Linux, release and terminal gates remain separate requirements.
-The intermittent map, tab and appearance timeouts require their own evidence;
-this dependency change does not by itself establish their cause or resolution.
-[Verification](../Verification.md#merged-layout-corrections) records qualification.
+The complete macOS/Linux gate passes for the exact verified candidate and its
+identical merged tree, resolving all sixteen retained disclosure/tree/compact-inbox
+failures without a Chio layout workaround. The same slice fixes first-result
+focus publication and functional clock scheduling under CI reduced motion.
+Historical intermittent tab failures passed the final gate, but their cause
+remains unproved. [Verification](../Verification.md#merged-layout-corrections)
+records the outcomes and earlier failure evidence separately.
+
+**Published-release follow-up:** when a published SwiftTUI release contains these
+merged fixes, qualify its immutable revision in a focused dependency update with
+Chio's complete platform, terminal and engineering gates plus independent review.
+Retain the operational pin until that update is verified. No automatic monitoring
+or new Chio release is authorized by this follow-up.
 
 Applications with their own exact SwiftTUI requirement must align that revision
 with the Chio revision they adopt, then resolve and verify their own workflows.
