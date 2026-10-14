@@ -16,6 +16,11 @@ the dense background. `--outlines` removes area fills. `--endpoint none` and
 `--no-markers` isolate the line itself. The muted presentation is a local style
 override, not a new framework default. Both endpoint markers use current native
 map presentation; only the selected endpoint receives the larger yellow ring.
+The refined muted style uses luminous mint (`#7DFFF3`) on dark surfaces and dark
+teal (`#00606B`) on light surfaces. Major roads/coastlines retain 55% of their
+previous muted color difference from the canvas; area fills retain 45% of their
+original difference. Credits keep their existing text color and selected endpoints
+keep the theme's warning color. This does not add new semantic color roles.
 
 The street fixture is 84 vertices copied from 55 connected, retained OpenStreetMap
 road segments around Raffles Boulevard, Raffles Avenue and Bayfront Avenue.
@@ -88,3 +93,8 @@ baseline unchanged. Authenticated release metadata still resolves 0.1.4 to
 [conformance-maintenance deferral](../../Docs/Verification.md#deferred-014-adoption)
 remains. This spike does not qualify a checker upgrade, full CI, Linux, SSH or
 actual terminal-emulator font appearance. No live route was requested.
+
+After the requested stronger muting/brighter-route refinement, the macOS release
+build, all 14 capture cases and pinned engineering check pass again. The native
+before/after street rasters have identical dimensions and glyphs; only colors
+change. The earlier unchanged interaction/geometry evidence is reused, not rerun.

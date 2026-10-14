@@ -21,15 +21,33 @@ struct RouteReadabilityView {
         self.overlays = overlays
         self.scene = scene
         self.style = style
-        mapStyle = mutedRoads
-            ? style.replacing(colors: style.colors.replacing(foreground: style.colors.mutedText,
-                                                             secondaryText: style.colors.mutedText))
-            : style
+        if mutedRoads {
+            let surface = style.colors.surface
+            let surfaceBrightness = (surface.red + surface.green + surface.blue) / 3
+            let route = surfaceBrightness > 0.5 ? Color(hexRGB: 0x00606B) : Color(hexRGB: 0x7DFFF3)
+            let roads = Self.faded(style.colors.mutedText, toward: surface, keeping: 0.55)
+            mapStyle = style.replacing(
+                colors: style.colors.replacing(
+                    accent: route, foreground: roads, secondaryText: roads,
+                    selectedSurface: Self.faded(style.colors.selectedSurface, toward: surface, keeping: 0.45),
+                    border: Self.faded(style.colors.border, toward: surface, keeping: 0.55)),
+                map: style.map.replacing(
+                    water: Self.faded(style.map.water, toward: surface, keeping: 0.45),
+                    park: Self.faded(style.map.park, toward: surface, keeping: 0.45)))
+        } else {
+            mapStyle = style
+        }
         self.detail = detail
         _camera = State(wrappedValue: scene.camera)
         _selection = State(wrappedValue: selection)
         _showsFills = State(wrappedValue: fills)
         _showsLabels = State(wrappedValue: labels)
+    }
+
+    private static func faded(_ color: Color, toward surface: Color, keeping fraction: Double) -> Color {
+        Color(red: surface.red + (color.red - surface.red) * fraction,
+              green: surface.green + (color.green - surface.green) * fraction,
+              blue: surface.blue + (color.blue - surface.blue) * fraction)
     }
 }
 

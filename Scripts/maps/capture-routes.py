@@ -46,9 +46,16 @@ def main():
         if is_compact != (name == 'street-compact'):
             raise RuntimeError(f'{name}: unexpected drawing/fallback mode')
         if not is_compact:
-            route_color = cells[0][0]['foreground']
+            def rgb(color):
+                return tuple(round(color[channel] * 255) for channel in ('red', 'green', 'blue'))
+
+            if '--muted-roads' in options:
+                # Fixed spike palette: luminous mint on dark, contrasting teal on light.
+                route_color = (0, 96, 107) if 'light' in options else (125, 255, 243)
+            else:
+                route_color = rgb(cells[0][0]['foreground'])
             route_cells = [cell for row in cells for cell in row
-                           if '\u2801' <= cell['character'] <= '\u28ff' and cell['foreground'] == route_color]
+                           if '\u2801' <= cell['character'] <= '\u28ff' and rgb(cell['foreground']) == route_color]
             if len(route_cells) < 10:
                 raise RuntimeError(f'{name}: route is absent or unexpectedly short')
         if name == 'street-finish' and 'Finish' not in text:
