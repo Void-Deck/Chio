@@ -271,7 +271,7 @@ on Ubuntu 24.04 arm64 passed all 325 selected release tests, including that new
 framing regression. Real macOS PTY runs passed default/light/btop routing and
 the existing forward/reverse search workflow, including terminal restoration
 and diagnostic checks. The pinned SwiftRules check reported no new findings
-across 351 files, retaining 414 baseline entries.
+across 351 files, retaining 414 baseline findings.
 
 The refreshed preview images use the recorded terminal output and the vendored
 player. Inspection confirmed readable route contrast in all three themes and
@@ -287,13 +287,22 @@ No public routing endpoint or SSH terminal was exercised.
 The normal macOS gate at `bf39e2ff` reproduced exactly the 16 accepted SwiftTUI
 issues: three disclosure placements, three compact inbox allocations, nine tree
 layouts and one nested-tree interaction timeout. All 166 map/example tests pass
-locally. Hosted macOS [run 38503908021](https://github.com/echoz/Chio/actions/runs/38503908021)
-also reports five place-search timeouts and one tab-focus timeout. The new routing
-suites pass, but the six additional failures remain unclassified and block a
-claim of passing hosted verification. Hosted Linux failed before checkout when
-the image registry exceeded its download limit; that attempt provides no compiler
-or test evidence. Neither result invalidates or substitutes for the separate
-local platform evidence above.
+locally. The fresh hosted [run at `ed85b1e`](https://github.com/echoz/Chio/actions/runs/38506314063)
+reports only those 16 issues on macOS, with all 166 map tests passing. Linux
+reports the same 16 plus one place-search `nativeInteraction` timeout: the North
+Pole result appears, but native result-list focus does not arrive within the
+unchanged five-second wait. The new routing suites pass on both platforms.
+
+An earlier run had six additional macOS timeouts; none recurred there, while the
+same focus-wait context recurred on Linux. Six focused macOS repetitions also
+pass (three debug and three release). These are intermittent observations, not
+a demonstrated cause or fix. The next diagnostic boundary is actual semantic
+focus and runtime issues during the native TextField/List reopen workflow; no
+application polling or longer deadline has been introduced. The initial Linux
+image-registry failure was cleared; it supplies no test evidence. Both hosted
+scripts stop at their debug failures, so the separate local release and terminal
+results above remain distinct. [PR #14](https://github.com/echoz/Chio/pull/14)
+tracks current readiness; hosted verification is not claimed to pass.
 
 To record the search workflow, run the map probe with `--place-search --theme
 default --record .build/captures/maps-default.cast` and an explicit `--output-dir`.

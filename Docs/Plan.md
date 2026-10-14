@@ -239,10 +239,12 @@ The example remains fixture-backed by default and owns submission, cancellation,
 latest-pending replacement and stale-result rejection. No default live service,
 automatic rerouting, turn-by-turn navigation or renderer changes are included.
 Focused macOS/Linux checks and browser review pass; terminal captures are refreshed.
-Hosted verification has six additional timeouts to investigate beyond the known
-SwiftTUI failures, plus a Linux image-registry failure. Merge/deployment remain outstanding; see
+Hosted verification retains an intermittent place-search focus timeout on Linux
+beyond the known SwiftTUI failures. The fresh macOS map suite passes; the initial
+registry failure was cleared. Merge/deployment remain outstanding; see
 [verification evidence](Verification.md#running-checks). Known SwiftTUI 0.17.0
-failures and deferred SwiftRules adoption remain explicit. Provider downloads stay paused.
+failures remain explicit, and the separate SwiftRules upgrade awaits integration.
+Provider downloads stay paused.
 
 <a id="next-slice-offline-pack-acquisition"></a>
 
