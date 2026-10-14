@@ -7,7 +7,7 @@ and preservation of current contracts.
 
 ## Shared engineering rules
 
-This adoption candidate pins [EngineeringRules v0.1.4](https://github.com/echoz/EngineeringRules/releases/tag/v0.1.4)
+Chio pins [EngineeringRules v0.1.4](https://github.com/echoz/EngineeringRules/releases/tag/v0.1.4)
 (`fc3de546794e7e4b0429b0b03e282ac7218bde8b`) through
 [.swift-rules.json](../.swift-rules.json). This is a required local development
 gate alongside the compiler, tests and platform checks below. It is not a package
@@ -73,7 +73,9 @@ EngineeringRules is private. This local gate does not add credentials or a priva
 fetch to Chio's public CI or package build. Hosted lint requires a separate tool
 distribution/access decision; the public platform gate below remains required.
 
-### 0.1.4 adoption candidate
+<a id="014-adoption-candidate"></a>
+
+### 0.1.4 adoption
 
 On 2026-10-12, authenticated published release metadata resolved the stable target
 [EngineeringRules v0.1.4](https://github.com/echoz/EngineeringRules/releases/tag/v0.1.4)
@@ -105,8 +107,12 @@ passes all three themes. These are local fixture checks, not live-provider or
 SSH qualification; snapshots are inspection artifacts. No assertions, deadlines,
 dependency pins, test files or baseline entries changed.
 
-The complete gate is not green. This reviewed candidate retains the previously
-accepted native limitations and is not yet default-branch adoption.
+The complete gate is not green. The user approved adoption with these previously
+accepted native limitations. [PR #15](https://github.com/echoz/Chio/pull/15) merged
+on 2026-10-13 at `38fc258`, whose tree matches the reviewed `14edf069` candidate.
+Its [hosted macOS/Linux checks](https://github.com/echoz/Chio/actions/runs/38510440943)
+also report only the same 16 issues, with all 157 map tests passing. This records
+default-branch adoption of the tool, not a new Chio release or repaired native layouts.
 
 ## Running checks
 
@@ -303,6 +309,14 @@ image-registry failure was cleared; it supplies no test evidence. Both hosted
 scripts stop at their debug failures, so the separate local release and terminal
 results above remain distinct. [PR #14](https://github.com/echoz/Chio/pull/14)
 tracks current readiness; hosted verification is not claimed to pass.
+
+Routing was rebased onto the merged rules upgrade at `38fc258`. The overlapping
+attribution and HTTP conformance declarations retain their existing public and
+transport behavior. Independent integration review found no actionable issues;
+the rebased macOS compiler-backed gate passes across 351 Swift files with the
+same 414 baseline findings. Dependency pins, tests and visual assets are unchanged
+by the rebase. [PR #14](https://github.com/echoz/Chio/pull/14) records subsequent
+platform results; reorganization does not claim to repair the search-focus failure.
 
 To record the search workflow, run the map probe with `--place-search --theme
 default --record .build/captures/maps-default.cast` and an explicit `--output-dir`.

@@ -113,11 +113,11 @@ Run the [consumer gates](Verification.md), reporting known failures rather than
 weakening them. Publishing a compatibility revision is distinct from a versioned
 Chio release and from completed adoption by every consumer.
 
-SwiftRules 0.1.4 adoption is in a separate reviewed maintenance candidate. It corrects
-conformance placement/order and adds a repeatable compiler-backed witness check,
-preserving behavior, access and isolation with no baseline expansion. Compiler
-checks pass on macOS and Linux; application gates retain the accepted native
-failures. A candidate pin is not default-branch adoption.
+SwiftRules 0.1.4 was adopted on `main` through
+[PR #15](https://github.com/echoz/Chio/pull/15) at `38fc258`. It corrects conformance
+placement/order and adds a repeatable compiler-backed witness check, preserving
+behavior, access and isolation with no baseline expansion. Compiler checks pass
+on macOS and Linux; application gates retain the accepted native failures.
 [Verification](Verification.md#014-adoption-candidate) owns the procedure,
 platform evidence and remaining limits.
 
@@ -243,7 +243,9 @@ Hosted verification retains an intermittent place-search focus timeout on Linux
 beyond the known SwiftTUI failures. The fresh macOS map suite passes; the initial
 registry failure was cleared. Merge/deployment remain outstanding; see
 [verification evidence](Verification.md#running-checks). Known SwiftTUI 0.17.0
-failures remain explicit, and the separate SwiftRules upgrade awaits integration.
+failures remain explicit. Routing is rebased onto the merged SwiftRules upgrade;
+[PR #14](https://github.com/echoz/Chio/pull/14) tracks the integrated checks and
+the unresolved search-focus failure.
 Provider downloads stay paused.
 
 <a id="next-slice-offline-pack-acquisition"></a>
