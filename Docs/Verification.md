@@ -277,9 +277,23 @@ The refreshed preview images use the recorded terminal output and the vendored
 player. Inspection confirmed readable route contrast in all three themes and
 both endpoints inside the standard 100 × 30 frame. The unselected destination
 is intentionally muted; tight bends and same-cell color collisions remain
-terminal limitations. Site assembly passes. Final browser interaction review
-is pending because the verification Mac is locked; the updated showcase has not
-been deployed. No public routing endpoint or SSH terminal was exercised.
+terminal limitations. Site assembly passes. Safari inspection passed theme previews,
+matching commands/snippets, playback, pause, seeking, category navigation and
+browser history. The actual page also fits an embedded 390-pixel viewport;
+isolated script-free and missing-theme-image fixtures retain the preview,
+download and command fallbacks. The updated showcase has not been deployed.
+No public routing endpoint or SSH terminal was exercised.
+
+The normal macOS gate at `bf39e2ff` reproduced exactly the 16 accepted SwiftTUI
+issues: three disclosure placements, three compact inbox allocations, nine tree
+layouts and one nested-tree interaction timeout. All 166 map/example tests pass
+locally. Hosted macOS [run 38503908021](https://github.com/echoz/Chio/actions/runs/38503908021)
+also reports five place-search timeouts and one tab-focus timeout. The new routing
+suites pass, but the six additional failures remain unclassified and block a
+claim of passing hosted verification. Hosted Linux failed before checkout when
+the image registry exceeded its download limit; that attempt provides no compiler
+or test evidence. Neither result invalidates or substitutes for the separate
+local platform evidence above.
 
 To record the search workflow, run the map probe with `--place-search --theme
 default --record .build/captures/maps-default.cast` and an explicit `--output-dir`.
