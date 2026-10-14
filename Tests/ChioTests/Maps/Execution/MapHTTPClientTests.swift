@@ -53,6 +53,236 @@ struct MapHTTPClientTests {
         }
     }
 
+    @Test("Routing preserves HTTP 200 and 400 bodies while other resources still reject 400 before body admission")
+    func routingTransportStatuses() async throws {
+        try await withServer { server in
+            for (status, body) in [(200, #"{"code":"Ok"}"#), (400, #"{"code":"NoRoute"}"#)] {
+                let response = try await bounded("routing accepted status and body") {
+                    try await MapHTTPClient.fetchResponse(server.url("/routing-response?status=\(status)"),
+                        resource: .routing, userAgent: "Chio Routing Tests", timeout: 10)
+                }
+                #expect(response.statusCode == status)
+                #expect(response.data == Data(body.utf8))
+                #expect(response.headers["x-observed-accept"] == "application/json")
+                #expect(response.headers["x-observed-user-agent"] == "Chio Routing Tests")
+            }
+            for status in [201, 404, 429, 500] {
+                do {
+                    _ = try await bounded("routing rejected status") {
+                        try await MapHTTPClient.fetchResponse(server.url("/routing-response?status=\(status)"),
+                            resource: .routing, userAgent: "Tests", timeout: 10)
+                    }
+                    Issue.record("Routing accepted HTTP \(status)")
+                } catch MapHTTPClient.Failure.httpStatus(let actual, let retryAfter) {
+                    #expect(actual == status)
+                    #expect(retryAfter == "30")
+                }
+            }
+            let rejectedURL = server.url("/policy?status=400&mime=text/html&bytes=2097153")
+            do {
+                _ = try await bounded("geocoding rejects routing status") {
+                    try await MapHTTPClient.fetchResponse(rejectedURL, resource: .geocoding, userAgent: "Tests", timeout: 10)
+                }
+                Issue.record("Geocoding admitted HTTP 400")
+            } catch MapHTTPClient.Failure.httpStatus(let status, let retryAfter) {
+                #expect(status == 400)
+                #expect(retryAfter.isEmpty)
+            }
+            for resource in [MapHTTPClient.Resource.tile, .catalog] {
+                await #expect(throws: MapTileLoader.LoadingError.httpStatus(400)) {
+                    try await bounded("tile or catalog rejects routing status") {
+                        try await MapHTTPClient.fetch(rejectedURL, resource: resource)
+                    }
+                }
+            }
+        }
+    }
+
+    @Test("Routing requires explicit JSON and bounds HTTP 200 and 400 decompressed bodies at two MiB")
+    func routingTransportBoundsAndMIME() async throws {
+        try await withServer { server in
+            for status in [200, 400] {
+                for mime in ["application/json", "APPLICATION/JSON", "application/json;charset=utf-8"] {
+                    let response = try await bounded("routing accepted JSON MIME") {
+                        try await MapHTTPClient.fetchResponse(server.url("/policy?status=\(status)&mime=\(mime)&bytes=0"),
+                            resource: .routing, userAgent: "Tests", timeout: 10)
+                    }
+                    #expect(response.statusCode == status)
+                    #expect(response.data.isEmpty)
+                }
+                for mime in ["application/geo+json", "text/json", "text/html", "application/octet-stream",
+                             "", "   ", "\"application/json\"", "application/json, text/html"] {
+                    var components = URLComponents(url: server.url("/policy"), resolvingAgainstBaseURL: false)!
+                    components.queryItems = [URLQueryItem(name: "status", value: String(status)),
+                                             URLQueryItem(name: "mime", value: mime), URLQueryItem(name: "bytes", value: "0")]
+                    components.percentEncodedQuery = components.percentEncodedQuery?.replacingOccurrences(of: "+", with: "%2B")
+                    let url = components.url!
+                    do {
+                        _ = try await bounded("routing rejected JSON MIME") {
+                            try await MapHTTPClient.fetchResponse(url, resource: .routing, userAgent: "Tests", timeout: 10)
+                        }
+                        Issue.record("Routing accepted invalid explicit Content-Type")
+                    } catch MapHTTPClient.Failure.unexpectedContentType { }
+                }
+                do {
+                    _ = try await bounded("routing requires explicit MIME") {
+                        try await MapHTTPClient.fetchResponse(server.url("/policy.json?status=\(status)&bytes=0"),
+                            resource: .routing, userAgent: "Tests", timeout: 10)
+                    }
+                    Issue.record("Routing accepted inferred JSON MIME without Content-Type")
+                } catch MapHTTPClient.Failure.unexpectedContentType { }
+                let exact = try await bounded("routing exact byte limit") {
+                    try await MapHTTPClient.fetchResponse(server.url("/policy?status=\(status)&mime=application/json&bytes=2097152"),
+                        resource: .routing, userAgent: "Tests", timeout: 10)
+                }
+                #expect(exact.statusCode == status)
+                #expect(exact.data.count == 2_097_152)
+                for path in ["/policy?mime=application/json&bytes=2097153&status=\(status)",
+                             "/routing-gzip?status=\(status)", "/routing-stream?status=\(status)"] {
+                    let acknowledgments = Mutex(0)
+                    do {
+                        _ = try await bounded("routing decompressed byte overflow") {
+                            try await MapHTTPClient.fetchResponse(server.url(path), resource: .routing, userAgent: "Tests", timeout: 10,
+                                onTerminalAcknowledgement: { acknowledgments.withLock { $0 += 1 } })
+                        }
+                        Issue.record("Routing admitted oversized HTTP \(status) data")
+                    } catch MapHTTPClient.Failure.responseTooLarge { }
+                    #expect(acknowledgments.withLock { $0 } == 1)
+                }
+            }
+        }
+    }
+
+    @Test("An accepted routing HTTP 400 body retains the transfer deadline and terminal acknowledgement")
+    func routingTransportDeadline() async throws {
+        try await withServer { server in
+            let acknowledgments = Mutex(0)
+            do {
+                _ = try await bounded("routing HTTP 400 body deadline") {
+                    try await MapHTTPClient.fetchResponse(server.url("/routing-deadline"), resource: .routing,
+                        userAgent: "Tests", timeout: 0.25,
+                        onTerminalAcknowledgement: { acknowledgments.withLock { $0 += 1 } })
+                }
+                Issue.record("Routing HTTP 400 body exceeded its transfer deadline")
+            } catch let error as URLError { #expect(error.code == .timedOut) }
+            #expect(acknowledgments.withLock { $0 } == 1)
+        }
+    }
+
+    @Test("The OSRM client submits ordered longitude-latitude endpoints and fixed options, retaining snapped geometry and credits")
+    func osrmLoopbackRoute() async throws {
+        try await withServer { server in
+            let attributions = try routingAttributions()
+            let router = try OSRMRouter(endpoint: server.url("/osrm-ok/route/v1/driving"),
+                                        userAgent: "Chio Routing Tests", attributions: attributions)
+            let response = try await bounded("OSRM route request and response") { try await router.route(routingRequest()) }
+            let route = try #require(response.route)
+            #expect(route.path.coordinates.map(\.longitude) == [103.751, 103.8, 103.849])
+            #expect(route.path.coordinates.map(\.latitude) == [1.251, 1.29, 1.349])
+            #expect(route.distanceMeters == 1_234.5)
+            #expect(route.durationSeconds == 321.25)
+            #expect(response.attributions.map(\.text) == ["Fixture routing service", "Fixture road data"])
+            #expect(response.attributions.map { $0.link.absoluteString } == ["https://example.test/router", "https://example.test/roads"])
+            let observed = try await MapHTTPClient.fetch(server.url("/osrm-observed"), resource: .catalog)
+            let requests = try JSONDecoder().decode([[String: String]].self, from: observed.data)
+            #expect(requests == [[
+                "path": "/osrm-ok/route/v1/driving/103.75,1.25;103.85,1.35",
+                "query": "alternatives=false&annotations=false&generate_hints=false&geometries=geojson&overview=full&skip_waypoints=true&steps=false",
+                "userAgent": "Chio Routing Tests", "accept": "application/json"
+            ]])
+        }
+    }
+
+    @Test("The OSRM client distinguishes no route, snapping and provider rejection from malformed or inconsistent responses")
+    func osrmLoopbackFailures() async throws {
+        try await withServer { server in
+            let attributions = try routingAttributions()
+            let request = try routingRequest()
+            let noRoute = try OSRMRouter(endpoint: server.url("/osrm-no-route/route/v1/driving"),
+                                         userAgent: "Chio Routing Tests", attributions: attributions)
+            let empty = try await bounded("OSRM HTTP 400 no route") { try await noRoute.route(request) }
+            #expect(empty.route == nil)
+            #expect(empty.attributions == attributions)
+            let noSegment = try OSRMRouter(endpoint: server.url("/osrm-no-segment/route/v1/driving"),
+                                           userAgent: "Chio Routing Tests", attributions: attributions)
+            do {
+                _ = try await bounded("OSRM cannot snap") { try await noSegment.route(request) }
+                Issue.record("OSRM NoSegment became a route response")
+            } catch OSRMRouter.RouteError.cannotSnap { }
+            let invalidQuery = try OSRMRouter(endpoint: server.url("/osrm-invalid-query/route/v1/driving"),
+                                              userAgent: "Chio Routing Tests", attributions: attributions)
+            do {
+                _ = try await bounded("OSRM rejected request") { try await invalidQuery.route(request) }
+                Issue.record("OSRM InvalidQuery became a route response")
+            } catch OSRMRouter.RouteError.rejectedRequest(let code) { #expect(code == "InvalidQuery") }
+            for mode in ["malformed", "bad-geometry"] {
+                let router = try OSRMRouter(endpoint: server.url("/osrm-\(mode)/route/v1/driving"),
+                                            userAgent: "Chio Routing Tests", attributions: attributions)
+                do {
+                    _ = try await bounded("OSRM invalid data") { try await router.route(request) }
+                    Issue.record("OSRM malformed body or geometry became a route response")
+                } catch OSRMRouter.RouteError.invalidData { }
+            }
+            for mode in ["wrong-status", "ok-error"] {
+                let router = try OSRMRouter(endpoint: server.url("/osrm-\(mode)/route/v1/driving"),
+                                            userAgent: "Chio Routing Tests", attributions: attributions)
+                do {
+                    _ = try await bounded("OSRM inconsistent status and code") { try await router.route(request) }
+                    Issue.record("OSRM inconsistent status and code became a route response")
+                } catch OSRMRouter.RouteError.invalidResponse { }
+            }
+            let throttled = try OSRMRouter(endpoint: server.url("/osrm-throttled/route/v1/driving"),
+                                           userAgent: "Chio Routing Tests", attributions: attributions)
+            do {
+                _ = try await bounded("OSRM HTTP rejection metadata") { try await throttled.route(request) }
+                Issue.record("OSRM HTTP 429 became a route response")
+            } catch OSRMRouter.RouteError.httpStatus(let status, let retryAfter) {
+                #expect(status == 429)
+                #expect(retryAfter == "30")
+            }
+        }
+    }
+
+    @Test("The OSRM client acknowledges in-flight cancellation and enforces its public ten-second deadline")
+    func osrmLoopbackCancellationAndDeadline() async throws {
+        try await withServer { server in
+            let attributions = try routingAttributions()
+            let request = try routingRequest()
+            let slow = try OSRMRouter(endpoint: server.url("/osrm-slow/route/v1/driving"),
+                                      userAgent: "Chio Routing Tests", attributions: attributions)
+            let pending = Task { try await slow.route(request) }
+            defer { pending.cancel() }
+            try await bounded("OSRM transfer entered") {
+                while true {
+                    let response = try await MapHTTPClient.fetch(server.url("/started"), resource: .catalog)
+                    if String(decoding: response.data, as: UTF8.self) == "true" { return }
+                    try await Task.sleep(for: .milliseconds(10))
+                }
+            }
+            pending.cancel()
+            do {
+                _ = try await bounded("OSRM cancellation acknowledgement") { try await pending.value }
+                Issue.record("Cancelled OSRM request succeeded")
+            } catch OSRMRouter.RouteError.cancelled { }
+            let deadline = try OSRMRouter(endpoint: server.url("/osrm-deadline/route/v1/driving"),
+                                          userAgent: "Chio Routing Tests", attributions: attributions)
+            do {
+                _ = try await bounded("OSRM public ten-second deadline", timeout: .seconds(11)) { try await deadline.route(request) }
+                Issue.record("OSRM request exceeded its public ten-second deadline")
+            } catch OSRMRouter.RouteError.deadlineExceeded { }
+        }
+    }
+
+    private func routingRequest() throws -> MapRouteRequest {
+        try MapRouteRequest(origin: MapCoordinate(latitude: 1.25, longitude: 103.75),
+                            destination: MapCoordinate(latitude: 1.35, longitude: 103.85))
+    }
+
+    private func routingAttributions() throws -> [MapAttribution] {
+        try [MapAttribution(text: "Fixture routing service", link: URL(string: "https://example.test/router")!),
+             MapAttribution(text: "Fixture road data", link: URL(string: "https://example.test/roads")!)]
+    }
+
     @Test("Photon sends submitted text and identity, preserves order, and distinguishes empty matches")
     func photonSearch() async throws {
         try await withServer { server in
@@ -443,10 +673,11 @@ struct MapHTTPClientTests {
         await server.stop()
     }
 
-    private func bounded<T: Sendable>(_ phase: String, _ operation: @escaping @Sendable () async throws -> T) async throws -> T {
+    private func bounded<T: Sendable>(_ phase: String, timeout: Duration = .seconds(5),
+                                     _ operation: @escaping @Sendable () async throws -> T) async throws -> T {
         try await withThrowingTaskGroup(of: T.self) { group in
             group.addTask(operation: operation)
-            group.addTask { try await Task.sleep(for: .seconds(5)); throw WaitError.timeout(phase) }
+            group.addTask { try await Task.sleep(for: timeout); throw WaitError.timeout(phase) }
             defer { group.cancelAll() }
             return try await group.next()!
         }
@@ -620,12 +851,77 @@ import gzip, http.server, json, socketserver, threading, time, urllib.parse
 print('fixture: imports complete', file=sys.stderr, flush=True)
 started = threading.Event()
 redirect_hops = []
+osrm_requests = []
 class Handler(http.server.BaseHTTPRequestHandler):
     def log_message(self, *args): pass
     def do_GET(self):
         path = self.path
         route = urllib.parse.urlsplit(path).path
         query = urllib.parse.parse_qs(urllib.parse.urlsplit(path).query)
+        if route == '/osrm-observed':
+            body = json.dumps(osrm_requests).encode()
+            self.send_response(200); self.send_header('Content-Type','application/json')
+            self.send_header('Content-Length',str(len(body))); self.end_headers(); self.wfile.write(body); return
+        if route.startswith('/osrm-'):
+            decoded_path = urllib.parse.unquote(route)
+            parts = decoded_path.split('/', 2)
+            mode = parts[1][len('osrm-'):]
+            expected_query = {'geometries':['geojson'], 'overview':['full'], 'alternatives':['false'],
+                              'steps':['false'], 'annotations':['false'], 'generate_hints':['false'], 'skip_waypoints':['true']}
+            osrm_requests.append({'path':decoded_path,
+                                  'query':urllib.parse.urlencode(sorted((key, value[0]) for key, value in query.items())),
+                                  'userAgent':self.headers.get('User-Agent',''), 'accept':self.headers.get('Accept','')})
+            has_expected_path = len(parts) == 3 and parts[2] == 'route/v1/driving/103.75,1.25;103.85,1.35'
+            has_expected_headers = self.headers.get('User-Agent') == 'Chio Routing Tests' and self.headers.get('Accept') == 'application/json'
+            if not (has_expected_path and query == expected_query and has_expected_headers): mode = 'invalid-query'
+            geometry = {'type':'LineString', 'coordinates':[[103.751,1.251],[103.8,1.29],[103.849,1.349]]}
+            document = {'code':'Ok', 'routes':[{'geometry':geometry, 'distance':1234.5, 'duration':321.25}]}
+            status = 200
+            if mode == 'no-route': status = 400; document = {'code':'NoRoute'}
+            elif mode == 'no-segment': status = 400; document = {'code':'NoSegment'}
+            elif mode == 'invalid-query': status = 400; document = {'code':'InvalidQuery'}
+            elif mode == 'malformed': status = 400
+            elif mode == 'bad-geometry': document['routes'][0]['geometry'] = {'type':'Point', 'coordinates':[103.751,1.251]}
+            elif mode == 'wrong-status': document = {'code':'NoRoute'}
+            elif mode == 'ok-error': status = 400
+            elif mode == 'throttled': status = 429; document = {'code':'TooManyRequests'}
+            body = b'not json' if mode == 'malformed' else json.dumps(document).encode()
+            self.send_response(status); self.send_header('Content-Type','application/json')
+            if mode == 'throttled': self.send_header('Retry-After','30')
+            self.send_header('Content-Length',str(len(body))); self.end_headers()
+            if mode == 'slow': started.set(); time.sleep(4)
+            if mode == 'deadline': time.sleep(12)
+            try: self.wfile.write(body)
+            except (BrokenPipeError, ConnectionResetError): pass
+            return
+        if route == '/routing-response':
+            status = int(query.get('status', ['200'])[0])
+            body = b'{"code":"Ok"}' if status == 200 else b'{"code":"NoRoute"}'
+            self.send_response(status); self.send_header('Content-Type','application/json')
+            self.send_header('Retry-After','30')
+            self.send_header('X-Observed-Accept', self.headers.get('Accept', ''))
+            self.send_header('X-Observed-User-Agent', self.headers.get('User-Agent', ''))
+            self.send_header('Content-Length',str(len(body))); self.end_headers(); self.wfile.write(body); return
+        if route == '/routing-deadline':
+            body = b'{"code":"NoRoute"}'
+            self.send_response(400); self.send_header('Content-Type','application/json')
+            self.send_header('Content-Length',str(len(body))); self.end_headers(); time.sleep(2)
+            try: self.wfile.write(body)
+            except (BrokenPipeError, ConnectionResetError): pass
+            return
+        if route == '/routing-gzip':
+            body = gzip.compress(b' ' * (2*1024*1024+1))
+            self.send_response(int(query.get('status', ['200'])[0]))
+            self.send_header('Content-Type','application/json'); self.send_header('Content-Encoding','gzip')
+            self.send_header('Content-Length',str(len(body))); self.end_headers(); self.wfile.write(body); return
+        if route == '/routing-stream':
+            self.send_response(int(query.get('status', ['200'])[0]))
+            self.send_header('Content-Type','application/json'); self.send_header('Transfer-Encoding','chunked'); self.end_headers()
+            try:
+                for i in range(33): self.wfile.write(b'10000\r\n' + b'x'*65536 + b'\r\n'); self.wfile.flush()
+                self.wfile.write(b'0\r\n\r\n')
+            except (BrokenPipeError, ConnectionResetError): pass
+            return
         if route == '/redirect-hops':
             body = json.dumps(redirect_hops).encode()
             self.send_response(200); self.send_header('Content-Type','application/json')
@@ -690,10 +986,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 self.wfile.write(b'0\r\n\r\n')
             except (BrokenPipeError, ConnectionResetError): pass
             return
-        if path.startswith('/policy?'):
+        if route in ('/policy', '/policy.json'):
             query = urllib.parse.parse_qs(urllib.parse.urlsplit(path).query, keep_blank_values=True)
             size = int(query['bytes'][0])
-            self.send_response(200)
+            self.send_response(int(query.get('status', ['200'])[0]))
             if 'mime' in query: self.send_header('Content-Type', query['mime'][0])
             self.send_header('X-Observed-Accept', self.headers.get('Accept', ''))
             self.send_header('X-Observed-User-Agent', self.headers.get('User-Agent', ''))

@@ -133,3 +133,14 @@ snapshots must update fixture hashes and source metadata after verification.
 [OnlineTiles/Provenance.md](OnlineTiles/Provenance.md) records the small adjacent
 tile extract used by the local HTTP replay. Its separate manifest pins the actual
 retained bytes; a dated provider URL alone does not establish immutability.
+
+## Routing demonstration
+
+`road-trace.json` is copied unchanged from `Spikes/MapRouting/Fixtures/road-trace.json`.
+Its 84 vertices trace 55 connected retained OpenStreetMap road segments around
+Raffles Boulevard, Raffles Avenue and Bayfront Avenue in the Singapore extract.
+This is a synthetic road trace, not a calculated or validated driving/walking
+route. Direction, access, turn restrictions and snapping have not been checked.
+Distance and duration are intentionally unknown. The fixture provider answers
+only the fixed demonstration request, and reports no route for other requests.
+OpenStreetMap attribution and ODbL 1.0 provenance follow the Singapore source documented above.

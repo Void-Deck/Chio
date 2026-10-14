@@ -211,6 +211,38 @@ Live search does not enable online tiles; add `--online` separately if wanted.
 Offline geography still reports its limited coverage when opening a result
 outside the bundled area. [Place-search API](Usage.md#place-search).
 
+### Routing
+
+Run the offline route demo, with the approved muted geography and bright path:
+
+```sh
+swift run -c release chio-maps --map street --route-demo
+```
+
+`g` requests the fixed demo route again. `1` sets the map centre as the requested
+start; pan or open a search result, then `2` requests a route to the new centre.
+`x` clears or cancels it. Panning, typing and changing theme do not submit work.
+The offline provider only recognizes the demo pair; other requests return an
+attributed no-route response. Its path traces retained road segments and is
+**synthetic**, with no validated travel mode, restrictions or invented estimates.
+
+For a live OSRM service you operate or have permission to use, supply the complete
+route prefix explicitly:
+
+```sh
+swift run -c release chio-maps --map street \
+  --router-endpoint https://routing.example/route/v1/driving
+```
+
+Replace that illustrative hostname with your endpoint. This example supplies
+OSRM/OpenStreetMap credits; applications configure credits for their own service.
+The server's prepared graph determines travel mode. Live routing does not enable
+tiles or geocoding, and offline snapshot/recording modes reject live endpoints.
+Requested points are shown separately from the routed line's snapped endpoints.
+Small switchbacks may visually merge; this is an overview, not turn instructions.
+[Provider API and limits](Usage.md#routing).
+
+
 ## Dashboard
 
 Use Swift 6.4 or later on macOS 15 or later, matching the pinned upstream requirements:

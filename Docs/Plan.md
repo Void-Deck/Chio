@@ -125,8 +125,8 @@ platform evidence and remaining limits.
 
 **Status:** Scope approved on 2026-10-09. Persistent caching is implemented;
 programmatic local packs are implemented.
-Forward and reverse geocoding are merged; routing starts with an isolated
-readability spike and provider downloads remain paused. The following order keeps
+Forward and reverse geocoding are merged; the approved routing service slice is
+in progress after its readability spike. Provider downloads remain paused. The following order keeps
 one testable slice at a time; current contracts live in the owning decisions.
 
 The preceding robustness slice fixes the two reproduced audit defects:
@@ -228,27 +228,20 @@ matching theme commands and the new API link. Existing unaffected mobile/fallbac
 evidence is reused; no fresh mobile browser run is claimed. No tile acquisition or
 routing is added by those geocoding changes.
 
-### Current slice: routing readability
+### Current slice: submitted routing
 
-The user approved trying routing on 2026-10-13, with route legibility as the first
-risk to resolve. The isolated [spike](../Spikes/MapRouting/README.md) uses public
-`MapView` and its existing route/marker drawing. It compares unchanged geometry,
-camera and allocation with ordinary and muted map styles, then exercises dense
-backgrounds, outlines, narrow sizes, switchbacks and self-crossings. No public
-API or renderer change is implied by the experiment.
+**Status:** The muted-map, bright-route visual treatment is approved. The first
+service slice is implemented as a candidate: an explicit OSRM endpoint, checked two-point route
+requests and attributed geometry/estimates, composed through existing overlays.
+[Routing](Decisions/Routing.md) owns the API, limits and example behavior.
 
-Local native captures show that muted geography helps the route stand out; tight
-switchbacks, self-crossing direction and subtle unselected endpoints remain
-explicit limits. The spike README owns its fixture provenance and bounded macOS
-verification. These findings do not establish a navigation display or a shipped
-routing service; production presentation choices remain open.
-
-The next service design pass must settle endpoint/profile selection, snapping,
-required attribution, finite geometry and metadata, no-route versus failure,
-and cancellation before implementing a provider. OSRM is a candidate from its
-[documented API](https://project-osrm.org/docs/v5.24.0/api/), not a chosen public
-endpoint. Its HTTP 400 provider codes need bounded response-body handling without
-weakening the existing tile/geocoder HTTP contracts. Downloads remain paused.
+The example remains fixture-backed by default and owns submission, cancellation,
+latest-pending replacement and stale-result rejection. No default live service,
+automatic rerouting, turn-by-turn navigation or renderer changes are included.
+Focused macOS/Linux checks pass and terminal captures are refreshed. Browser
+review, the hosted gates and merge/deployment remain outstanding; see
+[verification evidence](Verification.md#running-checks). Known SwiftTUI 0.17.0
+failures and deferred SwiftRules adoption remain explicit. Provider downloads stay paused.
 
 <a id="next-slice-offline-pack-acquisition"></a>
 
@@ -286,9 +279,10 @@ Resumable preparation and combined pack/network fallback remain separate decisio
   revision string alone does not establish immutable bytes or an atomic snapshot.
   Choose pack format, schema/versioning and migration behavior during storage design;
   PMTiles/MBTiles support is not decided by approving downloadable packs.
-- Photon is the first explicit geocoding adapter. Choose the first routing provider
-  after evaluating its actual contracts, terms, attribution, rate limits and
-  static-Linux dependency impact.
+- Photon is the first explicit geocoding adapter; OSRM is the first routing
+  adapter. Applications supply their service endpoints and credits. No public
+  service is enabled by default; permission, quotas and privacy depend on the
+  selected operator. Neither adapter adds a dependency.
   Keep tile, geocoding and routing capabilities independently replaceable; changing
   a provider must not redefine visual detail. Provider credentials, when needed,
   are explicitly supplied by the application; no credential store is implied.
@@ -328,7 +322,7 @@ filters, extensible upstream/raw-input switches, native wrappers and private
 nested conformances retain their documented roles.
 
 The map expansion above remains approved. Provider archive acquisition remains
-paused at the user's request; place search is the current implementation slice.
+paused at the user's request; submitted routing is the current implementation slice.
 Real application use of the public map
 remains useful validation. Other component additions and a
 new stable release remain possible directions, not delivery promises.

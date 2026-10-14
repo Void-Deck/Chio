@@ -1,5 +1,3 @@
-import Foundation
-
 /// Provider-ranked observations and the credits required even when there are no matches.
 public struct MapPlaceMatches {
     public let places: [MapPlace]
@@ -12,28 +10,8 @@ public struct MapPlaceMatches {
         self.attributions = attributions
     }
 
-    public struct Attribution {
-        public let text: String
-        public let link: URL
-
-        public init(text: String, link: URL) throws(ValidationError) {
-            let hasVisibleText = !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            let isWithinTextLimit = text.utf8.count <= 1_024
-            let hasNoControls = !text.unicodeScalars.contains(where: { CharacterSet.controlCharacters.contains($0) })
-            guard hasVisibleText, isWithinTextLimit, hasNoControls else { throw .invalidText }
-            let hasSupportedScheme = ["http", "https"].contains(link.scheme?.lowercased() ?? "")
-            let hasHost = !(link.host ?? "").isEmpty
-            let hasNoCredentials = link.user == nil && link.password == nil
-            let isWithinURLLimit = link.absoluteString.utf8.count <= 2_048
-            let isAbsolute = link.baseURL == nil
-            guard hasSupportedScheme, hasHost, hasNoCredentials, isWithinURLLimit, isAbsolute
-            else { throw .invalidLink }
-            self.text = text
-            self.link = link
-        }
-
-        public enum ValidationError { case invalidText, invalidLink }
-    }
+    /// Retains the original public spelling while sharing checked credits with routing.
+    public typealias Attribution = MapAttribution
 
     public enum ValidationError { case tooManyPlaces, invalidAttributionCount }
 }
@@ -62,23 +40,6 @@ extension MapPlaceMatches: Codable {
 extension MapPlaceMatches: Hashable {}
 extension MapPlaceMatches: Sendable {}
 
-extension MapPlaceMatches.Attribution: Codable {
-    private enum CodingKeys: String, CodingKey { case text, link }
-
-    public init(from decoder: any Decoder) throws {
-        let values = try decoder.container(keyedBy: CodingKeys.self)
-        try self.init(text: values.decode(String.self, forKey: .text),
-                      link: values.decode(URL.self, forKey: .link))
-    }
-}
-
-extension MapPlaceMatches.Attribution: Hashable {}
-extension MapPlaceMatches.Attribution: Sendable {}
-
 extension MapPlaceMatches.ValidationError: Equatable {}
 extension MapPlaceMatches.ValidationError: Error {}
 extension MapPlaceMatches.ValidationError: Sendable {}
-
-extension MapPlaceMatches.Attribution.ValidationError: Equatable {}
-extension MapPlaceMatches.Attribution.ValidationError: Error {}
-extension MapPlaceMatches.Attribution.ValidationError: Sendable {}

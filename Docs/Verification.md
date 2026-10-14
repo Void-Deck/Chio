@@ -245,6 +245,42 @@ and compact focus recovery. Reverse endpoint configuration must not enable
 forward search or tiles. The same fixture-only PTY workflow records centre lookup
 alongside forward search; no public provider is used by tests or captures.
 
+Routing adds checked two-point requests, finite optional estimates, attributed
+no-route responses and source/wire-compatible shared credits. OSRM decoding checks
+ordered longitude/latitude, exact one-route admission, full geometry bounds and
+status/code consistency. Real loopback tests exercise 200/400 body handling,
+unchanged Photon/tile rejection, decompressed limits, MIME, cancellation and the
+ten-second deadline. Controlled routing providers cover latest-pending replacement,
+acknowledgement and stale publication; native tests cover explicit keys, retained
+credits, search coexistence and resize. Run the routing PTY workflow with:
+
+```sh
+python3 Scripts/maps/terminal-probe.py .build/release/chio-maps --routing \
+  --record .build/routing/maps-default.cast --output-dir .build/routing/default
+```
+
+Repeat with `--theme light` and `--theme btop`. Render their `-initial.cast` files
+with the shared player renderer and inspect the complete recordings before
+replacing public assets. These fixtures do not prove live route correctness.
+Known SwiftTUI failures and the deferred checker upgrade still apply.
+
+The 2026-10-13 routing candidate passed 324 selected map/Photon/OSRM tests in
+release on macOS. After the final framing and decoder-boundary correction,
+20 affected tests passed again in both debug and release. Linux Swift 6.4.0
+on Ubuntu 24.04 arm64 passed all 325 selected release tests, including that new
+framing regression. Real macOS PTY runs passed default/light/btop routing and
+the existing forward/reverse search workflow, including terminal restoration
+and diagnostic checks. The pinned SwiftRules check reported no new findings
+across 351 files, retaining 414 baseline entries.
+
+The refreshed preview images use the recorded terminal output and the vendored
+player. Inspection confirmed readable route contrast in all three themes and
+both endpoints inside the standard 100 × 30 frame. The unselected destination
+is intentionally muted; tight bends and same-cell color collisions remain
+terminal limitations. Site assembly passes. Final browser interaction review
+is pending because the verification Mac is locked; the updated showcase has not
+been deployed. No public routing endpoint or SSH terminal was exercised.
+
 To record the search workflow, run the map probe with `--place-search --theme
 default --record .build/captures/maps-default.cast` and an explicit `--output-dir`.
 It also saves `maps-default-initial.cast` from the actual submitted-results frame.

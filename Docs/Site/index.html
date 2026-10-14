@@ -91,13 +91,13 @@
             <p id="maps-preview-status" class="preview-status" role="status"></p>
           </div>
           <div class="recording-preview">
-            <img class="recording-image" src="recordings/maps.png" alt="Singapore street geography with submitted place-search results, native selection and attributed location markers.">
+            <img class="recording-image" src="recordings/maps.png" alt="Singapore street geography muted behind a bright route, with explicit requests and attributed route endpoints.">
           </div>
           <div class="player" aria-label="Maps recording"></div>
           <p class="player-message" role="status" hidden></p>
           <div class="recording-caption">
-            <p>The recording searches synthetic local places over bundled Singapore geography, then looks up the map centre and opens a result as a marker without changing zoom. Search, selection, camera movement and retained attribution are composed by the example. <a href="https://github.com/echoz/Chio/blob/main/Docs/Examples.md#place-search">Search workflow and live endpoint</a>.</p>
-            <p>The command below stays offline. Add <code>--online</code> for OpenFreeMap tiles, an explicit <code>--geocoder-endpoint</code> for Photon search, or <code>--reverse-geocoder-endpoint</code> for centre lookup; each is independent. A writable raw-tile cache and immutable offline packs remain available.</p>
+            <p>The recording requests a synthetic road trace over bundled Singapore geography, pans and zooms, then tries a different request with no route. Muted geography keeps the bright path readable. The example owns requests, cancellation and credits; MapView paints the accepted overlays. <a href="https://github.com/echoz/Chio/blob/main/Docs/Examples.md#routing">Routing workflow and explicit endpoint</a>.</p>
+            <p>The command below stays offline. Add <code>--online</code> for OpenFreeMap tiles, an explicit <code>--geocoder-endpoint</code> for Photon search, <code>--reverse-geocoder-endpoint</code> for centre lookup, or <code>--router-endpoint</code> for an OSRM route service; each is independent. A writable raw-tile cache and immutable offline packs remain available.</p>
             <a class="download" href="recordings/maps.cast" download>Download recording ↓</a>
           </div>
           <div class="recording-run">
@@ -105,9 +105,9 @@
               <h4>Try this example</h4>
               <a href="https://github.com/echoz/Chio/blob/main/Docs/Usage.md#maps">Map API and usage <span aria-hidden="true">↗</span></a>
             </div>
-            <pre><code>swift run -c release chio-maps --map street</code></pre>
+            <pre><code>swift run -c release chio-maps --map street --route-demo</code></pre>
             <p>For an offline world pack, run <code>swift run -c release chio-maps --write-tile-pack .build/world.chiomap</code> once, then <code>swift run -c release chio-maps --tile-pack .build/world.chiomap</code>. This uses bundled coarse world tiles and the <a href="https://github.com/echoz/Chio/blob/main/Docs/Usage.md#offline-tile-packs">programmatic pack API</a>; it does not download street data.</p>
-            <p>/ opens place search · c looks up the map centre (Ctrl-L inside search) · Return submits, then opens a selected match · Esc returns to the map · Arrow keys pan · + / − zoom · e retries online acquisition · n / p select and center a location · Return activates · Tab moves native focus · [ / ] lower/raise detail · d cycles levels · Space switches world/street · t changes theme · f switches outlines/fills · l toggles labels · r resets · q quits. Minimal is the default; use <code>--detail silhouette</code>, <code>abstract</code> or <code>source</code> to start elsewhere.</p>
+            <p>g requests the demo route · 1 sets a start at the map centre · 2 routes to the current centre · x clears routing · / opens place search · c looks up the map centre (Ctrl-L inside search) · Return submits, then opens a selected match · Esc returns to the map · Arrow keys pan · + / − zoom · e retries online acquisition · n / p select and center a location · Return activates · Tab moves native focus · [ / ] lower/raise detail · d cycles levels · Space switches world/street · t changes theme · f switches outlines/fills · l toggles labels · r resets · q quits. Minimal is the default; use <code>--detail silhouette</code>, <code>abstract</code> or <code>source</code> to start elsewhere.</p>
           </div>
           <div class="api-example">
             <h4>Use in your view</h4>
@@ -120,10 +120,10 @@
     .style(.default)</code></pre>
           </div>
           <p class="component-options"><strong>Presentation options.</strong> Detail: minimal, silhouette, abstract or source. Fills or outlines and labels are separate options; source zoom chooses input resolution, while theme chooses paint.</p>
-          <p class="supporting-apis"><strong>Map data adapters.</strong> <a href="https://github.com/echoz/Chio/blob/main/Docs/Usage.md#online-vectors">MapTileLoader</a> · <a href="https://github.com/echoz/Chio/blob/main/Docs/Usage.md#online-vectors">MapTileCache</a> · <a href="https://github.com/echoz/Chio/blob/main/Docs/Usage.md#offline-tile-packs">MapTilePack</a> · <a href="https://github.com/echoz/Chio/blob/main/Docs/Usage.md#place-search">MapGeocodingProvider / PhotonGeocoder</a> · <a href="https://github.com/echoz/Chio/blob/main/Docs/Usage.md#reverse-lookup">MapReverseGeocodingProvider / PhotonReverseGeocoder</a> — explicit, application-owned opt-ins beside the view.</p>
+          <p class="supporting-apis"><strong>Map data adapters.</strong> <a href="https://github.com/echoz/Chio/blob/main/Docs/Usage.md#online-vectors">MapTileLoader</a> · <a href="https://github.com/echoz/Chio/blob/main/Docs/Usage.md#online-vectors">MapTileCache</a> · <a href="https://github.com/echoz/Chio/blob/main/Docs/Usage.md#offline-tile-packs">MapTilePack</a> · <a href="https://github.com/echoz/Chio/blob/main/Docs/Usage.md#place-search">MapGeocodingProvider / PhotonGeocoder</a> · <a href="https://github.com/echoz/Chio/blob/main/Docs/Usage.md#reverse-lookup">MapReverseGeocodingProvider / PhotonReverseGeocoder</a> · <a href="https://github.com/echoz/Chio/blob/main/Docs/Usage.md#routing">MapRoutingProvider / OSRMRouter</a> — explicit, application-owned opt-ins beside the view.</p>
           <div class="recording-details">
             <dl class="recording-ingredients">
-              <div><dt>Chio</dt><dd>MapView, MapTileLoader, opt-in MapTileCache, MapTilePack, PhotonGeocoder, PhotonReverseGeocoder, OpenMapTilesSource, checked camera and geography, location markers, route overlays and shared themes.</dd></div>
+              <div><dt>Chio</dt><dd>MapView, MapTileLoader, opt-in MapTileCache, MapTilePack, PhotonGeocoder, PhotonReverseGeocoder, OSRMRouter, OpenMapTilesSource, checked camera and geography, location markers, route overlays and shared themes.</dd></div>
               <div><dt>SwiftTUI</dt><dd>Native drawing, text labels, layout, text entry, lists, focus and keyboard input.</dd></div>
               <div><dt>Application</dt><dd>Network opt-in, search submission and cancellation, retained source and credits, camera and selection bindings, location annotations, authored routes and activation feedback.</dd></div>
               <div><dt>Map data</dt><dd>Offline world: Natural Earth <a href="https://www.naturalearthdata.com/about/terms-of-use/">public-domain land</a> · © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a> · <a href="https://opendatacommons.org/licenses/odbl/1-0/">ODbL 1.0</a> · <a href="https://openfreemap.org/">OpenFreeMap</a> · © <a href="https://openmaptiles.org/">OpenMapTiles</a></dd></div>

@@ -22,6 +22,9 @@ struct MapExampleCommand {
     var geocoderEndpoint = ""
     @Option(help: "Opt-in explicit Photon-compatible /reverse URL for centre lookup; independent of forward search and tiles.")
     var reverseGeocoderEndpoint = ""
+    @Option(help: "Opt-in explicit complete OSRM /route/v1/profile endpoint; independent of tiles and geocoding.")
+    var routerEndpoint = ""
+    @Flag(help: "Start with the fixed road-trace demonstration; snapshots remain offline.") var routeDemo = false
     @Option(help: "Theme: default, light or btop.") var theme: Appearance = .default
     @Flag(help: "Print a deterministic native raster as text.") var snapshot = false
     @Flag(help: "Export native raster cells as JSON for visual inspection.") var snapshotJSON = false
@@ -85,6 +88,13 @@ extension MapExampleCommand: AsyncParsableCommand {
         guard !usesLivePlaces || !hasOfflineOutput else {
             throw ValidationError("Live place search is interactive. Snapshot and benchmark modes use bundled data.")
         }
+        guard routerEndpoint.isEmpty || !hasOfflineOutput else {
+            throw ValidationError("Live routing is interactive. Snapshot and benchmark modes use bundled data.")
+        }
+        guard !routeDemo || !benchmark else {
+            throw ValidationError("--route-demo is available for interactive and snapshot modes.")
+        }
+        if !routerEndpoint.isEmpty { _ = try configuredRouter() }
         if !geocoderEndpoint.isEmpty { _ = try configuredGeocoder() }
         if !reverseGeocoderEndpoint.isEmpty { _ = try configuredReverseGeocoder() }
         guard !online || !hasOfflineOutput else {
@@ -118,6 +128,16 @@ extension MapExampleCommand: AsyncParsableCommand {
         guard online || tileCache.isEmpty else {
             throw ValidationError("--tile-cache requires --online.")
         }
+    }
+
+    private func configuredRouter() throws -> OSRMRouter {
+        guard let endpoint = URL(string: routerEndpoint) else {
+            throw ValidationError("--router-endpoint requires an explicit complete OSRM /route/v1/profile URL.")
+        }
+        return try OSRMRouter(endpoint: endpoint, userAgent: "ChioMaps/0.1 (https://github.com/echoz/Chio)", attributions: [
+            MapAttribution(text: "OSRM", link: URL(string: "https://project-osrm.org/")!),
+            MapAttribution(text: "© OpenStreetMap contributors", link: URL(string: "https://www.openstreetmap.org/copyright")!)
+        ])
     }
 
     private func configuredGeocoder() throws -> PhotonGeocoder {
@@ -159,7 +179,7 @@ extension MapExampleCommand: AsyncParsableCommand {
         } else if snapshot || snapshotJSON {
             let capture = try await MapCapture.snapshot(fixtures: fixtures, scene: scene, appearance: theme,
                                                         width: width, height: height, cellAspect: cellAspect,
-                                                        detail: detail, streetSource: source)
+                                                        detail: detail, streetSource: source, routeDemo: routeDemo)
             if snapshotJSON {
                 try MapCapture.export(capture.raster, background: theme.theme.colors.surface,
                                       foreground: theme.theme.colors.foreground)
@@ -195,13 +215,18 @@ extension MapExampleCommand: AsyncParsableCommand {
             let reverseGeocoder: any MapReverseGeocodingProvider
             if reverseGeocoderEndpoint.isEmpty { reverseGeocoder = MapFixtureGeocoder() }
             else { reverseGeocoder = try configuredReverseGeocoder() }
+            let router: any MapRoutingProvider
+            if routerEndpoint.isEmpty { router = MapFixtureRouter() }
+            else { router = try configuredRouter() }
             do {
                 try await WebHostCLIRunner.run(MapExampleApplication(fixtures: fixtures, scene: scene, appearance: theme,
                                                                cellAspect: cellAspect,
                                                                detail: detail, streetSource: source, acquisition: liveAcquisition, geocoder: geocoder,
                                                                searchLabel: geocoderEndpoint.isEmpty ? "Synthetic fixtures" : "Explicit Photon endpoint",
                                                                reverseGeocoder: reverseGeocoder,
-                                                               lookupLabel: reverseGeocoderEndpoint.isEmpty ? "Synthetic fixtures" : "Explicit Photon endpoint"),
+                                                               lookupLabel: reverseGeocoderEndpoint.isEmpty ? "Synthetic fixtures" : "Explicit Photon endpoint",
+                                                               router: router, routerLabel: routerEndpoint.isEmpty ? "Synthetic road trace" : "Explicit OSRM endpoint",
+                                                               routeDemo: routeDemo),
                                           configuration: swiftTUIOptions.runtimeConfiguration())
             } catch {
                 await cacheOwner?.close()

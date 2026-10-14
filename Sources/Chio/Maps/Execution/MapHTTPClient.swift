@@ -7,19 +7,20 @@ import FoundationNetworking
 /// Content-Length is only an early rejection, never the authoritative byte bound.
 struct MapHTTPClient {
     enum Resource {
-        case catalog, tile, geocoding
+        case catalog, tile, geocoding, routing
 
         var limit: Int {
             switch self {
             case .catalog: 256 * 1_024
             case .tile: 16 * 1_024 * 1_024
             case .geocoding: 512 * 1_024
+            case .routing: 2 * 1_024 * 1_024
             }
         }
 
         var acceptHeaderValue: String {
             switch self {
-            case .catalog: "application/json"
+            case .catalog, .routing: "application/json"
             case .tile: "application/vnd.mapbox-vector-tile, application/x-protobuf, application/octet-stream"
             case .geocoding: "application/json, application/geo+json"
             }
@@ -30,13 +31,21 @@ struct MapHTTPClient {
             case .catalog: ["application/json", "text/json"]
             case .tile: ["application/vnd.mapbox-vector-tile", "application/x-protobuf", "application/protobuf", "application/octet-stream"]
             case .geocoding: ["application/json", "application/geo+json"]
+            case .routing: ["application/json"]
             }
         }
 
         var requiresMIMEType: Bool {
             switch self {
             case .catalog, .tile: false
-            case .geocoding: true
+            case .geocoding, .routing: true
+            }
+        }
+
+        func accepts(statusCode: Int) -> Bool {
+            switch self {
+            case .catalog, .tile, .geocoding: statusCode == 200
+            case .routing: statusCode == 200 || statusCode == 400
             }
         }
     }
@@ -44,11 +53,42 @@ struct MapHTTPClient {
         case invalidResponse, unexpectedContentType, responseTooLarge, rejectedRedirect
         case httpStatus(Int, retryAfter: String)
     }
+    enum ConfigurationError {
+        case invalidEndpoint, invalidUserAgent
+    }
     struct Response {
         let data: Data
         let headers: [String: String]
+        let statusCode: Int
+
+        init(data: Data, headers: [String: String], statusCode: Int = 200) {
+            self.data = data
+            self.headers = headers
+            self.statusCode = statusCode
+        }
     }
     typealias Transport = @Sendable (URL, Resource) async throws -> Response
+
+    static func validateConfiguration(endpoint: URL, userAgent: String) throws(ConfigurationError) {
+        let isAbsolute = endpoint.baseURL == nil
+        let hasBoundedURL = endpoint.absoluteString.utf8.count <= 2_048
+        guard isAbsolute, hasBoundedURL,
+              let components = URLComponents(url: endpoint, resolvingAgainstBaseURL: false),
+              let host = components.host, !host.isEmpty else { throw .invalidEndpoint }
+        let hasCredentials = components.user != nil || components.password != nil
+        let hasQueryOrFragment = components.query != nil || components.fragment != nil
+        let hasInvalidPort = components.port.map { !(1...65_535).contains($0) } ?? false
+        let hasControls = components.path.unicodeScalars.contains { CharacterSet.controlCharacters.contains($0) }
+        let isHTTPS = components.scheme?.lowercased() == "https"
+        let isLoopback = ["localhost", "127.0.0.1", "[::1]", "::1"].contains(host.lowercased())
+        let isLocalHTTP = components.scheme?.lowercased() == "http" && isLoopback
+        guard !hasCredentials, !hasQueryOrFragment, !hasInvalidPort, !hasControls,
+              isHTTPS || isLocalHTTP else { throw .invalidEndpoint }
+        let hasIdentity = !userAgent.trimmingCharacters(in: .whitespaces).isEmpty
+        let hasBoundedIdentity = userAgent.utf8.count <= 256
+        let isHeaderText = userAgent.utf8.allSatisfy { (32...126).contains($0) }
+        guard hasIdentity, hasBoundedIdentity, isHeaderText else { throw .invalidUserAgent }
+    }
 
     static func fetch(_ url: URL, resource: Resource, timeout: TimeInterval = 20,
                       onTerminalAcknowledgement: @escaping @Sendable () -> Void = {},
@@ -130,7 +170,7 @@ struct MapHTTPClient {
             var data = Data()
             var headers: [String: String] = [:]
             var redirects = 0
-            var hasAcceptedResponse = false
+            var acceptedStatusCode: Int?
             var firstFailure: (any Error)?
         }
         private let lock = NSLock()
@@ -239,6 +279,9 @@ struct MapHTTPClient {
 
 extension MapHTTPClient: Sendable {}
 
+extension MapHTTPClient.ConfigurationError: Error {}
+extension MapHTTPClient.ConfigurationError: Sendable {}
+
 extension MapHTTPClient.Failure: Error {}
 
 extension MapHTTPClient.Resource: Equatable {}
@@ -252,10 +295,10 @@ extension MapHTTPClient.Transfer: URLSessionDataDelegate {
         guard let response = response as? HTTPURLResponse else {
             reject(MapHTTPClient.Failure.invalidResponse); completionHandler(.cancel); return
         }
-        guard response.statusCode == 200 else {
+        guard resource.accepts(statusCode: response.statusCode) else {
             reject(MapHTTPClient.Failure.httpStatus(response.statusCode, retryAfter: MapHTTPClient.retryAfter(response))); completionHandler(.cancel); return
         }
-        // Foundation may infer or correct mimeType. Search requires an explicitly
+        // Foundation may infer or correct mimeType. Services require an explicitly
         // supported media type; retain the existing tile/catalog interpretation.
         let mime: String?
         if resource.requiresMIMEType {
@@ -276,7 +319,7 @@ extension MapHTTPClient.Transfer: URLSessionDataDelegate {
         }
         lock.lock()
         if !state.isCompleted, state.firstFailure == nil {
-            state.hasAcceptedResponse = true
+            state.acceptedStatusCode = response.statusCode
             state.headers = response.allHeaderFields.reduce(into: [:]) { values, entry in
                 values[String(describing: entry.key).lowercased()] = String(describing: entry.value)
             }
@@ -299,10 +342,12 @@ extension MapHTTPClient.Transfer: URLSessionDataDelegate {
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: (any Error)?) {
         if let error { finish(.failure(error)); return }
         lock.lock()
-        let response = MapHTTPClient.Response(data: state.data, headers: state.headers)
-        let hasAcceptedResponse = state.hasAcceptedResponse
+        let response = state.acceptedStatusCode.map {
+            MapHTTPClient.Response(data: state.data, headers: state.headers, statusCode: $0)
+        }
         lock.unlock()
-        finish(hasAcceptedResponse ? .success(response) : .failure(MapHTTPClient.Failure.invalidResponse))
+        if let response { finish(.success(response)) }
+        else { finish(.failure(MapHTTPClient.Failure.invalidResponse)) }
     }
 
     func urlSession(_ session: URLSession, didBecomeInvalidWithError error: (any Error)?) {

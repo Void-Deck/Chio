@@ -33,8 +33,8 @@ effect boundaries beside the view. Applications retain invocation, storage and
 provider policy, credentials and workflow ownership. These capabilities are
 delivered one slice at a time. Submitted place search now has an explicit Photon
 adapter; the approved reverse slice adds a separate capability and Photon client
-using the same attributed place values. Routing and provider archive downloads
-remain planned. The current
+using the same attributed place values. The [routing candidate](Decisions/Routing.md) adds an explicit OSRM adapter beside
+the unchanged overlay view. Provider archive downloads remain paused. The current
 map renderer and acquisition contracts remain intact. Opt-in persistence is
 defined in [online acquisition](Decisions/OnlineMaps.md#persistent-raw-tile-cache).
 Its private `ChioFileSystem` target bridges native locking and
@@ -104,7 +104,7 @@ unchanged; local scratch mutation is permitted. Explicit mutable boundaries are
 SwiftTUI state/binding/focus/namespace/environment wrappers, ArgumentParser command
 options, filesystem resource owners, the serial map preparation actor, the online
 tile loader actor and its locked URLSession delegate resource owner, the example
-place-search task owner, and live
+place-search and route-request task owners, and live
 test-session recorders with frames, continuations and deadlines.
 
 Prefer synthesized `Hashable`, `Codable` and `Sendable` where their contracts fit.
@@ -229,6 +229,7 @@ in Releases; avoid duplicating full contracts across documents.
 | [Online tile acquisition](Decisions/OnlineMaps.md) | Accepted explicit loader and opt-in online example |
 | [Programmatic offline packs](Decisions/OfflineTilePacks.md) | Implemented immutable raw-tile backing |
 | [Place search](Decisions/PlaceSearch.md) | Accepted explicit Photon adapter, immutable matches and example-owned submission |
+| [Routing](Decisions/Routing.md) | Explicit OSRM candidate, checked attributed routes and example-owned requests |
 | [Native integration](Decisions/NativeIntegration.md) | Current limitations and ownership |
 | [Terminal colors](Decisions/TerminalColors.md) | Accepted native detection; conversion experiment shelved |
 | [Table rendering](Decisions/TableRendering.md) | Proposed correction; patches unapplied |
