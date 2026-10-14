@@ -219,6 +219,10 @@ mounted across loading and empty states, with response-scoped row identities.
 Determine initial focus from the accepted rows as well as later response changes:
 a fast provider can finish before the search pane first mounts. Accepted nonempty
 results focus the native list; an empty or pending interaction focuses the editor.
+The application publishes phase, selection and the desired native focus together;
+accepted results do not first appear with focus left in the editor. Initial pane
+lifecycle handling also supports preloaded responses, without reauthoring an
+identical focus request.
 Deferred focus callbacks read current parent-owned phase and presentation bindings;
 a retained callback must not restore search focus after dismissal. Rendering and
 activation retain their immutable response snapshot, so input arriving before a

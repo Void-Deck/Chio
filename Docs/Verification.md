@@ -114,6 +114,70 @@ Its [hosted macOS/Linux checks](https://github.com/echoz/Chio/actions/runs/38510
 also report only the same 16 issues, with all 157 map tests passing. This records
 default-branch adoption of the tool, not a new Chio release or repaired native layouts.
 
+## Merged layout corrections
+
+The 2026-10-14 candidate pins SwiftTUI
+`bf9a697f2a5da4d0392730d0cba9e3ddcbbfa5d1`, with explicit approval to use this
+unreleased upstream revision after verification. Only the SwiftTUI revision and
+manifest hash change in the lockfile. Qualification uses the complete gate
+below under the existing verification policy, retaining all 16 previously accepted failing assertions and the
+five-second interaction waits. Scroll-style expectations migrate to the corrected
+vertical focus reveal: the first row stays visible. Mouse release moves to the
+track midpoint so that it still verifies a real offset change. All other keyboard,
+wheel, drag, theme and resize assertions remain exact; the automatic style checks
+the same native behavior. The viewport example and its terminal probe retain
+the same first-row contract on initial focus and F6 restoration. Twelve constructor spellings in the two
+touched suites are made explicit, removing exactly seven baseline entries
+covering twelve findings.
+No passing outcome is implied by the dependency change; platform results must
+identify the tested tree.
+
+Before the change, PR #16's hosted run at `95d80ae` reports the accepted 16 issues
+on each platform, plus a Linux map-search timeout and three macOS tab/appearance
+timeouts. The map trace records a native results-list focus callback but no
+subsequent delivered frame in the timeout snapshot. Its event clock does not
+record the wait start/deadline, so it cannot prove a lost request or a precise
+deadline race. Twenty separate unchanged macOS tab-test launches pass locally;
+that bounded result does not explain the hosted failures.
+
+At candidate `42a72856`, complete local macOS and Linux ARM64 gates pass,
+including debug/release suites, terminal workflows, appearance checks and map
+process probes. Compiler-backed SwiftRules passes on both platforms with 351
+files and 402 baseline findings. The [hosted candidate run](https://github.com/echoz/Chio/actions/runs/38531964141)
+resolves all sixteen layout issues on both platforms. macOS's debug tab activation
+case still times out after Return; map and dashboard targets pass. Release and
+terminal checks are not reached on that platform. Linux x86_64 passes every debug
+and release test, the dashboard build, 24 snapshots and eleven terminal workflows;
+the duration example then remains at `0:00 Running` during its fifteen-second
+advancement check. Later terminal and map process checks are not reached there.
+The PR remains draft while the remaining failures are addressed.
+
+The library recorder retains up to 64 lazily formatted observations of wait
+start, deadline-task start, frame delivery, match and timeout. The tab workflow
+also observes public native focus and runtime issues. These diagnostics preserve
+input, predicates and five-second waits. Fifty bounded local tab launches pass
+without reproducing the hosted failure; that is not evidence of its resolution.
+
+The map recorder also retains exact wait deadlines, matches and timeout
+observations. A results-list focus callback follows native frame submission;
+its presence without a delivered frame does not establish a lost focus request.
+The example now publishes accepted results, selection and desired native focus
+together, avoiding an intermediate results frame that still focuses the editor.
+Forward/reopen and reverse regressions inspect the first accepted-results frame.
+The forward checks fail before the correction. Initial/preloaded response,
+current-phase, dismissal and batched-input coverage remain in place, as do all
+five-second waits and the existing debug/release verification policy.
+
+The duration failure reproduces with the unchanged executable on macOS when
+`CI=1`; the same binary passes the complete duration workflow with `CI=0`.
+SwiftTUI's CLI intentionally suppresses animation timelines under CI's stable-output
+policy. The example now composes a native periodic schedule that continues
+functional clock updates under reduced motion and emits no entries while idle.
+The existing live-timeline test also runs with reduced motion enabled and fails
+before this correction. Its five-second wait and the fifteen-second terminal
+advancement assertion remain unchanged. Four constructor spellings in that suite
+are made explicit, removing exactly three additional baseline entries.
+
 ## Running checks
 
 The 2026-10-13 personal-client rollout explicitly accepts the released SwiftTUI
@@ -121,8 +185,8 @@ The 2026-10-13 personal-client rollout explicitly accepts the released SwiftTUI
 Keep their failing assertions and the normal gate unchanged. Record the failed
 cases and any checks not reached; do not call that result a passing full gate.
 Consumers update Chio and SwiftTUI together and verify their own affected paths.
-This scoped acceptance does not cover new regressions or imply qualification of
-the unmerged upstream fixes.
+This historical scoped acceptance does not cover new regressions or establish
+qualification of the current upstream-revision candidate.
 
 After the shared local check, with Swift 6.4 and Python 3 installed, run from the
 repository root:
@@ -287,7 +351,11 @@ terminal limitations. Site assembly passes. Safari inspection passed theme previ
 matching commands/snippets, playback, pause, seeking, category navigation and
 browser history. The actual page also fits an embedded 390-pixel viewport;
 isolated script-free and missing-theme-image fixtures retain the preview,
-download and command fallbacks. The updated showcase has not been deployed.
+download and command fallbacks. After merge at `6f3c630`, the
+[site deployment](https://github.com/echoz/Chio/actions/runs/38519554062) passed.
+The published page was inspected with actual recording playback, loaded
+default/light/btop route previews and matching theme-specific launch commands;
+no browser warnings or errors appeared in that smoke check.
 No public routing endpoint or SSH terminal was exercised.
 
 The normal macOS gate at `bf39e2ff` reproduced exactly the 16 accepted SwiftTUI
@@ -308,7 +376,7 @@ application polling or longer deadline has been introduced. The initial Linux
 image-registry failure was cleared; it supplies no test evidence. Both hosted
 scripts stop at their debug failures, so the separate local release and terminal
 results above remain distinct. [PR #14](https://github.com/echoz/Chio/pull/14)
-tracks current readiness; hosted verification is not claimed to pass.
+records the integrated checks; hosted verification is not claimed to pass.
 
 Routing was rebased onto the merged rules upgrade at `38fc258`. The overlapping
 attribution and HTTP conformance declarations retain their existing public and
@@ -317,6 +385,17 @@ the rebased macOS compiler-backed gate passes across 351 Swift files with the
 same 414 baseline findings. Dependency pins, tests and visual assets are unchanged
 by the rebase. [PR #14](https://github.com/echoz/Chio/pull/14) records subsequent
 platform results; reorganization does not claim to repair the search-focus failure.
+
+The follow-up test recorder retains at most 64 frame, focus-presentation and
+runtime-issue observations through public hosted-session APIs. It formats the
+trace only on timeout, including the failing wait callsite, relative event times,
+native focused identity, control roles/rectangles and available focus regions.
+The latest raster remains in the report. Stored historical frames do not satisfy
+waits: input, success predicates, sequence checks, five-second deadlines and
+10 ms polling remain unchanged. Instrumentation may affect allocation or timing;
+passing repetitions do not establish that the original intermittent is fixed.
+The trace does not expose authored focus-request or lifecycle generations and
+therefore cannot by itself prove the native cause.
 
 To record the search workflow, run the map probe with `--place-search --theme
 default --record .build/captures/maps-default.cast` and an explicit `--output-dir`.

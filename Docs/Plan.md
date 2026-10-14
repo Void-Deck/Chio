@@ -77,11 +77,11 @@ in [native integration](Decisions/NativeIntegration.md).
 
 **Deferred list spacing:** all new per-row density controls remain excluded from
 this slice's public API. SwiftTUI 0.17.0 includes the merged per-axis reveal
-correction in [PR #46](https://github.com/SwiftTUI/swift-tui/pull/46), now pinned
-in this dependency-upgrade candidate. The measured-height navigation and builder
-placement correction in [PR #47](https://github.com/SwiftTUI/swift-tui/pull/47)
-merged after 0.17.0 and remains excluded from this pin. Its upstream merge does
-not establish Chio adoption or a release. [Native integration](Decisions/NativeIntegration.md#tall-list-rows)
+correction in [PR #46](https://github.com/SwiftTUI/swift-tui/pull/46). The
+measured-height navigation and builder placement correction in [PR #47](https://github.com/SwiftTUI/swift-tui/pull/47)
+merged after 0.17.0 and is included in the current upstream-revision candidate.
+Its upstream merge does not establish Chio qualification or a release.
+[Native integration](Decisions/NativeIntegration.md#tall-list-rows)
 owns the remaining findings and conditions for revisiting row density.
 
 Provider archive acquisition remains on hold at the user's request. No archive
@@ -89,24 +89,19 @@ reader or downloader has been adopted; existing local pack APIs remain available
 
 ## Native runtime follow-up
 
-**Status:** Personal-client rollout of released SwiftTUI 0.17.0 is approved with
-the known disclosure and compact-layout regressions. Publish the compatible Chio
-revision and coordinate downstream upgrades through their owning tasks,
-retaining failing regression coverage and requiring client-specific
-verification. [Dependencies](Decisions/Dependencies.md#0170-adoption-candidate)
-owns the accepted limits and qualification evidence.
-
-Local native fixes restore both layouts and pass full native and consumer gates
-on macOS and Linux arm64. Upstream PRs #49 and #50 remain open; their current heads
-pass all hosted checks. Adopt their corrections separately once published and
-verified. The measured-height correction in #47 has merged but is absent from
-0.17.0; it is not part of this rollout.
+**Status:** On 2026-10-14, the user approved qualifying the immutable upstream
+revision `bf9a697f2a5da4d0392730d0cba9e3ddcbbfa5d1` to repair CI. It contains
+merged #49/#50 layout corrections and #47 measured-row navigation. This revision
+is not a published release. Retain the failing layout assertions and exact input
+coverage; migrate the scroll expectations to the corrected first-row reveal.
+The prior approval of known 0.17.0 failures does not make the new gate green.
+[Dependencies](Decisions/Dependencies.md#merged-layout-corrections) owns the
+dependency decision and downstream exact-pin compatibility requirement.
 
 The merged runtime correction in
 [SwiftTUI PR #48](https://github.com/SwiftTUI/swift-tui/pull/48) supersedes
 [PR #45](https://github.com/SwiftTUI/swift-tui/pull/45) and ships in 0.17.0.
-This dependency-upgrade candidate pins the released revision
-`ee572e38487284092f367ef5b095460a04374ba3`.
+The current candidate retains those corrections in its upstream ancestry.
 [Native integration](Decisions/NativeIntegration.md#cooperative-shutdown-follow-up)
 owns its constraints and remaining startup/cancellation and performance follow-ups.
 Run the [consumer gates](Verification.md), reporting known failures rather than
@@ -125,8 +120,8 @@ platform evidence and remaining limits.
 
 **Status:** Scope approved on 2026-10-09. Persistent caching is implemented;
 programmatic local packs are implemented.
-Forward and reverse geocoding are merged; the approved routing service slice is
-in progress after its readability spike. Provider downloads remain paused. The following order keeps
+Forward/reverse geocoding and the routing service slice are merged.
+Provider downloads remain paused. The following order keeps
 one testable slice at a time; current contracts live in the owning decisions.
 
 The preceding robustness slice fixes the two reproduced audit defects:
@@ -228,25 +223,37 @@ matching theme commands and the new API link. Existing unaffected mobile/fallbac
 evidence is reused; no fresh mobile browser run is claimed. No tile acquisition or
 routing is added by those geocoding changes.
 
-### Current slice: submitted routing
+### Delivered: submitted routing
 
-**Status:** The muted-map, bright-route visual treatment is approved. The first
-service slice is implemented as a candidate: an explicit OSRM endpoint, checked two-point route
-requests and attributed geometry/estimates, composed through existing overlays.
+**Status:** [PR #14](https://github.com/echoz/Chio/pull/14) merged on 2026-10-13
+at `6f3c630`, after the SwiftRules upgrade in #15. This is merged source, not a
+new versioned release. The first service slice provides an explicit OSRM endpoint,
+checked two-point route requests and attributed geometry/estimates, composed through existing overlays.
 [Routing](Decisions/Routing.md) owns the API, limits and example behavior.
 
 The example remains fixture-backed by default and owns submission, cancellation,
 latest-pending replacement and stale-result rejection. No default live service,
 automatic rerouting, turn-by-turn navigation or renderer changes are included.
 Focused macOS/Linux checks and browser review pass; terminal captures are refreshed.
-Hosted verification retains an intermittent place-search focus timeout on Linux
-beyond the known SwiftTUI failures. The fresh macOS map suite passes; the initial
-registry failure was cleared. Merge/deployment remain outstanding; see
-[verification evidence](Verification.md#running-checks). Known SwiftTUI 0.17.0
-failures remain explicit. Routing is rebased onto the merged SwiftRules upgrade;
-[PR #14](https://github.com/echoz/Chio/pull/14) tracks the integrated checks and
-the unresolved search-focus failure.
+The routing showcase is deployed. Known SwiftTUI 0.17.0 failures and the
+intermittent place-search focus timeout remain explicit; see
+[verification evidence](Verification.md#running-checks).
 Provider downloads stay paused.
+
+### Current slice: restore CI and diagnose interaction timeouts
+
+Qualify the approved merged SwiftTUI revision with the complete
+macOS/Linux, release and terminal gates under the existing verification policy. Resolve remaining tab, appearance and
+map interaction failures at their owning boundary; do not assume the native
+layout corrections fix those timeouts.
+
+Investigate the intermittent native search reopen timeout before changing focus
+behavior. Preserve the complete resize/reopen workflow, exact list-focus assertion
+and five-second wait. Retain bounded committed-frame, focus-presentation and
+runtime-issue observations so a failure distinguishes displayed results from
+native focus delivery. Use public hosted-session APIs; no polling workaround,
+forced redraw, hidden dependency patch or new production hook is authorized by
+this slice. Passing repetitions do not establish a cause or a fix.
 
 <a id="next-slice-offline-pack-acquisition"></a>
 
@@ -327,7 +334,7 @@ filters, extensible upstream/raw-input switches, native wrappers and private
 nested conformances retain their documented roles.
 
 The map expansion above remains approved. Provider archive acquisition remains
-paused at the user's request; submitted routing is the current implementation slice.
+paused at the user's request; CI repair and interaction qualification are the current slice.
 Real application use of the public map
 remains useful validation. Other component additions and a
 new stable release remain possible directions, not delivery promises.

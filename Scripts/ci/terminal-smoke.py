@@ -148,7 +148,7 @@ def run(binary, choices=False, text_entry=False, feedback=False, files=False, ke
             command.extend(["--directory", str(folder)])
         process = subprocess.Popen(command, stdin=slave,
                                    stdout=slave, stderr=slave, env=env)
-        until("/ instruments · local" if instruments else "/ changes" if diff else "/ review inbox" if inbox else "/ metrics · simulated" if metrics else "/ time studio" if timers else "Saved: Chio · manual" if forms else "Expanded folders: 3 / 6" if tree else "Row 2 · Col 2" if viewport else "1–3 of 23" if pagination else "Demo runs: 0" if tabs else "Runs: 0" if keyboard_help else "alpha.txt" if files else "Ready to publish" if feedback else "/ text entry" if text_entry else "1 / 2" if choices else "4 of 4 items")
+        until("/ instruments · local" if instruments else "/ changes" if diff else "/ review inbox" if inbox else "/ metrics · simulated" if metrics else "/ time studio" if timers else "Saved: Chio · manual" if forms else "Expanded folders: 3 / 6" if tree else "Row 1 · Col 2" if viewport else "1–3 of 23" if pagination else "Demo runs: 0" if tabs else "Runs: 0" if keyboard_help else "alpha.txt" if files else "Ready to publish" if feedback else "/ text entry" if text_entry else "1 / 2" if choices else "4 of 4 items")
         modes = termios.tcgetattr(slave)
         assert not modes[3] & (termios.ECHO | termios.ICANON), "Terminal is not in raw input mode"
         assert modes[6][termios.VMIN] == 1 and modes[6][termios.VTIME] == 0, "Unexpected raw read timing"
@@ -348,8 +348,8 @@ def run(binary, choices=False, text_entry=False, feedback=False, files=False, ke
             send(b"\x1b[H", "Row 1 · Col 1")
             send(b"\x1b[C", "Row 1 · Col 2")
             send(b"\t\t\t\r", "Row 1 · Col 1")
-            send(b"\x1b[17~", "Row 2 · Col 2")
-            send(b"\x1b[B", "Row 3 · Col 2")
+            send(b"\x1b[17~", "Row 1 · Col 2")
+            send(b"\x1b[B", "Row 2 · Col 2")
         elif pagination:
             send(b"build", "1–3 of 6")
             send(b"\t\t\t\r", "4–6 of 6")

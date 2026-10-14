@@ -1,9 +1,10 @@
 # Native integration boundaries
 
-**Status:** Personal-client adoption of released 0.17.0 is approved with known
-disclosure-content and compact-layout regressions. Local native corrections pass
-full native and consumer gates on macOS and Linux arm64. Upstream PRs #49 and #50
-remain open with passing CI on their current heads; they are not included in this pin.
+**Status:** The current candidate uses the approved immutable upstream revision
+`bf9a697f2a5da4d0392730d0cba9e3ddcbbfa5d1`, including merged #47/#49/#50.
+It is not a published release. [Dependencies](Dependencies.md#merged-layout-corrections)
+owns the adoption decision; full Chio verification remains required independently
+of upstream checks and earlier local-patch evidence.
 
 Keep native ownership and visible limitations explicit when composing or extending Chio.
 
@@ -29,14 +30,15 @@ upstream requirements authoritative for its code and contribution metadata.
 
 ## Native chrome
 
-The [0.17.0 rollout](Dependencies.md#0170-adoption-candidate) accepts the known
+The historical [0.17.0 rollout](Dependencies.md#0170-adoption-candidate) accepts the known
 layout limitations and requires each consumer's verification. Its new native
 accessibility group/button representation is a
 declared contract change; direct disclosure-child overlap is a separate rendering
 regression. The [local correction candidate](Dependencies.md#local-correction-candidate)
 preserves those column assertions and native ownership. It also corrects an
 ordinary Spacer's stretched allocation being reused as a required minimum,
-restoring the compact inbox width. Neither fix is part of released 0.17.0.
+restoring the compact inbox width. Neither fix is part of released 0.17.0;
+both are included in the current upstream-revision candidate.
 
 Native list focus chrome uses SwiftTUI's theme; Chio themes selected content and
 controls. The native theme environment is not public. `StatusBar` composes a text
@@ -51,23 +53,22 @@ renderer, focus system or hidden dependency patch.
 | Boundary | Current limit and responsible follow-up |
 | --- | --- |
 | Native style hooks | Table border/background chrome, list focus gutter, palette shell, prompt headers and disabled-editor glyph paint are not fully controlled by Chio. Keep native behavior and resolve missing hooks upstream. |
-| Layout and lifecycle | Scroll focus reveal can move a two-axis viewport by one cell; nested tab strips can receive stale width proposals; expanded disclosure focus includes descendants. Keep the documented native contracts for [scrolling](Scrolling.md#scrolling), [tabs](Tabs.md#tabs) and [disclosure](DisclosureGroups.md#expandable-groups-and-trees). |
+| Layout and lifecycle | Scroll focus reveal can move a viewport horizontally by one cell; nested tab strips can receive stale width proposals; expanded disclosure focus includes descendants. Keep the documented native contracts for [scrolling](Scrolling.md#scrolling), [tabs](Tabs.md#tabs) and [disclosure](DisclosureGroups.md#expandable-groups-and-trees). |
 | Choice composition | Changing choice fields inside `GeometryReader` triggered a native debug lifecycle-publication assertion. The full-window example uses `terminalSize`; arbitrary nesting remains unproved. |
-| List density and focus | New per-row density controls are deferred. The 0.17.0 pin includes #46's per-axis reveal correction; #47's measured-height navigation and builder placement merged later and are excluded. See [the findings](#tall-list-rows). |
+| List density and focus | New per-row density controls are deferred. The current candidate includes #46's per-axis reveal and #47's measured-height navigation/builder placement corrections. These do not establish a fix for every focus handoff. See [the findings](#tall-list-rows). |
 | Collection measurement | Native ideal-size probes can realize all rows before a bounded viewport commits and emit deferred `collection.unboundedRealization` warnings. Small fixtures do not prove virtualization or large-dataset performance; diagnostics are retained. |
 | Early input | Search, palette and form handoffs cover documented type-ahead/batched paths. Arbitrary multi-control input before presentation settles needs native support, not an application-built editor or focus graph. |
 | Editor navigation | End at the end of a native text field is unhandled when it makes no change, so an enclosing ScrollView can scroll to the bottom. The appearance study reproduced this at 36 × 18; ordinary editing remains focused. Its capture moves Left before End to exercise a real caret movement. Repeated no-op End is unresolved at the native input owner. |
-| Cooperative shutdown | The 0.17.0 pin includes [merged #48](https://github.com/SwiftTUI/swift-tui/pull/48), superseding #45. Accepted quit/EOF retains final-input presentation and synchronous follow-ups without draining unrelated continuous writes. Arbitrarily expensive frames/callbacks and application producers retain their own bounds and ownership. |
+| Cooperative shutdown | The current pin retains [merged #48](https://github.com/SwiftTUI/swift-tui/pull/48), superseding #45. Accepted quit/EOF retains final-input presentation and synchronous follow-ups without draining unrelated continuous writes. Arbitrarily expensive frames/callbacks and application producers retain their own bounds and ownership. |
 | Portability and accessibility | CI and pseudo-terminals cover specific workflows. Other distributions, architectures, assistive technologies and live SSH devices require separate evidence. Static Linux remains [blocked](Dependencies.md#static-linux-blocker). |
 
 ## Tall list rows
 
 **Status:** SwiftTUI 0.17.0 includes the merged per-axis reveal correction in
 [PR #46](https://github.com/SwiftTUI/swift-tui/pull/46), merge
-`3701604e009bc113e4c6f01b25e3d5e7aa7b00eb`. This Chio upgrade candidate pins that
-release. The measured-height correction in
+`3701604e009bc113e4c6f01b25e3d5e7aa7b00eb`. The measured-height correction in
 [PR #47](https://github.com/SwiftTUI/swift-tui/pull/47) merged on 2026-10-12,
-after 0.17.0, and is excluded from this pin. All new per-row density
+after 0.17.0, and is included in the current upstream-revision candidate. All new per-row density
 controls remain deferred from Chio's unified style API.
 Opencode keeps compact rows and roomier input padding/leading frames.
 
@@ -192,7 +193,7 @@ before claiming compliance with the complete upstream contribution process.
 `87dc035869d2d58817511efe9f09bb4ace689808` and supersedes
 [PR #45](https://github.com/SwiftTUI/swift-tui/pull/45). It is included in the
 published [0.17.0 release](https://github.com/SwiftTUI/swift-tui/releases/tag/0.17.0),
-`ee572e38487284092f367ef5b095460a04374ba3`, now pinned by this Chio upgrade candidate.
+`ee572e38487284092f367ef5b095460a04374ba3`, and retained by the current upstream-revision candidate.
 
 The runtime observes invalidations without changing SwiftTUIGraph or public APIs.
 Termination vetoes run before shutdown begins. Accepted cooperative exit cancels

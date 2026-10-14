@@ -12,7 +12,7 @@ struct ViewportExampleTests {
     func layout(size: CellSize, appearance: ExampleTheme) {
         let rendered = DefaultRenderer().render(
             ViewportExampleView(theme: appearance).environment(\.terminalSize, size),
-            proposal: .init(width: size.width, height: size.height), frameInstant: .zero
+            proposal: ProposedViewSize(width: size.width, height: size.height), frameInstant: .zero
         )
         let text = rendered.rasterSurface.lines.joined(separator: "\n")
         #expect(rendered.rasterSurface.size == size)
@@ -30,7 +30,7 @@ struct ViewportExampleTests {
         let size = CellSize(width: 100, height: 30)
         let rendered = DefaultRenderer().render(
             ViewportExampleView(theme: appearance).environment(\.terminalSize, size),
-            proposal: .init(width: size.width, height: size.height), frameInstant: .zero
+            proposal: ProposedViewSize(width: size.width, height: size.height), frameInstant: .zero
         )
         let y = try #require(rendered.rasterSurface.lines.firstIndex { $0.contains("01  ✓  Build agent") })
         let row = rendered.rasterSurface.cells[y]
@@ -56,23 +56,23 @@ struct ViewportExampleTests {
     @Test("Native scrolling survives theme and resize, with focus and reset handled by native controls")
     func viewportWorkflow() async throws {
         let recorder = HostedFrameRecorder()
-        let surface = HostedRasterSurface(surfaceSize: .init(width: 100, height: 30), appearance: .fallback,
+        let surface = HostedRasterSurface(surfaceSize: CellSize(width: 100, height: 30), appearance: .fallback,
                                           onFrame: { recorder.receive($0) })
         let session = try HostedSceneSession(for: ViewportTestApp(), sceneID: "viewport-tests", surface: surface)
         let run = Task { try await session.start() }
         do {
-            _ = try await recorder.wait(description: "log starts with native viewport focus") { $0.logFocused && $0.logContains("Row 2 · Col 2") }
+            _ = try await recorder.wait(description: "log starts with native viewport focus on its first row") { $0.logFocused && $0.logContains("Row 1 · Col 2") }
             session.send([.key(.home), .key(.arrowLeft)])
             _ = try await recorder.wait(description: "native keys establish the log origin") { $0.logContains("Row 1 · Col 1") }
             session.send([.key(.arrowDown), .key(.arrowDown), .key(.arrowRight)])
             let moved = try await recorder.wait(description: "native arrows scroll both axes") {
-                $0.logContains("Row 3 · Col 2") && $0.semantics.scrollRoutes.first?.contentOffset == .init(x: 1, y: 2)
+                $0.logContains("Row 3 · Col 2") && $0.semantics.scrollRoutes.first?.contentOffset == CellPoint(x: 1, y: 2)
             }
             session.send(.key(.character("t"), modifiers: .ctrl))
             let themed = try await recorder.wait(after: moved.sequence, description: "theme retains position and focus") {
                 $0.logFocused && $0.logContains("Row 3 · Col 2") && $0.raster.cells != moved.raster.cells
             }
-            surface.updateSurfaceSize(.init(width: 36, height: 18))
+            surface.updateSurfaceSize(CellSize(width: 36, height: 18))
             session.requestSurfaceRefresh()
             _ = try await recorder.wait(after: themed.sequence, description: "compact viewport retains position and shortcuts") {
                 $0.raster.size == CellSize(width: 36, height: 18) && $0.logContains("Row 3 · Col 2")
@@ -102,9 +102,9 @@ struct ViewportExampleTests {
                 $0.logResetFocused && $0.logContains("Row 1 · Col 1")
             }
             session.send(.key(.functionKey(6)))
-            _ = try await recorder.wait(description: "F6 restores log focus with native track reveal") { $0.logFocused && $0.logContains("Row 2 · Col 2") }
+            _ = try await recorder.wait(description: "F6 restores log focus without skipping the first row") { $0.logFocused && $0.logContains("Row 1 · Col 2") }
             session.send(.key(.arrowDown))
-            _ = try await recorder.wait(description: "native input still works after focus restoration") { $0.logContains("Row 3 · Col 2") }
+            _ = try await recorder.wait(description: "native input still works after focus restoration") { $0.logContains("Row 2 · Col 2") }
             session.stop()
             #expect(try await run.value == .inputEnded)
         } catch {

@@ -1,7 +1,8 @@
 # Submitted routing
 
-**Status:** Approved first service slice, 2026-10-13; implementation candidate,
-not yet released. The preceding visual proof is retained under
+**Status:** Approved first service slice merged in
+[PR #14](https://github.com/echoz/Chio/pull/14) on 2026-10-13 at `6f3c630`;
+not yet in a versioned release. The preceding visual proof is retained under
 [MapRouting](../../Spikes/MapRouting/README.md). Provider archive downloads stay paused.
 
 ## Boundary and values

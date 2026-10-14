@@ -64,6 +64,10 @@ struct MapPlaceSearchInteractionTests {
             let results = try await frames.wait(after: zoomed.sequence) {
                 $0.placeText.contains("1 match") && $0.placeText.contains("Near 1.2890, 103.8660") && $0.focusesPlaceResults
             }
+            let firstLookup = try #require(frames.firstFrame(after: zoomed.sequence) {
+                $0.placeText.contains("1 match") && $0.placeText.contains("Near 1.2890, 103.8660")
+            })
+            #expect(firstLookup.focusesPlaceResults)
             #expect(results.placeText.contains("Singapore Flyer"))
             #expect(results.placeText.contains("Center 1.289, 103.866 · span 0.0210°"))
             #expect(try await provider.lookups == [MapCoordinate(latitude: 1.289, longitude: 103.866)])
@@ -441,7 +445,11 @@ struct MapPlaceSearchInteractionTests {
                                           onFrame: { frames.latest = $0 })
         let application = MapExampleApplication(fixtures: try MapFixtures.load(), scene: .street,
                                                appearance: .default, geocoder: provider)
-        let session = try HostedSceneSession(for: application, sceneID: WindowIdentifier("Chio maps"), surface: surface)
+        let session = try HostedSceneSession(
+            for: application, sceneID: WindowIdentifier("Chio maps"), surface: surface,
+            runtimeIssueSink: RuntimeIssueSink { frames.record(.runtimeIssue($0)) },
+            onFocusPresentationChange: { frames.record(.focus($0)) }
+        )
         let run = Task { try await session.start() }
         do {
             let initial = try await frames.wait { $0.placeText.contains("Center 1.289, 103.866") && $0.focusedIdentity != nil }
@@ -466,6 +474,10 @@ struct MapPlaceSearchInteractionTests {
                 $0.placeText.contains("1 match") && $0.placeText.contains("Synthetic place")
                     && $0.focusesPlaceResults
             }
+            let firstMatches = try #require(frames.firstFrame(after: completedDraft.sequence) {
+                $0.placeText.contains("1 match") && $0.placeText.contains("Synthetic place")
+            })
+            #expect(firstMatches.focusesPlaceResults)
             #expect(await provider.queries == ["Merlion"])
             #expect(matches.focusedIdentity != completedDraft.focusedIdentity)
             #expect(matches.placeText.contains("Center 1.289, 103.866 · span 0.0210°"))
@@ -499,6 +511,10 @@ struct MapPlaceSearchInteractionTests {
             let pole = try await frames.wait(after: dismissed.sequence) {
                 $0.placeText.contains("1 match") && $0.placeText.contains("North Pole") && $0.focusesPlaceResults
             }
+            let firstPole = try #require(frames.firstFrame(after: dismissed.sequence) {
+                $0.placeText.contains("1 match") && $0.placeText.contains("North Pole")
+            })
+            #expect(firstPole.focusesPlaceResults)
             session.send(.key(.return))
             let rejected = try await frames.wait(after: pole.sequence) { $0.placeText.contains("outside Mercator projection") }
             #expect(rejected.placeText.contains("Center 1.287, 103.855 · span 0.0210°"))
@@ -538,16 +554,91 @@ extension CountedFixtureGeocoder: MapReverseGeocodingProvider {
 
 @MainActor
 private final class PlaceFrames {
-    var latest: SemanticHostFrame?
+    var latest: SemanticHostFrame? {
+        didSet {
+            if let latest { record(.frame(latest)) }
+        }
+    }
+    private let started = ContinuousClock.now
+    private var observations: [(elapsed: Duration, event: Observation)] = []
+
+    // Retain committed frames, including those between polls, without formatting
+    // diagnostics or changing which frame can satisfy the existing wait.
+    func record(_ event: Observation) {
+        observations.append((started.duration(to: .now), event))
+        if observations.count > 64 { observations.removeFirst() }
+    }
+
+    func firstFrame(after sequence: UInt64,
+                    matching predicate: (SemanticHostFrame) -> Bool) -> SemanticHostFrame? {
+        for observation in observations {
+            guard case .frame(let frame) = observation.event else { continue }
+            if frame.sequence > sequence, predicate(frame) { return frame }
+        }
+        return nil
+    }
 
     func wait(after sequence: UInt64? = nil,
+              fileID: String = #fileID, line: Int = #line,
               matching predicate: (SemanticHostFrame) -> Bool) async throws -> SemanticHostFrame {
         let deadline = ContinuousClock.now.advanced(by: .seconds(5))
+        record(.waiting(fileID: fileID, line: line, after: sequence, deadline: started.duration(to: deadline)))
         while ContinuousClock.now < deadline {
-            if let latest, sequence.map({ latest.sequence > $0 }) ?? true, predicate(latest) { return latest }
+            if let latest, sequence.map({ latest.sequence > $0 }) ?? true, predicate(latest) {
+                record(.matched(sequence: latest.sequence))
+                return latest
+            }
             try await Task.sleep(for: .milliseconds(10))
         }
-        throw FrameTimeout(text: latest?.placeText ?? "No frame received")
+        record(.timedOut)
+        let history = observations.map { "\($0.elapsed): \($0.event.description)" }.joined(separator: "\n")
+        throw FrameTimeout(text: """
+            Wait at \(fileID):\(line), after sequence \(String(describing: sequence))
+            Recent observations (up to 64):
+            \(history)
+            Latest raster:
+            \(latest?.placeText ?? "No frame received")
+            """)
+    }
+
+    enum Observation {
+        case frame(SemanticHostFrame)
+        case focus(FocusPresentation)
+        case runtimeIssue(RuntimeIssue)
+        case waiting(fileID: String, line: Int, after: UInt64?, deadline: Duration)
+        case matched(sequence: UInt64)
+        case timedOut
+
+        var description: String {
+            switch self {
+            case .frame(let frame):
+                let nodes = frame.semantics.accessibilityNodes.filter { node in
+                    let isFocused = node.identity == frame.focusedIdentity
+                    let isSearchControl = node.role == .textField || node.role == .list
+                    return isFocused || isSearchControl
+                }.map { node in
+                    "\(node.role) \(String(reflecting: node.label)) id=\(node.identity.path) rect=\(node.rect)"
+                }.joined(separator: "\n  ")
+                let regions = frame.semantics.focusRegions.map { region in
+                    "\(region.identity.path) rect=\(region.rect) interactions=\(region.focusInteractions)"
+                }.joined(separator: "\n  ")
+                return """
+                    frame \(frame.sequence), size=\(frame.raster.size), focused=\(String(describing: frame.focusedIdentity?.path))
+                      controls: \(nodes)
+                      regions: \(regions)
+                    """
+            case .focus(let presentation):
+                return "focus=\(String(describing: presentation.focusedIdentity?.path)), semantics=\(presentation.semantics)"
+            case .runtimeIssue(let issue):
+                return issue.description
+            case .waiting(let fileID, let line, let sequence, let deadline):
+                return "wait at \(fileID):\(line), after=\(String(describing: sequence)), deadline=\(deadline)"
+            case .matched(let sequence):
+                return "matched frame \(sequence)"
+            case .timedOut:
+                return "wait timed out"
+            }
+        }
     }
 
     private struct FrameTimeout: Error, CustomStringConvertible {

@@ -13,7 +13,7 @@ struct TimerExampleTests {
     func layout(size: CellSize, appearance: ExampleTheme) {
         let rendered = DefaultRenderer().render(
             TimerExampleView(theme: appearance, now: { .zero }).environment(\.terminalSize, size),
-            proposal: .init(width: size.width, height: size.height), frameInstant: .zero
+            proposal: ProposedViewSize(width: size.width, height: size.height), frameInstant: .zero
         )
         let text = rendered.rasterSurface.lines.joined(separator: "\n")
         #expect(rendered.rasterSurface.size == size)
@@ -77,7 +77,7 @@ struct TimerExampleTests {
                     && $0.timerElapsed("3 seconds") && $0.timerRemaining("20 seconds")
                     && $0.raster.cells != batched.raster.cells
             }
-            surface.updateSurfaceSize(.init(width: 36, height: 18))
+            surface.updateSurfaceSize(CellSize(width: 36, height: 18))
             session.requestSurfaceRefresh()
             let compact = try await recorder.wait(after: themed.sequence, description: "compact layout retains the running clock and focused Reset action") {
                 $0.raster.size == CellSize(width: 36, height: 18) && $0.timerFocused("Reset stopwatch")
@@ -164,7 +164,7 @@ struct TimerExampleTests {
             }
             // These changes happen without yielding or rendering an intermediate expiry frame.
             clock.advance(by: .seconds(21))
-            surface.updateSurfaceSize(.init(width: 36, height: 18))
+            surface.updateSurfaceSize(CellSize(width: 36, height: 18))
             session.requestSurfaceRefresh()
             let expired = try await recorder.wait(after: running.sequence, description: "expiry observed in the resized layout pauses countdown rather than leaving its schedule running") {
                 $0.raster.size == CellSize(width: 36, height: 18) && $0.timerContains("Complete")
@@ -190,9 +190,9 @@ struct TimerExampleTests {
         }
     }
 
-    @Test("Default clock advances through the native TimelineView after native Start")
-    func liveTimeline() async throws {
-        try await withTimer { session, _, recorder in
+    @Test("The native clock advances after Start even when reduced motion is requested", arguments: [false, true])
+    func liveTimeline(reducedMotion: Bool) async throws {
+        try await withTimer(reducedMotion: reducedMotion) { session, _, recorder in
             let initial = try await recorder.wait(description: "live stopwatch starts paused with native button focus") {
                 $0.timerFocused("Start stopwatch") && $0.timerElapsed("0 seconds")
             }
@@ -219,31 +219,37 @@ private final class TimerTestClock {
 
 private struct TimerTestApp {
     let now: @MainActor () -> MonotonicInstant
+    let reducedMotion: Bool
 
     nonisolated init() {
         now = { .now() }
+        reducedMotion = false
     }
 
-    nonisolated init(now: @escaping @MainActor () -> MonotonicInstant) {
+    nonisolated init(now: @escaping @MainActor () -> MonotonicInstant, reducedMotion: Bool) {
         self.now = now
+        self.reducedMotion = reducedMotion
     }
 }
 
 extension TimerTestApp: App {
     var body: some Scene {
-        WindowGroup(id: "timer-tests") { TimerExampleView(now: now) }.exitOnKeys([])
+        WindowGroup(id: "timer-tests") {
+            TimerExampleView(now: now).environment(\.accessibilityReduceMotion, reducedMotion)
+        }.exitOnKeys([])
     }
 }
 
 @MainActor
 private func withTimer(
     now: @escaping @MainActor () -> MonotonicInstant = { .now() },
+    reducedMotion: Bool = false,
     perform: @MainActor (HostedSceneSession, HostedRasterSurface, HostedFrameRecorder) async throws -> Void
 ) async throws {
     let recorder = HostedFrameRecorder()
-    let surface = HostedRasterSurface(surfaceSize: .init(width: 100, height: 30), appearance: .fallback,
+    let surface = HostedRasterSurface(surfaceSize: CellSize(width: 100, height: 30), appearance: .fallback,
                                       onFrame: { recorder.receive($0) })
-    let session = try HostedSceneSession(for: TimerTestApp(now: now), sceneID: "timer-tests", surface: surface)
+    let session = try HostedSceneSession(for: TimerTestApp(now: now, reducedMotion: reducedMotion), sceneID: "timer-tests", surface: surface)
     let run = Task { try await session.start() }
     do {
         try await perform(session, surface, recorder)
