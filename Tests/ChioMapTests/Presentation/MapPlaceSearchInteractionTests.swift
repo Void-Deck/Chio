@@ -64,6 +64,10 @@ struct MapPlaceSearchInteractionTests {
             let results = try await frames.wait(after: zoomed.sequence) {
                 $0.placeText.contains("1 match") && $0.placeText.contains("Near 1.2890, 103.8660") && $0.focusesPlaceResults
             }
+            let firstLookup = try #require(frames.firstFrame(after: zoomed.sequence) {
+                $0.placeText.contains("1 match") && $0.placeText.contains("Near 1.2890, 103.8660")
+            })
+            #expect(firstLookup.focusesPlaceResults)
             #expect(results.placeText.contains("Singapore Flyer"))
             #expect(results.placeText.contains("Center 1.289, 103.866 · span 0.0210°"))
             #expect(try await provider.lookups == [MapCoordinate(latitude: 1.289, longitude: 103.866)])
@@ -470,6 +474,10 @@ struct MapPlaceSearchInteractionTests {
                 $0.placeText.contains("1 match") && $0.placeText.contains("Synthetic place")
                     && $0.focusesPlaceResults
             }
+            let firstMatches = try #require(frames.firstFrame(after: completedDraft.sequence) {
+                $0.placeText.contains("1 match") && $0.placeText.contains("Synthetic place")
+            })
+            #expect(firstMatches.focusesPlaceResults)
             #expect(await provider.queries == ["Merlion"])
             #expect(matches.focusedIdentity != completedDraft.focusedIdentity)
             #expect(matches.placeText.contains("Center 1.289, 103.866 · span 0.0210°"))
@@ -503,6 +511,10 @@ struct MapPlaceSearchInteractionTests {
             let pole = try await frames.wait(after: dismissed.sequence) {
                 $0.placeText.contains("1 match") && $0.placeText.contains("North Pole") && $0.focusesPlaceResults
             }
+            let firstPole = try #require(frames.firstFrame(after: dismissed.sequence) {
+                $0.placeText.contains("1 match") && $0.placeText.contains("North Pole")
+            })
+            #expect(firstPole.focusesPlaceResults)
             session.send(.key(.return))
             let rejected = try await frames.wait(after: pole.sequence) { $0.placeText.contains("outside Mercator projection") }
             #expect(rejected.placeText.contains("Center 1.287, 103.855 · span 0.0210°"))
@@ -557,14 +569,28 @@ private final class PlaceFrames {
         if observations.count > 64 { observations.removeFirst() }
     }
 
+    func firstFrame(after sequence: UInt64,
+                    matching predicate: (SemanticHostFrame) -> Bool) -> SemanticHostFrame? {
+        for observation in observations {
+            guard case .frame(let frame) = observation.event else { continue }
+            if frame.sequence > sequence, predicate(frame) { return frame }
+        }
+        return nil
+    }
+
     func wait(after sequence: UInt64? = nil,
               fileID: String = #fileID, line: Int = #line,
               matching predicate: (SemanticHostFrame) -> Bool) async throws -> SemanticHostFrame {
         let deadline = ContinuousClock.now.advanced(by: .seconds(5))
+        record(.waiting(fileID: fileID, line: line, after: sequence, deadline: started.duration(to: deadline)))
         while ContinuousClock.now < deadline {
-            if let latest, sequence.map({ latest.sequence > $0 }) ?? true, predicate(latest) { return latest }
+            if let latest, sequence.map({ latest.sequence > $0 }) ?? true, predicate(latest) {
+                record(.matched(sequence: latest.sequence))
+                return latest
+            }
             try await Task.sleep(for: .milliseconds(10))
         }
+        record(.timedOut)
         let history = observations.map { "\($0.elapsed): \($0.event.description)" }.joined(separator: "\n")
         throw FrameTimeout(text: """
             Wait at \(fileID):\(line), after sequence \(String(describing: sequence))
@@ -579,6 +605,9 @@ private final class PlaceFrames {
         case frame(SemanticHostFrame)
         case focus(FocusPresentation)
         case runtimeIssue(RuntimeIssue)
+        case waiting(fileID: String, line: Int, after: UInt64?, deadline: Duration)
+        case matched(sequence: UInt64)
+        case timedOut
 
         var description: String {
             switch self {
@@ -602,6 +631,12 @@ private final class PlaceFrames {
                 return "focus=\(String(describing: presentation.focusedIdentity?.path)), semantics=\(presentation.semantics)"
             case .runtimeIssue(let issue):
                 return issue.description
+            case .waiting(let fileID, let line, let sequence, let deadline):
+                return "wait at \(fileID):\(line), after=\(String(describing: sequence)), deadline=\(deadline)"
+            case .matched(let sequence):
+                return "matched frame \(sequence)"
+            case .timedOut:
+                return "wait timed out"
             }
         }
     }

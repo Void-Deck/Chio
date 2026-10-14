@@ -158,6 +158,16 @@ also observes public native focus and runtime issues. These diagnostics preserve
 input, predicates and five-second waits. Fifty bounded local tab launches pass
 without reproducing the hosted failure; that is not evidence of its resolution.
 
+The map recorder also retains exact wait deadlines, matches and timeout
+observations. A results-list focus callback follows native frame submission;
+its presence without a delivered frame does not establish a lost focus request.
+The example now publishes accepted results, selection and desired native focus
+together, avoiding an intermediate results frame that still focuses the editor.
+Forward/reopen and reverse regressions inspect the first accepted-results frame.
+The forward checks fail before the correction. Initial/preloaded response,
+current-phase, dismissal and batched-input coverage remain in place, as do all
+five-second waits and the existing debug/release verification policy.
+
 The duration failure reproduces with the unchanged executable on macOS when
 `CI=1`; the same binary passes the complete duration workflow with `CI=0`.
 SwiftTUI's CLI intentionally suppresses animation timelines under CI's stable-output

@@ -184,13 +184,30 @@ struct MapExampleView {
     }
 
     private func submitSearch(text: String, owner: MapPlaceSearch,
-                              phase: Binding<MapPlaceSearch.Phase>, selection: Binding<Int?>) {
+                              phase: Binding<MapPlaceSearch.Phase>, selection: Binding<Int?>,
+                              focus: FocusState<Focus?>.Binding) {
         owner.submit(text: text) { update in
-            phase.wrappedValue = update
-            switch update {
-            case .matches(_, let matches, _): selection.wrappedValue = matches.places.isEmpty ? nil : 0
-            case .idle, .loading, .failed: selection.wrappedValue = nil
-            }
+            presentSearch(update, phase: phase, selection: selection, focus: focus)
+        }
+    }
+
+    private func presentSearch(_ update: MapPlaceSearch.Phase, phase: Binding<MapPlaceSearch.Phase>,
+                               selection: Binding<Int?>, focus: FocusState<Focus?>.Binding) {
+        // Publish the response and its focus request together, so presenting
+        // results does not depend on a later lifecycle callback and full frame.
+        phase.wrappedValue = update
+        let requestedFocus: Focus
+        switch update {
+        case .matches(_, let matches, _):
+            let hasMatches = !matches.places.isEmpty
+            selection.wrappedValue = hasMatches ? 0 : nil
+            requestedFocus = hasMatches ? .results : .field
+        case .idle, .loading, .failed:
+            selection.wrappedValue = nil
+            requestedFocus = .field
+        }
+        if focus.wrappedValue != requestedFocus {
+            focus.wrappedValue = requestedFocus
         }
     }
 
@@ -207,13 +224,10 @@ struct MapExampleView {
         isSearching = true
         let phaseStorage = $searchPhase
         let selectionStorage = $resultSelection
+        let focusStorage = $focus
         // Snapshot the submitted centre; later camera movement never retargets it.
         owner.lookup(coordinate: camera.center) { update in
-            phaseStorage.wrappedValue = update
-            switch update {
-            case .matches(_, let matches, _): selectionStorage.wrappedValue = matches.places.isEmpty ? nil : 0
-            case .idle, .loading, .failed: selectionStorage.wrappedValue = nil
-            }
+            presentSearch(update, phase: phaseStorage, selection: selectionStorage, focus: focusStorage)
         }
     }
 
@@ -313,7 +327,8 @@ extension MapExampleView: View {
         let routingStorage = $routePhase
         let routeSelectionStorage = $selection
         let submit: @MainActor @Sendable () -> Void = {
-            submitSearch(text: draftStorage.wrappedValue, owner: owner, phase: phaseStorage, selection: selectionStorage)
+            submitSearch(text: draftStorage.wrappedValue, owner: owner, phase: phaseStorage,
+                         selection: selectionStorage, focus: focusStorage)
         }
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 1) {

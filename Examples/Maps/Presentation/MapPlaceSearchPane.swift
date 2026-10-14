@@ -148,11 +148,15 @@ extension MapPlaceSearchPane: View {
             // A retained callback may run after acceptance or dismissal has
             // advanced the parent. Decide from current storage at delivery.
             guard isPresented.wrappedValue else { return }
+            let requestedFocus: MapExampleView.Focus
             switch currentPhase.wrappedValue {
             case .matches(_, let matches, _) where !matches.places.isEmpty:
-                focus.wrappedValue = .results
+                requestedFocus = .results
             case .idle, .loading, .failed, .matches:
-                focus.wrappedValue = .field
+                requestedFocus = .field
+            }
+            if focus.wrappedValue != requestedFocus {
+                focus.wrappedValue = requestedFocus
             }
         }
     }
