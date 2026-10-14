@@ -24,6 +24,11 @@ struct TimerExampleView {
 
     private var theme: ChioTheme { themeChoice.theme }
 
+    private var timelineSchedule: TimerSchedule {
+        if stopwatch.isRunning || countdown.isRunning { return .running }
+        return .paused
+    }
+
     private func toggleStopwatch() {
         let instant = now()
         stopwatch = stopwatch.isRunning ? stopwatch.paused(at: instant) : stopwatch.resumed(at: instant)
@@ -166,8 +171,7 @@ struct TimerExampleView {
 
 extension TimerExampleView: View {
     var body: some View {
-        TimelineView(.animation(minimumInterval: .seconds(1),
-                                paused: !stopwatch.isRunning && !countdown.isRunning)) { _ in
+        TimelineView(timelineSchedule) { _ in
             content(at: now())
         }
         .onKeyPress { press in
@@ -192,3 +196,40 @@ extension TimerExampleView: View {
         .chioTheme(theme)
     }
 }
+
+// A clock must keep updating when animation is suppressed. Keep the native
+// timeline mounted while paused so its controls retain their identity and focus.
+private enum TimerSchedule {
+    case paused
+    case running
+}
+
+extension TimerSchedule: TimelineSchedule {
+    func entries(from startInstant: MonotonicInstant, mode: TimelineScheduleMode) -> Entries {
+        switch self {
+        case .paused:
+            return .paused
+        case .running:
+            let schedule = PeriodicTimelineSchedule(from: .zero, by: .seconds(1))
+            return .periodic(schedule.entries(from: startInstant, mode: mode))
+        }
+    }
+
+    enum Entries: Sequence, IteratorProtocol, Sendable {
+        case paused
+        case periodic(PeriodicTimelineSchedule.Entries)
+
+        mutating func next() -> MonotonicInstant? {
+            switch self {
+            case .paused:
+                return nil
+            case .periodic(var iterator):
+                let next = iterator.next()
+                self = .periodic(iterator)
+                return next
+            }
+        }
+    }
+}
+
+extension TimerSchedule: Hashable {}

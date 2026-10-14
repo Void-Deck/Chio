@@ -429,9 +429,13 @@ component extraction. Integer formatting preserves attosecond boundaries.
 
 Applications own measurement, pause/resume, limits and expiry effects; SwiftTUI
 owns scheduling/cancellation. The executable's internal immutable `ElapsedTime`
-and native timeline demonstrate these contracts. Native schedules retain a stable
-origin across renders and pause when idle; recreating a default current-time
-origin restarts the driver. No public timekeeping subsystem is part of Chio.
+and native timeline demonstrate these contracts. A private paused/running schedule
+composes the native one-second periodic schedule with a stable zero origin. It
+emits no entries while both clocks are idle, keeping the timeline and its controls
+mounted. Recreating a default current-time origin would restart the driver.
+Functional clock updates continue under reduced motion and CI's stable-output
+policy; animation schedules intentionally stop under those policies and must not
+drive these clocks. No public timekeeping subsystem is part of Chio.
 
 ## btop-inspired UI inventory
 

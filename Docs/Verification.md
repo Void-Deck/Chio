@@ -140,6 +140,34 @@ record the wait start/deadline, so it cannot prove a lost request or a precise
 deadline race. Twenty separate unchanged macOS tab-test launches pass locally;
 that bounded result does not explain the hosted failures.
 
+At candidate `42a72856`, complete local macOS and Linux ARM64 gates pass,
+including debug/release suites, terminal workflows, appearance checks and map
+process probes. Compiler-backed SwiftRules passes on both platforms with 351
+files and 402 baseline findings. The [hosted candidate run](https://github.com/echoz/Chio/actions/runs/38531964141)
+resolves all sixteen layout issues on both platforms. macOS's debug tab activation
+case still times out after Return; map and dashboard targets pass. Release and
+terminal checks are not reached on that platform. Linux x86_64 passes every debug
+and release test, the dashboard build, 24 snapshots and eleven terminal workflows;
+the duration example then remains at `0:00 Running` during its fifteen-second
+advancement check. Later terminal and map process checks are not reached there.
+The PR remains draft while the remaining failures are addressed.
+
+The library recorder retains up to 64 lazily formatted observations of wait
+start, deadline-task start, frame delivery, match and timeout. The tab workflow
+also observes public native focus and runtime issues. These diagnostics preserve
+input, predicates and five-second waits. Fifty bounded local tab launches pass
+without reproducing the hosted failure; that is not evidence of its resolution.
+
+The duration failure reproduces with the unchanged executable on macOS when
+`CI=1`; the same binary passes the complete duration workflow with `CI=0`.
+SwiftTUI's CLI intentionally suppresses animation timelines under CI's stable-output
+policy. The example now composes a native periodic schedule that continues
+functional clock updates under reduced motion and emits no entries while idle.
+The existing live-timeline test also runs with reduced motion enabled and fails
+before this correction. Its five-second wait and the fifteen-second terminal
+advancement assertion remain unchanged. Four constructor spellings in that suite
+are made explicit, removing exactly three additional baseline entries.
+
 ## Running checks
 
 The 2026-10-13 personal-client rollout explicitly accepts the released SwiftTUI

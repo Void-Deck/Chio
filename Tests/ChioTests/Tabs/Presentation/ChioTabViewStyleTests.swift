@@ -109,7 +109,9 @@ struct ChioTabViewStyleTests {
         let surface = HostedRasterSurface(surfaceSize: CellSize(width: 36, height: 8), appearance: .fallback,
                                           onFrame: { recorder.receive($0) })
         let session = try HostedSceneSession(for: TabStyleTestApp(theme: theme, suppressed: suppressed),
-                                            sceneID: "tab-style", surface: surface)
+                                            sceneID: "tab-style", surface: surface,
+                                            runtimeIssueSink: RuntimeIssueSink { recorder.record(.runtimeIssue($0)) },
+                                            onFocusPresentationChange: { recorder.record(.focus($0)) })
         let run = Task { try await session.start() }
         do {
             let initial = try await recorder.wait(description: "native tab strip focus") {
