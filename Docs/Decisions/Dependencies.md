@@ -136,17 +136,24 @@ The combined native candidate is `91133fae27dd1c977a5f6746c1ff8f73008fdf44`.
 `3ecf9a9b0f08a9a413e478ca3fce97e98d6cba8a`;
 [Spacer PR #50](https://github.com/SwiftTUI/swift-tui/pull/50) carries the same
 second patch independently on 0.17.0 at
-`d8b845ae2ad47d6b73c4b7f7a333378b374c2b7a`. Both are open contributions, not changes
-included in the released pin above.
+`d8b845ae2ad47d6b73c4b7f7a333378b374c2b7a`. These are the original contribution
+heads, not changes included in the released pin above.
 
-On 2026-10-13, both PRs remain open and have incorporated upstream `main`:
+Earlier on 2026-10-13, both PRs incorporated upstream `main`:
 #49 is `74bdd6c7a3015ec1f3f5bc647bec068052054949`, and #50 is
-`40c1bd8f2f7e73c3bde3630f4fcb21c2481e32ff`. All 24 checks pass on each current
-head across macOS, Linux/WASI, Windows, public API, performance and release
-soundness. The maintainer merged the separate descriptor-reuse test correction
+`40c1bd8f2f7e73c3bde3630f4fcb21c2481e32ff`. All 24 checks passed on each head
+at that check across macOS, Linux/WASI, Windows, public API, performance and
+release soundness. The maintainer merged the separate descriptor-reuse test correction
 in [#51](https://github.com/SwiftTUI/swift-tui/pull/51). These heads are not used
 by this rollout. Earlier failure evidence below belongs to the original heads;
 passing newer CI does not itself establish the original release crash's cause.
+
+The subsequent 2026-10-13 status check confirms #49 and #50 are merged. Their
+final heads are `50b29b147ca07f825863b141aebad4a36637f382` and
+`40c1bd8f2f7e73c3bde3630f4fcb21c2481e32ff`; the maintainer added a semantic
+accessibility follow-up to #49. SwiftTUI 0.17.0 remains the latest published
+stable release and Chio's pin. Upstream merge does not establish released
+availability or Chio qualification of those final trees.
 
 Chio's test migration at `ff870923bd86d9b76195f54cd1f0292c8f7c7174` checks the new
 button/expanded/controls disclosure contract,

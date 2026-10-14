@@ -3,7 +3,7 @@
 **Status:** Personal-client adoption of released 0.17.0 is approved with known
 disclosure-content and compact-layout regressions. Local native corrections pass
 full native and consumer gates on macOS and Linux arm64. Upstream PRs #49 and #50
-remain open with passing CI on their current heads; they are not included in this pin.
+have merged; they are not included in the latest published release or this pin.
 
 Keep native ownership and visible limitations explicit when composing or extending Chio.
 

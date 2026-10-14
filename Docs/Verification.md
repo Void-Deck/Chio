@@ -287,7 +287,11 @@ terminal limitations. Site assembly passes. Safari inspection passed theme previ
 matching commands/snippets, playback, pause, seeking, category navigation and
 browser history. The actual page also fits an embedded 390-pixel viewport;
 isolated script-free and missing-theme-image fixtures retain the preview,
-download and command fallbacks. The updated showcase has not been deployed.
+download and command fallbacks. After merge at `6f3c630`, the
+[site deployment](https://github.com/echoz/Chio/actions/runs/38519554062) passed.
+The published page was inspected with actual recording playback, loaded
+default/light/btop route previews and matching theme-specific launch commands;
+no browser warnings or errors appeared in that smoke check.
 No public routing endpoint or SSH terminal was exercised.
 
 The normal macOS gate at `bf39e2ff` reproduced exactly the 16 accepted SwiftTUI
@@ -308,7 +312,7 @@ application polling or longer deadline has been introduced. The initial Linux
 image-registry failure was cleared; it supplies no test evidence. Both hosted
 scripts stop at their debug failures, so the separate local release and terminal
 results above remain distinct. [PR #14](https://github.com/echoz/Chio/pull/14)
-tracks current readiness; hosted verification is not claimed to pass.
+records the integrated checks; hosted verification is not claimed to pass.
 
 Routing was rebased onto the merged rules upgrade at `38fc258`. The overlapping
 attribution and HTTP conformance declarations retain their existing public and
@@ -317,6 +321,17 @@ the rebased macOS compiler-backed gate passes across 351 Swift files with the
 same 414 baseline findings. Dependency pins, tests and visual assets are unchanged
 by the rebase. [PR #14](https://github.com/echoz/Chio/pull/14) records subsequent
 platform results; reorganization does not claim to repair the search-focus failure.
+
+The follow-up test recorder retains at most 64 frame, focus-presentation and
+runtime-issue observations through public hosted-session APIs. It formats the
+trace only on timeout, including the failing wait callsite, relative event times,
+native focused identity, control roles/rectangles and available focus regions.
+The latest raster remains in the report. Stored historical frames do not satisfy
+waits: input, success predicates, sequence checks, five-second deadlines and
+10 ms polling remain unchanged. Instrumentation may affect allocation or timing;
+passing repetitions do not establish that the original intermittent is fixed.
+The trace does not expose authored focus-request or lifecycle generations and
+therefore cannot by itself prove the native cause.
 
 To record the search workflow, run the map probe with `--place-search --theme
 default --record .build/captures/maps-default.cast` and an explicit `--output-dir`.

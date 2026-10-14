@@ -97,9 +97,9 @@ verification. [Dependencies](Decisions/Dependencies.md#0170-adoption-candidate)
 owns the accepted limits and qualification evidence.
 
 Local native fixes restore both layouts and pass full native and consumer gates
-on macOS and Linux arm64. Upstream PRs #49 and #50 remain open; their current heads
-pass all hosted checks. Adopt their corrections separately once published and
-verified. The measured-height correction in #47 has merged but is absent from
+on macOS and Linux arm64. Upstream PRs #49 and #50 have merged, but are absent
+from the latest published release, 0.17.0. Adopt their corrections separately once
+published and verified. The measured-height correction in #47 has merged but is absent from
 0.17.0; it is not part of this rollout.
 
 The merged runtime correction in
@@ -125,8 +125,8 @@ platform evidence and remaining limits.
 
 **Status:** Scope approved on 2026-10-09. Persistent caching is implemented;
 programmatic local packs are implemented.
-Forward and reverse geocoding are merged; the approved routing service slice is
-in progress after its readability spike. Provider downloads remain paused. The following order keeps
+Forward/reverse geocoding and the routing service slice are merged.
+Provider downloads remain paused. The following order keeps
 one testable slice at a time; current contracts live in the owning decisions.
 
 The preceding robustness slice fixes the two reproduced audit defects:
@@ -228,25 +228,32 @@ matching theme commands and the new API link. Existing unaffected mobile/fallbac
 evidence is reused; no fresh mobile browser run is claimed. No tile acquisition or
 routing is added by those geocoding changes.
 
-### Current slice: submitted routing
+### Delivered: submitted routing
 
-**Status:** The muted-map, bright-route visual treatment is approved. The first
-service slice is implemented as a candidate: an explicit OSRM endpoint, checked two-point route
-requests and attributed geometry/estimates, composed through existing overlays.
+**Status:** [PR #14](https://github.com/echoz/Chio/pull/14) merged on 2026-10-13
+at `6f3c630`, after the SwiftRules upgrade in #15. This is merged source, not a
+new versioned release. The first service slice provides an explicit OSRM endpoint,
+checked two-point route requests and attributed geometry/estimates, composed through existing overlays.
 [Routing](Decisions/Routing.md) owns the API, limits and example behavior.
 
 The example remains fixture-backed by default and owns submission, cancellation,
 latest-pending replacement and stale-result rejection. No default live service,
 automatic rerouting, turn-by-turn navigation or renderer changes are included.
 Focused macOS/Linux checks and browser review pass; terminal captures are refreshed.
-Hosted verification retains an intermittent place-search focus timeout on Linux
-beyond the known SwiftTUI failures. The fresh macOS map suite passes; the initial
-registry failure was cleared. Merge/deployment remain outstanding; see
-[verification evidence](Verification.md#running-checks). Known SwiftTUI 0.17.0
-failures remain explicit. Routing is rebased onto the merged SwiftRules upgrade;
-[PR #14](https://github.com/echoz/Chio/pull/14) tracks the integrated checks and
-the unresolved search-focus failure.
+The routing showcase is deployed. Known SwiftTUI 0.17.0 failures and the
+intermittent place-search focus timeout remain explicit; see
+[verification evidence](Verification.md#running-checks).
 Provider downloads stay paused.
+
+### Current slice: place-search focus diagnostics
+
+Investigate the intermittent native search reopen timeout before changing focus
+behavior. Preserve the complete resize/reopen workflow, exact list-focus assertion
+and five-second wait. Retain bounded committed-frame, focus-presentation and
+runtime-issue observations so a failure distinguishes displayed results from
+native focus delivery. Use public hosted-session APIs; no polling workaround,
+forced redraw, hidden dependency patch or new production hook is authorized by
+this diagnostic slice. Passing repetitions do not establish a fix.
 
 <a id="next-slice-offline-pack-acquisition"></a>
 
@@ -327,7 +334,7 @@ filters, extensible upstream/raw-input switches, native wrappers and private
 nested conformances retain their documented roles.
 
 The map expansion above remains approved. Provider archive acquisition remains
-paused at the user's request; submitted routing is the current implementation slice.
+paused at the user's request; place-search focus diagnosis is the current slice.
 Real application use of the public map
 remains useful validation. Other component additions and a
 new stable release remain possible directions, not delivery promises.

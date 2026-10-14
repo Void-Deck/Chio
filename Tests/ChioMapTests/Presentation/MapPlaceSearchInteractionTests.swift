@@ -441,7 +441,11 @@ struct MapPlaceSearchInteractionTests {
                                           onFrame: { frames.latest = $0 })
         let application = MapExampleApplication(fixtures: try MapFixtures.load(), scene: .street,
                                                appearance: .default, geocoder: provider)
-        let session = try HostedSceneSession(for: application, sceneID: WindowIdentifier("Chio maps"), surface: surface)
+        let session = try HostedSceneSession(
+            for: application, sceneID: WindowIdentifier("Chio maps"), surface: surface,
+            runtimeIssueSink: RuntimeIssueSink { frames.record(.runtimeIssue($0)) },
+            onFocusPresentationChange: { frames.record(.focus($0)) }
+        )
         let run = Task { try await session.start() }
         do {
             let initial = try await frames.wait { $0.placeText.contains("Center 1.289, 103.866") && $0.focusedIdentity != nil }
@@ -538,16 +542,68 @@ extension CountedFixtureGeocoder: MapReverseGeocodingProvider {
 
 @MainActor
 private final class PlaceFrames {
-    var latest: SemanticHostFrame?
+    var latest: SemanticHostFrame? {
+        didSet {
+            if let latest { record(.frame(latest)) }
+        }
+    }
+    private let started = ContinuousClock.now
+    private var observations: [(elapsed: Duration, event: Observation)] = []
+
+    // Retain committed frames, including those between polls, without formatting
+    // diagnostics or changing which frame can satisfy the existing wait.
+    func record(_ event: Observation) {
+        observations.append((started.duration(to: .now), event))
+        if observations.count > 64 { observations.removeFirst() }
+    }
 
     func wait(after sequence: UInt64? = nil,
+              fileID: String = #fileID, line: Int = #line,
               matching predicate: (SemanticHostFrame) -> Bool) async throws -> SemanticHostFrame {
         let deadline = ContinuousClock.now.advanced(by: .seconds(5))
         while ContinuousClock.now < deadline {
             if let latest, sequence.map({ latest.sequence > $0 }) ?? true, predicate(latest) { return latest }
             try await Task.sleep(for: .milliseconds(10))
         }
-        throw FrameTimeout(text: latest?.placeText ?? "No frame received")
+        let history = observations.map { "\($0.elapsed): \($0.event.description)" }.joined(separator: "\n")
+        throw FrameTimeout(text: """
+            Wait at \(fileID):\(line), after sequence \(String(describing: sequence))
+            Recent observations (up to 64):
+            \(history)
+            Latest raster:
+            \(latest?.placeText ?? "No frame received")
+            """)
+    }
+
+    enum Observation {
+        case frame(SemanticHostFrame)
+        case focus(FocusPresentation)
+        case runtimeIssue(RuntimeIssue)
+
+        var description: String {
+            switch self {
+            case .frame(let frame):
+                let nodes = frame.semantics.accessibilityNodes.filter { node in
+                    let isFocused = node.identity == frame.focusedIdentity
+                    let isSearchControl = node.role == .textField || node.role == .list
+                    return isFocused || isSearchControl
+                }.map { node in
+                    "\(node.role) \(String(reflecting: node.label)) id=\(node.identity.path) rect=\(node.rect)"
+                }.joined(separator: "\n  ")
+                let regions = frame.semantics.focusRegions.map { region in
+                    "\(region.identity.path) rect=\(region.rect) interactions=\(region.focusInteractions)"
+                }.joined(separator: "\n  ")
+                return """
+                    frame \(frame.sequence), size=\(frame.raster.size), focused=\(String(describing: frame.focusedIdentity?.path))
+                      controls: \(nodes)
+                      regions: \(regions)
+                    """
+            case .focus(let presentation):
+                return "focus=\(String(describing: presentation.focusedIdentity?.path)), semantics=\(presentation.semantics)"
+            case .runtimeIssue(let issue):
+                return issue.description
+            }
+        }
     }
 
     private struct FrameTimeout: Error, CustomStringConvertible {
