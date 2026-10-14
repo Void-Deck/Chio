@@ -20,13 +20,9 @@ extension FileEntry: Identifiable {
     var id: URL { url }
 }
 
-extension FileEntry: Hashable {}
 extension FileEntry: Codable {}
+extension FileEntry: Hashable {}
 extension FileEntry: Sendable {}
-
-extension FileEntry.Kind: Hashable {}
-extension FileEntry.Kind: Codable {}
-extension FileEntry.Kind: Sendable {}
 
 extension FileEntry.Kind {
     var isDirectory: Bool {
@@ -50,3 +46,7 @@ extension FileEntry.Kind {
         }
     }
 }
+
+extension FileEntry.Kind: Codable {}
+extension FileEntry.Kind: Hashable {}
+extension FileEntry.Kind: Sendable {}

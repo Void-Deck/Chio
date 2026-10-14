@@ -113,11 +113,13 @@ Run the [consumer gates](Verification.md), reporting known failures rather than
 weakening them. Publishing a compatibility revision is distinct from a versioned
 Chio release and from completed adoption by every consumer.
 
-SwiftRules 0.1.4 adoption is deferred: its source-only gate exposes 75 conformance
-placement/order diagnostics across 52 production files. The operational pin remains
-0.1.3 with no baseline expansion. Chio's next conformance-maintenance owner must
-classify and resolve those findings and verify/review the upgrade as described in
-[Verification](Verification.md#deferred-014-adoption).
+SwiftRules 0.1.4 adoption is in a separate reviewed maintenance candidate. It corrects
+conformance placement/order and adds a repeatable compiler-backed witness check,
+preserving behavior, access and isolation with no baseline expansion. Compiler
+checks pass on macOS and Linux; application gates retain the accepted native
+failures. A candidate pin is not default-branch adoption.
+[Verification](Verification.md#014-adoption-candidate) owns the procedure,
+platform evidence and remaining limits.
 
 ## Approved map expansion
 

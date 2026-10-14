@@ -29,6 +29,6 @@ extension ChioStyle {
     }
 }
 
-extension ChioStyle.GaugeColors: Hashable {}
 extension ChioStyle.GaugeColors: Codable {}
+extension ChioStyle.GaugeColors: Hashable {}
 extension ChioStyle.GaugeColors: Sendable {}

@@ -140,6 +140,6 @@ enum PhotonPlaceDecoder {
     }
 }
 
-extension PhotonPlaceDecoder.DecodeError: Error {}
 extension PhotonPlaceDecoder.DecodeError: Equatable {}
+extension PhotonPlaceDecoder.DecodeError: Error {}
 extension PhotonPlaceDecoder.DecodeError: Sendable {}

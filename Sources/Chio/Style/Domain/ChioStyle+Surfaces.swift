@@ -32,9 +32,10 @@ extension ChioStyle {
     }
 }
 
-extension ChioStyle.Surface: Hashable {}
 extension ChioStyle.Surface: Codable {}
+extension ChioStyle.Surface: Hashable {}
 extension ChioStyle.Surface: Sendable {}
-extension ChioStyle.Surfaces: Hashable {}
+
 extension ChioStyle.Surfaces: Codable {}
+extension ChioStyle.Surfaces: Hashable {}
 extension ChioStyle.Surfaces: Sendable {}

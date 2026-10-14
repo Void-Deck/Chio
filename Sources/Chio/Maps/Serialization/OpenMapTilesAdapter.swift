@@ -178,6 +178,7 @@ extension OpenMapTilesAdapter: MapSourceAdapter {
 }
 
 extension OpenMapTilesAdapter: Sendable {}
-extension OpenMapTilesAdapter.ValidationError: Error {}
+
 extension OpenMapTilesAdapter.ValidationError: Equatable {}
+extension OpenMapTilesAdapter.ValidationError: Error {}
 extension OpenMapTilesAdapter.ValidationError: Sendable {}

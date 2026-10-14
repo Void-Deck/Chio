@@ -37,8 +37,6 @@ public struct MapCamera {
     }
 }
 
-extension MapCamera: Hashable {}
-extension MapCamera: Sendable {}
 extension MapCamera: Codable {
     private enum CodingKeys: String, CodingKey { case center, longitudeSpan }
 
@@ -48,3 +46,6 @@ extension MapCamera: Codable {
                       longitudeSpan: values.decode(Double.self, forKey: .longitudeSpan))
     }
 }
+
+extension MapCamera: Hashable {}
+extension MapCamera: Sendable {}

@@ -43,8 +43,8 @@ public struct MarkdownView {
     }
 }
 
-extension MarkdownView.CodeHighlighting: Hashable {}
 extension MarkdownView.CodeHighlighting: Codable {}
+extension MarkdownView.CodeHighlighting: Hashable {}
 extension MarkdownView.CodeHighlighting: Sendable {}
 
 extension MarkdownView: View {

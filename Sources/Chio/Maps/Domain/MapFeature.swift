@@ -40,9 +40,6 @@ public struct MapFeature {
     }
 }
 
-extension MapFeature: Hashable {}
-extension MapFeature: Identifiable {}
-extension MapFeature: Sendable {}
 extension MapFeature: Codable {
     private enum CodingKeys: String, CodingKey { case id, kind, name, geometry }
 
@@ -55,6 +52,10 @@ extension MapFeature: Codable {
     }
 }
 
-extension MapFeature.Kind: Hashable {}
+extension MapFeature: Hashable {}
+extension MapFeature: Identifiable {}
+extension MapFeature: Sendable {}
+
 extension MapFeature.Kind: Codable {}
+extension MapFeature.Kind: Hashable {}
 extension MapFeature.Kind: Sendable {}

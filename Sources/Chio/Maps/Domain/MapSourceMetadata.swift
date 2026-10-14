@@ -41,8 +41,6 @@ public struct MapSourceMetadata {
     }
 }
 
-extension MapSourceMetadata: Hashable {}
-extension MapSourceMetadata: Sendable {}
 extension MapSourceMetadata: Codable {
     private enum CodingKeys: String, CodingKey {
         case attribution, attributionURL, license, licenseURL, sourceURL, sourceRevision
@@ -59,6 +57,9 @@ extension MapSourceMetadata: Codable {
     }
 }
 
-extension MapSourceMetadata.ValidationError: Error {}
+extension MapSourceMetadata: Hashable {}
+extension MapSourceMetadata: Sendable {}
+
 extension MapSourceMetadata.ValidationError: Equatable {}
+extension MapSourceMetadata.ValidationError: Error {}
 extension MapSourceMetadata.ValidationError: Sendable {}

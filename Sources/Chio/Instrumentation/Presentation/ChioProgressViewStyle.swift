@@ -71,6 +71,6 @@ extension ChioProgressViewStyle: ProgressViewStyle {
 
 extension ChioProgressViewStyle: Equatable {}
 
-extension ChioProgressViewStyle.Treatment: Hashable {}
 extension ChioProgressViewStyle.Treatment: Codable {}
+extension ChioProgressViewStyle.Treatment: Hashable {}
 extension ChioProgressViewStyle.Treatment: Sendable {}

@@ -89,8 +89,6 @@ struct MapMarkerPlacement {
     }
 }
 
-extension MapMarkerPlacement.Marker: Equatable {}
-extension MapMarkerPlacement.Marker: Sendable {}
 extension MapMarkerPlacement.Marker: CanvasDrawing {
     func draw(into context: inout CanvasContext) {
         for y in 0..<glyph.subpixelHeight {
@@ -100,5 +98,9 @@ extension MapMarkerPlacement.Marker: CanvasDrawing {
         }
     }
 }
+
+extension MapMarkerPlacement.Marker: Equatable {}
+extension MapMarkerPlacement.Marker: Sendable {}
+
 extension MapMarkerPlacement: Equatable {}
 extension MapMarkerPlacement: Sendable {}

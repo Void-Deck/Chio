@@ -24,8 +24,6 @@ public struct MapOverlays {
     }
 }
 
-extension MapOverlays: Hashable {}
-extension MapOverlays: Sendable {}
 extension MapOverlays: Codable {
     private enum CodingKeys: String, CodingKey { case markers, routes }
 
@@ -50,3 +48,6 @@ extension MapOverlays: Codable {
         try self.init(markers: markers, routes: routes)
     }
 }
+
+extension MapOverlays: Hashable {}
+extension MapOverlays: Sendable {}

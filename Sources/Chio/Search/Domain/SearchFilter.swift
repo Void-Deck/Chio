@@ -6,7 +6,7 @@ public enum SearchFilter {
     case substring
 }
 
+extension SearchFilter: Codable {}
 extension SearchFilter: Equatable {}
 extension SearchFilter: Hashable {}
 extension SearchFilter: Sendable {}
-extension SearchFilter: Codable {}

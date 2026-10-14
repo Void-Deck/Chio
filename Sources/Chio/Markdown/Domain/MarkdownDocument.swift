@@ -70,27 +70,6 @@ public struct MarkdownDocument {
     }
 }
 
-extension MarkdownDocument: Equatable {}
-extension MarkdownDocument: Hashable {}
-extension MarkdownDocument: Sendable {}
-extension MarkdownDocument.Block: Equatable {}
-extension MarkdownDocument.Block: Hashable {}
-extension MarkdownDocument.Block: Sendable {}
-extension MarkdownDocument.Item: Equatable {}
-extension MarkdownDocument.Item: Hashable {}
-extension MarkdownDocument.Item: Sendable {}
-extension MarkdownDocument.Span: Equatable {}
-extension MarkdownDocument.Span: Hashable {}
-extension MarkdownDocument.Span: Sendable {}
-extension MarkdownDocument.Table: Equatable {}
-extension MarkdownDocument.Table: Hashable {}
-extension MarkdownDocument.Table: Sendable {}
-extension MarkdownDocument.Attributes: Equatable {}
-extension MarkdownDocument.Attributes: Hashable {}
-extension MarkdownDocument.Attributes: Sendable {}
-
-extension MarkdownDocument.Attributes: OptionSet {}
-
 private extension MarkdownDocument {
     static func blockChildren(of node: any Markup) -> [Block] {
         node.children.flatMap(blocks(from:))
@@ -207,3 +186,28 @@ private extension MarkdownDocument {
     }
 
 }
+
+extension MarkdownDocument: Equatable {}
+extension MarkdownDocument: Hashable {}
+extension MarkdownDocument: Sendable {}
+
+extension MarkdownDocument.Block: Equatable {}
+extension MarkdownDocument.Block: Hashable {}
+extension MarkdownDocument.Block: Sendable {}
+
+extension MarkdownDocument.Item: Equatable {}
+extension MarkdownDocument.Item: Hashable {}
+extension MarkdownDocument.Item: Sendable {}
+
+extension MarkdownDocument.Span: Equatable {}
+extension MarkdownDocument.Span: Hashable {}
+extension MarkdownDocument.Span: Sendable {}
+
+extension MarkdownDocument.Table: Equatable {}
+extension MarkdownDocument.Table: Hashable {}
+extension MarkdownDocument.Table: Sendable {}
+
+extension MarkdownDocument.Attributes: Equatable {}
+extension MarkdownDocument.Attributes: Hashable {}
+extension MarkdownDocument.Attributes: OptionSet {}
+extension MarkdownDocument.Attributes: Sendable {}

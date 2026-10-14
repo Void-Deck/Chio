@@ -27,6 +27,7 @@ extension MeasurementGauge {
 
 extension MeasurementGauge.ReferenceMark: Hashable {}
 extension MeasurementGauge.ReferenceMark: Sendable {}
-extension MeasurementGauge.ReferenceMark.ValidationError: Error {}
+
 extension MeasurementGauge.ReferenceMark.ValidationError: Equatable {}
+extension MeasurementGauge.ReferenceMark.ValidationError: Error {}
 extension MeasurementGauge.ReferenceMark.ValidationError: Sendable {}

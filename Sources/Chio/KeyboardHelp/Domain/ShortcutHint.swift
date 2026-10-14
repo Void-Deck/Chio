@@ -14,8 +14,6 @@ public struct ShortcutHint {
     private enum CodingKeys: String, CodingKey { case key, label, detail }
 }
 
-extension ShortcutHint: Encodable {}
-
 extension ShortcutHint: Decodable {
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -27,6 +25,6 @@ extension ShortcutHint: Decodable {
     }
 }
 
+extension ShortcutHint: Encodable {}
 extension ShortcutHint: Hashable {}
-
 extension ShortcutHint: Sendable {}

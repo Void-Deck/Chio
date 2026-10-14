@@ -11,6 +11,6 @@ public enum MapGeometry {
     }
 }
 
-extension MapGeometry: Hashable {}
 extension MapGeometry: Codable {}
+extension MapGeometry: Hashable {}
 extension MapGeometry: Sendable {}

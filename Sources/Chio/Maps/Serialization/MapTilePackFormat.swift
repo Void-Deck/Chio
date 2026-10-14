@@ -9,7 +9,7 @@ enum MapTilePackFormat {
     static let maximumPayloadBytes = 16 * 1_024 * 1_024
     private static let magic = Data("CHIOPACK".utf8)
 
-    struct Manifest: Codable {
+    struct Manifest {
         let plan: MapTilePackPlan
         let metadata: MapSourceMetadata
     }
@@ -141,3 +141,5 @@ enum MapTilePackFormat {
         return number
     }
 }
+
+extension MapTilePackFormat.Manifest: Codable {}

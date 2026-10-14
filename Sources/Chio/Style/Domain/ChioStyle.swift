@@ -357,18 +357,22 @@ public struct ChioStyle {
 
 extension ChioStyle: Equatable {}
 extension ChioStyle: Sendable {}
-extension ChioStyle.MapColors: Hashable {}
+
 extension ChioStyle.MapColors: Codable {}
+extension ChioStyle.MapColors: Hashable {}
 extension ChioStyle.MapColors: Sendable {}
+
+extension ChioStyle.SyntaxColors: Decodable {}
+extension ChioStyle.SyntaxColors: Encodable {}
 extension ChioStyle.SyntaxColors: Equatable {}
 extension ChioStyle.SyntaxColors: Hashable {}
-extension ChioStyle.SyntaxColors: Encodable {}
-extension ChioStyle.SyntaxColors: Decodable {}
 extension ChioStyle.SyntaxColors: Sendable {}
+
+extension ChioStyle.Colors: Decodable {}
+extension ChioStyle.Colors: Encodable {}
 extension ChioStyle.Colors: Equatable {}
 extension ChioStyle.Colors: Hashable {}
-extension ChioStyle.Colors: Encodable {}
-extension ChioStyle.Colors: Decodable {}
 extension ChioStyle.Colors: Sendable {}
+
 extension ChioStyle.Treatments: Equatable {}
 extension ChioStyle.Treatments: Sendable {}

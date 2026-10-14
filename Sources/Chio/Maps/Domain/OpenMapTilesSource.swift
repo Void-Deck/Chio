@@ -37,8 +37,6 @@ public struct OpenMapTilesSource {
     }
 }
 
-extension OpenMapTilesSource: Hashable {}
-extension OpenMapTilesSource: Sendable {}
 extension OpenMapTilesSource: Codable {
     private enum CodingKeys: String, CodingKey { case template, zoomRange, metadata }
 
@@ -49,3 +47,6 @@ extension OpenMapTilesSource: Codable {
                       metadata: values.decode(MapSourceMetadata.self, forKey: .metadata))
     }
 }
+
+extension OpenMapTilesSource: Hashable {}
+extension OpenMapTilesSource: Sendable {}

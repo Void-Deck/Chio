@@ -11,7 +11,6 @@ public struct MapSource {
     }
 }
 
+extension MapSource: Codable {}
 extension MapSource: Hashable {}
 extension MapSource: Sendable {}
-
-extension MapSource: Codable {}

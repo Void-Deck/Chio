@@ -220,6 +220,6 @@ public actor MapTilePack {
     }
 }
 
-extension MapTilePack.PackError: Error {}
 extension MapTilePack.PackError: Equatable {}
+extension MapTilePack.PackError: Error {}
 extension MapTilePack.PackError: Sendable {}

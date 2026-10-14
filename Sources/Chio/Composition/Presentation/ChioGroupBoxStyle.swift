@@ -89,6 +89,6 @@ extension ChioGroupBoxStyle: GroupBoxStyle {
 
 extension ChioGroupBoxStyle: Equatable {}
 
-extension ChioGroupBoxStyle.TitlePlacement: Hashable {}
 extension ChioGroupBoxStyle.TitlePlacement: Codable {}
+extension ChioGroupBoxStyle.TitlePlacement: Hashable {}
 extension ChioGroupBoxStyle.TitlePlacement: Sendable {}

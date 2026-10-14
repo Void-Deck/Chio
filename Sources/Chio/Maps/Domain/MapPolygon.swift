@@ -15,8 +15,6 @@ public struct MapPolygon {
     public var vertexCount: Int { rings.reduce(0) { $0 + $1.coordinates.count } }
 }
 
-extension MapPolygon: Hashable {}
-extension MapPolygon: Sendable {}
 extension MapPolygon: Codable {
     private enum CodingKeys: String, CodingKey { case rings }
 
@@ -36,3 +34,6 @@ extension MapPolygon: Codable {
         try self.init(rings: rings)
     }
 }
+
+extension MapPolygon: Hashable {}
+extension MapPolygon: Sendable {}

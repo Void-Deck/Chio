@@ -10,8 +10,6 @@ public struct MapPolyline {
     }
 }
 
-extension MapPolyline: Hashable {}
-extension MapPolyline: Sendable {}
 extension MapPolyline: Codable {
     private enum CodingKeys: String, CodingKey { case coordinates }
 
@@ -26,3 +24,6 @@ extension MapPolyline: Codable {
         try self.init(coordinates: coordinates)
     }
 }
+
+extension MapPolyline: Hashable {}
+extension MapPolyline: Sendable {}

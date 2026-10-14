@@ -151,9 +151,6 @@ struct MapDrawing {
     }
 }
 
-extension MapDrawing: Equatable {}
-extension MapDrawing: Sendable {}
-
 extension MapDrawing: CanvasDrawing {
     func draw(into context: inout CanvasContext) {
         guard columns > 0, rows > 0 else { return }
@@ -189,3 +186,6 @@ extension MapDrawing: CanvasDrawing {
         }
     }
 }
+
+extension MapDrawing: Equatable {}
+extension MapDrawing: Sendable {}

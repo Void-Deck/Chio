@@ -54,8 +54,6 @@ public struct MapTileCoordinate {
     public enum ValidationError { case invalidAddress }
 }
 
-extension MapTileCoordinate: Hashable {}
-extension MapTileCoordinate: Sendable {}
 extension MapTileCoordinate: Codable {
     private enum CodingKeys: String, CodingKey { case zoom, x, y }
 
@@ -66,6 +64,9 @@ extension MapTileCoordinate: Codable {
     }
 }
 
-extension MapTileCoordinate.ValidationError: Error {}
+extension MapTileCoordinate: Hashable {}
+extension MapTileCoordinate: Sendable {}
+
 extension MapTileCoordinate.ValidationError: Equatable {}
+extension MapTileCoordinate.ValidationError: Error {}
 extension MapTileCoordinate.ValidationError: Sendable {}
