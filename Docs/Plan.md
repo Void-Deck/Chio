@@ -19,7 +19,7 @@ verification of the immutable tag and published release.
 
 Marquee, Blackbox and Pitwall are the confirmed application consumers. Their
 owning tasks are preparing focused upgrades and will use the published 0.2.0
-commit with matching SwiftTUI 0.18.0. Dispatch is not completed adoption; each
+commit with its exact SwiftTUI dependency. Dispatch is not completed adoption; each
 project retains its own checks and merge approval.
 
 <a id="latest-slice-online-maps"></a>
@@ -77,7 +77,7 @@ measured-height navigation/builder correction in
 [#47](https://github.com/SwiftTUI/swift-tui/pull/47).
 [Native integration](Decisions/NativeIntegration.md#tall-list-rows) owns the
 remaining qualification conditions; the current list-spacing slice below
-must establish Chio's padded and multiline row contracts before adding a token.
+must establish Chio's padded and multiline row contracts before releasing the token.
 
 Provider archive acquisition remains on hold at the user's request. No archive
 reader or downloader has been adopted; existing local pack APIs remain available.
@@ -261,14 +261,16 @@ Local debug and release checks pass the eighteen retained regressions and fiftee
 of seventeen new row-spacing cases. The two mixed-height style-change cases expose
 a native focus-recovery gap: increasing row padding at the same viewport size
 moves focus from ID 7 to ID 6. Release remains blocked. A focused native correction
-and reproducer are being prepared; no dependency override is adopted.
+and reproducer are in [SwiftTUI #57](https://github.com/SwiftTUI/swift-tui/pull/57);
+no dependency override is adopted.
 [Verification](Verification.md#dynamic-row-spacing-candidate) owns the evidence.
 
-Complete dynamic style-change qualification for scrolled, padded and multiline
-rows, retaining the failed assertions and existing viewport sizes.
-Refresh the affected examples and showcase through
-[the existing workflow](Verification.md#demo-site). The previous release-preparation
-consumer and documentation checks do not qualify this expanded candidate.
+An isolated copy passes the unchanged dynamic style-change, retained list and
+appearance checks in debug and release against the native candidate. Complete
+upstream checks and dependency adoption remain pending. The external-consumer
+probe passes the canonical API on the published pin. Refreshed terminal recordings,
+preview inspection and site assembly pass; final browser verification remains
+pending under [the existing workflow](Verification.md#demo-site).
 
 Provider downloads remain paused. No automatic release monitoring is requested.
 
@@ -351,7 +353,7 @@ filters, extensible upstream/raw-input switches, native wrappers and private
 nested conformances retain their documented roles.
 
 The map expansion above remains approved. Provider archive acquisition remains
-paused at the user's request; list row spacing follows the 0.2.0 release.
+paused at the user's request; list row spacing is included in the held 0.2.0 candidate.
 Real application use of the public map remains useful validation. Other component
 additions remain possible directions, not delivery promises.
 

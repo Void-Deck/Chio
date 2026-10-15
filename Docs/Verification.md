@@ -196,8 +196,8 @@ are made explicit, removing exactly three additional baseline entries.
 
 ## Dynamic row-spacing candidate
 
-The uncommitted 0.2.0 candidate based on `28b04bc` removes the legacy theme APIs
-and adds bounded `Spacing.listRowVerticalInset`. On unchanged SwiftTUI 0.18.0,
+The 0.2.0 candidate `f01569f896b47732da17cc35d5e068b664938c7e` removes the legacy
+theme APIs and adds bounded `Spacing.listRowVerticalInset`. On unchanged SwiftTUI 0.18.0,
 macOS debug and release each pass fifteen of seventeen new `ListRowSpacingTests`
 cases. Both mixed-height dynamic-spacing cases fail: growing the row padding
 after scrolling moves native focus from ID 7 to ID 6. Assertions and five-second
@@ -215,6 +215,15 @@ Pinned SwiftRules 0.1.4 reports no new violations across 350 files, with 396
 retained baseline findings. This is focused local evidence, not a complete
 macOS/Linux gate or complete showcase qualification.
 
+The candidate's [hosted macOS and Linux gate](https://github.com/echoz/Chio/actions/runs/38711402499)
+reproduces exactly the same two focus failures on each platform. macOS runs 507
+library tests and Linux runs 506, each with two issues. All 166 map and 147
+dashboard tests pass on both platforms. All eighteen retained library list cases pass.
+Both gates stop before release, terminal and process stages. The tested merge is
+`671a4903bc2cc504dabbb10173af5b5d1d9d4128`.
+The separate [demo-site build](https://github.com/echoz/Chio/actions/runs/38711402835)
+passes for the same candidate.
+
 The candidate release binary refreshes all six appearance recordings/previews
 and the tree recording with default/light/btop previews. All nine terminal
 sessions pass their existing restoration checks. Appearance retains one native
@@ -222,6 +231,26 @@ sessions pass their existing restoration checks. Appearance retains one native
 tree sessions report no diagnostics. All nine previews are inspected and the
 site assembles. Fresh browser verification remains pending while the Mac is locked.
 The captures use the unchanged SwiftTUI 0.18.0 pin, not the proposed native fix.
+
+A separate macOS consumer resolves this Chio candidate and matching SwiftTUI
+revision from GitHub. Build, linking and noninteractive execution pass canonical
+style inheritance, row-spacing raster positions, retained duration behavior,
+map values/rendering and instrumentation construction. Its fresh transitive graph
+differs from the producer lockfile, as recorded in the release notes. This does
+not exercise the failing dynamic focus journeys.
+
+[SwiftTUI #57](https://github.com/SwiftTUI/swift-tui/pull/57), candidate
+`6d9e3699dfb0a90d50a88e06bcec0f8930595d03`, corrects row-geometry recovery and
+scroll-registration ownership. Its 55 focused native tests and separate review
+pass. An isolated Chio `f01569f` copy uses that frozen source without changing
+the repository pin. All seventeen new row-spacing cases, eighteen retained list
+cases and appearance checks pass in debug and release. Debug takes 126.402 seconds;
+release library and appearance groups take 12.478 and 6.331 seconds respectively.
+
+The isolated release attempt with SwiftPM's deprecated native backend built but
+launched the dashboard instead of the test runner; no tests ran in that attempt.
+The normal project backend passes the same tests in a fresh scratch directory.
+The native repository's complete gate and upstream adoption remain pending.
 
 ## List row spacing qualification
 

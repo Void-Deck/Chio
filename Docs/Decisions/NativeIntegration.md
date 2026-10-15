@@ -100,11 +100,22 @@ single-selection and checklist composition, in debug and release.
 
 Native `revealCollectionFocusAfterResize` currently observes viewport size and
 visible-line changes. It does not consider changed row geometry when those
-viewport properties stay equal. The proposed correction extends that existing
-recovery path, preserving its newer-anchor guards and single follow-up budget.
-It requires a standalone native reproducer and unchanged Chio regressions before
-adoption. Chio retains the published 0.18.0 pin; no private focus or scroll
-workaround is added.
+viewport properties stay equal. Deferred collection resolution can also assign
+the scroll registration to a child node, while its route and focused row belong
+to the collection node. The existing ownership guard then rejects recovery.
+
+[SwiftTUI #57](https://github.com/SwiftTUI/swift-tui/pull/57), candidate
+`6d9e3699dfb0a90d50a88e06bcec0f8930595d03`, extends the existing recovery path
+for same-count row geometry changes and registers scroll ownership at the resolved
+route's graph node. It preserves the ownership guard, newer-input priority,
+graphless ambient fallback and single follow-up budget. Standalone native tests
+reproduce both selection modes before the correction; 55 focused native tests
+pass afterward, with independent review.
+
+An isolated copy of Chio `f01569f` passes the unchanged new row-spacing, retained
+list and appearance checks in debug and release against that candidate. Complete
+native gates remain pending. This is candidate verification, not adoption: Chio
+retains published 0.18.0, and no private focus or scroll workaround is added.
 
 ### Current row qualification
 
@@ -136,8 +147,8 @@ so it is not established as a Chio padding or palette defect. Selection and focu
 diverge in the single-selection failure; the five-second wait is unchanged.
 The native retention correction below addresses the reproduced cause. The current
 0.18.0 adoption retains all these cases; [Verification](../Verification.md#0180-adoption-qualification)
-records the released-pin results. No Chio focus/scroll workaround or public spacing
-control is added.
+records the released-pin results. That qualification added no Chio focus/scroll
+workaround or public spacing control; the current spacing candidate is described above.
 
 The table retains original-pin debug raster/hosted observations on macOS and Linux
 x86_64. With adopted 0.18.0, all eighteen retained cases pass in debug and release
