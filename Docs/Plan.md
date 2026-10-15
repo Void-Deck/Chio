@@ -266,11 +266,15 @@ no dependency override is adopted.
 [Verification](Verification.md#dynamic-row-spacing-candidate) owns the evidence.
 
 An isolated copy passes the unchanged dynamic style-change, retained list and
-appearance checks in debug and release against the native candidate. Complete
-upstream checks and dependency adoption remain pending. The external-consumer
+appearance checks in debug and release against the native candidate. That
+candidate passes the complete local gate and all hosted checks. Expanded focus
+regressions pass focused checks and independent review at native `0d39074a`;
+fresh complete gates, upstream acceptance and dependency adoption remain pending.
+The external-consumer
 probe passes the canonical API on the published pin. Refreshed terminal recordings,
-preview inspection and site assembly pass; final browser verification remains
-pending under [the existing workflow](Verification.md#demo-site).
+preview inspection, site assembly and focused Safari checks pass. Capture-only
+cleanup removes native startup announcements from published clips while retaining
+full raw logs. [Verification](Verification.md#demo-site) owns the showcase workflow.
 
 Provider downloads remain paused. No automatic release monitoring is requested.
 

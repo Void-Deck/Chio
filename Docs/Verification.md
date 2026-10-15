@@ -229,7 +229,14 @@ and the tree recording with default/light/btop previews. All nine terminal
 sessions pass their existing restoration checks. Appearance retains one native
 `collection.unboundedRealization` warning per four-row session after teardown;
 tree sessions report no diagnostics. All nine previews are inspected and the
-site assembles. Fresh browser verification remains pending while the Mac is locked.
+site assembles. Capture-only child environments disable the browser companion.
+Published clips omit only the exact known reader notice before the first ANSI
+control; unknown startup output fails. All ANSI setup bytes and timestamps remain,
+and full raw logs retain the original output and teardown warnings. Nine regenerated
+PNG previews are byte-identical to the earlier previews. Safari verifies style/size
+selection, matching commands, preview rendering, clean playback startup, seeking
+and return to previews. These are focused checks of refreshed media and existing
+controls; unchanged responsive and fallback behavior retains its earlier evidence.
 The captures use the unchanged SwiftTUI 0.18.0 pin, not the proposed native fix.
 
 A separate macOS consumer resolves this Chio candidate and matching SwiftTUI
@@ -250,7 +257,24 @@ release library and appearance groups take 12.478 and 6.331 seconds respectively
 The isolated release attempt with SwiftPM's deprecated native backend built but
 launched the dashboard instead of the test runner; no tests ran in that attempt.
 The normal project backend passes the same tests in a fresh scratch directory.
-The native repository's complete gate and upstream adoption remain pending.
+At `6d9e3699`, the unmodified native repository gate passes all 85 steps locally.
+All 24 hosted checks also pass, including [Repo Gate](https://github.com/SwiftTUI/swift-tui/actions/runs/38713220425),
+[macOS](https://github.com/SwiftTUI/swift-tui/actions/runs/38713220609),
+[Windows](https://github.com/SwiftTUI/swift-tui/actions/runs/38713220514),
+[release soundness](https://github.com/SwiftTUI/swift-tui/actions/runs/38713220517),
+API baseline and performance. Hosted checks test merge
+`357a6f74d1579b9710856251b185dddc7c8cd13d` against base SwiftTUI 0.18.0.
+Expanded tests at `0d39074a9c61c9f888fb2e20dd037bf44c09fbea` pass 38 focused
+test functions across five suites. Parameterized cases include 26 geometry/anchor
+combinations and four registration/replay ownership combinations. The final
+clear-focus case passes separately after narrowing its claim to host-refresh
+stability. Independent review has no remaining findings. New coverage checks
+first committed spacing-change frames, repeated navigation and activation,
+sibling controls, explicit requests, viewport changes, oversized rows, equal-total
+height redistribution, and live-target consistency after removal or replacement.
+The production fix is unchanged. Fresh full local and hosted gates are running;
+the completed `6d9e3699` results do not qualify this expanded test candidate.
+Upstream acceptance and dependency adoption remain pending.
 
 ## List row spacing qualification
 
