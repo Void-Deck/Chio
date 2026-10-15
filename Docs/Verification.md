@@ -224,6 +224,13 @@ Both gates stop before release, terminal and process stages. The tested merge is
 The separate [demo-site build](https://github.com/echoz/Chio/actions/runs/38711402835)
 passes for the same candidate.
 
+The capture-only follow-up `2bd8895e` has the same two failures on both platforms
+in [run 38754370083](https://github.com/echoz/Chio/actions/runs/38754370083).
+Library, map and dashboard totals are unchanged; all eighteen retained list cases
+pass, and release and later stages are not reached. The tested merge is
+`3af6f8cfbb1f256e5a551797dd4f2f301901efc1`. Its separate
+[demo-site build](https://github.com/echoz/Chio/actions/runs/38754370086) passes.
+
 The candidate release binary refreshes all six appearance recordings/previews
 and the tree recording with default/light/btop previews. All nine terminal
 sessions pass their existing restoration checks. Appearance retains one native
@@ -272,8 +279,17 @@ stability. Independent review has no remaining findings. New coverage checks
 first committed spacing-change frames, repeated navigation and activation,
 sibling controls, explicit requests, viewport changes, oversized rows, equal-total
 height redistribution, and live-target consistency after removal or replacement.
-The production fix is unchanged. Fresh full local and hosted gates are running;
-the completed `6d9e3699` results do not qualify this expanded test candidate.
+The production fix is unchanged. At `0d39074a`, the unmodified native local gate
+passes all 85 steps, with no failures or skips. All 24 checks across six fresh
+hosted workflows also pass: [Repo Gate](https://github.com/SwiftTUI/swift-tui/actions/runs/38753800354),
+[macOS](https://github.com/SwiftTUI/swift-tui/actions/runs/38753800252),
+[Windows](https://github.com/SwiftTUI/swift-tui/actions/runs/38753800386),
+[release soundness](https://github.com/SwiftTUI/swift-tui/actions/runs/38753800294),
+[API baseline](https://github.com/SwiftTUI/swift-tui/actions/runs/38753800255) and
+[TermUIPerf](https://github.com/SwiftTUI/swift-tui/actions/runs/38753800350).
+These checks test merge `d328c5042e3dd8d428384916af490030cb4ad1b7` against
+base SwiftTUI 0.18.0. Linux and macOS logs confirm both expanded runtime suites
+execute successfully.
 Upstream acceptance and dependency adoption remain pending.
 
 ## List row spacing qualification

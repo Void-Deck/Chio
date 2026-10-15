@@ -115,7 +115,8 @@ pass afterward, with independent review.
 An isolated copy of Chio `f01569f` passes the unchanged new row-spacing, retained
 list and appearance checks in debug and release against that candidate. Its full
 local repository gate and all 24 hosted checks pass. Expanded focus-interaction
-coverage is being verified before upstream review completes; see
+coverage at `0d39074a` also passes the full local gate, all hosted checks and
+independent review. See
 [the current evidence](../Verification.md#dynamic-row-spacing-candidate).
 This is candidate verification, not adoption: Chio
 retains published 0.18.0, and no private focus or scroll workaround is added.

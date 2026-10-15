@@ -268,8 +268,9 @@ no dependency override is adopted.
 An isolated copy passes the unchanged dynamic style-change, retained list and
 appearance checks in debug and release against the native candidate. That
 candidate passes the complete local gate and all hosted checks. Expanded focus
-regressions pass focused checks and independent review at native `0d39074a`;
-fresh complete gates, upstream acceptance and dependency adoption remain pending.
+regressions at native `0d39074a` pass focused checks, the full local gate, all
+hosted checks and independent review. Upstream acceptance and dependency adoption
+remain pending.
 The external-consumer
 probe passes the canonical API on the published pin. Refreshed terminal recordings,
 preview inspection, site assembly and focused Safari checks pass. Capture-only
