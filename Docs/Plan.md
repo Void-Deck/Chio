@@ -239,22 +239,24 @@ Provider downloads stay paused.
 
 ### Current slice: list row spacing
 
-**Status:** BLOCKED ON NATIVE FIX ADOPTION. Qualification on the current
-SwiftTUI pin passes compact and uniformly padded native list/checklist journeys,
-intrinsic padded placement and one same-ID wrapped resize journey. Mixed-height
-rows still lose native focus while reversing upward: the selected row can be
-absent while focus falls back to a different row. No new spacing token, example
-treatment or showcase recording is introduced while this remains unresolved.
+**Status:** QUALIFYING SWIFTTUI 0.18.0. [PR #17](https://github.com/echoz/Chio/pull/17)
+updates the dependency to the published release containing the native retention
+fix. The previous pin loses native focus on mixed-height upward reversal; the
+selected row can be absent while focus falls back to a different row. Its retained
+tests also cover compact/uniform padding, intrinsic placement and same-ID resize.
+No new spacing token, example treatment or showcase recording is introduced in
+this dependency slice.
 [Native integration](Decisions/NativeIntegration.md#current-row-qualification)
 owns the reproduction and [Verification](Verification.md#list-row-spacing-qualification)
 owns the checks and limits.
 
 The cause is reproduced in native hosted rendering: a stale worker-safety guard
 throws away valid measured row heights. [SwiftTUI #56](https://github.com/SwiftTUI/swift-tui/pull/56)
-corrects both collection and lazy-stack retention. Its candidate passes all
-eighteen existing Chio cases in macOS debug and release with an explicit local
-dependency; Chio's committed pin remains unchanged. Finish upstream verification and verified
-adoption before introducing the density token.
+corrects both collection and lazy-stack retention and is now merged in 0.18.0.
+The prior local candidate passes all eighteen Chio cases in macOS debug and
+release. Qualify the actual published release through the complete consumer gate
+and independent review before adoption. Candidate checks do not establish
+default-branch adoption or qualification of a new density token.
 
 Complete qualification of native padded and multiline list/checklist rows, including exact
 focus, selection, keyboard/pointer activation, scroll reveal and resize recovery.
@@ -264,9 +266,8 @@ compatibility coverage, then validate the affected examples and showcase through
 [the existing verification workflow](Verification.md#demo-site). Record actual
 results before declaring implementation or qualification complete.
 
-Provider downloads remain paused. Future adoption of a published SwiftTUI release
-containing the merged fixes requires a separate verified dependency update; no
-automatic release monitoring is requested.
+Provider downloads remain paused. This dependency update carries the requested
+published-release follow-up; no automatic release monitoring is requested.
 
 <a id="next-slice-offline-pack-acquisition"></a>
 

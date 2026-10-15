@@ -11,11 +11,10 @@ let package = Package(
         .executable(name: "chio-maps", targets: ["ChioMaps"]),
     ],
     dependencies: [
-        // Merged SwiftTUI fixes for disclosure layout, Spacer sizing and tall rows.
-        // This immutable revision follows 0.17.0; it is not a published release.
+        // SwiftTUI 0.18.0, including indexed measurement retention during scrolling.
         .package(
             url: "https://github.com/SwiftTUI/swift-tui.git",
-            revision: "bf9a697f2a5da4d0392730d0cba9e3ddcbbfa5d1"
+            revision: "4791281a55e5bbdb683718a7282afd10c2f5e42c"
         ),
         // Swift Markdown 0.9.0. A revision pin also permits its conditional
         // Windows build flags without modifying the upstream package.

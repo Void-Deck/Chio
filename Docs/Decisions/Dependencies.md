@@ -12,7 +12,7 @@ All four direct dependencies are revision-pinned:
 
 | Dependency | Pin and reason |
 | --- | --- |
-| SwiftTUI | `bf9a697f2a5da4d0392730d0cba9e3ddcbbfa5d1`; immutable upstream revision with merged disclosure (#49), Spacer (#50) and measured-row (#47) corrections; not a published release |
+| SwiftTUI 0.18.0 | `4791281a55e5bbdb683718a7282afd10c2f5e42c`; published release with disclosure (#49), Spacer (#50), measured-row (#47) and indexed measurement retention (#56) corrections |
 | Swift Markdown 0.9.0 | `25cb61d3482054b09ae76ca4f281b1bfe7fe5a43`; revision permits conditional Windows unsafe flags |
 | Tree-sitter 0.26.13 | `d97971e24500218865c05ed1febdee2acf41bae1`; last release with upstream SwiftPM manifest |
 | tree-sitter-swift 0.7.4 | `82bb3a533e0801fd2bbaa11dc49676e10bf41948`; generated C grammar |
@@ -20,11 +20,9 @@ All four direct dependencies are revision-pinned:
 Version-based Chio requirements (`from:` or `exact:`) cannot resolve this
 revision-pinned graph. Consumers of the experimental v0.1.0 source release pin
 Chio's immutable revision `1bcc08ce23747c8c8b1121e3add3c37951f7b09e`.
-SwiftTUI 0.17.0 requires Swift Collections 1.7.2 or later; the lockfile therefore
-advances that transitive dependency from 1.6.0 to 1.7.2. The other direct pins and
-resolved dependencies remain unchanged by the follow-up pin below. It includes
-the measured-height list correction in [PR #47](https://github.com/SwiftTUI/swift-tui/pull/47),
-which merged after 0.17.0. New Chio row-density controls are in qualification;
+SwiftTUI 0.18.0 retains the previous manifest and resolved dependency graph,
+including Swift Collections 1.7.2. The other direct pins and resolved dependencies
+remain unchanged by this update. New Chio row-density controls are in qualification;
 [Plan](../Plan.md#current-slice-list-row-spacing) records the active scope.
 
 Swift Markdown brings swift-cmark 0.9.0 built from source, without a separately
@@ -33,6 +31,29 @@ neither a Swift wrapper nor grammar generation. The grammar copies unused querie
 Chio does no query-resource I/O and generates no Objective-C/Foundation accessor.
 Build evidence is recorded in [0.1.0](../Releases/0.1.0.md); the current static Linux
 blocker is below. Ordinary glibc support does not establish static-musl distribution.
+
+## 0.18.0 adoption candidate
+
+**Status:** Candidate in [PR #17](https://github.com/echoz/Chio/pull/17), not yet
+adopted on `main` or released as a new Chio version.
+
+Published [SwiftTUI 0.18.0](https://github.com/SwiftTUI/swift-tui/releases/tag/0.18.0)
+resolves to `4791281a55e5bbdb683718a7282afd10c2f5e42c`. Verified ancestry includes
+the previous operational pin and the merged measurement-retention correction,
+[#56](https://github.com/SwiftTUI/swift-tui/pull/56), at
+`bf2faa8ff6aaddb89cae8bc035a781ddbc672c84`. This carries the requested release
+follow-up below without changing the existing revision-pin policy.
+
+The release keeps Swift 6.4 and the previous package graph. Only SwiftTUI's
+revision and the manifest hash change in Chio's lockfile. It also changes terminal
+capability detection and collection/layout behavior, so qualification uses the
+complete consumer gate rather than only the original list reproducer.
+[Verification](../Verification.md#0180-adoption-qualification) owns the results.
+No Chio focus workaround or public row-spacing field is introduced.
+
+Applications with an exact SwiftTUI requirement must align it with this release
+when adopting the corresponding Chio revision and verify their own workflows.
+Static Linux remains blocked; this release does not establish musl support.
 
 ## Merged layout corrections
 
@@ -53,11 +74,10 @@ Historical intermittent tab failures passed the final gate, but their cause
 remains unproved. [Verification](../Verification.md#merged-layout-corrections)
 records the outcomes and earlier failure evidence separately.
 
-**Published-release follow-up:** when a published SwiftTUI release contains these
-merged fixes, qualify its immutable revision in a focused dependency update with
-Chio's complete platform, terminal and engineering gates plus independent review.
-Retain the operational pin until that update is verified. No automatic monitoring
-or new Chio release is authorized by this follow-up.
+**Published-release follow-up:** the [0.18.0 candidate](#0180-adoption-candidate)
+above carries the requested dependency update. Chio's complete platform, terminal
+and engineering gates plus independent review remain required before adoption.
+No automatic monitoring or new Chio release is authorized by this follow-up.
 
 Applications with their own exact SwiftTUI requirement must align that revision
 with the Chio revision they adopt, then resolve and verify their own workflows.

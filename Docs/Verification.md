@@ -196,8 +196,8 @@ are made explicit, removing exactly three additional baseline entries.
 
 ## List row spacing qualification
 
-**Status:** BLOCKED. The added `ChioListStyleTests` qualification suite uses the
-public raster and hosted-session APIs against the unchanged SwiftTUI revision
+**Original-pin result:** BLOCKED. The added `ChioListStyleTests` qualification suite uses the
+public raster and hosted-session APIs against the former SwiftTUI revision
 `bf9a697f2a5da4d0392730d0cba9e3ddcbbfa5d1`. Compact and uniformly padded native
 single/multiple-selection journeys and searchable-checklist journeys pass on
 macOS debug. Both indexed and builder intrinsic padded placement pass; one
@@ -238,7 +238,8 @@ tests, configured hooks and separate review pass. After restoring the original
 pin, Chio's SwiftRules 0.1.4 gate passes again for 352 files with the same 398
 baseline findings. The full native `bun run test` gate also passes on macOS at
 that candidate, including all three runtime shards, platform suites, performance
-tests and soundness checks. Hosted platform CI remains in progress. This does not
+tests and soundness checks. All upstream hosted checks subsequently pass; #56 is
+merged and included in 0.18.0. These native and local-candidate checks do not
 establish Chio adoption, a full consumer gate, or live terminal behavior.
 
 Run the focused reproducer with the platform/toolchain setup below:
@@ -247,11 +248,34 @@ Run the focused reproducer with the platform/toolchain setup below:
 swift test --force-resolved-versions --jobs 2 --no-parallel --filter ChioListStyleTests
 ```
 
-No new spacing API or showcase assets are qualified. Full consumer-gate, Linux
-candidate, PTY, pointer and broader style-change checks remain outstanding. The
-completed #16 gates cover their exact merged tree; they do not cover these new qualification
-cases. Native interaction ownership, assertions and deadlines must remain intact
-when resolving this blocker.
+No new spacing API or showcase assets are qualified. The released-pin qualification
+below addresses the original-pin blocker for dependency adoption only. Pointer
+and broader style-change checks remain required before a new density field.
+The completed #16 gates cover their exact merged tree; they do not cover these
+new qualification cases. Native interaction ownership, assertions and deadlines
+remain intact.
+
+### 0.18.0 adoption qualification
+
+The candidate pins published [SwiftTUI 0.18.0](https://github.com/SwiftTUI/swift-tui/releases/tag/0.18.0)
+at `4791281a55e5bbdb683718a7282afd10c2f5e42c`. Release metadata and Git ancestry
+confirm that it contains the previous operational pin and merged #56. Upstream
+manifest and lockfile comparisons are unchanged; Chio's lockfile changes only
+SwiftTUI's revision and the root manifest hash. No source, test assertion, viewport,
+deadline, CI policy or baseline is changed by this dependency update.
+
+EngineeringRules 0.1.4 remains the highest published stable release at task start.
+The fresh compiler-backed macOS gate passes over 352 files with 398 tracked
+findings and no new violations. Adoption also requires the complete local macOS
+gate, hosted macOS/Linux gates and independent review. [PR #17](https://github.com/echoz/Chio/pull/17)
+records those results against the tested revision, including all eighteen list
+qualification cases in debug and release. The native candidate's earlier success
+does not replace these consumer checks.
+
+This slice adopts a release and retains the regression suite. It does not add
+row-density API, change showcase assets, qualify live SSH behavior or establish
+downstream adoption. Static Linux remains blocked by the documented upstream
+portability gaps; ordinary Linux checks do not establish static linking.
 
 ## Running checks
 
