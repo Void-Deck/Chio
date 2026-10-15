@@ -21,7 +21,7 @@ struct ChioFormControlTests {
                 $0.hasFocusedPicker && $0.containsFormText("Model=s Confirm=false")
             }
             #expect(initial.raster.cells.flatMap { $0 }.contains {
-                $0.character == "▌" && $0.style?.foregroundColor == ChioTheme.default.colors.accent
+                $0.character == "▌" && $0.style?.foregroundColor == ChioStyle.default.colors.accent
             })
             session.send(.key(.arrowRight))
             _ = try await recorder.wait(after: initial.sequence, description: "native picker steps right") {
@@ -40,7 +40,7 @@ struct ChioFormControlTests {
                 $0.hasFocusedToggle && $0.containsFormText("Model=l Confirm=true Theme=light")
             }
             #expect(themed.raster.cells.flatMap { $0 }.contains {
-                $0.character == "▌" && $0.style?.foregroundColor == ChioTheme.light.colors.accent
+                $0.character == "▌" && $0.style?.foregroundColor == ChioStyle.light.colors.accent
             })
             session.send(.key(.tab, modifiers: .shift))
             _ = try await recorder.wait(description: "Shift-Tab returns to native picker") {
@@ -93,7 +93,7 @@ extension FormControlTestView: View {
             }
             Text("Model=\(model) Confirm=\(confirm) Theme=\(light ? "light" : "dark")")
         }
-        .chioTheme(light ? .light : .default)
+        .style(light ? .light : .default)
         .onKeyPress { press in
             guard press == KeyPress(.character("t"), modifiers: .ctrl) else { return .ignored }
             light.toggle()

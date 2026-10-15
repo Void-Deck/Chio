@@ -10,12 +10,12 @@ struct KeyboardHelpRenderTests {
         let omitted = DefaultRenderer().render(
             KeyboardHelp([ShortcutGroup("Actions", shortcuts: [
                 ShortcutHint("q", "Quit"), ShortcutHint("x", "Cancel"),
-            ])]).chioTheme(.default), proposal: .init(width: 32, height: nil)
+            ])]).style(.default), proposal: .init(width: 32, height: nil)
         )
         let empty = DefaultRenderer().render(
             KeyboardHelp([ShortcutGroup("Actions", shortcuts: [
                 ShortcutHint("q", "Quit", detail: ""), ShortcutHint("x", "Cancel", detail: ""),
-            ])]).chioTheme(.default), proposal: .init(width: 32, height: nil)
+            ])]).style(.default), proposal: .init(width: 32, height: nil)
         )
         #expect(omitted.rasterSurface.size.height == 5)
         #expect(empty.rasterSurface == omitted.rasterSurface)
@@ -24,14 +24,14 @@ struct KeyboardHelpRenderTests {
         #expect(empty.semanticSnapshot.accessibilityNodes.compactMap(\.label) == ["Actions", "q Quit", "x Cancel"])
     }
 
-    @Test("Grouped help uses each palette's semantic colors", arguments: [ChioTheme.default, .light])
-    func palettes(theme: ChioTheme) {
+    @Test("Grouped help uses each palette's semantic colors", arguments: [ChioStyle.default, .light])
+    func palettes(theme: ChioStyle) {
         assertColors(theme)
     }
 
     @Test("Help and compact hints honor custom colors and descriptor detail placement")
     func customColors() {
-        let base = ChioTheme.default
+        let base = ChioStyle.default
         let theme = base.replacing(colors: base.colors.replacing(
             accent: Color(hexRGB: 0x123456),
             heading: Color(hexRGB: 0x234567),
@@ -41,7 +41,7 @@ struct KeyboardHelpRenderTests {
         ))
         assertColors(theme)
         let hints = DefaultRenderer().render(
-            KeyHints([ShortcutHint("k", "Label", detail: "Detail")]).chioTheme(theme),
+            KeyHints([ShortcutHint("k", "Label", detail: "Detail")]).style(theme),
             proposal: .init(width: 32, height: nil)
         ).rasterSurface
         #expect(hints.lines.map(trim) == ["k Label"])
@@ -54,14 +54,14 @@ struct KeyboardHelpRenderTests {
             KeyboardHelp([
                 ShortcutGroup("Hidden", shortcuts: []),
                 ShortcutGroup("Actions", shortcuts: [shortcut, shortcut]),
-            ]).chioTheme(.default), proposal: .init(width: 32, height: nil)
+            ]).style(.default), proposal: .init(width: 32, height: nil)
         ).rasterSurface
         let lines = surface.lines.map(trim)
         #expect(lines.contains("Actions"))
         #expect(!lines.contains("Hidden"))
         #expect(lines.filter { $0 == "q Quit" }.count == 2)
         let hints = DefaultRenderer().render(
-            KeyHints([shortcut, shortcut]).chioTheme(.default),
+            KeyHints([shortcut, shortcut]).style(.default),
             proposal: .init(width: 32, height: nil)
         ).rasterSurface
         #expect(hints.lines.map(trim) == ["q Quit  q Quit"])
@@ -71,7 +71,7 @@ struct KeyboardHelpRenderTests {
     func emptyState(hasEmptyGroup: Bool) {
         let groups = hasEmptyGroup ? [ShortcutGroup("Hidden", shortcuts: [])] : []
         let surface = DefaultRenderer().render(
-            KeyboardHelp(groups).chioTheme(.default),
+            KeyboardHelp(groups).style(.default),
             proposal: .init(width: 32, height: nil)
         ).rasterSurface
         #expect(normalize(surface.lines) == "No keyboard shortcuts available.")
@@ -84,7 +84,7 @@ struct KeyboardHelpRenderTests {
             KeyboardHelp([ShortcutGroup("Navigation commands", shortcuts: [
                 ShortcutHint("界界", "Move through all available results", detail: "Details wrap and finish visibly."),
                 ShortcutHint("Ctrl-Shift-Alt-Command-K", "Open commands", detail: ""),
-            ])]).chioTheme(.default), proposal: .init(width: width, height: nil)
+            ])]).style(.default), proposal: .init(width: width, height: nil)
         ).rasterSurface
         #expect(surface.size.width <= width)
         let words = normalize(surface.lines)
@@ -99,10 +99,10 @@ struct KeyboardHelpRenderTests {
         #expect(wideCells.count == 2)
     }
 
-    private func assertColors(_ theme: ChioTheme) {
+    private func assertColors(_ theme: ChioStyle) {
         let surface = DefaultRenderer().render(
             KeyboardHelp([ShortcutGroup("Group", shortcuts: [ShortcutHint("k", "Label", detail: "Detail")])])
-                .chioTheme(theme), proposal: .init(width: 32, height: nil)
+                .style(theme), proposal: .init(width: 32, height: nil)
         ).rasterSurface
         #expect(surface.lines.map(trim).filter { !$0.isEmpty } == ["Group", "k Label", "Detail"])
         let cells = surface.cells.flatMap { $0 }

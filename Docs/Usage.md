@@ -9,7 +9,8 @@ rendering, layout, state, input, focus, and scrolling.
 The package exports one `Chio` library. Applications also depend on SwiftTUI
 for the native views and runtime. See [Package.swift](../Package.swift) for the
 current dependency pins and [the design](Design.md) for interaction contracts.
-Use the exact compatible revisions in the [0.2.0 installation instructions](https://github.com/echoz/Chio/releases/tag/v0.2.0).
+The [0.2.0 release preparation](Releases/0.2.0.md) records dependency and migration requirements.
+Release publication is held pending qualification of list-row spacing and the style API cleanup.
 SwiftPM version requirements such as `from: "0.2.0"` cannot consume this revision-pinned graph.
 See the [migration notes](Releases/0.2.0.md#migration-from-010) when upgrading from 0.1.0.
 
@@ -110,7 +111,7 @@ surfaces, and each part can be customized.
 let base = ChioStyle.opencode
 let style = base.replacing(
     colors: base.colors.replacing(accent: Color(hexRGB: 0x02BF87)),
-    spacing: base.spacing.replacing(inputVerticalInset: 1),
+    spacing: base.spacing.replacing(inputVerticalInset: 1, listRowVerticalInset: 1),
     surfaces: base.surfaces.replacing(input: .color(Color(hexRGB: 0x282522)))
 )
 
@@ -121,21 +122,44 @@ VStack {
 .style(style)
 ```
 
-`inputVerticalInset` defaults to zero and accepts `0...32` terminal cells.
-A missing key in historical encoded spacing decodes as zero. The original four
-spacing fields keep their existing nonnegative contract. New per-row density
-controls are deferred because of unresolved [native list reveal/focus limitations](Decisions/NativeIntegration.md#tall-list-rows).
+`inputVerticalInset` and `listRowVerticalInset` each default to zero and accept
+`0...32` terminal cells through construction, replacement and decoding. Historical
+encoded spacing with either key missing decodes that distance as zero. The original
+four spacing fields keep their existing nonnegative contract.
+
+`SearchableList` and `SearchableChecklist` apply `listRowVerticalInset` above and
+below each complete row, including checklist content and its checkbox. `FilePicker`
+uses the same searchable-list presentation. Avoid adding the token again to those
+row closures. Native `List` needs ordinary authored padding because its public
+style API has no per-row content hook:
+
+```swift
+// In a View that declares @Environment(\.chioStyle) private var style:
+List(agents, selection: $selection) { agent in
+    Text(agent.name)
+        .padding(.vertical, style.spacing.listRowVerticalInset)
+}
+```
+
+The new spacing behavior is pending fresh interaction, platform and visual
+qualification. Earlier [native list regressions](Decisions/NativeIntegration.md#current-row-qualification)
+qualify the dependency, not this added style behavior.
+
 `surfaces.canvas` and `surfaces.input` use `.base` to inherit `colors.surface`,
 or `.color(...)` for an explicit override. `.base` continues to follow later
 palette replacements.
 
 `.btop` now installs border headings on groups; `.opencode` supplies leading
-panel/input edges and roomier inputs, with compact list rows. Default/light appearance
-is preserved. Application layout, breakpoints, column widths, navigation and data
-remain application decisions. Native component style modifiers remain specific
+panel/input edges, roomier inputs and one cell above and below each Chio searchable
+row. Default, light and btop keep zero list-row inset. Application layout,
+breakpoints, column widths, navigation and data remain application decisions. Native component style modifiers remain specific
 overrides inside the `.style(...)` scope, and their `theme:` initializer labels
-are retained. `ChioTheme` and `.chioTheme(...)` remain compatibility aliases using
-the same value and environment key. See [the style decision](Decisions/Themes.md).
+are retained and take `ChioStyle`. Migrate `ChioTheme` to `ChioStyle`, `.chioTheme(...)`
+to `.style(...)`, and `@Environment(\.chioTheme)` to `@Environment(\.chioStyle)`.
+The aliases and legacy initializer/replacement function-signature overloads are
+removed. Rebind function references to the current signatures or use explicit
+closures. See [the style decision](Decisions/Themes.md) and
+[migration notes](Releases/0.2.0.md#migration-from-010).
 
 ## Compact metrics and history
 

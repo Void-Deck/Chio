@@ -45,7 +45,7 @@ struct DiffExampleTests {
         let file = try gutterFixture()
         let rendered = DefaultRenderer().render(
             DiffFileView(file: file, isSplit: false, minimumWidth: 60, sourceWidth: 9, activeHunk: 0)
-                .chioTheme(appearance.theme),
+                .style(appearance.theme),
             proposal: .init(width: 80, height: 15)
         )
         let lines = rendered.rasterSurface.lines
@@ -75,7 +75,7 @@ struct DiffExampleTests {
     func splitGutters(appearance: ExampleTheme) throws {
         let rendered = DefaultRenderer().render(
             DiffFileView(file: try gutterFixture(), isSplit: true, minimumWidth: 60,
-                         sourceWidth: 9, activeHunk: 0).chioTheme(appearance.theme),
+                         sourceWidth: 9, activeHunk: 0).style(appearance.theme),
             proposal: .init(width: 80, height: 15)
         )
         let lines = rendered.rasterSurface.lines
@@ -124,7 +124,7 @@ struct DiffExampleTests {
         let rendered = DefaultRenderer().render(
             ScrollView([.horizontal, .vertical]) {
                 DiffFileView(file: file, isSplit: isSplit, minimumWidth: 96, sourceWidth: sourceWidth, activeHunk: 0)
-            }.frame(width: 96, height: 15).chioTheme(.default),
+            }.frame(width: 96, height: 15).style(.default),
             proposal: .init(width: 96, height: 15)
         )
         for source in [unicode, old, new] {
@@ -152,7 +152,7 @@ struct DiffExampleTests {
         ][index]!
         let rendered = DefaultRenderer().render(
             DiffFileView(file: DiffFile.examples[index], isSplit: isSplit, minimumWidth: 100,
-                         sourceWidth: 0, activeHunk: nil).chioTheme(.default),
+                         sourceWidth: 0, activeHunk: nil).style(.default),
             proposal: .init(width: 100, height: 8)
         )
         let text = rendered.rasterSurface.lines.joined(separator: "\n")
@@ -189,7 +189,7 @@ struct DiffExampleTests {
                 let column = $0.raster.lines[row].distance(from: $0.raster.lines[row].startIndex, to: range.lowerBound)
                 return $0.diffContains("Unified · hunk 3/3") && $0.diffContains("@@ -79,6 +84,4 @@")
                     && $0.focusedIdentity == unified.focusedIdentity
-                    && $0.raster.cells[row][column].style?.foregroundColor == ChioTheme.light.syntax.string
+                    && $0.raster.cells[row][column].style?.foregroundColor == ChioStyle.light.syntax.string
             }
             surface.updateSurfaceSize(.init(width: 36, height: 18))
             session.requestSurfaceRefresh()

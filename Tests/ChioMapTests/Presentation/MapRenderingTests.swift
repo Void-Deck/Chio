@@ -14,7 +14,7 @@ struct MapRenderingTests {
         let prepared = map(polygons: [triangle])
         let viewport = try MapViewport(columns: 10, rows: 10)
         #expect(try MapDrawingWork(map: prepared, viewport: viewport, fills: true).fillWrites == 3)
-        for theme in [ChioTheme.default, .light, .btop] {
+        for theme in [ChioStyle.default, .light, .btop] {
             let surface = try render(prepared, columns: 10, rows: 10, theme: theme)
             #expect(surface.cells.flatMap { $0 }.filter {
                 $0.style?.backgroundColor == theme.colors.selectedSurface
@@ -49,7 +49,7 @@ struct MapRenderingTests {
         let broad = try MapPreparation.prepare(dataset: dataset, camera: camera, viewport: viewport, detail: .silhouette)
         #expect(broad.polygons[0].rings[0].count < exact.polygons[0].rings[0].count)
         #expect(exact.labels.isEmpty && broad.labels.isEmpty)
-        for theme in [ChioTheme.default, .light, .btop] {
+        for theme in [ChioStyle.default, .light, .btop] {
             let original = try render(exact, columns: 40, rows: 20, theme: theme)
             let generalized = try render(broad, columns: 40, rows: 20, theme: theme)
             let fill = kind == .land ? theme.colors.selectedSurface : waterColor(theme)
@@ -68,7 +68,7 @@ struct MapRenderingTests {
         let water = PreparedMap.Polygon(featureID: "lake", kind: .water,
                                         rings: [rectangle(2, 2, 8, 8), rectangle(4, 4, 6, 6)])
         let land = PreparedMap.Polygon(featureID: "land", kind: .land, rings: [rectangle(0, 0, 10, 10)])
-        for theme in [ChioTheme.default, .light, .btop] {
+        for theme in [ChioStyle.default, .light, .btop] {
             let surface = try render(map(polygons: [water]), columns: 10, rows: 10, theme: theme)
             #expect(surface.size == CellSize(width: 10, height: 10))
             #expect(surface.cells[2][2].style?.backgroundColor == waterColor(theme))
@@ -101,7 +101,7 @@ struct MapRenderingTests {
         let prepared = try MapPreparation.prepare(dataset: source,
             camera: MapCamera(center: MapCoordinate(latitude: 0, longitude: 0), longitudeSpan: 40),
             viewport: MapViewport(columns: 40, rows: 20), detail: detail)
-        for theme in [ChioTheme.default, .light, .btop] {
+        for theme in [ChioStyle.default, .light, .btop] {
             let filled = try render(prepared, columns: 40, rows: 20, theme: theme, detail: detail)
             #expect(filled.cells[6][6].style?.backgroundColor == waterColor(theme))
             #expect(filled.cells[12][12].style?.backgroundColor == theme.colors.surface)
@@ -116,7 +116,7 @@ struct MapRenderingTests {
         let park = PreparedMap.Polygon(featureID: "park", kind: .park, rings: [rectangle(1, 1, 9, 9)])
         let water = PreparedMap.Polygon(featureID: "water", kind: .water, rings: [rectangle(2, 2, 8, 8)])
         let building = PreparedMap.Polygon(featureID: "building", kind: .building, rings: [rectangle(3, 3, 7, 7)])
-        for theme in [ChioTheme.default, .light, .btop] {
+        for theme in [ChioStyle.default, .light, .btop] {
             let surface = try render(map(polygons: [building, water, park]), columns: 10, rows: 10, theme: theme)
             #expect(surface.cells[1][1].style?.backgroundColor == parkColor(theme))
             #expect(surface.cells[2][2].style?.backgroundColor == waterColor(theme))
@@ -133,7 +133,7 @@ struct MapRenderingTests {
         let vertical = PreparedMap.Line(featureID: "primary", kind: .primaryRoad,
                                         points: [.init(x: 4.6, y: 2), .init(x: 4.6, y: 8)])
         let land = PreparedMap.Polygon(featureID: "land", kind: .land, rings: [rectangle(0, 0, 10, 10)])
-        for theme in [ChioTheme.default, .light, .btop] {
+        for theme in [ChioStyle.default, .light, .btop] {
             let surface = try render(map(lines: [vertical, horizontal], polygons: [land]), columns: 10, rows: 10, theme: theme)
             let crossing = surface.cells[4][4]
             let scalar = try #require(crossing.character.unicodeScalars.first)
@@ -177,7 +177,7 @@ struct MapRenderingTests {
         let positioned = MapLabels(candidates: [candidate], columns: 20, rows: 10, enabled: true)
         let label = try #require(positioned.labels.first)
         #expect(label.width == 3 && label.column == 9 && label.row == 4)
-        for theme in [ChioTheme.default, .light, .btop] {
+        for theme in [ChioStyle.default, .light, .btop] {
             let surface = try render(map(labels: [candidate]), columns: 20, rows: 10, theme: theme, labels: true)
             #expect(surface.lines[4].contains(text))
             #expect(surface.cells[4][9].character == "界" && surface.cells[4][9].spanWidth == 2)
@@ -233,7 +233,7 @@ struct MapRenderingTests {
             let surface = try render(map(polygons: [giant]), columns: columns, rows: rows, theme: .default)
             #expect(surface.size == CellSize(width: columns, height: rows))
             #expect(surface.cells.count == rows && surface.cells.allSatisfy { $0.count == columns })
-            #expect(surface.cells.flatMap { $0 }.allSatisfy { $0.style?.backgroundColor == ChioTheme.default.colors.selectedSurface })
+            #expect(surface.cells.flatMap { $0 }.allSatisfy { $0.style?.backgroundColor == ChioStyle.default.colors.selectedSurface })
         }
     }
 
@@ -264,7 +264,7 @@ struct MapRenderingTests {
                 let prepared = try MapPreparation.prepare(dataset: source.dataset,
                     camera: MapFixtures.Scene.street.camera, viewport: viewport, detail: detail)
                 #expect(prepared.statistics.visibleFeatures > 0)
-                for theme in [ChioTheme.default, .light, .btop] {
+                for theme in [ChioStyle.default, .light, .btop] {
                     let surface = try render(prepared, columns: width, rows: height, theme: theme,
                                              labels: true, detail: detail)
                     #expect(surface.size == CellSize(width: width, height: height))
@@ -309,11 +309,11 @@ struct MapRenderingTests {
         #expect(!text.contains("Made with Natural Earth"))
     }
 
-    private func render(_ map: PreparedMap, columns: Int, rows: Int, theme: ChioTheme,
+    private func render(_ map: PreparedMap, columns: Int, rows: Int, theme: ChioStyle,
                         fills: Bool = true, labels: Bool = false, detail: MapDetail = .source) throws -> RasterSurface {
         let view = try MapCanvasView(map: map, viewport: MapViewport(columns: columns, rows: rows),
                                  theme: theme, fills: fills, labels: labels,
-                                 waterColor: waterColor(theme), parkColor: parkColor(theme), detail: detail).chioTheme(theme)
+                                 waterColor: waterColor(theme), parkColor: parkColor(theme), detail: detail).style(theme)
         return DefaultRenderer().render(view, proposal: .init(width: columns, height: rows), frameInstant: .zero).rasterSurface
     }
 
@@ -332,8 +332,8 @@ struct MapRenderingTests {
     }
 
     // Use the demo's supplied colors; expected paint locations are independent rectangles.
-    private func waterColor(_ theme: ChioTheme) -> Color { tint(theme.syntax.type, toward: theme.colors.surface, amount: 0.22) }
-    private func parkColor(_ theme: ChioTheme) -> Color { tint(theme.syntax.string, toward: theme.colors.surface, amount: 0.16) }
+    private func waterColor(_ theme: ChioStyle) -> Color { tint(theme.syntax.type, toward: theme.colors.surface, amount: 0.22) }
+    private func parkColor(_ theme: ChioStyle) -> Color { tint(theme.syntax.string, toward: theme.colors.surface, amount: 0.16) }
 
     private func tint(_ color: Color, toward base: Color, amount: Double) -> Color {
         Color(red: base.red + (color.red - base.red) * amount,

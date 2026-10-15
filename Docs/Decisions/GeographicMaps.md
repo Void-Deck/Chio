@@ -115,7 +115,7 @@ the native focus target. Pan/zoom/selection remain available. Allocation and asp
 changes create a new preparation request. Expansion restores the current bindings.
 Over-budget drawings similarly show recovery guidance without disabling controls.
 
-`ChioTheme.map.water` and `.park` are semantic area-fill colors, independent of
+`ChioStyle.map.water` and `.park` are semantic area-fill colors, independent of
 syntax highlighting. Land/buildings use existing surfaces; roads use text colors;
 routes use accent; selected markers and their labels use warning. Default, light
 and btop palettes provide map colors. Theme changes repaint the prepared geometry without resetting state

@@ -35,6 +35,36 @@ struct AppearanceExampleTests {
         }
     }
 
+    @Test("Comparison spacing changes the visible selected agent row height",
+          arguments: AppearanceRecipe.allCases, AppearanceDensity.allCases)
+    func rowSpacing(recipe: AppearanceRecipe, density: AppearanceDensity) throws {
+        let size = CellSize(width: 100, height: 30)
+        let frame = DefaultRenderer().render(
+            AppearanceExampleView(recipe: recipe, density: density).environment(\.terminalSize, size),
+            proposal: ProposedSize(width: size.width, height: size.height), frameInstant: .zero
+        )
+        let lines = frame.rasterSurface.lines
+        let buildLine = try #require(lines.firstIndex { $0.contains("Build Agent") })
+        let buildColumn = try #require(frame.rasterSurface.cells[buildLine].firstIndex { $0.character == "B" })
+        let selectedRow = try #require(frame.semanticSnapshot.focusRegions.first {
+            $0.focusInteractions == .activate
+                && buildColumn >= $0.rect.origin.x && buildColumn < $0.rect.maxX
+                && buildLine >= $0.rect.origin.y && buildLine < $0.rect.maxY
+        })
+        let expectedHeight: Int
+        switch density {
+        case .recipe:
+            switch recipe {
+            case .chio, .btop: expectedHeight = 1
+            case .opencode: expectedHeight = 3
+            }
+        case .compact: expectedHeight = 1
+        case .roomy: expectedHeight = 3
+        }
+        #expect(selectedRow.rect.size.height == expectedHeight)
+        #expect(buildLine - selectedRow.rect.origin.y == (expectedHeight - 1) / 2)
+    }
+
     @Test("Native search, selected agent and workspace focus survive recipes, spacing and responsive layout")
     func retainedWorkflow() async throws {
         try await withAppearance { session, surface, recorder in
@@ -47,8 +77,27 @@ struct AppearanceExampleTests {
                 $0.appearanceQuery("Review") && $0.appearanceSelectedReview
             }
             session.send(.key(.return))
-            _ = try await recorder.wait(after: filtered.sequence, description: "native search hands focus back to results") {
-                $0.appearanceSelectedReview && !$0.appearanceSearchFocused
+            var focusedList = try await recorder.wait(after: filtered.sequence, description: "native search hands focus back to results") {
+                $0.appearanceSelectedReview && $0.appearanceListFocused
+            }
+            let listIdentity = focusedList.focusedIdentity
+            for title in ["OpenCode", "btop", "Chio"] {
+                session.send(.key(.character("t"), modifiers: .ctrl))
+                focusedList = try await recorder.wait(after: focusedList.sequence, description: "\(title) retains native results focus and query") {
+                    $0.appearanceContains("\(title) · spacing: recipe")
+                        && $0.appearanceListFocused && $0.appearanceSelectedReview
+                        && $0.appearanceQuery("Review")
+                }
+                #expect(focusedList.focusedIdentity == listIdentity)
+            }
+            for density in ["compact", "roomy", "recipe"] {
+                session.send(.key(.character("d"), modifiers: .ctrl))
+                focusedList = try await recorder.wait(after: focusedList.sequence, description: "\(density) retains native results focus and query") {
+                    $0.appearanceContains("Chio · spacing: \(density)")
+                        && $0.appearanceListFocused && $0.appearanceSelectedReview
+                        && $0.appearanceQuery("Review")
+                }
+                #expect(focusedList.focusedIdentity == listIdentity)
             }
             session.send(.key(.character("e"), modifiers: .ctrl))
             let editing = try await recorder.wait(description: "edit shortcut reveals and focuses the native workspace field") {

@@ -6,14 +6,14 @@ import Testing
 @MainActor
 struct MarkdownViewRenderTests {
     @Test("Swift token cells resolve all syntax roles from the current theme",
-          arguments: [ChioTheme.default, .light, .btop,
-                      ChioTheme.default.replacing(syntax: ChioTheme.SyntaxColors(
+          arguments: [ChioStyle.default, .light, .btop,
+                      ChioStyle.default.replacing(syntax: ChioStyle.SyntaxColors(
                         keyword: .red, type: .blue, string: .green,
                         number: .yellow, comment: .cyan))])
-    func syntaxColors(theme: ChioTheme) {
+    func syntaxColors(theme: ChioStyle) {
         let source = "```SwIfT additional-info\nlet count: Int = 42\nlet label = \"hello\" // note\n```"
         let surface = DefaultRenderer().render(
-            MarkdownView(MarkdownDocument(source)).chioTheme(theme),
+            MarkdownView(MarkdownDocument(source)).style(theme),
             proposal: ProposedViewSize(width: 60, height: 10)
         ).rasterSurface
         expectColor(of: "let", in: surface.cells, color: theme.syntax.keyword)
@@ -33,11 +33,11 @@ struct MarkdownViewRenderTests {
         let source = ("```swift\n" + code + "```\n").replacingOccurrences(of: "\n", with: newline)
         let document = MarkdownDocument(source)
         let automatic = DefaultRenderer().render(
-            MarkdownView(document).chioTheme(.default),
+            MarkdownView(document).style(.default),
             proposal: ProposedViewSize(width: 60, height: 12)
         ).rasterSurface
         let plain = DefaultRenderer().render(
-            MarkdownView(document).codeHighlighting(.plain).chioTheme(.default),
+            MarkdownView(document).codeHighlighting(.plain).style(.default),
             proposal: ProposedViewSize(width: 60, height: 12)
         ).rasterSurface
         #expect(automatic.size == plain.size)
@@ -45,8 +45,8 @@ struct MarkdownViewRenderTests {
         #expect(automatic.cells.map { $0.map(\.character) } == plain.cells.map { $0.map(\.character) })
         #expect(automatic.cells.map { $0.map(\.spanWidth) } == plain.cells.map { $0.map(\.spanWidth) })
         #expect(automatic.cells.map { $0.map(\.continuationLeadX) } == plain.cells.map { $0.map(\.continuationLeadX) })
-        expectColor(of: "let", in: automatic.cells, color: ChioTheme.default.syntax.keyword)
-        expectColor(of: "let", in: plain.cells, color: ChioTheme.default.colors.foreground)
+        expectColor(of: "let", in: automatic.cells, color: ChioStyle.default.syntax.keyword)
+        expectColor(of: "let", in: plain.cells, color: ChioStyle.default.colors.foreground)
         #expect(automatic.cells.flatMap { $0 }.contains { $0.character == "e\u{301}" })
         #expect(automatic.cells.flatMap { $0 }.contains { $0.character == "👩‍💻" && $0.spanWidth == 2 })
         guard let first = automatic.lines.firstIndex(where: { $0.contains("cafe\u{301}") }),
@@ -61,7 +61,7 @@ struct MarkdownViewRenderTests {
             #expect(automatic.lines[last + 1].allSatisfy { $0 == " " })
         }
         let lf = DefaultRenderer().render(
-            MarkdownView(MarkdownDocument("```swift\n" + code + "```\n")).chioTheme(.default),
+            MarkdownView(MarkdownDocument("```swift\n" + code + "```\n")).style(.default),
             proposal: ProposedViewSize(width: 60, height: 12)
         ).rasterSurface
         #expect(automatic.cells == lf.cells)
@@ -70,12 +70,12 @@ struct MarkdownViewRenderTests {
     @Test("Unknown and absent fence languages retain plain code", arguments: ["", "unknown"])
     func plainLanguage(language: String) {
         let document = MarkdownDocument("```\(language)\nlet value: Int = 42 // note\n```")
-        let automatic = DefaultRenderer().render(MarkdownView(document).chioTheme(.default),
+        let automatic = DefaultRenderer().render(MarkdownView(document).style(.default),
                                                   proposal: ProposedViewSize(width: 48, height: 8)).rasterSurface
-        let plain = DefaultRenderer().render(MarkdownView(document).codeHighlighting(.plain).chioTheme(.default),
+        let plain = DefaultRenderer().render(MarkdownView(document).codeHighlighting(.plain).style(.default),
                                               proposal: ProposedViewSize(width: 48, height: 8)).rasterSurface
         #expect(automatic.cells == plain.cells)
-        expectColor(of: "let", in: automatic.cells, color: ChioTheme.default.colors.foreground)
+        expectColor(of: "let", in: automatic.cells, color: ChioStyle.default.colors.foreground)
     }
 
     private func expectColor(of text: String, in rows: [[RasterCell]], color: Color) {
@@ -96,7 +96,7 @@ struct MarkdownViewRenderTests {
     func richParagraph(width: Int) {
         let surface = DefaultRenderer().render(
             MarkdownView(MarkdownDocument("plain ***both*** and **strong** plus *soft*"))
-                .chioTheme(.default),
+                .style(.default),
             proposal: ProposedViewSize(width: width, height: 20)
         ).rasterSurface
         #expect(surface.size.width <= width)
@@ -119,7 +119,7 @@ struct MarkdownViewRenderTests {
     @Test("Headings, quote markers, and inline code use semantic theme colors",
           arguments: [false, true])
     func theme(light: Bool) {
-        var theme = light ? ChioTheme.light : .default
+        var theme = light ? ChioStyle.light : .default
         theme = theme.replacing(colors: theme.colors.replacing(
             accent: Color(hexRGB: 0x234567),
             heading: Color(hexRGB: 0x123456),
@@ -128,7 +128,7 @@ struct MarkdownViewRenderTests {
         ))
         let surface = DefaultRenderer().render(
             MarkdownView(MarkdownDocument("# Heading\n\nA `code` span.\n\n> Quote"))
-                .chioTheme(theme),
+                .style(theme),
             proposal: ProposedViewSize(width: 24, height: 12)
         ).rasterSurface
         let cells = surface.cells.flatMap { $0 }
@@ -152,7 +152,7 @@ struct MarkdownViewRenderTests {
     func unicode(width: Int) {
         let surface = DefaultRenderer().render(
             MarkdownView(MarkdownDocument("你好 **世界** 👩‍💻 café and end"))
-                .chioTheme(.default),
+                .style(.default),
             proposal: ProposedViewSize(width: width, height: 20)
         ).rasterSurface
         #expect(surface.size.width <= width)
@@ -169,7 +169,7 @@ struct MarkdownViewRenderTests {
     func nestedLists(width: Int) {
         let surface = DefaultRenderer().render(
             MarkdownView(MarkdownDocument("7. first item wraps here\n   - inner\n8. last"))
-                .chioTheme(.default),
+                .style(.default),
             proposal: ProposedViewSize(width: width, height: 20)
         ).rasterSurface
         #expect(surface.size.width <= width)
@@ -184,7 +184,7 @@ struct MarkdownViewRenderTests {
     func codeWhitespace() {
         let surface = DefaultRenderer().render(
             MarkdownView(MarkdownDocument("```swift\n  let x = 1\n\n    end\n```"))
-                .chioTheme(.default),
+                .style(.default),
             proposal: ProposedViewSize(width: 24, height: 12)
         ).rasterSurface
         let lines = surface.lines
@@ -202,13 +202,13 @@ struct MarkdownViewRenderTests {
 
     @Test("Unlabeled fenced and indented code render without a language header", arguments: [false, true])
     func unlabeledCode(light: Bool) {
-        let theme: ChioTheme = light ? .light : .default
+        let theme: ChioStyle = light ? .light : .default
         let fenced = DefaultRenderer().render(
-            MarkdownView(MarkdownDocument("```\nlet x = 1\n\n  end\n```\n")).chioTheme(theme),
+            MarkdownView(MarkdownDocument("```\nlet x = 1\n\n  end\n```\n")).style(theme),
             proposal: ProposedViewSize(width: 24, height: 12)
         ).rasterSurface
         let indented = DefaultRenderer().render(
-            MarkdownView(MarkdownDocument("    let x = 1\n\n      end\n")).chioTheme(theme),
+            MarkdownView(MarkdownDocument("    let x = 1\n\n      end\n")).style(theme),
             proposal: ProposedViewSize(width: 24, height: 12)
         ).rasterSurface
         #expect(fenced.cells == indented.cells)
@@ -230,7 +230,7 @@ struct MarkdownViewRenderTests {
             [Docs](guide.md) ![Chart](plot.png)
 
             <div>literal</div>
-            """)).chioTheme(.default),
+            """)).style(.default),
             proposal: ProposedViewSize(width: 40, height: 20)
         )
         let text = rendered.rasterSurface.lines.joined(separator: " ")
@@ -243,7 +243,7 @@ struct MarkdownViewRenderTests {
     @Test("Empty reference destinations render readable labels without empty parentheses")
     func emptyDestinations() {
         let rendered = DefaultRenderer().render(
-            MarkdownView(MarkdownDocument("[Docs]() ![Chart]() ![]()")).chioTheme(.default),
+            MarkdownView(MarkdownDocument("[Docs]() ![Chart]() ![]()")).style(.default),
             proposal: ProposedViewSize(width: 40, height: 8)
         )
         let text = rendered.rasterSurface.lines.joined(separator: " ")

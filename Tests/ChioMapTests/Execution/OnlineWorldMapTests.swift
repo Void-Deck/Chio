@@ -68,9 +68,9 @@ struct OnlineWorldMapTests {
                 let camera = try MapCamera(center: MapCoordinate(latitude: 0, longitude: longitude), longitudeSpan: 360)
                 for detail in MapDetail.allCases {
                     let prepared = try MapPreparation.prepare(dataset: dataset, camera: camera, viewport: viewport, detail: detail)
-                    for theme in [ChioTheme.default, .light, .btop] {
+                    for theme in [ChioStyle.default, .light, .btop] {
                         let view = try MapCanvasView(map: prepared, viewport: viewport, theme: theme,
-                            fills: true, labels: false, waterColor: theme.map.water, parkColor: theme.map.park, detail: detail).chioTheme(theme)
+                            fills: true, labels: false, waterColor: theme.map.water, parkColor: theme.map.park, detail: detail).style(theme)
                         let surface = DefaultRenderer().render(view,
                             proposal: ProposedSize(width: columns, height: rows), frameInstant: .zero).rasterSurface
                         for (sampleLongitude, latitude, isWater) in samples {

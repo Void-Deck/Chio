@@ -6,14 +6,14 @@ import Testing
 @Suite(.serialized)
 struct ChioScrollViewStyleTests {
     @Test("Native scroll tracks retain their glyphs and geometry with themed muted paint",
-          arguments: [ChioTheme.default, .light, scrollTestTheme],
+          arguments: [ChioStyle.default, .light, scrollTestTheme],
           [SwiftTUIViews.Axis.Set.vertical, .horizontal, [.vertical, .horizontal]])
-    func indicators(theme: ChioTheme, axes: SwiftTUIViews.Axis.Set) throws {
+    func indicators(theme: ChioStyle, axes: SwiftTUIViews.Axis.Set) throws {
         let rendered = DefaultRenderer().render(
             ScrollView(axes) { scrollTestContent }
                 .frame(width: 12, height: 7)
                 .background(theme.colors.selectedSurface)
-                .chioTheme(theme),
+                .style(theme),
             proposal: ProposedViewSize(width: 12, height: 7)
         )
         let native = DefaultRenderer().render(
@@ -21,7 +21,7 @@ struct ChioScrollViewStyleTests {
                 .scrollViewStyle(AutomaticScrollViewStyle())
                 .frame(width: 12, height: 7)
                 .background(theme.colors.selectedSurface)
-                .chioTheme(theme),
+                .style(theme),
             proposal: ProposedViewSize(width: 12, height: 7)
         )
         #expect(rendered.rasterSurface.lines == native.rasterSurface.lines)
@@ -46,7 +46,7 @@ struct ChioScrollViewStyleTests {
         let rendered = DefaultRenderer().render(
             ScrollView([.vertical, .horizontal]) { scrollTestContent }
                 .scrollIndicators(.hidden)
-                .chioTheme(.default),
+                .style(.default),
             proposal: ProposedViewSize(width: 12, height: 7)
         )
         let route = try #require(rendered.semanticSnapshot.scrollRoutes.first)
@@ -64,7 +64,7 @@ struct ChioScrollViewStyleTests {
         let rendered = DefaultRenderer().render(
             ScrollView([.vertical, .horizontal]) { scrollTestContent }
                 .disabled(true)
-                .chioTheme(scrollTestTheme),
+                .style(scrollTestTheme),
             proposal: ProposedViewSize(width: 12, height: 7)
         )
         let node = try #require(rendered.semanticSnapshot.accessibilityNodes.first {
@@ -134,8 +134,8 @@ struct ChioScrollViewStyleTests {
                     && $0.raster.lines[0].contains("light")
             }
             #expect(themed.focusedIdentity == initial.focusedIdentity)
-            expectIndicatorPaint(themed, vertical: suppressed ? ChioTheme.light.colors.mutedText : ChioTheme.light.colors.accent,
-                                 horizontal: suppressed ? ChioTheme.light.colors.mutedText : ChioTheme.light.colors.accent)
+            expectIndicatorPaint(themed, vertical: suppressed ? ChioStyle.light.colors.mutedText : ChioStyle.light.colors.accent,
+                                 horizontal: suppressed ? ChioStyle.light.colors.mutedText : ChioStyle.light.colors.accent)
             surface.updateSurfaceSize(CellSize(width: 18, height: 8))
             session.requestSurfaceRefresh()
             let resized = try await recorder.wait(after: themed.sequence, description: "compact viewport keeps the bound offset") {
@@ -176,8 +176,8 @@ struct ChioScrollViewStyleTests {
                 $0.focusedIdentity == track.identity
                     && $0.scrollTestOffset(x: 6, y: route.contentBounds.size.height - route.viewportRect.size.height)
             }
-            expectIndicatorPaint(dragged, vertical: suppressed ? ChioTheme.light.colors.mutedText : ChioTheme.light.colors.accent,
-                                 horizontal: ChioTheme.light.colors.mutedText)
+            expectIndicatorPaint(dragged, vertical: suppressed ? ChioStyle.light.colors.mutedText : ChioStyle.light.colors.accent,
+                                 horizontal: ChioStyle.light.colors.mutedText)
             session.send(.key(.home))
             let trackHome = try await recorder.wait(after: dragged.sequence, description: "focused native indicator Home affects only its axis") {
                 $0.focusedIdentity == track.identity && $0.scrollTestOffset(x: 6, y: 0)
@@ -227,7 +227,7 @@ struct ChioScrollViewStyleTests {
     }
 }
 
-private let scrollTestTheme = ChioTheme.default.replacing(colors: ChioTheme.default.colors.replacing(
+private let scrollTestTheme = ChioStyle.default.replacing(colors: ChioStyle.default.colors.replacing(
     accent: Color(hexRGB: 0x123456), mutedText: Color(hexRGB: 0x345678),
     selectedSurface: Color(hexRGB: 0x654321)
 ))
@@ -269,7 +269,7 @@ extension ScrollStyleTestView: View {
         if native {
             scrollStyle = AnyScrollViewStyle(AutomaticScrollViewStyle())
         } else {
-            let theme = light ? ChioTheme.light : scrollTestTheme
+            let theme = light ? ChioStyle.light : scrollTestTheme
             scrollStyle = AnyScrollViewStyle(ChioScrollViewStyle(theme: theme))
         }
         return VStack(alignment: .leading, spacing: 0) {
@@ -282,7 +282,7 @@ extension ScrollStyleTestView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .chioTheme(light ? .light : scrollTestTheme)
+        .style(light ? .light : scrollTestTheme)
         .onAppear { reading = true }
         .onKeyPress { press in
             guard press == KeyPress(.character("t"), modifiers: .ctrl) else { return .ignored }

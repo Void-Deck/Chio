@@ -50,7 +50,7 @@ struct InstrumentReadoutTests {
                 // complete lettering inside that allocation, including padding.
                 let native = DefaultRenderer().render(
                     Text(verbatim: "     _ \n  |  _|\n  | |_ ").fixedSize()
-                        .foregroundStyle(ChioTheme.default.colors.accent),
+                        .foregroundStyle(ChioStyle.default.colors.accent),
                     proposal: ProposedSize(width: width, height: height))
                 #expect(render("12", width: width, height: height).rasterSurface == native.rasterSurface)
             }
@@ -62,7 +62,7 @@ struct InstrumentReadoutTests {
                 guard isTooNarrow || isTooShort else { continue }
                 let result = render("12", width: width, height: height)
                 let native = DefaultRenderer().render(
-                    Text(verbatim: "12").foregroundStyle(ChioTheme.default.colors.accent)
+                    Text(verbatim: "12").foregroundStyle(ChioStyle.default.colors.accent)
                         .accessibilityLabel("12"),
                     proposal: ProposedSize(width: width, height: height))
                 #expect(result.rasterSurface == native.rasterSurface)
@@ -83,12 +83,12 @@ struct InstrumentReadoutTests {
                 if height >= 3 {
                     expected = DefaultRenderer().render(
                         Text(verbatim: "     _ \n  |  _|\n  | |_ ").fixedSize()
-                            .foregroundStyle(ChioTheme.default.colors.accent),
+                            .foregroundStyle(ChioStyle.default.colors.accent),
                         proposal: proposal)
                 } else {
                     expected = DefaultRenderer().render(
                         Text(verbatim: "12").lineLimit(lineLimit)
-                            .foregroundStyle(ChioTheme.default.colors.accent),
+                            .foregroundStyle(ChioStyle.default.colors.accent),
                         proposal: proposal)
                 }
                 #expect(result.rasterSurface == expected.rasterSurface)
@@ -105,7 +105,7 @@ struct InstrumentReadoutTests {
             for width in [nil, 0, 1, 8, 40] as [Int?] {
                 let result = render(value, width: width, height: 3)
                 let native = DefaultRenderer().render(
-                    Text(verbatim: value).foregroundStyle(ChioTheme.default.colors.accent)
+                    Text(verbatim: value).foregroundStyle(ChioStyle.default.colors.accent)
                         .accessibilityLabel(value),
                     proposal: ProposedSize(width: width, height: 3))
                 #expect(result.rasterSurface == native.rasterSurface)
@@ -123,7 +123,7 @@ struct InstrumentReadoutTests {
             for width in [nil, 1, 4, 32] as [Int?] {
                 let result = render(value, style: .plain, width: width, height: 4)
                 let native = DefaultRenderer().render(
-                    Text(verbatim: value).foregroundStyle(ChioTheme.default.colors.accent)
+                    Text(verbatim: value).foregroundStyle(ChioStyle.default.colors.accent)
                         .accessibilityLabel(value),
                     proposal: ProposedSize(width: width, height: 4))
                 #expect(result.rasterSurface == native.rasterSurface)
@@ -133,13 +133,13 @@ struct InstrumentReadoutTests {
 
     @Test("Both styles use theme accent and publish one passive value with caller overrides")
     func semanticsAndTheme() {
-        let custom = ChioTheme.default.replacing(
-            colors: ChioTheme.default.colors.replacing(accent: Color(hexRGB: 0x123456)))
-        for theme in [ChioTheme.default, .light, .btop, custom] {
+        let custom = ChioStyle.default.replacing(
+            colors: ChioStyle.default.colors.replacing(accent: Color(hexRGB: 0x123456)))
+        for theme in [ChioStyle.default, .light, .btop, custom] {
             for style in [InstrumentReadout.Style.plain, .segmented] {
                 for size in [CellSize(width: 32, height: 3), CellSize(width: 5, height: 1)] {
                     let result = DefaultRenderer().render(
-                        InstrumentReadout("-12.5", style: style).chioTheme(theme),
+                        InstrumentReadout("-12.5", style: style).style(theme),
                         proposal: ProposedSize(width: size.width, height: size.height))
                     #expect(result.semanticSnapshot.accessibilityNodes.compactMap(\.label) == ["-12.5"])
                     #expect(result.semanticSnapshot.focusRegions.isEmpty)
@@ -148,7 +148,7 @@ struct InstrumentReadoutTests {
                     #expect(painted.allSatisfy { $0.style?.foregroundColor == theme.colors.accent })
                     let labeled = DefaultRenderer().render(
                         InstrumentReadout("-12.5", style: style)
-                            .accessibilityLabel("Temperature: minus 12.5 degrees").chioTheme(theme),
+                            .accessibilityLabel("Temperature: minus 12.5 degrees").style(theme),
                         proposal: ProposedSize(width: size.width, height: size.height))
                     #expect(labeled.semanticSnapshot.accessibilityNodes.compactMap(\.label)
                             == ["Temperature: minus 12.5 degrees"])

@@ -247,19 +247,19 @@ struct MapPlaceSearchInteractionTests {
             }
             let selected = try matches.placeRowCells(named: "Fixture 1")
             let unselected = try matches.placeRowCells(named: "Fixture 2")
-            #expect(selected.allSatisfy { $0.style?.foregroundColor == ChioTheme.light.colors.foreground })
-            #expect(selected.allSatisfy { $0.style?.backgroundColor == ChioTheme.light.colors.selectedSurface })
-            #expect(unselected.allSatisfy { $0.style?.foregroundColor == ChioTheme.light.colors.foreground })
-            #expect(unselected.allSatisfy { $0.style?.backgroundColor == ChioTheme.light.colors.surface })
+            #expect(selected.allSatisfy { $0.style?.foregroundColor == ChioStyle.light.colors.foreground })
+            #expect(selected.allSatisfy { $0.style?.backgroundColor == ChioStyle.light.colors.selectedSurface })
+            #expect(unselected.allSatisfy { $0.style?.foregroundColor == ChioStyle.light.colors.foreground })
+            #expect(unselected.allSatisfy { $0.style?.backgroundColor == ChioStyle.light.colors.surface })
             session.send(.key(.arrowDown))
             let moved = try await frames.wait(after: matches.sequence) {
                 $0.placeText.contains("Detail for fixture 2") && $0.focusesPlaceResults
             }
             let previous = try moved.placeRowCells(named: "Fixture 1")
             let current = try moved.placeRowCells(named: "Fixture 2")
-            #expect(previous.allSatisfy { $0.style?.backgroundColor == ChioTheme.light.colors.surface })
-            #expect(current.allSatisfy { $0.style?.foregroundColor == ChioTheme.light.colors.foreground })
-            #expect(current.allSatisfy { $0.style?.backgroundColor == ChioTheme.light.colors.selectedSurface })
+            #expect(previous.allSatisfy { $0.style?.backgroundColor == ChioStyle.light.colors.surface })
+            #expect(current.allSatisfy { $0.style?.foregroundColor == ChioStyle.light.colors.foreground })
+            #expect(current.allSatisfy { $0.style?.backgroundColor == ChioStyle.light.colors.selectedSurface })
             #expect(moved.focusedIdentity == matches.focusedIdentity)
             session.stop()
             #expect(try await run.value == .inputEnded)
@@ -846,7 +846,7 @@ extension PreloadedPlaceSearchView: View {
                 }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .chioTheme(.light)
+        .style(.light)
         .onKeyPress(.return) { _ in
             guard handoff?.trigger == .activation else { return .ignored }
             handoff?.performOnce()

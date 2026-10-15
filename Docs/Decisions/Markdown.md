@@ -27,7 +27,7 @@ paint. Partial/malformed grammar recognition always retains literal source.
 
 Equality/hash use code language/text with Swift canonical Unicode semantics;
 derived ranges do not define identity or require bytewise-equal spellings.
-`ChioTheme.syntax` supplies keyword/type/string/number/comment colors, independent
+`ChioStyle.syntax` supplies keyword/type/string/number/comment colors, independent
 of status roles; ordinary foreground handles identifiers/punctuation/operators.
 `.codeHighlighting(.plain)` suppresses paint; `.automatic` is default. Modifiers
 retain installed link actions, native scroll identity and ranges. Syntax colors

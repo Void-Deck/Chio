@@ -98,7 +98,7 @@ struct ChoiceExampleView {
         _showsValidation = State(wrappedValue: showsValidation)
     }
 
-    private var theme: ChioTheme { themeChoice.theme }
+    private var theme: ChioStyle { themeChoice.theme }
 
     private var languageSelection: Binding<ChoiceDraft.Language?> {
         let storage = $draft
@@ -244,7 +244,7 @@ extension ChoiceExampleView: View {
         .padding(.vertical, isShort ? 0 : 1)
         .frame(maxWidth: 76, maxHeight: .infinity, alignment: .topLeading)
         .frame(width: terminalSize.width, height: terminalSize.height, alignment: .top)
-        .chioTheme(isShort ? theme.replacing(spacing: theme.spacing.replacing(sectionGap: 0)) : theme)
+        .style(isShort ? theme.replacing(spacing: theme.spacing.replacing(sectionGap: 0)) : theme)
         .onKeyPress { press in
             guard press.modifiers == .ctrl else { return .ignored }
             switch press.key {

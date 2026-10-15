@@ -10,7 +10,7 @@ rendering, layout, input, and focus.
 
 [![Watch Chio's dashboard recording](Docs/Media/dashboard.png)](https://echoz.github.io/Chio/)
 
-[▶ Watch Chio in action](https://echoz.github.io/Chio/) · [Examples and controls](Docs/Examples.md) · [0.2.0 release notes](https://github.com/echoz/Chio/releases/tag/v0.2.0)
+[▶ Watch Chio in action](https://echoz.github.io/Chio/) · [Examples and controls](Docs/Examples.md) · [0.2.0 release preparation](Docs/Releases/0.2.0.md)
 
 ## Development and stability
 
@@ -47,7 +47,13 @@ struct AgentsView: View {
 
 One immutable style gives descendants consistent colors, spacing, surfaces and
 focus styling. Start with `.default`, `.light`, `.btop` or `.opencode`, and customize
-with `replacing(...)`.
+with `replacing(...)`. `Spacing.listRowVerticalInset` adds bounded padding around
+Chio searchable-list and checklist rows; `.opencode` uses one cell per side.
+Native list rows can apply the same value with ordinary padding.
+
+The current API uses `ChioStyle`, `.style(...)` and `@Environment(\.chioStyle)`.
+Former theme aliases are removed. The 0.2.0 release is held while these API and
+spacing changes complete qualification.
 [API usage and recipes →](Docs/Usage.md)
 
 ## Try it
@@ -56,8 +62,8 @@ Requires **Swift 6.4+**, on **macOS 15+ or Linux**. From a repository checkout:
 
 This revision pins [SwiftTUI 0.18.0](Docs/Decisions/Dependencies.md#0180-adoption-candidate),
 including the list scrolling and layout fixes.
-For use in another package, copy the compatible revision pins from the
-[release installation instructions](https://github.com/echoz/Chio/releases/tag/v0.2.0).
+For use in another package, follow the compatible revision requirements in the
+[release preparation](Docs/Releases/0.2.0.md). Publication remains pending qualification.
 Version-based Chio requirements remain unsupported by the revision-pinned dependency graph.
 
 ```sh

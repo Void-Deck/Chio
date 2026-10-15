@@ -6,18 +6,18 @@ import Testing
 @Suite(.serialized)
 struct ChioDisclosureGroupStyleTests {
     @Test("Disclosure labels and protected content share the theme at narrow widths",
-          arguments: [6, 18, 36], [ChioTheme.default, .light, disclosureTestTheme])
-    func raster(width: Int, theme: ChioTheme) throws {
+          arguments: [6, 18, 36], [ChioStyle.default, .light, disclosureTestTheme])
+    func raster(width: Int, theme: ChioStyle) throws {
         let closed = DefaultRenderer().render(
             DisclosureGroup("Details", isExpanded: .constant(false)) { Text("Protected body") }
                 .background(theme.colors.selectedSurface)
-                .chioTheme(theme),
+                .style(theme),
             proposal: ProposedViewSize(width: width, height: 5)
         )
         let opened = DefaultRenderer().render(
             DisclosureGroup("Details", isExpanded: .constant(true)) { Text("Body") }
                 .background(theme.colors.selectedSurface)
-                .chioTheme(theme),
+                .style(theme),
             proposal: ProposedViewSize(width: width, height: 5)
         )
         #expect(!closed.rasterSurface.lines.joined().contains("Protected body"))
@@ -40,7 +40,7 @@ struct ChioDisclosureGroupStyleTests {
         let rendered = DefaultRenderer().render(
             DisclosureGroup("Unavailable", isExpanded: .constant(expanded)) { Text("Body") }
                 .disabled(true)
-                .chioTheme(.default),
+                .style(.default),
             proposal: ProposedViewSize(width: 24, height: 5)
         )
         let node = try #require(rendered.semanticSnapshot.accessibilityNodes.first { $0.isDisclosureTrigger })
@@ -60,7 +60,7 @@ struct ChioDisclosureGroupStyleTests {
                 Text("First")
                 Text("Second")
                 HStack(spacing: 1) { Text("Third"); Text("row") }
-            }.chioTheme(.default),
+            }.style(.default),
             proposal: ProposedViewSize(width: 24, height: 6)
         ).rasterSurface.lines
         #expect(lines[0].contains("▾ Details"))
@@ -159,7 +159,7 @@ struct ChioDisclosureGroupStyleTests {
         }
     }
 
-    private func expectHeaderPaint(_ frame: SemanticHostFrame, label: String, theme: ChioTheme, active: Bool) {
+    private func expectHeaderPaint(_ frame: SemanticHostFrame, label: String, theme: ChioStyle, active: Bool) {
         guard let node = frame.semantics.accessibilityNodes.first(where: { $0.isDisclosureTrigger && $0.label == label }) else {
             Issue.record("Missing disclosure \(label)")
             return
@@ -172,7 +172,7 @@ struct ChioDisclosureGroupStyleTests {
     }
 }
 
-private let disclosureTestTheme = ChioTheme.default.replacing(colors: ChioTheme.default.colors.replacing(
+private let disclosureTestTheme = ChioStyle.default.replacing(colors: ChioStyle.default.colors.replacing(
     accent: Color(hexRGB: 0x123456), mutedText: Color(hexRGB: 0x345678),
     selectedSurface: Color(hexRGB: 0x654321)
 ))
@@ -258,7 +258,7 @@ extension DisclosureStyleTestView: View {
             .focusEffectDisabled(suppressed)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .chioTheme(light ? .light : disclosureTestTheme)
+        .style(light ? .light : disclosureTestTheme)
         .onAppear { reading = true }
         .onKeyPress { press in
             switch press {

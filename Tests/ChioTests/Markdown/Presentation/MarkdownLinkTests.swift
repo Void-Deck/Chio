@@ -8,11 +8,11 @@ struct MarkdownLinkTests {
     @Test("Interactive links retain Unicode wrapping, mixed styles and one native focus stop per label",
           arguments: [12, 38], [false, true])
     func rendering(width: Int, light: Bool) {
-        let theme: ChioTheme = light ? .light : .default
+        let theme: ChioStyle = light ? .light : .default
         let rendered = DefaultRenderer().render(
             MarkdownView(MarkdownDocument("Before [**你好** *café* `code`](../guide#intro)[again](../guide#intro) after."),
                          openLink: OpenLinkAction { _ in Issue.record("Rendering activated a link"); return false })
-                .chioTheme(theme),
+                .style(theme),
             proposal: .init(width: width, height: 20)
         )
         #expect(rendered.rasterSurface.size.width <= width)
@@ -31,7 +31,7 @@ struct MarkdownLinkTests {
         let rendered = DefaultRenderer().render(
             MarkdownView(MarkdownDocument("**[Docs](guide.md)** ![Chart](plot.png) [empty]()"))
                 .openLinkAction(OpenLinkAction { _ in Issue.record("Passive document activated"); return true })
-                .chioTheme(.default),
+                .style(.default),
             proposal: .init(width: 80, height: 5)
         )
         #expect(rendered.rasterSurface.lines.joined().contains("Docs (guide.md) Chart (plot.png) empty"))
@@ -44,7 +44,7 @@ struct MarkdownLinkTests {
     func table() {
         let rendered = DefaultRenderer().render(
             MarkdownView(MarkdownDocument("| [Header](head.md) |\n| --- |\n| [Body](body.md) |"),
-                         openLink: OpenLinkAction { _ in false }).chioTheme(.default),
+                         openLink: OpenLinkAction { _ in false }).style(.default),
             proposal: .init(width: 40, height: 15)
         )
         #expect(rendered.rasterSurface.lines.joined().contains("Header (head.md)"))
@@ -58,7 +58,7 @@ struct MarkdownLinkTests {
         for source in ["[Empty]() ![Image](plot.png) `<https://example.com>`", "[Disabled](guide.md)"] {
             let rendered = DefaultRenderer().render(
                 MarkdownView(MarkdownDocument(source), openLink: OpenLinkAction { _ in false })
-                    .disabled(true).chioTheme(.default),
+                    .disabled(true).style(.default),
                 proposal: .init(width: 70, height: 5)
             )
             #expect(rendered.semanticSnapshot.focusRegions.isEmpty)
@@ -69,7 +69,7 @@ struct MarkdownLinkTests {
     func imageLinks() {
         let rendered = DefaultRenderer().render(
             MarkdownView(MarkdownDocument("![foo [bar](/url)](/url2) [![chart](plot.png)](guide.md)"),
-                         openLink: OpenLinkAction { _ in false }).chioTheme(.default),
+                         openLink: OpenLinkAction { _ in false }).style(.default),
             proposal: .init(width: 80, height: 5)
         )
         #expect(rendered.rasterSurface.lines.joined().contains("foo bar (/url) (/url2) chart (plot.png)"))
@@ -94,7 +94,7 @@ struct MarkdownLinkTests {
             let focused = try await recorder.wait(after: initial.sequence, description: "first inline link focus") {
                 self.focusedDestination($0) == "guide.md"
             }
-            #expect(linkCells(focused).contains { $0.style?.backgroundColor == ChioTheme.default.colors.selectedSurface })
+            #expect(linkCells(focused).contains { $0.style?.backgroundColor == ChioStyle.default.colors.selectedSurface })
             session.send(.key(.return))
             let opened = try await recorder.wait(after: focused.sequence, description: "exact app destination once") {
                 $0.raster.lines.contains { $0.contains("Calls=1 Outer=0") }
@@ -105,7 +105,7 @@ struct MarkdownLinkTests {
                 $0.raster.lines.contains { $0.contains("Light=true") }
             }
             #expect(themed.focusedIdentity == focused.focusedIdentity)
-            #expect(linkCells(themed).contains { $0.style?.backgroundColor == ChioTheme.light.colors.selectedSurface })
+            #expect(linkCells(themed).contains { $0.style?.backgroundColor == ChioStyle.light.colors.selectedSurface })
             surface.updateSurfaceSize(.init(width: 24, height: 18))
             session.requestSurfaceRefresh()
             let narrow = try await recorder.wait(after: themed.sequence, description: "wrapped label keeps native focus") {
@@ -117,7 +117,7 @@ struct MarkdownLinkTests {
                 $0.raster.lines.contains { $0.contains("Effect=false") }
             }
             #expect(suppressed.focusedIdentity == focused.focusedIdentity)
-            #expect(!linkCells(suppressed).contains { $0.style?.backgroundColor == ChioTheme.light.colors.selectedSurface })
+            #expect(!linkCells(suppressed).contains { $0.style?.backgroundColor == ChioStyle.light.colors.selectedSurface })
             session.send(.key(.space))
             let second = try await recorder.wait(after: suppressed.sequence, description: "Space activates native link") {
                 $0.raster.lines.contains { $0.contains("Calls=2 Outer=0") }
@@ -274,7 +274,7 @@ extension LinkTestView: View {
             .focused($reading)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
-        .chioTheme(light ? .light : .default)
+        .style(light ? .light : .default)
         .openLinkAction(OpenLinkAction { _ in outer += 1; return true })
         .onAppear { reading = true }
         .onKeyPress { press in

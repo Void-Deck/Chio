@@ -54,10 +54,20 @@ cache's expiry and eviction. Applications own distribution and any management UI
 The approved unified `ChioStyle` value holds colors, spacing, treatments and
 surfaces. `View.style(_:)` installs native control styles and an inherited subtree
 value through one `EnvironmentValues.chioStyle` key. The nearest complete style
-overrides its ancestor. Legacy `ChioTheme` and `.chioTheme(...)` forward to the
-same value/key. Native component style modifiers remain specific overrides.
-[Styles](Decisions/Themes.md) owns presets, surface inheritance, bounded input
-padding and compatibility; [Plan](Plan.md) records delivery and verification.
+overrides its ancestor. The current API uses `ChioStyle`, `.style(...)` and
+`EnvironmentValues.chioStyle`; the former theme aliases and legacy function-signature
+overloads are removed. Native component style modifiers remain specific overrides,
+with descriptive `theme:` initializer labels taking `ChioStyle` values.
+[Styles](Decisions/Themes.md) owns presets, surface inheritance, bounded input and
+list-row padding, and migration; [Plan](Plan.md) records delivery and verification.
+
+`Spacing.listRowVerticalInset` is a checked `0...32` cell distance, defaulting to
+zero and set to one by `.opencode`. `SearchableList` and `SearchableChecklist`
+apply it around complete authored rows; `FilePicker` inherits that presentation
+through its searchable list. Native `List` content applies the token with ordinary
+row padding because its public style hook cannot transform each row. SwiftTUI
+retains focus, measurement, selection and scrolling. The density addition and API
+removal require fresh qualification; the 0.2.0 release is held pending those checks.
 Applications retain layout, breakpoints, column widths and navigation.
 
 Prefer a native style when an existing view already expresses the required

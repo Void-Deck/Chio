@@ -2,9 +2,9 @@ import SwiftTUIViews
 
 /// Underlined native links with semantic colors and a focused text surface.
 public struct ChioLinkStyle {
-    public let theme: ChioTheme
+    public let theme: ChioStyle
 
-    public init(theme: ChioTheme = .default) {
+    public init(theme: ChioStyle = .default) {
         self.theme = theme
     }
 }

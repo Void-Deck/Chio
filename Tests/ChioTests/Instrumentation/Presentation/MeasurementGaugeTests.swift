@@ -209,11 +209,11 @@ struct MeasurementGaugeTests {
 
     @Test("Every reading uses the environment accent without implying completion or adding focus")
     func themeAndSemantics() {
-        for theme in [ChioTheme.default, .light, .btop] {
+        for theme in [ChioStyle.default, .light, .btop] {
             for style in [MeasurementGauge.Style.bar, .dial] {
                 for position in [0, 0.5, 1, nil] as [Double?] {
                     let frame = DefaultRenderer().render(
-                        MeasurementGauge(position: position, style: style).chioTheme(theme),
+                        MeasurementGauge(position: position, style: style).style(theme),
                         proposal: ProposedSize(width: 20, height: 5))
                     let painted = frame.rasterSurface.cells.flatMap { $0 }.filter { $0.character != " " }
                     #expect(!painted.isEmpty)
@@ -306,12 +306,12 @@ struct MeasurementGaugeTests {
     @Test("Target dial uses independent theme roles and needle paint owns shared cells")
     func dialTargetPaint() throws {
         let target = try MeasurementGauge.TargetBand(lowerBound: 0.45, upperBound: 0.6)
-        let custom = ChioTheme.default.replacing(gauge: ChioTheme.GaugeColors(
+        let custom = ChioStyle.default.replacing(gauge: ChioStyle.GaugeColors(
             arc: Color(hexRGB: 0x123456), target: Color(hexRGB: 0xABCDEF), needle: Color(hexRGB: 0xF12345)))
-        for theme in [ChioTheme.default, .light, .btop, custom] {
+        for theme in [ChioStyle.default, .light, .btop, custom] {
             for position in [nil, 0.5] as [Double?] {
                 let frame = DefaultRenderer().render(
-                    MeasurementGauge(position: position, targetBand: target, style: .dial).chioTheme(theme))
+                    MeasurementGauge(position: position, targetBand: target, style: .dial).style(theme))
                 let cells = frame.rasterSurface.cells
                 // Independently inspected native cell coverage: six target cells
                 // on the top arc, with the central needle crossing column ten.
@@ -340,14 +340,14 @@ struct MeasurementGaugeTests {
         let fullFrame = DefaultRenderer().render(MeasurementGauge(position: nil, targetBand: full, style: .dial))
         let arcCells = fullFrame.rasterSurface.cells.flatMap { $0 }.filter { $0.character != " " }
         #expect(!arcCells.isEmpty)
-        #expect(arcCells.allSatisfy { $0.style?.foregroundColor == ChioTheme.default.gauge.target })
+        #expect(arcCells.allSatisfy { $0.style?.foregroundColor == ChioStyle.default.gauge.target })
         let narrow = try MeasurementGauge.TargetBand(lowerBound: 0.5001, upperBound: 0.5002)
         let missing = DefaultRenderer().render(MeasurementGauge(position: nil, targetBand: narrow, style: .dial))
-        #expect(missing.rasterSurface.cells[0][10].style?.foregroundColor == ChioTheme.default.gauge.target)
+        #expect(missing.rasterSurface.cells[0][10].style?.foregroundColor == ChioStyle.default.gauge.target)
         let overlapping = DefaultRenderer().render(MeasurementGauge(position: 0.5, targetBand: narrow, style: .dial))
-        #expect(overlapping.rasterSurface.cells[0][10].style?.foregroundColor == ChioTheme.default.gauge.needle)
+        #expect(overlapping.rasterSurface.cells[0][10].style?.foregroundColor == ChioStyle.default.gauge.needle)
         #expect(!overlapping.rasterSurface.cells.flatMap { $0 }.contains {
-            $0.character != " " && $0.style?.foregroundColor == ChioTheme.default.gauge.target
+            $0.character != " " && $0.style?.foregroundColor == ChioStyle.default.gauge.target
         })
         #expect(overlapping.semanticSnapshot.accessibilityNodes.contains {
             $0.label?.contains("Target band: 0.5001 to 0.5002") == true
@@ -433,15 +433,15 @@ struct MeasurementGaugeTests {
     @Test("Target geometry is independent of theme paint and semantics remain passive and overrideable")
     func targetThemesAndSemantics() throws {
         let band = try MeasurementGauge.TargetBand(lowerBound: 0.45, upperBound: 0.6)
-        let custom = ChioTheme.default.replacing(colors: ChioTheme.default.colors.replacing(
+        let custom = ChioStyle.default.replacing(colors: ChioStyle.default.colors.replacing(
             accent: Color(hexRGB: 0xAC24DA)))
-        let monochrome = ChioTheme.default.replacing(colors: ChioTheme.default.colors.replacing(
+        let monochrome = ChioStyle.default.replacing(colors: ChioStyle.default.colors.replacing(
             accent: Color(hexRGB: 0xFFFFFF)))
         for position in [0, 0.45, 0.6, 1, nil] as [Double?] {
             let reference = render(position, targetBand: band)
-            for theme in [ChioTheme.default, .light, .btop, custom, monochrome] {
+            for theme in [ChioStyle.default, .light, .btop, custom, monochrome] {
                 let frame = DefaultRenderer().render(
-                    MeasurementGauge(position: position, targetBand: band).chioTheme(theme),
+                    MeasurementGauge(position: position, targetBand: band).style(theme),
                     proposal: ProposedSize(width: 20, height: 5))
                 #expect(characters(frame) == characters(reference))
                 let painted = frame.rasterSurface.cells.flatMap { $0 }.filter { $0.character != " " }
@@ -581,12 +581,12 @@ struct MeasurementGaugeTests {
         let first = try MeasurementGauge.ReferenceMark(id: "mean", label: "Mean 20.8 °C", position: 0.3)
         let second = try MeasurementGauge.ReferenceMark(id: "max", label: "Max 40.7 °C", position: 0.7)
         let references = try MeasurementGauge.ReferenceMarks([first, second])
-        let monochrome = ChioTheme.default.replacing(colors: ChioTheme.default.colors.replacing(
+        let monochrome = ChioStyle.default.replacing(colors: ChioStyle.default.colors.replacing(
             accent: Color(hexRGB: 0xFFFFFF), mutedText: Color(hexRGB: 0xFFFFFF)))
         let reference = render(nil, referenceMarks: references)
-        for theme in [ChioTheme.default, .light, .btop, monochrome] {
+        for theme in [ChioStyle.default, .light, .btop, monochrome] {
             let frame = DefaultRenderer().render(
-                MeasurementGauge(position: nil, referenceMarks: references).chioTheme(theme),
+                MeasurementGauge(position: nil, referenceMarks: references).style(theme),
                 proposal: ProposedSize(width: 20, height: 12))
             #expect(characters(frame) == characters(reference))
             let plotRows = 2

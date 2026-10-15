@@ -3,10 +3,11 @@
 **Status:** Accepted and implemented. The unified `ChioStyle` API and promotion of
 the appearance recipes are verified in [PR #10](https://github.com/echoz/Chio/pull/10).
 They are included in the [0.2.0 release preparation](../Releases/0.2.0.md), which records scope and evidence.
-Ordinary calls to the theme API shipped in 0.1.0 remain supported. The
-[release migration notes](../Releases/0.2.0.md#migration-from-010) describe a narrow
-break for references to the former four-component initializer and replacement
-signatures; explicit closures preserve those call sites.
+The list-row spacing addition and removal of theme compatibility APIs are approved
+and implemented in the working candidate, with fresh qualification pending.
+The 0.2.0 release is held for those checks. The
+[release migration notes](../Releases/0.2.0.md#migration-from-010) describe the source changes;
+earlier PR #10 evidence does not qualify this expanded candidate.
 
 Use an immutable style and native control styles to give a subtree coherent
 presentation while retaining SwiftTUI behavior.
@@ -23,10 +24,13 @@ merging fields. Use `replacing(...)` on a style and its nested values for explic
 customization. Native modifiers such as `.groupBoxStyle(...)` remain specific
 component overrides; place them inside the enclosing `.style(...)` scope.
 
-`ChioTheme` is a typealias for `ChioStyle`. `.chioTheme(...)` forwards to
-`.style(...)`, and the compatibility environment accessor forwards to the same
-key. There is no parallel theme/style state. Existing native style initializers
-retain their `theme:` labels for source compatibility.
+The current API is `ChioStyle`, `.style(...)` and `EnvironmentValues.chioStyle`.
+The `ChioTheme` typealias, `.chioTheme(...)` modifier and `EnvironmentValues.chioTheme`
+accessor are removed. Migrate to the current spellings. Legacy initializer and
+replacement function-signature overloads on the style, spacing and treatments
+are also removed; rebind function references or use explicit closures with the
+current signatures. Native control-style initializers retain their descriptive
+`theme:` labels and accept `ChioStyle`.
 
 Static `.default`, `.light`, `.btop` and `.opencode` values are starting points,
 not a registry. Colors, spacing, treatments and surfaces are independently
@@ -34,25 +38,33 @@ customizable. Presets contain ordinary values; rendering never branches on a
 preset name. The default and light appearance remain unchanged. Applying `.btop`
 now gives native groups border headings through the global modifier: this is an
 intentional visual change from the earlier palette-only preset. `.opencode`
-combines warm accents, leading panel/input edges and roomier input padding;
-its list rows remain compact.
+combines warm accents, leading panel/input edges, roomier input padding and one
+cell above and below each Chio searchable row.
 
 `Surface` is `.base` or `.color(Color)`. `surfaces.canvas` and `surfaces.input`
 default to `.base`, resolving from `colors.surface` even after palette replacement.
 An explicit color overrides that role; replacing it with `.base` restores
 inheritance. Ordinary panel content retains the base surface.
 
-`Spacing` measures terminal cells. The new `inputVerticalInset` defaults to zero
-and requires `0...32` through construction, replacement and decoding. A missing
-key in historical encoded spacing decodes as zero. The original four spacing
-fields retain their nonnegative contract and existing values.
+`Spacing` measures terminal cells. `inputVerticalInset` and `listRowVerticalInset`
+default to zero and each require `0...32` through construction, replacement and
+decoding. A missing key in historical encoded spacing decodes that distance as
+zero. The original four spacing fields retain their nonnegative contract and
+existing values. `.opencode` sets `listRowVerticalInset` to one; default, light
+and btop retain zero.
 
-All new per-row density controls are deferred and are not public style fields.
-[Native integration](NativeIntegration.md#current-row-qualification) owns the
-mixed-height reveal regression and its native measurement-retention correction.
-SwiftTUI 0.18.0 adoption qualifies the retained list regressions before a new density
-field; broader pointer and style-change qualification remains separate. This deferral
-does not block the unified style API. Applications retain row content and width policy.
+`SearchableList` and `SearchableChecklist` apply vertical inset around each complete
+row, including the checklist checkbox and content. `FilePicker` inherits it through
+its searchable list. Native `List` rows apply the token through ordinary authored
+padding: the public native `ListStyle` hook has no per-row content transformation.
+Do not double-pad Chio searchable rows. SwiftTUI continues to own measurement,
+focus, selection and scroll reveal; applications own row content and width policy.
+
+[Native integration](NativeIntegration.md#current-row-qualification) retains the
+mixed-height reveal regression and native measurement-retention correction.
+SwiftTUI 0.18.0 adoption qualifies those retained regressions. The new inset,
+interactive density changes, pointer routing and refreshed appearance require
+fresh qualification before release.
 
 Construction and replacement preserve printable single-cell glyph preconditions.
 Options own component behavior. Applications own content, data, breakpoints,
@@ -79,8 +91,8 @@ whole-cell rectangular fill behind rounded border glyphs.
 
 - [ChioStyle.swift](../../Sources/Chio/Style/Domain/ChioStyle.swift)
 - [View+ChioStyle.swift](../../Sources/Chio/Style/Presentation/View+ChioStyle.swift)
-- [ChioTheme.swift compatibility alias](../../Sources/Chio/Theme/Domain/ChioTheme.swift)
-- [ChioThemeTests.swift](../../Tests/ChioTests/Theme/Domain/ChioThemeTests.swift)
+- [ChioStyle spacing](../../Sources/Chio/Style/Domain/ChioStyle+Spacing.swift)
+- [ChioStyleValueTests.swift](../../Tests/ChioTests/Style/Domain/ChioStyleValueTests.swift)
 - [Required checks](../Verification.md)
 
 ## Appearance study
@@ -95,9 +107,13 @@ the main catalog currently has only default, light and btop captures.
 
 OpenCode's authored padding, background surfaces and leading edges inspire the
 roomy style; btop informs compact border headings. These are interpretations,
-not integrations or claims of upstream parity. All six comparison captures and
-the affected btop catalog previews were refreshed and inspected alongside
-interactive narrow sessions and assembled-site browser checks. Future appearance
+not integrations or claims of upstream parity. Before the new list-row inset,
+all six comparison captures and affected btop catalog previews were refreshed and
+inspected alongside interactive narrow sessions and assembled-site browser checks.
+The current candidate refreshes all six comparison captures to show roomier rows;
+terminal restoration and still inspection pass. Browser verification and the
+mixed-height focus correction remain pending in
+[Verification](../Verification.md#dynamic-row-spacing-candidate). Future appearance
 changes require the same [verification](../Verification.md); captures alone do
 not establish native interaction or platform correctness. Pages publishes from
 `main` after merge.

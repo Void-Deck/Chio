@@ -9,7 +9,7 @@ struct AgentReportView {
     @FocusState private var isReading: Bool
     @State private var lastLinkDestination = ""
 
-    private var theme: ChioTheme { themeChoice.theme }
+    private var theme: ChioStyle { themeChoice.theme }
 }
 
 extension AgentReportView: View {
@@ -48,7 +48,7 @@ extension AgentReportView: View {
         .padding(.vertical, 1)
         .frame(maxWidth: 84, maxHeight: .infinity, alignment: .topLeading)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .chioTheme(theme)
+        .style(theme)
         .onAppear {
             lastLinkDestination = ""
             isReading = true

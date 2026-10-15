@@ -194,6 +194,35 @@ before this correction. Its five-second wait and the fifteen-second terminal
 advancement assertion remain unchanged. Four constructor spellings in that suite
 are made explicit, removing exactly three additional baseline entries.
 
+## Dynamic row-spacing candidate
+
+The uncommitted 0.2.0 candidate based on `28b04bc` removes the legacy theme APIs
+and adds bounded `Spacing.listRowVerticalInset`. On unchanged SwiftTUI 0.18.0,
+macOS debug and release each pass fifteen of seventeen new `ListRowSpacingTests`
+cases. Both mixed-height dynamic-spacing cases fail: growing the row padding
+after scrolling moves native focus from ID 7 to ID 6. Assertions and five-second
+waits remain unchanged. Release is held for this native correction and the
+remaining final-candidate checks.
+
+Passing cases cover intrinsic row positions at 0, 1 and 32 cells, composed row
+geometry and selection paint, maximum-inset clipping, wrapped-row style changes,
+padded pointer targets, adjacent padding boundaries after scrolling, and disabled
+checklist membership. The eighteen existing list qualification cases pass in both
+configurations. Style value/presentation checks and release appearance workflows
+also pass; nine focused appearance geometry cases pass in debug.
+
+Pinned SwiftRules 0.1.4 reports no new violations across 350 files, with 396
+retained baseline findings. This is focused local evidence, not a complete
+macOS/Linux gate or complete showcase qualification.
+
+The candidate release binary refreshes all six appearance recordings/previews
+and the tree recording with default/light/btop previews. All nine terminal
+sessions pass their existing restoration checks. Appearance retains one native
+`collection.unboundedRealization` warning per four-row session after teardown;
+tree sessions report no diagnostics. All nine previews are inspected and the
+site assembles. Fresh browser verification remains pending while the Mac is locked.
+The captures use the unchanged SwiftTUI 0.18.0 pin, not the proposed native fix.
+
 ## List row spacing qualification
 
 **Original-pin result:** BLOCKED. The added `ChioListStyleTests` qualification suite uses the
@@ -626,18 +655,20 @@ The main catalog retains default/light/btop previews;
 this comparison does not establish opencode previews for every catalog entry.
 
 Verify one inherited environment key, nearest complete-style overrides,
-compatibility aliases and retained `theme:` initializer signatures. Cover explicit
+canonical style APIs and retained `theme:` initializer labels. Cover explicit
 surface overrides and `.base` inheritance after palette replacement; construct,
 replace and decode bounded input padding, including the historical absent key.
 Use public raster and hosted-session checks for the supported searchable composed
 lists: native focus, selection, query, activation and scroll reveal through width
-and style changes. New per-row density controls are in qualification under the
+and style changes. Include clicks on row padding, adjacent boundaries and disabled
+checklist entries. Check `listRowVerticalInset` construction, replacement, decoding,
+zero defaults and maximum-inset clipping. Row density is in qualification under the
 [native list conditions](Decisions/NativeIntegration.md#tall-list-rows) and
 [the current checks](#list-row-spacing-qualification).
 Single-line truncation limits row height but does not establish that arbitrary
 list/checklist scrolling is safe or fix the separate reproduced focus failure.
 Inspect unchanged default/light presentation, the intentional btop border-heading
-change, and opencode leading edges, roomy inputs and compact list rows.
+change, and opencode leading edges, roomy inputs and padded searchable rows.
 The CI terminal probe exercises every comparison style at 36 × 18, including
 section shortcuts and clean terminal restoration.
 

@@ -118,7 +118,7 @@ struct MapRoutingInteractionTests {
         #expect(!text.contains("Preparing map"))
         let startCells = capture.raster.cells.flatMap { $0 }.filter { cell in
             let isBraille = (0x2801...0x28FF).contains(cell.character.unicodeScalars.first?.value ?? 0)
-            return isBraille && cell.style?.foregroundColor == ChioTheme.default.colors.warning
+            return isBraille && cell.style?.foregroundColor == ChioStyle.default.colors.warning
         }
         #expect(!startCells.isEmpty)
     }

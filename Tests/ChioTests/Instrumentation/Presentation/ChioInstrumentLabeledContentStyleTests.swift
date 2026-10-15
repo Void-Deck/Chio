@@ -8,11 +8,11 @@ import Testing
 struct ChioInstrumentLabeledContentStyleTests {
     @Test("Instrument hierarchy inherits the nearest theme without formatting authored facts")
     func themeHierarchy() {
-        let custom = ChioTheme.default.replacing(
-            colors: ChioTheme.default.colors.replacing(accent: Color(hexRGB: 0x123456)))
-        for theme in [ChioTheme.default, .light, .btop, custom] {
+        let custom = ChioStyle.default.replacing(
+            colors: ChioStyle.default.colors.replacing(accent: Color(hexRGB: 0x123456)))
+        for theme in [ChioStyle.default, .light, .btop, custom] {
             let reading = LabeledContent("Temperature", value: "21.4 °C")
-                .labeledContentStyle(.instrument).environment(\.chioTheme, theme)
+                .labeledContentStyle(.instrument).environment(\.chioStyle, theme)
             let result = DefaultRenderer().render(reading)
             #expect(DefaultRenderer().render(reading).rasterSurface == result.rasterSurface)
             #expect(result.rasterSurface.lines.map { $0.trimmingCharacters(in: .whitespaces) }
@@ -70,7 +70,7 @@ struct ChioInstrumentLabeledContentStyleTests {
                 LabeledContent("Name", value: "Ada")
                 LabeledContent("Speed", value: "12").labeledContentStyle(.instrument)
                 LabeledContent("Row", value: "3").labeledContentStyle(.automatic)
-            }.chioTheme(.btop), proposal: ProposedSize(width: 30, height: 5))
+            }.style(.btop), proposal: ProposedSize(width: 30, height: 5))
         #expect(result.rasterSurface.lines.contains { $0.contains("Name") && $0.contains("Ada") })
         #expect(!result.rasterSurface.lines.contains { $0.contains("Speed") && $0.contains("12") })
         #expect(result.rasterSurface.lines.contains { $0.contains("Row") && $0.contains("3") })
@@ -146,7 +146,7 @@ extension InstrumentSlotView: View {
             .labeledContentStyle(.instrument)
             Text(isLight ? "Theme=light" : "Theme=default")
         }
-        .chioTheme(isLight ? .light : .default)
+        .style(isLight ? .light : .default)
         .onKeyPress { press in
             switch press {
             case KeyPress(.character("t"), modifiers: .ctrl): isLight.toggle(); return .handled

@@ -9,10 +9,11 @@ live in [0.2.0](Releases/0.2.0.md), with [0.1.0](Releases/0.1.0.md) retained as 
 
 ## Current slice: Chio 0.2.0 release
 
-The user approved a 0.2.0 source release on 2026-10-15. Freeze feature scope at
-merged `7d44bd6bd85290f2c6e3526cf19e6647d551797c`; release preparation changes
-documentation and showcase links only. The [release record](Releases/0.2.0.md)
-owns scope, migration and evidence. Publication requires reviewed preparation,
+The user approved a 0.2.0 source release on 2026-10-15, then added list-row spacing
+and removal of the legacy theme API to its scope. Publication is held for these
+changes and their examples. [PR #18](https://github.com/echoz/Chio/pull/18) carries
+the release preparation. The [release record](Releases/0.2.0.md)
+owns scope, migration and evidence. Publication requires reviewed implementation,
 applicable checks, consumer installation and showcase verification, followed by
 verification of the immutable tag and published release.
 
@@ -45,9 +46,10 @@ Responsive instrumentation and target dials merged in
 [PR #8](https://github.com/echoz/Chio/pull/8) and
 [PR #9](https://github.com/echoz/Chio/pull/9), also included in the 0.2.0 scope.
 
-Themes and example recipes now use immutable `ChioStyle` values applied
-with inherited `View.style(_:)`, one environment key and compatible
-`ChioTheme`/`.chioTheme(...)` forwarding. Static default/light/btop/opencode values
+Themes and example recipes use immutable `ChioStyle` values applied
+with inherited `View.style(_:)` and one environment key. The release slice removes
+the former `ChioTheme`/`.chioTheme(...)` forwarding by explicit user request.
+Static default/light/btop/opencode values
 compose colors, spacing, treatments and surfaces. Leading edges and input
 surfaces/padding are public style values; applications retain breakpoints,
 column widths, data and navigation. [Styles](Decisions/Themes.md) owns
@@ -232,7 +234,7 @@ Provider downloads stay paused.
 
 <a id="current-slice-list-row-spacing"></a>
 
-### Next slice: list row spacing
+### Current slice: list row spacing and style migration
 
 [PR #17](https://github.com/echoz/Chio/pull/17) merged SwiftTUI 0.18.0 adoption at
 `7d44bd6bd85290f2c6e3526cf19e6647d551797c`. It contains the native measured-height
@@ -242,13 +244,31 @@ macOS and Linux, alongside the complete consumer gates and independent review.
 The first macOS attempt hit the documented tab timeout; the unchanged retry
 passed, without establishing that intermittent issue's cause.
 
-No new row-spacing token, example treatment or showcase recording belongs to
-this dependency slice. [Native integration](Decisions/NativeIntegration.md#current-row-qualification)
-owns the tested contracts. After release, complete pointer and dynamic style-change
-qualification for padded and multiline list/checklist rows. If those contracts
-hold, add a bounded style spacing token and compatibility coverage, then validate
-the affected examples and showcase through [the existing workflow](Verification.md#demo-site).
-Native focus, selection, input and scrolling retain their existing owners.
+The user approved this slice before 0.2.0 publication. `listRowVerticalInset`
+adds 0...32 terminal cells above and below each complete Chio searchable-list or
+checklist row, including its marker and selected surface. It defaults to zero;
+the OpenCode preset and roomy example override use one. File picking inherits
+the token through its searchable list. Native `ListStyle` has no per-row padding
+hook, so application-authored native `List` rows use ordinary padding with the
+same value. There is no new renderer, row wrapper or focus/scroll system.
+
+The user also approved a breaking style migration: remove `ChioTheme`,
+`.chioTheme(...)`, the old environment accessor and style compatibility overloads.
+Current code and examples use `ChioStyle`, `.style(...)` and `\.chioStyle`.
+Persisted spacing keeps absent optional keys at zero; malformed values still fail.
+
+Local debug and release checks pass the eighteen retained regressions and fifteen
+of seventeen new row-spacing cases. The two mixed-height style-change cases expose
+a native focus-recovery gap: increasing row padding at the same viewport size
+moves focus from ID 7 to ID 6. Release remains blocked. A focused native correction
+and reproducer are being prepared; no dependency override is adopted.
+[Verification](Verification.md#dynamic-row-spacing-candidate) owns the evidence.
+
+Complete dynamic style-change qualification for scrolled, padded and multiline
+rows, retaining the failed assertions and existing viewport sizes.
+Refresh the affected examples and showcase through
+[the existing workflow](Verification.md#demo-site). The previous release-preparation
+consumer and documentation checks do not qualify this expanded candidate.
 
 Provider downloads remain paused. No automatic release monitoring is requested.
 

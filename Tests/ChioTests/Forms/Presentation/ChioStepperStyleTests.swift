@@ -6,13 +6,13 @@ import Testing
 struct ChioStepperStyleTests {
     @Test("Stepper retains native slots and distinguishes exhausted pointer actions")
     func endpointsAndTheme() throws {
-        let custom = ChioTheme.light.replacing(
-            colors: ChioTheme.light.colors.replacing(accent: Color(hexRGB: 0x123456)))
-        for theme in [ChioTheme.default, .light, .btop, custom] {
+        let custom = ChioStyle.light.replacing(
+            colors: ChioStyle.light.colors.replacing(accent: Color(hexRGB: 0x123456)))
+        for theme in [ChioStyle.default, .light, .btop, custom] {
             for value in [1, 2, 4] {
                 let result = DefaultRenderer().render(
                     Stepper("Speed", value: Binding<Int>.constant(value), in: 1...4)
-                        .stepperStyle(ChioStepperStyle()).environment(\.chioTheme, theme),
+                        .stepperStyle(ChioStepperStyle()).environment(\.chioStyle, theme),
                     proposal: ProposedSize(width: 24, height: 1))
                 let left = value == 1 ? "◁" : "◀"
                 let right = value == 4 ? "▷" : "▶"
@@ -28,7 +28,7 @@ struct ChioStepperStyleTests {
         }
         let disabled = DefaultRenderer().render(
             Stepper("Speed", value: Binding<Int>.constant(2), in: 1...4)
-                .disabled(true).chioTheme(.btop), proposal: ProposedSize(width: 24, height: 1))
+                .disabled(true).style(.btop), proposal: ProposedSize(width: 24, height: 1))
         #expect(disabled.semanticSnapshot.focusRegions.isEmpty)
         #expect(disabled.semanticSnapshot.accessibilityNodes.first { $0.role == .stepper }?.isEnabled == false)
     }

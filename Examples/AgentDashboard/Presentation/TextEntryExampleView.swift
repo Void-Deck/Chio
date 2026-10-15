@@ -58,7 +58,7 @@ struct TextEntryExampleView {
         }
     }
 
-    private var theme: ChioTheme { themeChoice.theme }
+    private var theme: ChioStyle { themeChoice.theme }
     private var passwordError: String? { password.count < 8 ? "Use at least 8 characters." : nil }
     private var notesError: String? {
         notes.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "Enter some notes." : nil
@@ -150,7 +150,7 @@ extension TextEntryExampleView: View {
         .padding(.vertical, isShort ? 0 : 1)
         .frame(maxWidth: 76, maxHeight: .infinity, alignment: .topLeading)
         .frame(width: terminalSize.width, height: terminalSize.height, alignment: .top)
-        .chioTheme(theme)
+        .style(theme)
         .onAppear { if !areInputsDisabled { focus = .password } }
         .onChange(of: password) {
             switch feedback {

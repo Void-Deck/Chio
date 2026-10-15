@@ -19,7 +19,7 @@ struct InstrumentsExampleView {
         _themeChoice = State(wrappedValue: theme)
     }
 
-    private var theme: ChioTheme { themeChoice.theme }
+    private var theme: ChioStyle { themeChoice.theme }
     private var isExpanded: Bool { terminalSize.width >= 70 && terminalSize.height >= 30 }
     private var reading: String {
         if isReadingMissing { return "Unavailable" }
@@ -170,6 +170,6 @@ extension InstrumentsExampleView: View {
             return .handled
         }
         .groupBoxStyle(ChioGroupBoxStyle(theme: theme, titlePlacement: .border))
-        .chioTheme(theme)
+        .style(theme)
     }
 }

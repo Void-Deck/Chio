@@ -364,7 +364,7 @@ extension OnlineTestView: View {
             }
             return .handled
         }
-        .chioTheme(light ? .light : .default)
+        .style(light ? .light : .default)
     }
 }
 

@@ -3,9 +3,9 @@ import SwiftTUIViews
 /// Muted native scroll indicators with an accent while their viewport owns focus.
 /// Geometry, visibility, navigation and pointer input remain native.
 public struct ChioScrollViewStyle {
-    public let theme: ChioTheme
+    public let theme: ChioStyle
 
-    public init(theme: ChioTheme = .default) {
+    public init(theme: ChioStyle = .default) {
         self.theme = theme
     }
 }

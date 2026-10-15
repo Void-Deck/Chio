@@ -1,6 +1,6 @@
 extension ChioStyle {
     /// Insets and gaps measured in terminal cells.
-    /// Input distances have a finite 0...32-cell styling bound;
+    /// Input and list-row distances have a finite 0...32-cell styling bound;
     /// the original four distances retain their nonnegative contract.
     public struct Spacing {
         public let horizontalInset: Int
@@ -9,13 +9,17 @@ extension ChioStyle {
         public let hintGap: Int
         /// Native text-field padding, bounded to 0...32 terminal cells.
         public let inputVerticalInset: Int
+        /// Padding above and below each Chio searchable-list or checklist row.
+        /// Native `List` rows can apply this value through ordinary padding.
+        public let listRowVerticalInset: Int
 
         public init(
             horizontalInset: Int = 1,
             verticalInset: Int = 0,
             sectionGap: Int = 1,
             hintGap: Int = 2,
-            inputVerticalInset: Int = 0
+            inputVerticalInset: Int = 0,
+            listRowVerticalInset: Int = 0
         ) {
             let isHorizontalInsetNonnegative = horizontalInset >= 0
             let isVerticalInsetNonnegative = verticalInset >= 0
@@ -23,21 +27,19 @@ extension ChioStyle {
             let isHintGapNonnegative = hintGap >= 0
             precondition(isHorizontalInsetNonnegative && isVerticalInsetNonnegative
                          && isSectionGapNonnegative && isHintGapNonnegative,
-                         "Theme spacing must be nonnegative")
+                         "Style spacing must be nonnegative")
             let isInputInsetBounded = (0...32).contains(inputVerticalInset)
             precondition(isInputInsetBounded,
                          "Input spacing must be in 0...32 terminal cells")
+            let isListRowInsetBounded = (0...32).contains(listRowVerticalInset)
+            precondition(isListRowInsetBounded,
+                         "List row spacing must be in 0...32 terminal cells")
             self.horizontalInset = horizontalInset
             self.verticalInset = verticalInset
             self.sectionGap = sectionGap
             self.hintGap = hintGap
             self.inputVerticalInset = inputVerticalInset
-        }
-
-        /// Retains the original four-distance initializer's function signature.
-        public init(horizontalInset: Int, verticalInset: Int, sectionGap: Int, hintGap: Int) {
-            self.init(horizontalInset: horizontalInset, verticalInset: verticalInset,
-                      sectionGap: sectionGap, hintGap: hintGap, inputVerticalInset: 0)
+            self.listRowVerticalInset = listRowVerticalInset
         }
 
         /// Returns checked spacing; omitted distances retain their current values.
@@ -46,21 +48,16 @@ extension ChioStyle {
             verticalInset: Int? = nil,
             sectionGap: Int? = nil,
             hintGap: Int? = nil,
-            inputVerticalInset: Int? = nil
+            inputVerticalInset: Int? = nil,
+            listRowVerticalInset: Int? = nil
         ) -> Self {
             Spacing(horizontalInset: horizontalInset ?? self.horizontalInset,
                     verticalInset: verticalInset ?? self.verticalInset,
                     sectionGap: sectionGap ?? self.sectionGap, hintGap: hintGap ?? self.hintGap,
-                    inputVerticalInset: inputVerticalInset ?? self.inputVerticalInset)
-        }
-
-        /// Retains the original four-distance replacement's function signature.
-        public func replacing(horizontalInset: Int?, verticalInset: Int?, sectionGap: Int?, hintGap: Int?) -> Self {
-            replacing(horizontalInset: horizontalInset, verticalInset: verticalInset,
-                      sectionGap: sectionGap, hintGap: hintGap, inputVerticalInset: nil)
+                    inputVerticalInset: inputVerticalInset ?? self.inputVerticalInset,
+                    listRowVerticalInset: listRowVerticalInset ?? self.listRowVerticalInset)
         }
     }
-
 }
 
 extension ChioStyle.Spacing: Decodable {
@@ -75,7 +72,7 @@ extension ChioStyle.Spacing: Decodable {
             guard (0...32).contains(distance) else {
                 throw DecodingError.dataCorruptedError(
                     forKey: key, in: values,
-                    debugDescription: "Input spacing must be in 0...32 terminal cells"
+                    debugDescription: "Spacing must be in 0...32 terminal cells"
                 )
             }
             return distance
@@ -86,12 +83,13 @@ extension ChioStyle.Spacing: Decodable {
         ]
         for (key, distance) in distances where distance < 0 {
             throw DecodingError.dataCorruptedError(
-                forKey: key, in: values, debugDescription: "Theme spacing must be nonnegative"
+                forKey: key, in: values, debugDescription: "Style spacing must be nonnegative"
             )
         }
         self.init(horizontalInset: horizontalInset, verticalInset: verticalInset,
                   sectionGap: sectionGap, hintGap: hintGap,
-                  inputVerticalInset: try boundedDistance(for: .inputVerticalInset))
+                  inputVerticalInset: try boundedDistance(for: .inputVerticalInset),
+                  listRowVerticalInset: try boundedDistance(for: .listRowVerticalInset))
     }
 }
 

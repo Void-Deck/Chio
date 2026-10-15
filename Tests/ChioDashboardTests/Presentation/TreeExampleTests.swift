@@ -42,7 +42,7 @@ struct TreeExampleTests {
             try await focusTree("Presentation", session: session, recorder: recorder)
             session.send(.key(.space))
             _ = try await recorder.wait(description: "nested folder can close independently") {
-                $0.treeExpanded("Presentation", false) && $0.treeContains("ChioTheme.swift")
+                $0.treeExpanded("Presentation", false) && $0.treeContains("ChioStyle.swift")
                     && !$0.treeContains("SearchableList.swift")
             }
             try await focusTree("Sources", session: session, recorder: recorder)
@@ -81,7 +81,7 @@ struct TreeExampleTests {
             let collapsed = try await recorder.wait(description: "collapse resets all folder choices and preserves action focus") {
                 $0.treeContains("Expanded folders: 0 / 6") && $0.treeFocused("Collapse all")
             }
-            #expect(!collapsed.treeContains("ChioTheme.swift"))
+            #expect(!collapsed.treeContains("ChioStyle.swift"))
             try await focusTree("Notes", session: session, recorder: recorder)
             session.send(.key(.return))
             _ = try await recorder.wait(description: "empty folder opens through native activation") {

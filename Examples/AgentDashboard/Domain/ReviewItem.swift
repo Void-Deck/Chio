@@ -116,7 +116,7 @@ struct ReviewItem {
             ["Sources/SnapshotRunner/Capture.swift"],
             "Pass the capture timestamp explicitly. The current clock read makes otherwise identical fixture images differ."),
         fixture(226, "Improve code block contrast", "Chio", "maya", .review, 1_791_208_800,
-            ["Sources/Chio/Domain/ChioTheme.swift"],
+            ["Sources/Chio/Domain/ChioStyle.swift"],
             "Tune Swift keyword and comment colors in the light theme. Preserve the source text and horizontal scrolling behavior."),
         fixture(227, "Retain focus in disabled list rows", "SwiftTUI", "owen", .review, 1_791_208_200,
             ["Sources/SwiftTUIViews/List.swift"],

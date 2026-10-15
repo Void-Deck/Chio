@@ -21,8 +21,8 @@ struct ChioSpinnerStyleTests {
     }
 
     @Test("Spinner stage paint and native progress semantics remain distinct in both themes",
-          arguments: [Spinner.Stage.inactive, .active, .finished], [ChioTheme.default, .light])
-    func stages(stage: Spinner.Stage, theme: ChioTheme) throws {
+          arguments: [Spinner.Stage.inactive, .active, .finished], [ChioStyle.default, .light])
+    func stages(stage: Spinner.Stage, theme: ChioStyle) throws {
         let rendered = DefaultRenderer().render(
             Spinner(stage: stage).spinnerStyle(ChioSpinnerStyle(theme: theme))
                 .environment(\.accessibilityReduceMotion, true),
@@ -56,7 +56,7 @@ struct ChioSpinnerStyleTests {
 
     @Test("Custom theme accents reach native spinner raster cells")
     func customTheme() throws {
-        let theme = ChioTheme.default.replacing(colors: ChioTheme.default.colors.replacing(accent: Color(hexRGB: 0x123456)))
+        let theme = ChioStyle.default.replacing(colors: ChioStyle.default.colors.replacing(accent: Color(hexRGB: 0x123456)))
         let rendered = DefaultRenderer().render(
             Spinner().spinnerStyle(ChioSpinnerStyle(theme: theme)).environment(\.accessibilityReduceMotion, true),
             proposal: .init(width: 1, height: 1)

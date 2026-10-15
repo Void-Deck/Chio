@@ -7,14 +7,14 @@ import Testing
 @Suite(.serialized)
 struct ChioTabViewStyleTests {
     @Test("Native tabs retain selected content and adapt their strip to terminal width",
-          arguments: [12, 36, 76], [ChioTheme.default, .light])
-    func widthAndTheme(width: Int, theme: ChioTheme) throws {
+          arguments: [12, 36, 76], [ChioStyle.default, .light])
+    func widthAndTheme(width: Int, theme: ChioStyle) throws {
         let rendered = DefaultRenderer().render(
             TabView(selection: .constant("logs")) {
                 Tab("Home", detail: "3", badge: "new", value: "home") { Text("Home body") }
                 Tab("Settings", value: "settings") { Text("Settings body") }
                 Tab("Logs", value: "logs") { Text("Logs body") }
-            }.chioTheme(theme),
+            }.style(theme),
             proposal: ProposedViewSize(width: width, height: 8)
         )
         let lines = rendered.rasterSurface.lines
@@ -46,7 +46,7 @@ struct ChioTabViewStyleTests {
             TabView(selection: .constant(0)) {
                 Tab("日本", value: 0) { Text("First") }
                 Tab("e\u{301}", value: 1) { Text("Second") }
-            }.chioTheme(.default),
+            }.style(.default),
             proposal: ProposedViewSize(width: 9, height: 4)
         )
         #expect(rendered.rasterSurface.lines[0].contains("日本"))
@@ -60,7 +60,7 @@ struct ChioTabViewStyleTests {
         let rendered = DefaultRenderer().render(
             TabView(selection: .constant(0)) {
                 Tab("A label much wider than this terminal", value: 0) { Text("Only content") }
-            }.chioTheme(.default),
+            }.style(.default),
             proposal: ProposedViewSize(width: 12, height: 4)
         )
         #expect(rendered.rasterSurface.lines[0].contains("More"))
@@ -71,12 +71,12 @@ struct ChioTabViewStyleTests {
     @Test("Empty and single native tab collections render without unnecessary overflow")
     func cardinality() {
         let empty = DefaultRenderer().render(
-            TabView(selection: .constant(0)) { EmptyView() }.chioTheme(.default),
+            TabView(selection: .constant(0)) { EmptyView() }.style(.default),
             proposal: ProposedViewSize(width: 12, height: 4)
         )
         #expect(empty.rasterSurface.lines.allSatisfy { $0.trimmingCharacters(in: .whitespaces).isEmpty })
         let one = DefaultRenderer().render(
-            TabView(selection: .constant(0)) { Tab("One", value: 0) { Text("Only") } }.chioTheme(.default),
+            TabView(selection: .constant(0)) { Tab("One", value: 0) { Text("Only") } }.style(.default),
             proposal: ProposedViewSize(width: 12, height: 4)
         )
         #expect(one.rasterSurface.lines[0].contains("One"))
@@ -90,7 +90,7 @@ struct ChioTabViewStyleTests {
             TabView(selection: .constant("removed")) {
                 Tab("One", value: "one") { Text("Fallback body") }
                 Tab("Two", value: "two") { Text("Second body") }
-            }.disabled(true).chioTheme(.default),
+            }.disabled(true).style(.default),
             proposal: ProposedViewSize(width: 36, height: 5)
         )
         #expect(rendered.rasterSurface.lines[2].contains("Fallback body"))
@@ -102,7 +102,7 @@ struct ChioTabViewStyleTests {
 
     @Test("Native cursor focus differs from selection and respects suppressed focus paint", arguments: [false, true])
     func selectionAndFocus(suppressed: Bool) async throws {
-        let theme = ChioTheme.default.replacing(colors: ChioTheme.default.colors.replacing(
+        let theme = ChioStyle.default.replacing(colors: ChioStyle.default.colors.replacing(
             accent: Color(hexRGB: 0x123456), selectedSurface: Color(hexRGB: 0x654321)
         ))
         let recorder = HostedFrameRecorder()
@@ -215,11 +215,11 @@ struct ChioTabViewStyleTests {
 }
 
 private struct TabStyleTestApp {
-    let theme: ChioTheme
+    let theme: ChioStyle
     let suppressed: Bool
     let count: Int
     nonisolated init() { theme = .default; suppressed = false; count = 3 }
-    nonisolated init(theme: ChioTheme = .default, suppressed: Bool, count: Int = 3) {
+    nonisolated init(theme: ChioStyle = .default, suppressed: Bool, count: Int = 3) {
         self.theme = theme
         self.suppressed = suppressed
         self.count = count
@@ -236,7 +236,7 @@ extension TabStyleTestApp: App {
 
 @MainActor
 private struct TabStyleTestView {
-    let theme: ChioTheme
+    let theme: ChioStyle
     let suppressed: Bool
     let count: Int
     @State private var selection = 0
@@ -251,7 +251,7 @@ extension TabStyleTestView: View {
         }
         .frame(height: 8)
         .focusEffectDisabled(suppressed)
-        .chioTheme(theme)
+        .style(theme)
     }
 }
 
@@ -285,6 +285,6 @@ extension TinyTabsTestView: View {
             Text("Selected: \(selection)")
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .chioTheme(.default)
+        .style(.default)
     }
 }

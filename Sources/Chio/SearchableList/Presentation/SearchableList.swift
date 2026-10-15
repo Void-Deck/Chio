@@ -177,6 +177,7 @@ extension SearchableList: View {
                         .foregroundStyle(theme.colors.accent)
                     rowContent(item)
                 }
+                .padding(.vertical, theme.spacing.listRowVerticalInset)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .foregroundStyle(theme.colors.foreground)
                 .background(item.id == selectedID ? theme.colors.selectedSurface : theme.colors.surface)

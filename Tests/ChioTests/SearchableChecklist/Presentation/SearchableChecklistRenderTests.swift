@@ -5,12 +5,12 @@ import Testing
 @MainActor
 struct SearchableChecklistRenderTests {
     @Test("Checkmarks, disabled choices and current counts remain readable in both themes and sizes",
-          arguments: [ChioTheme.default, .light], [100, 36])
-    func checklistAppearance(theme: ChioTheme, width: Int) throws {
+          arguments: [ChioStyle.default, .light], [100, 36])
+    func checklistAppearance(theme: ChioStyle, width: Int) throws {
         let rendered = DefaultRenderer().render(
             SearchableChecklist(ChecklistRenderItem.fixtures, selection: .constant(Set(["a", "b"])),
                                 searchText: \.name, isEnabled: { $0.id != "b" }) { Text($0.name) }
-                .chioTheme(theme),
+                .style(theme),
             proposal: ProposedViewSize(width: width, height: width == 100 ? 30 : 18)
         )
         let surface = rendered.rasterSurface
@@ -41,7 +41,7 @@ struct SearchableChecklistRenderTests {
         let surface = DefaultRenderer().render(
             SearchableChecklist(emptySource ? [] : ChecklistRenderItem.fixtures,
                                 selection: .constant(Set(["a"])), query: .constant("zzz"),
-                                searchText: \.name) { Text($0.name) }.chioTheme(.default),
+                                searchText: \.name) { Text($0.name) }.style(.default),
             proposal: ProposedViewSize(width: 36, height: 18)
         ).rasterSurface
         let text = surface.lines.joined(separator: " ")
@@ -55,9 +55,9 @@ struct SearchableChecklistRenderTests {
         let original = SearchableChecklist(ChecklistRenderItem.fixtures, selection: .constant(Set<String>()),
                                            query: .constant("aa"), searchText: \.name) { Text($0.name) }
         let substring = original.filtering(.substring)
-        let fuzzyText = DefaultRenderer().render(original.chioTheme(.default),
+        let fuzzyText = DefaultRenderer().render(original.style(.default),
                                                 proposal: ProposedViewSize(width: 36, height: 18)).rasterSurface.lines
-        let substringText = DefaultRenderer().render(substring.chioTheme(.default),
+        let substringText = DefaultRenderer().render(substring.style(.default),
                                                     proposal: ProposedViewSize(width: 36, height: 18)).rasterSurface.lines
         #expect(fuzzyText.contains { $0.contains("Alpha") })
         #expect(fuzzyText.contains { $0.contains("1 of 3 items · 0 selected") })

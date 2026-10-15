@@ -8,12 +8,12 @@ struct ChioPromptStyleTests {
     @Test("Both native prompt kinds apply custom chrome and retain vertical actions at narrow widths",
           arguments: [false, true])
     func narrowCustomChrome(alert: Bool) throws {
-        let theme = ChioTheme.default.replacing(colors: ChioTheme.default.colors.replacing(
+        let theme = ChioStyle.default.replacing(colors: ChioStyle.default.colors.replacing(
             accent: Color(hexRGB: 0x123ABC), foreground: Color(hexRGB: 0xBACDEF),
             surface: Color(hexRGB: 0x182736), border: Color(hexRGB: 0x765432)
         ))
         let rendered = DefaultRenderer().render(
-            PromptRenderFixture(alert: alert).chioTheme(theme)
+            PromptRenderFixture(alert: alert).style(theme)
                 .environment(\.terminalSize, CellSize(width: 36, height: 18)),
             proposal: ProposedViewSize(width: 36, height: 18)
         )
@@ -47,12 +47,12 @@ struct ChioPromptStyleTests {
         let rendered: RenderSnapshot
         if alert {
             rendered = DefaultRenderer().render(
-                Text("Workspace").alert("Notice", isPresented: .constant(true)).chioTheme(.default),
+                Text("Workspace").alert("Notice", isPresented: .constant(true)).style(.default),
                 proposal: ProposedViewSize(width: 36, height: 18)
             )
         } else {
             rendered = DefaultRenderer().render(
-                Text("Workspace").confirmationDialog("Notice", isPresented: .constant(true)).chioTheme(.default),
+                Text("Workspace").confirmationDialog("Notice", isPresented: .constant(true)).style(.default),
                 proposal: ProposedViewSize(width: 36, height: 18)
             )
         }
@@ -88,7 +88,7 @@ struct ChioPromptStyleTests {
                 activated = try await focusPromptAction(action, from: opened, session: session, recorder: recorder)
                 if action == "Remove" {
                     #expect(activated.raster.cells.flatMap { $0 }.contains {
-                        $0.style?.foregroundColor == ChioTheme.default.colors.error
+                        $0.style?.foregroundColor == ChioStyle.default.colors.error
                     })
                 }
                 session.send(.key(.return))
@@ -161,7 +161,7 @@ private struct PromptTestView {
 extension PromptTestView: View {
     var body: some View {
         promptContent
-            .chioTheme(.default)
+            .style(.default)
             .defaultFocus($editorFocused, true)
             .onKeyPress { press in
                 guard press == KeyPress(.character("k"), modifiers: .ctrl), !presented else { return .ignored }

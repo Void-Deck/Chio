@@ -2,9 +2,9 @@ import SwiftTUIViews
 
 /// A compact result list that leaves selection, focus, and scrolling to SwiftTUI.
 public struct ChioListStyle {
-    public let theme: ChioTheme
+    public let theme: ChioStyle
 
-    public init(theme: ChioTheme = .default) {
+    public init(theme: ChioStyle = .default) {
         self.theme = theme
     }
 }

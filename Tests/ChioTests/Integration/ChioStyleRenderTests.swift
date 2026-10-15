@@ -9,7 +9,7 @@ struct ChioStyleRenderTests {
     func progressCells(value: Double) {
         let surface = DefaultRenderer().render(
             ProgressView(value: value, barWidth: 8) { EmptyView() } currentValueLabel: { EmptyView() }
-                .chioTheme(.default),
+                .style(.default),
             proposal: ProposedViewSize(width: 8, height: 1)
         ).rasterSurface
 
@@ -22,17 +22,17 @@ struct ChioStyleRenderTests {
         #expect(surface.lines == [expected])
         let cells = surface.cells.flatMap { $0 }
         #expect(cells.filter { $0.character == "─" }.allSatisfy {
-            $0.style?.foregroundColor == ChioTheme.default.colors.border
+            $0.style?.foregroundColor == ChioStyle.default.colors.border
         })
         #expect(cells.filter { $0.character == "━" }.allSatisfy {
             $0.style?.foregroundColor == (value == 1
-                ? ChioTheme.default.colors.success : ChioTheme.default.colors.accent)
+                ? ChioStyle.default.colors.success : ChioStyle.default.colors.accent)
         })
     }
 
     @Test("Custom progress treatments and palette reach native controls")
     func customProgressTheme() {
-        var theme = ChioTheme.default
+        var theme = ChioStyle.default
         theme = theme.replacing(colors: theme.colors.replacing(
             accent: Color(hexRGB: 0x123456),
             surface: Color(hexRGB: 0x181818),
@@ -44,7 +44,7 @@ struct ChioStyleRenderTests {
         ))
         let surface = DefaultRenderer().render(
             ProgressView(value: 0.5, barWidth: 8) { EmptyView() } currentValueLabel: { EmptyView() }
-                .chioTheme(theme),
+                .style(theme),
             proposal: ProposedViewSize(width: 8, height: 1)
         ).rasterSurface
 
@@ -57,7 +57,7 @@ struct ChioStyleRenderTests {
     @Test("Indeterminate progress stays visible with motion disabled")
     func motionDisabledProgress() {
         let view = ProgressView(barWidth: 8)
-            .chioTheme(.default)
+            .style(.default)
             .environment(\.accessibilityReduceMotion, true)
         let first = DefaultRenderer().render(view, proposal: ProposedViewSize(width: 8, height: 1))
         let second = DefaultRenderer().render(view, proposal: ProposedViewSize(width: 8, height: 1))
@@ -65,14 +65,14 @@ struct ChioStyleRenderTests {
 
         #expect(first.rasterSurface.lines == second.rasterSurface.lines)
         #expect(cells.filter { $0.character == "━" || $0.character == "─" }.count == 8)
-        #expect(cells.contains { $0.character == "━" && $0.style?.foregroundColor == ChioTheme.default.colors.accent })
+        #expect(cells.contains { $0.character == "━" && $0.style?.foregroundColor == ChioStyle.default.colors.accent })
         #expect(first.semanticSnapshot.accessibilityNodes.contains { $0.role == .progressBar })
     }
 
     @Test("Group headings, text, and borders use customized semantic colors at narrow widths",
           arguments: [16, 32])
     func groupBoxTheme(width: Int) {
-        var theme = ChioTheme.default
+        var theme = ChioStyle.default
         theme = theme.replacing(colors: theme.colors.replacing(
             heading: Color(hexRGB: 0x112233),
             foreground: Color(hexRGB: 0x223344),
@@ -80,7 +80,7 @@ struct ChioStyleRenderTests {
             border: Color(hexRGB: 0x334455)
         ))
         let surface = DefaultRenderer().render(
-            GroupBox("Agents") { Text("Ready") }.chioTheme(theme),
+            GroupBox("Agents") { Text("Ready") }.style(theme),
             proposal: ProposedViewSize(width: width, height: 7)
         ).rasterSurface
 
@@ -97,14 +97,14 @@ struct ChioStyleRenderTests {
     @Test("Native text fields retain readable prompt and value colors in a narrow theme",
           arguments: ["", "query"])
     func textFieldTheme(value: String) {
-        var theme = ChioTheme.default
+        var theme = ChioStyle.default
         theme = theme.replacing(colors: theme.colors.replacing(
             foreground: Color(hexRGB: 0x235679),
             mutedText: Color(hexRGB: 0xAB7890),
             border: Color(hexRGB: 0x456789)
         ))
         let surface = DefaultRenderer().render(
-            TextField("Search…", text: .constant(value)).chioTheme(theme),
+            TextField("Search…", text: .constant(value)).style(theme),
             proposal: ProposedViewSize(width: 16, height: 3)
         ).rasterSurface
 
@@ -119,7 +119,7 @@ struct ChioStyleRenderTests {
 
     @Test("Search selection is visibly distinct and inherits custom marker and colors")
     func searchSelectionTheme() {
-        var theme = ChioTheme.default
+        var theme = ChioStyle.default
         theme = theme.replacing(colors: theme.colors.replacing(
             accent: Color(hexRGB: 0x13579B),
             foreground: Color(hexRGB: 0x987654),
@@ -130,7 +130,7 @@ struct ChioStyleRenderTests {
             SearchableList(RenderItem.fixtures, selection: .constant("b"), searchText: \.name) {
                 Text($0.name)
             }
-            .chioTheme(theme),
+            .style(theme),
             proposal: ProposedViewSize(width: 32, height: 10)
         ).rasterSurface
 
@@ -148,12 +148,12 @@ struct ChioStyleRenderTests {
         let empty = DefaultRenderer().render(
             SearchableList([RenderItem](), selection: .constant(nil), searchText: \.name) {
                 Text($0.name)
-            }.chioTheme(.default),
+            }.style(.default),
             proposal: ProposedViewSize(width: 60, height: 8)
         ).rasterSurface.lines.joined(separator: "\n")
         let unmatched = DefaultRenderer().render(
             SearchableList(RenderItem.fixtures, selection: .constant(nil), query: .constant("zzz"),
-                           searchText: \.name) { Text($0.name) }.chioTheme(.default),
+                           searchText: \.name) { Text($0.name) }.style(.default),
             proposal: ProposedViewSize(width: 60, height: 8)
         ).rasterSurface.lines.joined(separator: "\n")
 
@@ -173,10 +173,10 @@ struct ChioStyleRenderTests {
             .onActivate { _ in }
             .onSearchFocusChange { _ in }
             .onResultKeyPress { _ in .ignored }
-        let filtered = DefaultRenderer().render(substring.chioTheme(.default),
+        let filtered = DefaultRenderer().render(substring.style(.default),
                                                proposal: ProposedViewSize(width: 60, height: 8))
             .rasterSurface.lines.joined(separator: "\n")
-        let unmodified = DefaultRenderer().render(original.chioTheme(.default),
+        let unmodified = DefaultRenderer().render(original.style(.default),
                                                  proposal: ProposedViewSize(width: 60, height: 8))
             .rasterSurface.lines.joined(separator: "\n")
         #expect(filtered.contains("0 of 2 items"))

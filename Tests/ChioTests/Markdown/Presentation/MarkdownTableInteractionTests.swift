@@ -132,7 +132,7 @@ extension TableTestView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .chioTheme(light ? .light : .default)
+        .style(light ? .light : .default)
         .onAppear { isReading = true }
         .onKeyPress { press in
             guard press == KeyPress(.character("t"), modifiers: .ctrl) else { return .ignored }

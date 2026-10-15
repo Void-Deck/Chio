@@ -483,7 +483,7 @@ private extension SemanticHostFrame {
     var mapSelectedRingCells: [CellPoint] {
         raster.cells.enumerated().flatMap { row, cells in
             cells.enumerated().compactMap { column, cell in
-                guard cell.style?.foregroundColor == ChioTheme.default.colors.warning,
+                guard cell.style?.foregroundColor == ChioStyle.default.colors.warning,
                       let scalar = cell.character.unicodeScalars.first,
                       (0x2801...0x28FF).contains(scalar.value) else { return nil }
                 return CellPoint(x: column, y: row)

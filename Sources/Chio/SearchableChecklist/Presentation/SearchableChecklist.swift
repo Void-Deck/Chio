@@ -176,6 +176,7 @@ extension SearchableChecklist: View {
                         Text("Unavailable").foregroundStyle(theme.colors.mutedText)
                     }
                 }
+                .padding(.vertical, theme.spacing.listRowVerticalInset)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .foregroundStyle(isItemEnabled ? theme.colors.foreground : theme.colors.mutedText)
                 .background(isChecked ? theme.colors.selectedSurface : theme.colors.surface)

@@ -11,7 +11,7 @@ struct TreeExampleView {
 
     init(theme: ExampleTheme = .default) { _themeChoice = State(wrappedValue: theme) }
 
-    private var theme: ChioTheme { themeChoice.theme }
+    private var theme: ChioStyle { themeChoice.theme }
 
     private func expansion(_ branch: Branch) -> Binding<Bool> {
         let storage = $expanded
@@ -33,7 +33,7 @@ struct TreeExampleView {
         VStack(alignment: .leading, spacing: 0) {
             DisclosureGroup("Sources", isExpanded: expansion(.sources)) {
                 DisclosureGroup("Chio", isExpanded: expansion(.library)) {
-                    file("ChioTheme.swift")
+                    file("ChioStyle.swift")
                     DisclosureGroup("Presentation", isExpanded: expansion(.presentation)) {
                         file("SearchableList.swift")
                         file("ChioButtonStyle.swift")
@@ -110,6 +110,6 @@ extension TreeExampleView: View {
             }
             return .handled
         }
-        .chioTheme(theme)
+        .style(theme)
     }
 }

@@ -56,7 +56,7 @@ struct CreateAgentView {
         }
     }
 
-    private var theme: ChioTheme { themeChoice.theme }
+    private var theme: ChioStyle { themeChoice.theme }
 
     private var name: Binding<String> {
         let storage = $draft
@@ -172,7 +172,7 @@ extension CreateAgentView: View {
                 .padding(.vertical, 1)
                 .frame(maxWidth: 64, maxHeight: .infinity, alignment: .topLeading)
                 .frame(width: geometry.size.width, height: geometry.size.height, alignment: .top)
-                .chioTheme(theme)
+                .style(theme)
             }
             .onAppear {
                 switch entry {

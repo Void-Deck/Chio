@@ -17,7 +17,7 @@ struct TabsExampleView {
         case overview, agents, notes, activity, settings
     }
 
-    private var theme: ChioTheme { themeChoice.theme }
+    private var theme: ChioStyle { themeChoice.theme }
     private var hints: [ShortcutHint] {
         let navigation = isStripFocused
             ? [ShortcutHint("←→", "choose"), ShortcutHint("↵", "open"), ShortcutHint("↓", "more")]
@@ -71,14 +71,14 @@ extension TabsExampleView: View {
             }
             return .ignored
         }
-        .chioTheme(theme)
+        .style(theme)
     }
 }
 
 // Each page owns value state so native TabView dormancy is exercised directly.
 @MainActor
 private struct OverviewTab {
-    @Environment(\.chioTheme) private var theme
+    @Environment(\.chioStyle) private var theme
     @State private var runs = 0
 }
 
@@ -101,7 +101,7 @@ extension OverviewTab: View {
 
 @MainActor
 private struct AgentsTab {
-    @Environment(\.chioTheme) private var theme
+    @Environment(\.chioStyle) private var theme
     @State private var query = ""
     @State private var selection: Agent.ID? = Agent.examples.first?.id
 }
@@ -121,7 +121,7 @@ extension AgentsTab: View {
 
 @MainActor
 private struct NotesTab {
-    @Environment(\.chioTheme) private var theme
+    @Environment(\.chioStyle) private var theme
     @Environment(\.terminalSize) private var terminalSize
     @State private var notes = ""
 }
@@ -142,7 +142,7 @@ extension NotesTab: View {
 
 @MainActor
 private struct ActivityTab {
-    @Environment(\.chioTheme) private var theme
+    @Environment(\.chioStyle) private var theme
 }
 
 extension ActivityTab: View {
@@ -165,7 +165,7 @@ extension ActivityTab: View {
 
 @MainActor
 private struct SettingsTab {
-    @Environment(\.chioTheme) private var theme
+    @Environment(\.chioStyle) private var theme
     @State private var quiet = false
 }
 

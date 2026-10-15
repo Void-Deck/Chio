@@ -39,7 +39,7 @@ struct TerminalColorEmissionTests {
             try? pipe.fileHandleForWriting.close()
         }
         let surface = DefaultRenderer().render(
-            Text("Chio").chioTheme(.default),
+            Text("Chio").style(.default),
             proposal: .init(width: 4, height: 1)
         ).rasterSurface
         let host = TerminalHost(

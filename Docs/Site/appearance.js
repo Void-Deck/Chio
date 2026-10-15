@@ -10,7 +10,7 @@
   const missing = document.getElementById("preview-missing");
   const treatments = {
     chio: { title: "Chio", description: "ChioStyle.default: the default palette and familiar group framing." },
-    opencode: { title: "OpenCode-inspired", description: "ChioStyle.opencode: warm accents, leading panel/input edges, roomier inputs and compact list rows." },
+    opencode: { title: "OpenCode-inspired", description: "ChioStyle.opencode: warm accents, leading panel/input edges, roomier inputs and padded searchable list rows." },
     btop: { title: "btop-inspired", description: "ChioStyle.btop: brighter instrument colors and group titles set into compact outlines." },
   };
   const allocations = { wide: { cols: 100, rows: 30 }, narrow: { cols: 36, rows: 64 } };

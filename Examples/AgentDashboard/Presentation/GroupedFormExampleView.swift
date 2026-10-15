@@ -35,7 +35,7 @@ struct GroupedFormExampleView {
             }
         }
     }
-    private var theme: ChioTheme { themeChoice.theme }
+    private var theme: ChioStyle { themeChoice.theme }
     private var isShort: Bool { terminalSize.height < 24 }
 
     private var name: Binding<String> {
@@ -190,7 +190,7 @@ extension GroupedFormExampleView: View {
             .padding(.vertical, isShort ? 0 : 1)
             .frame(maxWidth: 76, maxHeight: .infinity, alignment: .topLeading)
             .frame(width: terminalSize.width, height: terminalSize.height, alignment: .top)
-            .chioTheme(theme)
+            .style(theme)
             .onAppear { focus = .name }
             .onSubmit(save)
             .onChange(of: focus) { old, new in

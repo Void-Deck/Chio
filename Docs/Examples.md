@@ -46,12 +46,17 @@ swift run -c release chio-dashboard --appearance --treatment opencode --density 
 ```
 
 Chio uses rounded outlines; OpenCode inspires raised surfaces and leading accent
-edges with roomier input padding and compact list rows; btop uses compact groups
-with border headings.
+edges with roomier input padding and one-cell searchable-row insets; btop uses
+compact groups with border headings.
 The retained `--treatment` spelling selects static style values. `--theme` and
 `--light` do not apply to this study. `--density recipe` uses the recipe's spacing;
-`compact` and `roomy` override only spacing. All values and measurements are local
-fixtures; Save changes only the example's message.
+`compact` and `roomy` override only spacing, including zero or one cell above and
+below searchable rows respectively. `SearchableList` applies the inherited
+`ChioStyle.Spacing.listRowVerticalInset` automatically. File-selection lists and
+checklists consume the same token; native `List` content uses ordinary authored
+padding. All values and measurements are local fixtures; Save changes only the
+example's message. The new density behavior and removal of theme aliases are
+pending qualification; the 0.2.0 release is held until that work completes.
 
 **Ctrl-T** cycles looks, **Ctrl-D** cycles spacing, **Ctrl-E** reveals and focuses
 the workspace editor, **Ctrl-G** reveals graphs, **Ctrl-L** reveals the list, and

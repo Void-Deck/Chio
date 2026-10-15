@@ -415,7 +415,7 @@ extension ChecklistTestView: View {
             Text("Revision=\(revision) Barrier=\(barrier)")
             Text("Theme=\(lightTheme ? "light" : "dark") Quit=\(quitCount)")
         }
-        .chioTheme(lightTheme ? .light : .default)
+        .style(lightTheme ? .light : .default)
         .onKeyPress { press in
             guard press.modifiers == .ctrl else { return .ignored }
             switch press.key {

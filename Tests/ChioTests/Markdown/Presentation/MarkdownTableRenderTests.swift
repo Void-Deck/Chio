@@ -7,14 +7,14 @@ struct MarkdownTableRenderTests {
     @Test("Markdown tables retain native semantics, visible headers, and rich body cells",
           arguments: [false, true])
     func richCells(light: Bool) {
-        let theme = light ? ChioTheme.light : .default
+        let theme = light ? ChioStyle.light : .default
         let rendered = DefaultRenderer().render(
             MarkdownView(MarkdownDocument("""
             | *Name* | `State` |
             | --- | --- |
             | **Agent** | `done` |
             | plain | ready |
-            """)).chioTheme(theme),
+            """)).style(theme),
             proposal: .init(width: 40, height: 20)
         )
         let surface = rendered.rasterSurface
@@ -55,7 +55,7 @@ struct MarkdownTableRenderTests {
             | L | C | R |
             | xxxxxxxx | yyyyyyy | zzzzzzzzz |
             | 你好 | | Z |
-            """)).chioTheme(.default),
+            """)).style(.default),
             proposal: .init(width: 60, height: 20)
         ).rasterSurface
         let row = try #require(surface.cells.first { cells in
@@ -95,7 +95,7 @@ struct MarkdownTableRenderTests {
             | third | final long value |
 
             After
-            """)).chioTheme(.default),
+            """)).style(.default),
             proposal: .init(width: width, height: 24)
         )
         let surface = rendered.rasterSurface
@@ -116,7 +116,7 @@ struct MarkdownTableRenderTests {
     @Test("Header-only Markdown and native tables share customized header colors and native borders",
           arguments: [false, true])
     func nativeAndHeaderOnlyTheme(light: Bool) {
-        var theme = light ? ChioTheme.light : .default
+        var theme = light ? ChioStyle.light : .default
         theme = theme.replacing(colors: theme.colors.replacing(
             heading: Color(hexRGB: 0x123456),
             selectedSurface: Color(hexRGB: 0x456789),
@@ -124,13 +124,13 @@ struct MarkdownTableRenderTests {
         ))
         let markdown = DefaultRenderer().render(
             MarkdownView(MarkdownDocument("| Header |\n| --- |"))
-                .chioTheme(theme),
+                .style(theme),
             proposal: .init(width: 24, height: 12)
         )
         let native = DefaultRenderer().render(
             Table(columns: [TableColumn("Header")]) {
                 TableRow { Text("value") }
-            }.chioTheme(theme),
+            }.style(theme),
             proposal: .init(width: 24, height: 12)
         )
         for rendered in [markdown, native] {

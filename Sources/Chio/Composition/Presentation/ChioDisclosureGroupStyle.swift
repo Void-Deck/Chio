@@ -3,9 +3,9 @@ import SwiftTUIViews
 /// A compact branch row with semantic expansion and keyboard-focus treatments.
 /// Native disclosure groups retain expansion, activation and content ownership.
 public struct ChioDisclosureGroupStyle {
-    public let theme: ChioTheme
+    public let theme: ChioStyle
 
-    public init(theme: ChioTheme = .default) {
+    public init(theme: ChioStyle = .default) {
         self.theme = theme
     }
 }

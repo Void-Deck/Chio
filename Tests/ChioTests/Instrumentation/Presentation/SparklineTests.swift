@@ -88,9 +88,9 @@ struct SparklineTests {
 
     @Test("Theme and accessible summary are passive; callers can name units")
     func semantics() {
-        let theme = ChioTheme.btop
+        let theme = ChioStyle.btop
         let frame = DefaultRenderer().render(
-            Sparkline([1, nil, 3]).frame(width: 10, height: 2).chioTheme(theme),
+            Sparkline([1, nil, 3]).frame(width: 10, height: 2).style(theme),
             proposal: .init(width: 10, height: 2))
         #expect(frame.semanticSnapshot.focusRegions.isEmpty)
         #expect(frame.semanticSnapshot.accessibilityNodes.contains {

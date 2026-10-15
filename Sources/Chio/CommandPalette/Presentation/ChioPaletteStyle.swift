@@ -2,11 +2,11 @@ import SwiftTUIViews
 
 /// A searchable native command palette with Chio's colors and compact rows.
 public struct ChioPaletteStyle {
-    public let theme: ChioTheme
+    public let theme: ChioStyle
     /// The query to use when a palette opens. Native editing owns subsequent changes.
     public let initialQuery: String
 
-    public init(theme: ChioTheme = .default, initialQuery: String = "") {
+    public init(theme: ChioStyle = .default, initialQuery: String = "") {
         self.theme = theme
         self.initialQuery = initialQuery
     }
@@ -24,7 +24,7 @@ extension ChioPaletteStyle: Equatable {}
 @MainActor
 private struct ChioPaletteBody {
     let configuration: PaletteStyleConfiguration
-    let theme: ChioTheme
+    let theme: ChioStyle
     let initialQuery: String
 
     @State private var query = ""
@@ -33,7 +33,7 @@ private struct ChioPaletteBody {
     @FocusState private var isSearchFocused: Bool
     @Namespace private var searchFocusNamespace
 
-    init(configuration: PaletteStyleConfiguration, theme: ChioTheme, initialQuery: String) {
+    init(configuration: PaletteStyleConfiguration, theme: ChioStyle, initialQuery: String) {
         self.configuration = configuration
         self.theme = theme
         self.initialQuery = initialQuery

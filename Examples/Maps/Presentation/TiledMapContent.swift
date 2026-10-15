@@ -15,7 +15,7 @@ struct TiledMapContent {
     private let sourceLabel: String
     private let activate: @MainActor (MapMarker) -> Void
     private let makeLoader: @Sendable () async throws -> MapTileLoader
-    @Environment(\.chioTheme) private var theme
+    @Environment(\.chioStyle) private var theme
     @State private var viewport: MapViewport?
     @State private var loader: MapTileLoader?
     @State private var snapshot: MapTileSnapshot?

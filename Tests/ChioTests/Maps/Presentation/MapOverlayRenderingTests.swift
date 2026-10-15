@@ -10,7 +10,7 @@ struct MapOverlayRenderingTests {
         let points = rectangle(2, 2, 8, 8)
         let geometry = map(lines: [.init(featureID: "lake", kind: .water, points: points)],
                            polygons: [.init(featureID: "lake", kind: .water, rings: [points])])
-        for theme in [ChioTheme.default, .light, .btop] {
+        for theme in [ChioStyle.default, .light, .btop] {
             for fills in [false, true] {
                 let drawing = try MapDrawing(map: geometry, viewport: viewport, colors: theme.colors,
                                               waterColor: theme.map.water, parkColor: theme.map.park, fills: fills)
@@ -129,7 +129,7 @@ struct MapOverlayRenderingTests {
         let route = PreparedMap.Line(featureID: "route", kind: .primaryRoad,
                                     points: [.init(x: 4.6, y: 2), .init(x: 4.6, y: 8)])
         let land = PreparedMap.Polygon(featureID: "land", kind: .land, rings: [rectangle(0, 0, 10, 10)])
-        for theme in [ChioTheme.default, .light, .btop] {
+        for theme in [ChioStyle.default, .light, .btop] {
             let drawing = try MapDrawing(map: map(lines: [geography], polygons: [land]), viewport: viewport,
                                           colors: theme.colors, waterColor: theme.map.water,
                                           parkColor: theme.map.park, fills: true, routes: [route])
@@ -166,8 +166,8 @@ struct MapOverlayRenderingTests {
             try PreparedMapDrawing(map: geography, routes: [excess], viewport: viewport, fills: false)
         }
         #expect(throws: MapValidationError.drawingBudgetExceeded) {
-            try MapDrawing(map: geography, viewport: viewport, colors: ChioTheme.default.colors,
-                           waterColor: ChioTheme.default.map.water, parkColor: ChioTheme.default.map.park,
+            try MapDrawing(map: geography, viewport: viewport, colors: ChioStyle.default.colors,
+                           waterColor: ChioStyle.default.map.water, parkColor: ChioStyle.default.map.park,
                            fills: false, routes: [excess])
         }
     }
@@ -188,7 +188,7 @@ struct MapOverlayRenderingTests {
             if point.x == 5 {
                 #expect(marker.glyph.cells.flatMap { $0 }.reduce(0) { $0 + $1.mask.nonzeroBitCount } == 13)
             }
-            for theme in [ChioTheme.default, .light, .btop] {
+            for theme in [ChioStyle.default, .light, .btop] {
                 for fills in [false, true] {
                     let land = PreparedMap.Polygon(featureID: "land", kind: .land, rings: [rectangle(0, 0, 10, 6)])
                     let drawing = try MapDrawing(map: map(polygons: [land]), viewport: viewport, colors: theme.colors,
@@ -242,7 +242,7 @@ struct MapOverlayRenderingTests {
             .init(featureID: "park", kind: .park, rings: [rectangle(0, 0, 10, 10)]),
             .init(featureID: "water", kind: .water, rings: [rectangle(2, 2, 8, 8)]),
         ])
-        for theme in [ChioTheme.default, .light, .btop] {
+        for theme in [ChioStyle.default, .light, .btop] {
             let syntax = theme.syntax.replacing(type: Color(hexRGB: 0xFF0000), string: Color(hexRGB: 0x00FF00))
             let changedSyntax = theme.replacing(syntax: syntax)
             #expect(changedSyntax.map == theme.map)

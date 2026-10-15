@@ -1,12 +1,12 @@
 import SwiftTUIViews
 
 /// A compact frame around SwiftTUI's native multiline editing surface.
-/// Apply through `chioTheme(_:)` to share the editor's foreground palette.
+/// Apply through `style(_:)` to share the editor's foreground palette.
 /// The frame fills a finite proposal; use `frame(height:)` to bound the viewport.
 public struct ChioTextEditorStyle {
-    public let theme: ChioTheme
+    public let theme: ChioStyle
 
-    public init(theme: ChioTheme = .default) {
+    public init(theme: ChioStyle = .default) {
         self.theme = theme
     }
 }

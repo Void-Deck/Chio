@@ -65,11 +65,11 @@ struct MapSourceAdapterTests {
         let replacement = try MapPreparation.prepare(dataset: surveySource.dataset, camera: camera, viewport: viewport)
         #expect(original == replacement)
         #expect(!replacement.lines.isEmpty && !replacement.labels.isEmpty)
-        let theme = ChioTheme.default
+        let theme = ChioStyle.default
         func raster(_ map: PreparedMap) throws -> RasterSurface {
             let view = try MapCanvasView(map: map, viewport: viewport, theme: theme, fills: true, labels: true,
                                      waterColor: theme.colors.selectedSurface,
-                                     parkColor: theme.colors.selectedSurface).chioTheme(theme)
+                                     parkColor: theme.colors.selectedSurface).style(theme)
             return DefaultRenderer().render(view, proposal: .init(width: viewport.columns, height: viewport.rows),
                                             frameInstant: .zero).rasterSurface
         }

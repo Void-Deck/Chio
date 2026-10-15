@@ -53,7 +53,7 @@ struct MetricsExampleView {
         }
     }
 
-    private var theme: ChioTheme { themeChoice.theme }
+    private var theme: ChioStyle { themeChoice.theme }
     private var isWide: Bool { terminalSize.width >= 70 }
     private var isCompact: Bool { !isWide || terminalSize.height < 24 }
     // The complete expanded composition needs 28 rows with five-row dials,
@@ -247,6 +247,6 @@ extension MetricsExampleView: View {
             } else { return .ignored }
             return .handled
         }
-        .chioTheme(theme)
+        .style(theme)
     }
 }

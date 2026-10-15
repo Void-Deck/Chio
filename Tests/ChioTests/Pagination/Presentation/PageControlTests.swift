@@ -8,10 +8,10 @@ struct PageControlTests {
     @Test("Page controls retain actions and readable summaries at compact widths",
           arguments: [20, 36, 76], [false, true])
     func compactRendering(width: Int, light: Bool) {
-        let theme: ChioTheme = light ? .light : .default
+        let theme: ChioStyle = light ? .light : .default
         let rendered = DefaultRenderer().render(
             PageControl(pagination: .constant(Pagination(totalCount: 23, pageSize: 3)))
-                .chioTheme(theme), proposal: .init(width: width, height: nil)
+                .style(theme), proposal: .init(width: width, height: nil)
         )
         #expect(rendered.rasterSurface.size.width <= width)
         #expect(rendered.rasterSurface.lines.contains { $0.contains("1 / 8") })
@@ -26,13 +26,13 @@ struct PageControlTests {
 
     @Test("Page and item summaries receive their custom semantic colors")
     func customColors() {
-        let theme = ChioTheme.default.replacing(colors: ChioTheme.default.colors.replacing(
+        let theme = ChioStyle.default.replacing(colors: ChioStyle.default.colors.replacing(
             accent: Color(hexRGB: 0x112233), secondaryText: Color(hexRGB: 0x445566),
             surface: Color(hexRGB: 0x182838), border: Color(hexRGB: 0x778899)
         ))
         let surface = DefaultRenderer().render(
             PageControl(pagination: .constant(Pagination(totalCount: 23, pageSize: 3)))
-                .chioTheme(theme), proposal: .init(width: 36, height: nil)
+                .style(theme), proposal: .init(width: 36, height: nil)
         ).rasterSurface
         let cells = surface.cells.flatMap { $0 }
         #expect(cells.contains { $0.character == "1" && $0.style?.foregroundColor == theme.colors.accent })
@@ -45,7 +45,7 @@ struct PageControlTests {
     func largeCountRendering(width: Int) {
         let pagination = Pagination(totalCount: Int.max, pageSize: 1).movingToLastPage()
         let rendered = DefaultRenderer().render(
-            PageControl(pagination: .constant(pagination)).chioTheme(.default),
+            PageControl(pagination: .constant(pagination)).style(.default),
             proposal: .init(width: width, height: nil)
         )
         #expect(rendered.rasterSurface.size.width <= width)
@@ -65,7 +65,7 @@ struct PageControlTests {
     func inertRendering(count: Int) {
         let rendered = DefaultRenderer().render(
             PageControl(pagination: .constant(Pagination(totalCount: count, pageSize: 3)))
-                .chioTheme(.default), proposal: .init(width: 20, height: nil)
+                .style(.default), proposal: .init(width: 20, height: nil)
         )
         let buttons = rendered.semanticSnapshot.accessibilityNodes.filter { $0.role == .button }
         #expect(buttons.count == 2 && buttons.allSatisfy { !$0.isEnabled })
@@ -206,7 +206,7 @@ struct PageControlTests {
             #expect(themed.focusedIdentity == initial.focusedIdentity)
             #expect(themed.pageState(index: 1, total: 23))
             #expect(themed.raster.cells.flatMap { $0 }.contains {
-                $0.character == "2" && $0.style?.foregroundColor == ChioTheme.light.colors.accent
+                $0.character == "2" && $0.style?.foregroundColor == ChioStyle.light.colors.accent
             })
             surface.updateSurfaceSize(.init(width: 20, height: 18))
             session.requestSurfaceRefresh()
@@ -321,7 +321,7 @@ extension PageControlTestView: View {
             Text("Disabled=\(disabled)")
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .chioTheme(light ? .light : .default)
+        .style(light ? .light : .default)
         .onKeyPress { press in
             guard press.modifiers == .ctrl else { return .ignored }
             switch press.key {

@@ -11,7 +11,7 @@ struct ViewportExampleView {
 
     init(theme: ExampleTheme = .default) { _themeChoice = State(wrappedValue: theme) }
 
-    private var theme: ChioTheme { themeChoice.theme }
+    private var theme: ChioStyle { themeChoice.theme }
 
     private var hints: some View {
         KeyHints {
@@ -89,6 +89,6 @@ extension ViewportExampleView: View {
             }
             return .handled
         }
-        .chioTheme(theme)
+        .style(theme)
     }
 }

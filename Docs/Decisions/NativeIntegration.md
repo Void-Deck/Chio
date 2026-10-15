@@ -60,7 +60,7 @@ renderer, focus system or hidden dependency patch.
 | Native style hooks | Table border/background chrome, list focus gutter, palette shell, prompt headers and disabled-editor glyph paint are not fully controlled by Chio. Keep native behavior and resolve missing hooks upstream. |
 | Layout and lifecycle | Scroll focus reveal can move a viewport horizontally by one cell; nested tab strips can receive stale width proposals; expanded disclosure focus includes descendants. Keep the documented native contracts for [scrolling](Scrolling.md#scrolling), [tabs](Tabs.md#tabs) and [disclosure](DisclosureGroups.md#expandable-groups-and-trees). |
 | Choice composition | Changing choice fields inside `GeometryReader` triggered a native debug lifecycle-publication assertion. The full-window example uses `terminalSize`; arbitrary nesting remains unproved. |
-| List density and focus | New per-row density controls remain deferred. The adopted 0.18.0 pin includes #56's mixed-height measurement-retention correction alongside #46/#47. Broader pointer and style-change qualification remains separate from dependency adoption. See [current qualification](#current-row-qualification). |
+| List density and focus | The adopted 0.18.0 pin includes #56's mixed-height measurement-retention correction alongside #46/#47. Chio's new composed-row padding requires separate pointer and style-change qualification before 0.2. See [current qualification](#current-row-qualification). |
 | Collection measurement | Native ideal-size probes can realize all rows before a bounded viewport commits and emit deferred `collection.unboundedRealization` warnings. Small fixtures do not prove virtualization or large-dataset performance; diagnostics are retained. |
 | Early input | Search, palette and form handoffs cover documented type-ahead/batched paths. Arbitrary multi-control input before presentation settles needs native support, not an application-built editor or focus graph. |
 | Editor navigation | End at the end of a native text field is unhandled when it makes no change, so an enclosing ScrollView can scroll to the bottom. The appearance study reproduced this at 36 × 18; ordinary editing remains focused. Its capture moves Left before End to exercise a real caret movement. Repeated no-op End is unresolved at the native input owner. |
@@ -73,9 +73,38 @@ renderer, focus system or hidden dependency patch.
 [PR #46](https://github.com/SwiftTUI/swift-tui/pull/46), merge
 `3701604e009bc113e4c6f01b25e3d5e7aa7b00eb`. The measured-height correction in
 [PR #47](https://github.com/SwiftTUI/swift-tui/pull/47) merged on 2026-10-12,
-after 0.17.0, and is included in the adopted upstream revision and 0.18.0. All new per-row density
-controls remain deferred from Chio's unified style API.
-Opencode keeps compact rows and roomier input padding/leading frames.
+after 0.17.0, and is included in the adopted upstream revision and 0.18.0.
+The user approved Chio row padding before the 0.2.0 release, after dependency
+qualification. The new field and composed-control changes require fresh checks.
+
+`ChioStyle.Spacing.listRowVerticalInset` uses native padding around each complete
+`SearchableList` or `SearchableChecklist` row. `FilePicker` inherits this through
+its searchable list. The field does not change arbitrary native `List` rows:
+SwiftTUI's public `ListStylePresentation` has container insets and separators,
+but no per-row padding or authored-content hook. Native-list callers apply the
+same value through ordinary padding. Container insets remain container insets.
+
+SwiftTUI owns row measurement, hit regions, focus, selection and scroll reveal.
+Changing styles with stable IDs can retain offscreen measurements, so qualification
+must exercise growth and shrinkage after scrolling, alongside padded pointer targets.
+Bounds prevent excessive individual configuration; they do not promise every row
+fits every viewport. A row taller than its viewport can clip its authored content.
+
+### Dynamic row-spacing candidate
+
+The 0.2.0 spacing candidate exposes another native case on SwiftTUI 0.18.0.
+After scrolling mixed-height rows to ID 7, increasing row padding from zero to
+one makes the preceding row and focused row exceed the unchanged viewport.
+The next layout omits ID 7, and native focus falls to ID 6. This occurs for both
+single-selection and checklist composition, in debug and release.
+
+Native `revealCollectionFocusAfterResize` currently observes viewport size and
+visible-line changes. It does not consider changed row geometry when those
+viewport properties stay equal. The proposed correction extends that existing
+recovery path, preserving its newer-anchor guards and single follow-up budget.
+It requires a standalone native reproducer and unchanged Chio regressions before
+adoption. Chio retains the published 0.18.0 pin; no private focus or scroll
+workaround is added.
 
 ### Current row qualification
 
