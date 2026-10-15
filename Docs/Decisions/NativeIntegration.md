@@ -1,10 +1,10 @@
 # Native integration boundaries
 
-**Status:** The current candidate uses the approved immutable upstream revision
-`bf9a697f2a5da4d0392730d0cba9e3ddcbbfa5d1`, including merged #47/#49/#50.
-It is not a published release. [Dependencies](Dependencies.md#merged-layout-corrections)
-owns the adoption decision; full Chio verification remains required independently
-of upstream checks and earlier local-patch evidence.
+**Status:** The current candidate pins published SwiftTUI 0.18.0 at
+`4791281a55e5bbdb683718a7282afd10c2f5e42c`, including merged #47/#49/#50/#56.
+[Dependencies](Dependencies.md#0180-adoption-candidate) owns the adoption decision;
+full Chio verification remains required independently of upstream checks and
+earlier local-patch evidence. The candidate is not yet adopted on `main`.
 
 Keep native ownership and visible limitations explicit when composing or extending Chio.
 
@@ -38,10 +38,14 @@ regression. The [local correction candidate](Dependencies.md#local-correction-ca
 preserves those column assertions and native ownership. It also corrects an
 ordinary Spacer's stretched allocation being reused as a required minimum,
 restoring the compact inbox width. Neither fix is part of released 0.17.0;
-both are included in the current upstream-revision candidate.
+both are included in the current 0.18.0 candidate.
 
 Native list focus chrome uses SwiftTUI's theme; Chio themes selected content and
-controls. The native theme environment is not public. `StatusBar` composes a text
+controls. SwiftTUI 0.18.0 separates multiple-selection membership from the active
+cursor: checked rows retain `▌`, and the active unchecked row uses `>`.
+Focus checks must associate the requested label with the current native focus
+region; a membership marker alone does not establish focus. Single-selection
+markers retain their existing behavior. The native theme environment is not public. `StatusBar` composes a text
 rule because native Divider ignores ambient foreground. Keep these upstream
 limits visible without a second focus system or renderer.
 
@@ -55,7 +59,7 @@ renderer, focus system or hidden dependency patch.
 | Native style hooks | Table border/background chrome, list focus gutter, palette shell, prompt headers and disabled-editor glyph paint are not fully controlled by Chio. Keep native behavior and resolve missing hooks upstream. |
 | Layout and lifecycle | Scroll focus reveal can move a viewport horizontally by one cell; nested tab strips can receive stale width proposals; expanded disclosure focus includes descendants. Keep the documented native contracts for [scrolling](Scrolling.md#scrolling), [tabs](Tabs.md#tabs) and [disclosure](DisclosureGroups.md#expandable-groups-and-trees). |
 | Choice composition | Changing choice fields inside `GeometryReader` triggered a native debug lifecycle-publication assertion. The full-window example uses `terminalSize`; arbitrary nesting remains unproved. |
-| List density and focus | New per-row density controls are deferred. The current candidate includes #46's per-axis reveal and #47's measured-height navigation/builder placement corrections. These do not establish a fix for every focus handoff. See [the findings](#tall-list-rows). |
+| List density and focus | New per-row density controls remain deferred. The 0.18.0 candidate includes #56's mixed-height measurement-retention correction alongside #46/#47. Broader pointer and style-change qualification remains separate from dependency adoption. See [current qualification](#current-row-qualification). |
 | Collection measurement | Native ideal-size probes can realize all rows before a bounded viewport commits and emit deferred `collection.unboundedRealization` warnings. Small fixtures do not prove virtualization or large-dataset performance; diagnostics are retained. |
 | Early input | Search, palette and form handoffs cover documented type-ahead/batched paths. Arbitrary multi-control input before presentation settles needs native support, not an application-built editor or focus graph. |
 | Editor navigation | End at the end of a native text field is unhandled when it makes no change, so an enclosing ScrollView can scroll to the bottom. The appearance study reproduced this at 36 × 18; ordinary editing remains focused. Its capture moves Left before End to exercise a real caret movement. Repeated no-op End is unresolved at the native input owner. |
@@ -68,12 +72,82 @@ renderer, focus system or hidden dependency patch.
 [PR #46](https://github.com/SwiftTUI/swift-tui/pull/46), merge
 `3701604e009bc113e4c6f01b25e3d5e7aa7b00eb`. The measured-height correction in
 [PR #47](https://github.com/SwiftTUI/swift-tui/pull/47) merged on 2026-10-12,
-after 0.17.0, and is included in the current upstream-revision candidate. All new per-row density
+after 0.17.0, and is included in the adopted upstream revision and 0.18.0. All new per-row density
 controls remain deferred from Chio's unified style API.
 Opencode keeps compact rows and roomier input padding/leading frames.
 
-The investigation below describes the earlier pins and candidates. Its failure
-table is historical baseline evidence; it is not a new test run against 0.17.0.
+### Current row qualification
+
+The original 2026-10-14 qualification uses Chio base `b79f009` and unchanged SwiftTUI
+`bf9a697f2a5da4d0392730d0cba9e3ddcbbfa5d1`. The retained
+`Tests/ChioTests/List/Presentation/ChioListStyleTests.swift` reproducer adds no
+production seam or dependency patch. It uses native row focus, stable IDs,
+selection/membership bindings and painted labels inside native focus regions.
+
+| Public case | Original-pin macOS and Linux debug result |
+| --- | --- |
+| Automatic and Chio native styles, single/multiple selection, compact or uniformly padded rows | Eight cases pass all twelve rows down and back, then activation or membership checks |
+| Same styles and selection modes with mixed-height rows | Four cases fail upward reversal: automatic requests ID 6 but focuses ID 5; Chio requests ID 2 but focuses ID 1 |
+| SearchableChecklist, compact or uniformly padded rows | Both pass overflow, reversal, filter handoff, Space/Return toggles and retained offscreen membership |
+| SearchableChecklist, mixed-height rows | Fails reversal from ID 3 to ID 2; ID 2 disappears and native focus falls to ID 1 |
+| Indexed and builder lists, three padded rows at intrinsic height | Both pass height 9 and exact label lines 1, 4, 7 |
+| Wrapped rows resized 32 → 18 → 32 columns with stable IDs | Focus and selection remain on ID 7; Return activates it |
+
+IDs and raster lines are zero-based. Native journeys use twelve rows in an
+eight-line list on a 32 × 12 surface; the checklist reserves fourteen lines on a
+32 × 18 surface so its editor, gaps and footer leave the same list allocation.
+Mixed rows contain a title plus `id % 3` detail lines, with `id % 2` lines of
+vertical padding on each side. Uniform padded rows add one line on each side.
+The mixed fixture therefore varies from one to five lines per row.
+
+The historical compact checklist failure is not reproduced in this qualification.
+The remaining mixed-height failure also occurs using automatic native styling,
+so it is not established as a Chio padding or palette defect. Selection and focus
+diverge in the single-selection failure; the five-second wait is unchanged.
+The native retention correction below addresses the reproduced cause. The current
+0.18.0 adoption retains all these cases; [Verification](../Verification.md#0180-adoption-qualification)
+records the released-pin results. No Chio focus/scroll workaround or public spacing
+control is added.
+
+These are debug raster/hosted observations on macOS and Linux x86_64. Release,
+live SSH/PTY, pointer interaction and comprehensive resize/style-change coverage
+are not established by them. [Verification](../Verification.md#list-row-spacing-qualification)
+owns the reproducer command and remaining gates.
+
+### Worker-snapshot retention correction
+
+[SwiftTUI PR #56](https://github.com/SwiftTUI/swift-tui/pull/56), candidate
+`0aadc0e392a29717f1016321b223ab5ad66595bc`, corrects the reproduced native
+cause. The cancellable hosted renderer measures worker snapshots but retains the
+live canonical indexed sources. An obsolete safety check rejects those previous
+sources before comparing their now-immutable, nonisolated measurement signatures.
+In the reproduced live-to-snapshot path, subsequent hosted frames therefore
+discard previously measured row heights.
+
+On upward reversal, reveal can count a preceding tall row as one cell and choose
+it as context. Measuring that row again consumes the viewport, excludes the
+requested target and causes native focus to fall back. Retaining the valid heights
+corrects that decision without another reveal pass or changes to focus ownership.
+The same obsolete guard affects lazy-stack prefix measurements and is removed
+there too. Axis, membership and count checks remain; neither path realizes
+previous-source children on a worker.
+
+The native hosted regression fails at the same automatic-style reverse step
+before the correction and passes afterwards. A lazy-stack regression independently
+checks that seven already-scrolled one-cell rows remain one cell across the
+live-to-snapshot transition. Forty-six focused native tests and configured hooks
+pass on macOS; separate review reports no actionable findings. Chio's eighteen
+unchanged qualification cases also pass in debug and release against the explicit
+local candidate dependency. [Verification](../Verification.md#list-row-spacing-qualification)
+records remaining gates. This local-candidate evidence predates release adoption
+and does not qualify a new density API. All upstream hosted checks subsequently
+passed; #56 merged as `bf2faa8ff6aaddb89cae8bc035a781ddbc672c84` and is included
+in published 0.18.0. Chio's full released-pin qualification remains separate.
+
+### Historical baseline
+
+The investigation below describes earlier pins and candidates. Its failure
+table is historical evidence, distinct from the current qualification above.
 Chio's full consumer verification remains distinct from upstream fix verification.
 
 A standalone package importing only public `SwiftTUIRuntime` reproduces these

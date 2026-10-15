@@ -17,20 +17,36 @@ struct SearchableChecklistTests {
             }
             #expect(first.checklistContains("S=-"))
             #expect(first.focusedIdentity != search.focusedIdentity)
+            #expect(first.checklistRow("Alpha")?.contains("> [ ] Alpha") == true)
             session.send(.key(.arrowDown))
             let second = try await recorder.wait(after: first.sequence, description: "native Beta focus without checking") {
                 $0.checklistRowFocused("Beta")
             }
             #expect(second.checklistContains("S=-"))
+            #expect(second.checklistRow("Beta")?.contains("> [ ] Beta") == true)
             session.send(.key(.space))
             let checked = try await recorder.wait(after: second.sequence, description: "Space checks Beta once") {
                 $0.checklistContains("S=b") && $0.checklistRow("Beta")?.contains("[x]") == true
             }
+            #expect(checked.checklistRow("Beta")?.contains("▌ [x] Beta") == true)
+            session.send(.key(.arrowDown))
+            let quill = try await recorder.wait(after: checked.sequence, description: "unchecked Quill focus preserves checked Beta") {
+                $0.checklistRowFocused("Quill")
+            }
+            #expect(quill.checklistContains("S=b"))
+            #expect(quill.checklistRow("Beta")?.contains("▌ [x] Beta") == true)
+            #expect(quill.checklistRow("Quill")?.contains("> [ ] Quill") == true)
+            #expect(!quill.checklistRowFocused("Beta"))
+            session.send(.key(.arrowUp))
+            let refocused = try await recorder.wait(after: quill.sequence, description: "checked Beta regains native focus") {
+                $0.checklistRowFocused("Beta")
+            }
             session.send(.key(.return))
-            let unchecked = try await recorder.wait(after: checked.sequence, description: "Return unchecks Beta once") {
+            let unchecked = try await recorder.wait(after: refocused.sequence, description: "Return unchecks Beta once") {
                 $0.checklistContains("S=-") && $0.checklistRow("Beta")?.contains("[ ]") == true
             }
             #expect(unchecked.checklistRowFocused("Beta"))
+            #expect(unchecked.checklistRow("Beta")?.contains("> [ ] Beta") == true)
         }
     }
 
@@ -285,8 +301,8 @@ private struct ChecklistItem {
     let name: String
 
     static let fixtures = [
-        Self(id: "a", name: "Alpha"), Self(id: "b", name: "Beta"),
-        Self(id: "q", name: "Quill"), Self(id: "g", name: "Gamma"),
+        ChecklistItem(id: "a", name: "Alpha"), ChecklistItem(id: "b", name: "Beta"),
+        ChecklistItem(id: "q", name: "Quill"), ChecklistItem(id: "g", name: "Gamma"),
     ]
 }
 
@@ -446,9 +462,11 @@ private extension SemanticHostFrame {
     }
 
     func checklistRowFocused(_ label: String) -> Bool {
-        semantics.focusRegions.contains {
-            $0.identity == focusedIdentity && $0.focusInteractions == .activate
-        } && checklistRow(label)?.contains("▌") == true
+        guard let line = raster.lines.firstIndex(where: { $0.contains(label) }),
+              let region = semantics.focusRegions.first(where: { $0.identity == focusedIdentity }) else { return false }
+        let labelIsInsideFocusedRegion = line >= region.rect.origin.y && line < region.rect.maxY
+        let regionAcceptsActivation = region.focusInteractions == .activate
+        return labelIsInsideFocusedRegion && regionAcceptsActivation
     }
 
     func checklistQuery(_ value: String) -> Bool {

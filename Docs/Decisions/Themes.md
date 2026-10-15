@@ -45,10 +45,11 @@ key in historical encoded spacing decodes as zero. The original four spacing
 fields retain their nonnegative contract and existing values.
 
 All new per-row density controls are deferred and are not public style fields.
-[Native integration](NativeIntegration.md#tall-list-rows) owns the reproduced
-tall-row reveal/intrinsic sizing defect and a separate single-line checklist
-focus failure whose root cause remains unresolved. This deferral does not block
-the unified style API. Applications retain row content and width policy.
+[Native integration](NativeIntegration.md#current-row-qualification) owns the
+mixed-height reveal regression and its native measurement-retention correction.
+The current release adoption precedes a new density field; broader pointer and
+style-change qualification remains separate. This deferral does not block the
+unified style API. Applications retain row content and width policy.
 
 Construction and replacement preserve printable single-cell glyph preconditions.
 Options own component behavior. Applications own content, data, breakpoints,

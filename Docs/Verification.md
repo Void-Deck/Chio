@@ -116,6 +116,22 @@ default-branch adoption of the tool, not a new Chio release or repaired native l
 
 ## Merged layout corrections
 
+**Status:** Delivered in [PR #16](https://github.com/echoz/Chio/pull/16), merged
+on 2026-10-14 at `b79f0096fbc19872bd91cc887b03048e7e9d2a47`. Its tree matches the
+verified `0d42bfd41a0316c85c95fbb520641df3785f6eb5` candidate. The complete hosted
+[run 38546312684](https://github.com/echoz/Chio/actions/runs/38546312684) passes
+on macOS and Linux x86_64, including debug/release suites, release products,
+snapshots, dashboard/map terminal workflows, appearance checks and map process
+probes. All sixteen original layout failures are resolved. The final local
+compiler-backed SwiftRules 0.1.4 gate passes with 351 files and 398 retained
+baseline findings; independent review reports no actionable findings.
+These results qualify that candidate and its identical merged tree, not a tagged
+Chio release, static Linux distribution or downstream application adoption.
+
+The earlier runs below preserve failure and diagnostic evidence. They do not
+represent the final merged candidate's gate status. The historical intermittent
+tab failures passed the final hosted gate; their cause remains unproved.
+
 The 2026-10-14 candidate pins SwiftTUI
 `bf9a697f2a5da4d0392730d0cba9e3ddcbbfa5d1`, with explicit approval to use this
 unreleased upstream revision after verification. Only the SwiftTUI revision and
@@ -150,7 +166,7 @@ terminal checks are not reached on that platform. Linux x86_64 passes every debu
 and release test, the dashboard build, 24 snapshots and eleven terminal workflows;
 the duration example then remains at `0:00 Running` during its fifteen-second
 advancement check. Later terminal and map process checks are not reached there.
-The PR remains draft while the remaining failures are addressed.
+That earlier candidate remained draft while the remaining failures were addressed.
 
 The library recorder retains up to 64 lazily formatted observations of wait
 start, deadline-task start, frame delivery, match and timeout. The tab workflow
@@ -177,6 +193,106 @@ The existing live-timeline test also runs with reduced motion enabled and fails
 before this correction. Its five-second wait and the fifteen-second terminal
 advancement assertion remain unchanged. Four constructor spellings in that suite
 are made explicit, removing exactly three additional baseline entries.
+
+## List row spacing qualification
+
+**Original-pin result:** BLOCKED. The added `ChioListStyleTests` qualification suite uses the
+public raster and hosted-session APIs against the former SwiftTUI revision
+`bf9a697f2a5da4d0392730d0cba9e3ddcbbfa5d1`. Compact and uniformly padded native
+single/multiple-selection journeys and searchable-checklist journeys pass on
+macOS debug. Both indexed and builder intrinsic padded placement pass; one
+wrapped same-ID resize journey preserves focus and activation.
+
+Four native mixed-height cases and the mixed-height checklist case fail while
+reversing upward. The requested label disappears and native focus moves to a
+different row; single-selection bindings still identify the requested row.
+The new failing assertions remain enabled, with the existing five-second wait.
+This is an incomplete qualification candidate, not a passing application gate.
+[Native integration](Decisions/NativeIntegration.md#current-row-qualification)
+records the fixture and exact failure points.
+
+The final integrated macOS debug run completes all four parameterized test
+functions with exactly five issues: the four native mixed-row cases and the
+mixed checklist case. SwiftRules 0.1.4 passes for 352 files with the same 398
+baseline findings. Separate review finds no actionable issue in the reproducer
+or its documented evidence limits. These checks validate the diagnosis artifact;
+they do not make the feature ready to ship.
+
+The hosted [run 38637395321](https://github.com/echoz/Chio/actions/runs/38637395321)
+confirms the same five failures on macOS and Linux x86_64. It tests PR #17 head
+`6c1556a42bb621a03e210232ed59bd81bb03ba57` through merge commit
+`e04aa8230b40e3fb7bf841ed17e630020c2877f4`. Both platforms pass the map transport
+and online-lifecycle preflight; the other map and dashboard test executables
+also pass. The failing debug gate prevents release, product, snapshot, terminal
+and map-process checks from running. This is platform reproduction of the
+blocker, not a new failure in those later checks.
+
+The isolated [SwiftTUI #56](https://github.com/SwiftTUI/swift-tui/pull/56)
+candidate `0aadc0e392a29717f1016321b223ab5ad66595bc` passes all eighteen
+unchanged Chio qualification cases in macOS debug (49.162 seconds) and release
+(8.155 seconds) through an explicit temporary local-package dependency. The
+manifest and lockfile are restored after this qualification; the candidate is
+not adopted by the committed package.
+Native regressions fail before the respective corrections; 46 focused native
+tests, configured hooks and separate review pass. After restoring the original
+pin, Chio's SwiftRules 0.1.4 gate passes again for 352 files with the same 398
+baseline findings. The full native `bun run test` gate also passes on macOS at
+that candidate, including all three runtime shards, platform suites, performance
+tests and soundness checks. All upstream hosted checks subsequently pass; #56 is
+merged and included in 0.18.0. These native and local-candidate checks do not
+establish Chio adoption, a full consumer gate, or live terminal behavior.
+
+Run the focused reproducer with the platform/toolchain setup below:
+
+```sh
+swift test --force-resolved-versions --jobs 2 --no-parallel --filter ChioListStyleTests
+```
+
+No new spacing API or showcase assets are qualified. The released-pin qualification
+below addresses the original-pin blocker for dependency adoption only. Pointer
+and broader style-change checks remain required before a new density field.
+The completed #16 gates cover their exact merged tree; they do not cover these
+new qualification cases. Native interaction ownership, assertions and deadlines
+remain intact.
+
+### 0.18.0 adoption qualification
+
+The candidate pins published [SwiftTUI 0.18.0](https://github.com/SwiftTUI/swift-tui/releases/tag/0.18.0)
+at `4791281a55e5bbdb683718a7282afd10c2f5e42c`. Release metadata and Git ancestry
+confirm that it contains the previous operational pin and merged #56. Upstream
+manifest and lockfile comparisons are unchanged; Chio's lockfile changes only
+SwiftTUI's revision and the root manifest hash. Chio production source, the eighteen
+list qualification cases, viewports, deadlines and CI policy remain unchanged.
+
+The first released-pin macOS gate passes all eighteen list cases in debug, then
+reports eight checklist and two choice-example failures. Its map tests pass;
+the remaining dashboard run is stopped before rerunning the corrected candidate.
+Both affected suites mistake
+`▌` for focus. SwiftTUI 0.18.0 intentionally reserves it for checked membership
+and uses `>` for the active unchecked row. The public native focus regions remain
+present; this is a test-predicate compatibility issue.
+
+The two helpers now require the requested label inside the currently focused,
+activatable native row region. The checklist journey separately checks `>`/`▌`
+and `[ ]`/`[x]`, including a checked row remaining selected while another row has
+focus. Existing membership, activation and five-second checks remain intact.
+Explicit constructors in the touched suites remove two old baseline entries;
+no new entry or exclusion is added.
+
+EngineeringRules 0.1.4 remains the highest published stable release at task start.
+The initial compiler-backed macOS gate passes over 352 files with 398 tracked
+findings and no new violations. After the migration, the nine checklist and three
+choice test functions pass in focused debug runs. The fresh compiler-backed gate
+passes with 396 tracked findings and no new violations. Adoption also requires the complete local macOS
+gate, hosted macOS/Linux gates and independent review. [PR #17](https://github.com/echoz/Chio/pull/17)
+records those results against the tested revision, including all eighteen list
+qualification cases in debug and release. The native candidate's earlier success
+does not replace these consumer checks.
+
+This slice adopts a release and retains the regression suite. It does not add
+row-density API, change showcase assets, qualify live SSH behavior or establish
+downstream adoption. Static Linux remains blocked by the documented upstream
+portability gaps; ordinary Linux checks do not establish static linking.
 
 ## Running checks
 
@@ -332,7 +448,8 @@ python3 Scripts/maps/terminal-probe.py .build/release/chio-maps --routing \
 Repeat with `--theme light` and `--theme btop`. Render their `-initial.cast` files
 with the shared player renderer and inspect the complete recordings before
 replacing public assets. These fixtures do not prove live route correctness.
-Known SwiftTUI failures and the deferred checker upgrade still apply.
+Those historical routing checks preceded the completed
+[native corrections](#merged-layout-corrections) and the adopted SwiftRules 0.1.4 gate.
 
 The 2026-10-13 routing candidate passed 324 selected map/Photon/OSRM tests in
 release on macOS. After the final framing and decoder-boundary correction,
@@ -507,8 +624,9 @@ surface overrides and `.base` inheritance after palette replacement; construct,
 replace and decode bounded input padding, including the historical absent key.
 Use public raster and hosted-session checks for the supported searchable composed
 lists: native focus, selection, query, activation and scroll reveal through width
-and style changes. New per-row density controls are deferred due to unresolved
-[native list limitations](Decisions/NativeIntegration.md#tall-list-rows).
+and style changes. New per-row density controls are in qualification under the
+[native list conditions](Decisions/NativeIntegration.md#tall-list-rows) and
+[the current checks](#list-row-spacing-qualification).
 Single-line truncation limits row height but does not establish that arbitrary
 list/checklist scrolling is safe or fix the separate reproduced focus failure.
 Inspect unchanged default/light presentation, the intentional btop border-heading
