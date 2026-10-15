@@ -9,6 +9,9 @@ rendering, layout, state, input, focus, and scrolling.
 The package exports one `Chio` library. Applications also depend on SwiftTUI
 for the native views and runtime. See [Package.swift](../Package.swift) for the
 current dependency pins and [the design](Design.md) for interaction contracts.
+Use the exact compatible revisions in the [0.2.0 installation instructions](https://github.com/echoz/Chio/releases/tag/v0.2.0).
+SwiftPM version requirements such as `from: "0.2.0"` cannot consume this revision-pinned graph.
+See the [migration notes](Releases/0.2.0.md#migration-from-010) when upgrading from 0.1.0.
 
 ## Search and keyboard hints
 
@@ -46,12 +49,11 @@ and `.onResultKeyPress` for application shortcuts that must not consume search
 text. Native row focus chrome currently remains an upstream styling boundary;
 see [the design](Design.md).
 
-For keyboard navigation in overflowing native lists, keep authored rows to one
-line, as in the example above. Unconstrained text can wrap
-into tall rows at narrow widths. Arbitrary wrapped or multiline
-rows inherit the pinned native collection's [tall-row reveal limitation](Decisions/NativeIntegration.md#tall-list-rows);
-one-line truncation avoids that layout in this recipe but does not fix the native
-issue. Applications own row content and available width.
+This recipe uses one-line rows for a compact presentation. SwiftTUI 0.18.0 fixes
+the measured-height retention failure during upward scrolling; retained Chio
+tests cover padded, mixed-height and wrapped rows. Broader pointer and dynamic
+style-change qualification remains separate from those checks. Applications own
+row content and available width; see [native list qualification](Decisions/NativeIntegration.md#current-row-qualification).
 
 ## Expanded keyboard help
 
@@ -236,9 +238,9 @@ updates, missing and empty history, theme changes and adaptive composition.
 
 ## Instruments and time-aware history
 
-The instrumentation expansion merged in [PR #8](https://github.com/echoz/Chio/pull/8).
-It has not been included in a tagged release. The `.style(...)` spelling below
-belongs to the approved unified-style migration in PR #10.
+The 0.2.0 scope includes the instrumentation expansion from
+[PR #8](https://github.com/echoz/Chio/pull/8) and unified `.style(...)` API from
+[PR #10](https://github.com/echoz/Chio/pull/10).
 
 Opt into native labelled-content hierarchy while retaining arbitrary content:
 

@@ -1,7 +1,7 @@
 # Chio verification
 
 Current requirements for implementation, dependency and visible example changes.
-[Plan](Plan.md) tracks active work; [release records](Releases/0.1.0.md) preserve
+[Plan](Plan.md) tracks active work; [release records](Releases/0.2.0.md) preserve
 revision-specific results. For documentation-only changes, check links, anchors
 and preservation of current contracts.
 
@@ -283,11 +283,18 @@ EngineeringRules 0.1.4 remains the highest published stable release at task star
 The initial compiler-backed macOS gate passes over 352 files with 398 tracked
 findings and no new violations. After the migration, the nine checklist and three
 choice test functions pass in focused debug runs. The fresh compiler-backed gate
-passes with 396 tracked findings and no new violations. Adoption also requires the complete local macOS
-gate, hosted macOS/Linux gates and independent review. [PR #17](https://github.com/echoz/Chio/pull/17)
-records those results against the tested revision, including all eighteen list
-qualification cases in debug and release. The native candidate's earlier success
-does not replace these consumer checks.
+passes with 396 tracked findings and no new violations. The complete local macOS
+gate and [hosted macOS/Linux gates](https://github.com/echoz/Chio/actions/runs/38694392124/attempts/2)
+pass at head `0b82ccb7e748da3ee57807f62ab0e9faedd6f00b`, through tested merge
+`35f8acf9d81415625276220f388466f13bc1b12d`. All eighteen list cases pass in debug
+and release. Independent review reports no actionable findings. [PR #17](https://github.com/echoz/Chio/pull/17)
+merged the identical tree at `7d44bd6bd85290f2c6e3526cf19e6647d551797c`.
+
+Hosted Linux passes on its first attempt. The first hosted macOS attempt reports
+one previously documented tab-activation timeout; the unchanged macOS retry
+passes. That retry does not establish the cause or repair of the intermittent
+failure. Local and hosted appearance captures retain three native unbounded-list
+measurement warnings per platform; the fixture contains four rows.
 
 This slice adopts a release and retains the regression suite. It does not add
 row-density API, change showcase assets, qualify live SSH behavior or establish

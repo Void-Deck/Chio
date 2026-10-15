@@ -2,8 +2,11 @@
 
 **Status:** Accepted and implemented. The unified `ChioStyle` API and promotion of
 the appearance recipes are verified in [PR #10](https://github.com/echoz/Chio/pull/10).
-They are not yet in a tagged release; [Plan](../Plan.md) records verification evidence.
-The theme API shipped in 0.1.0 remains source compatible as described below.
+They are included in the [0.2.0 release preparation](../Releases/0.2.0.md), which records scope and evidence.
+Ordinary calls to the theme API shipped in 0.1.0 remain supported. The
+[release migration notes](../Releases/0.2.0.md#migration-from-010) describe a narrow
+break for references to the former four-component initializer and replacement
+signatures; explicit closures preserve those call sites.
 
 Use an immutable style and native control styles to give a subtree coherent
 presentation while retaining SwiftTUI behavior.
@@ -47,9 +50,9 @@ fields retain their nonnegative contract and existing values.
 All new per-row density controls are deferred and are not public style fields.
 [Native integration](NativeIntegration.md#current-row-qualification) owns the
 mixed-height reveal regression and its native measurement-retention correction.
-The current release adoption precedes a new density field; broader pointer and
-style-change qualification remains separate. This deferral does not block the
-unified style API. Applications retain row content and width policy.
+SwiftTUI 0.18.0 adoption qualifies the retained list regressions before a new density
+field; broader pointer and style-change qualification remains separate. This deferral
+does not block the unified style API. Applications retain row content and width policy.
 
 Construction and replacement preserve printable single-cell glyph preconditions.
 Options own component behavior. Applications own content, data, breakpoints,

@@ -2,7 +2,8 @@
 
 **Status:** Accepted public component, 2026-10-09. Implementation is in
 `Sources/Chio`; `chio-maps` in `Examples/Maps` consumes the public API.
-[Plan](../Plan.md) tracks integrated verification and delivery status.
+[Plan](../Plan.md) tracks active work; the [0.2.0 release preparation](../Releases/0.2.0.md)
+records integrated scope and evidence.
 
 ## Public component and ownership
 
@@ -263,13 +264,15 @@ not completion gates for this slice. Keep these limitations explicit:
 
 The former deferred-loading proposal is superseded by the authorized
 [online acquisition slice](OnlineMaps.md). The adapter remains a pure decoder;
-`MapTileLoader` explicitly owns bounded acquisition and memory caching. Disk
-caching, downloadable tile packs, geocoding and routing adapters are now
-[approved follow-up scope](../Plan.md#approved-map-expansion), not shipped APIs.
-Pack formats, including whether to support PMTiles/MBTiles, remain undecided;
-credential storage stays application-owned. The view continues to consume supplied
-geometry and overlays without hidden service calls. No new Swift package dependency
-is introduced by the shipped slice; existing static Linux limitations remain in
+`MapTileLoader` explicitly owns bounded acquisition and memory caching. The
+[opt-in disk cache](OnlineMaps.md#persistent-raw-tile-cache),
+[programmatic offline packs](OfflineTilePacks.md), [forward/reverse geocoding](PlaceSearch.md)
+and [routing adapter](Routing.md) are implemented and included in
+[0.2.0 release preparation](../Releases/0.2.0.md). Provider archive downloads remain paused;
+PMTiles/MBTiles ingestion is unsupported. Credential storage stays application-owned.
+The view continues to consume supplied geometry and overlays without hidden service
+calls. These additions introduce no new Swift package dependency; existing static
+Linux limitations remain in
 [Dependencies](Dependencies.md#static-linux-blocker).
 
 <a id="rendering-spike-findings"></a>

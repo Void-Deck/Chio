@@ -664,8 +664,8 @@ COLORTERM=truecolor swift run -c release chio-dashboard --instruments
 swift run -c release chio-dashboard --instruments --theme btop --snapshot
 ```
 
-**Merged in PR #8; not yet included in a tagged release.** This
-example passed macOS/Linux qualification in [PR #8](https://github.com/echoz/Chio/pull/8).
+This example belongs to the [0.2.0 scope](Releases/0.2.0.md) and passed
+macOS/Linux qualification in [PR #8](https://github.com/echoz/Chio/pull/8).
 It composes the native instrument style, a
 synthetic temperature reading, a reservoir fact, supplied mean/maximum reference
 marks and a desired band. The response-time history includes distinct same-time

@@ -6,7 +6,8 @@ cross-cutting architecture and indexes the detailed decisions.
 
 [Plan](Plan.md) owns active work and open questions; [Verification](Verification.md)
 owns current checks; [Usage](Usage.md) and [Examples](Examples.md) own public recipes
-and launch workflows. [Release records](Releases/0.1.0.md) preserve dated evidence.
+and launch workflows. Release records preserve [0.2.0](Releases/0.2.0.md) scope
+and evidence, with [0.1.0](Releases/0.1.0.md) retained as the earlier baseline.
 
 ## Ownership
 
@@ -28,11 +29,11 @@ validate the framework; their domain models do not define its product scope.
 Coverage inventories describe gaps, without committing to catalog parity.
 
 The [approved map expansion](Plan.md#approved-map-expansion) adds disk storage
-and planned downloadable tile packs, geocoding and routing adapters at explicit
+and programmatic tile packs, geocoding and routing adapters at explicit
 effect boundaries beside the view. Applications retain invocation, storage and
 provider policy, credentials and workflow ownership. These capabilities are
-delivered one slice at a time. Submitted place search now has an explicit Photon
-adapter; the approved reverse slice adds a separate capability and Photon client
+delivered one slice at a time. Submitted place search has an explicit Photon
+adapter; reverse lookup supplies a separate capability and Photon client
 using the same attributed place values. [Routing](Decisions/Routing.md) provides
 an explicit OSRM adapter beside the unchanged overlay view. Provider archive
 downloads remain paused. The current
@@ -211,7 +212,7 @@ in Releases; avoid duplicating full contracts across documents.
 | Topic | Status and responsibility |
 | --- | --- |
 | <a id="theme"></a>[Styles and native control styling](Decisions/Themes.md) | Accepted |
-| <a id="compact-instrumentation"></a><a id="duration-presentation-and-example-owned-timekeeping"></a>[Compact instrumentation and duration display](Decisions/Instrumentation.md) | Accepted instrumentation; high-contrast target dial follow-up; tile deferred |
+| <a id="compact-instrumentation"></a><a id="duration-presentation-and-example-owned-timekeeping"></a>[Compact instrumentation and duration display](Decisions/Instrumentation.md) | Accepted instrumentation and high-contrast target dials; tile deferred |
 | <a id="searchable-selection"></a><a id="searchable-multiple-choice"></a>[Searchable selection and membership](Decisions/SearchableSelection.md) | Accepted |
 | <a id="composition-and-layout"></a>[Responsive composition and status](Decisions/Composition.md) | Accepted |
 | <a id="contextual-keyboard-help"></a>[Contextual keyboard help](Decisions/KeyboardHelp.md) | Accepted |

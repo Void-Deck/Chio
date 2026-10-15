@@ -1,10 +1,11 @@
 # Native integration boundaries
 
-**Status:** The current candidate pins published SwiftTUI 0.18.0 at
+**Status:** [PR #17](https://github.com/echoz/Chio/pull/17) adopted published SwiftTUI
+0.18.0 on `main` at `7d44bd6bd85290f2c6e3526cf19e6647d551797c`. Its exact pin is
 `4791281a55e5bbdb683718a7282afd10c2f5e42c`, including merged #47/#49/#50/#56.
 [Dependencies](Dependencies.md#0180-adoption-candidate) owns the adoption decision;
-full Chio verification remains required independently of upstream checks and
-earlier local-patch evidence. The candidate is not yet adopted on `main`.
+[0.2.0 release preparation](../Releases/0.2.0.md) records integrated scope and evidence.
+Chio qualification remains distinct from upstream checks and earlier local-patch evidence.
 
 Keep native ownership and visible limitations explicit when composing or extending Chio.
 
@@ -38,7 +39,7 @@ regression. The [local correction candidate](Dependencies.md#local-correction-ca
 preserves those column assertions and native ownership. It also corrects an
 ordinary Spacer's stretched allocation being reused as a required minimum,
 restoring the compact inbox width. Neither fix is part of released 0.17.0;
-both are included in the current 0.18.0 candidate.
+both are included in the adopted 0.18.0 pin.
 
 Native list focus chrome uses SwiftTUI's theme; Chio themes selected content and
 controls. SwiftTUI 0.18.0 separates multiple-selection membership from the active
@@ -59,7 +60,7 @@ renderer, focus system or hidden dependency patch.
 | Native style hooks | Table border/background chrome, list focus gutter, palette shell, prompt headers and disabled-editor glyph paint are not fully controlled by Chio. Keep native behavior and resolve missing hooks upstream. |
 | Layout and lifecycle | Scroll focus reveal can move a viewport horizontally by one cell; nested tab strips can receive stale width proposals; expanded disclosure focus includes descendants. Keep the documented native contracts for [scrolling](Scrolling.md#scrolling), [tabs](Tabs.md#tabs) and [disclosure](DisclosureGroups.md#expandable-groups-and-trees). |
 | Choice composition | Changing choice fields inside `GeometryReader` triggered a native debug lifecycle-publication assertion. The full-window example uses `terminalSize`; arbitrary nesting remains unproved. |
-| List density and focus | New per-row density controls remain deferred. The 0.18.0 candidate includes #56's mixed-height measurement-retention correction alongside #46/#47. Broader pointer and style-change qualification remains separate from dependency adoption. See [current qualification](#current-row-qualification). |
+| List density and focus | New per-row density controls remain deferred. The adopted 0.18.0 pin includes #56's mixed-height measurement-retention correction alongside #46/#47. Broader pointer and style-change qualification remains separate from dependency adoption. See [current qualification](#current-row-qualification). |
 | Collection measurement | Native ideal-size probes can realize all rows before a bounded viewport commits and emit deferred `collection.unboundedRealization` warnings. Small fixtures do not prove virtualization or large-dataset performance; diagnostics are retained. |
 | Early input | Search, palette and form handoffs cover documented type-ahead/batched paths. Arbitrary multi-control input before presentation settles needs native support, not an application-built editor or focus graph. |
 | Editor navigation | End at the end of a native text field is unhandled when it makes no change, so an enclosing ScrollView can scroll to the bottom. The appearance study reproduced this at 36 × 18; ordinary editing remains focused. Its capture moves Left before End to exercise a real caret movement. Repeated no-op End is unresolved at the native input owner. |
@@ -109,9 +110,13 @@ The native retention correction below addresses the reproduced cause. The curren
 records the released-pin results. No Chio focus/scroll workaround or public spacing
 control is added.
 
-These are debug raster/hosted observations on macOS and Linux x86_64. Release,
-live SSH/PTY, pointer interaction and comprehensive resize/style-change coverage
-are not established by them. [Verification](../Verification.md#list-row-spacing-qualification)
+The table retains original-pin debug raster/hosted observations on macOS and Linux
+x86_64. With adopted 0.18.0, all eighteen retained cases pass in debug and release
+on both platforms in [run 38694392124](https://github.com/echoz/Chio/actions/runs/38694392124).
+macOS passed after one unchanged retry following the documented tab-focus timeout;
+its cause remains unproved. This does not establish live SSH/PTY tall-row behavior,
+pointer interaction or comprehensive resize/style-change coverage.
+[Verification](../Verification.md#list-row-spacing-qualification)
 owns the reproducer command and remaining gates.
 
 ### Worker-snapshot retention correction
@@ -142,7 +147,9 @@ local candidate dependency. [Verification](../Verification.md#list-row-spacing-q
 records remaining gates. This local-candidate evidence predates release adoption
 and does not qualify a new density API. All upstream hosted checks subsequently
 passed; #56 merged as `bf2faa8ff6aaddb89cae8bc035a781ddbc672c84` and is included
-in published 0.18.0. Chio's full released-pin qualification remains separate.
+in published 0.18.0. Chio's completed
+[released-pin qualification](../Verification.md#0180-adoption-qualification)
+remains separate from these local-candidate results.
 
 ### Historical baseline
 
@@ -267,7 +274,7 @@ before claiming compliance with the complete upstream contribution process.
 `87dc035869d2d58817511efe9f09bb4ace689808` and supersedes
 [PR #45](https://github.com/SwiftTUI/swift-tui/pull/45). It is included in the
 published [0.17.0 release](https://github.com/SwiftTUI/swift-tui/releases/tag/0.17.0),
-`ee572e38487284092f367ef5b095460a04374ba3`, and retained by the current upstream-revision candidate.
+`ee572e38487284092f367ef5b095460a04374ba3`, and retained by the adopted 0.18.0 pin.
 
 The runtime observes invalidations without changing SwiftTUIGraph or public APIs.
 Termination vetoes run before shutdown begins. Accepted cooperative exit cancels
