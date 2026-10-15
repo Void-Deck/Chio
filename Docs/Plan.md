@@ -269,8 +269,13 @@ An isolated copy passes the unchanged dynamic style-change, retained list and
 appearance checks in debug and release against the native candidate. That
 candidate passes the complete local gate and all hosted checks. Expanded focus
 regressions at native `0d39074a` pass focused checks, the full local gate, all
-hosted checks and independent review. Upstream acceptance and dependency adoption
-remain pending.
+hosted checks and independent review. The user approved expanding #57 after broader
+tests found eager-table row overlap and missing focus in direct outline-list
+initializers. Candidate `ab0c305d` fixes both and adds hidden-row update journeys
+across lists, tables, outlines and both lazy stack directions. Focused checks,
+independent review and isolated Chio debug/release requalification pass. Its
+complete local gate passes all 85 steps, and all 24 hosted checks pass across six
+workflows. Upstream acceptance and dependency adoption remain pending.
 The external-consumer
 probe passes the canonical API on the published pin. Refreshed terminal recordings,
 preview inspection, site assembly and focused Safari checks pass. Capture-only

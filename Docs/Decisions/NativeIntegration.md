@@ -121,6 +121,18 @@ independent review. See
 This is candidate verification, not adoption: Chio
 retains published 0.18.0, and no private focus or scroll workaround is added.
 
+The user approved expanding #57 to correct two defects found by the broader
+collection tests. Eager tables measure multiline cells but lose those heights
+when placing later rows. Direct outline-list initializers provide a row tag that
+duplicates the outline's automatic tag, preventing native row focus. Candidate
+`ab0c305d` retains eager-table measurements and omits only that duplicate automatic
+tag. It preserves public initializer signatures and authored tag diagnostics.
+Hidden-update tests also cover outlines, both table paths, sectioned lists and
+both lazy stack directions. These are native corrections; Chio adds no substitute
+layout or focus mechanism. Local and hosted checks pass for this candidate.
+The owning verification record distinguishes these results from pending upstream
+acceptance and Chio dependency adoption.
+
 ### Current row qualification
 
 The original 2026-10-14 qualification uses Chio base `b79f009` and unchanged SwiftTUI

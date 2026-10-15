@@ -292,6 +292,52 @@ base SwiftTUI 0.18.0. Linux and macOS logs confirm both expanded runtime suites
 execute successfully.
 Upstream acceptance and dependency adoption remain pending.
 
+The user approved expanding #57 after the collection audit found two more native
+defects. Candidate `ab0c305d1e204835b189c9aaf4ac9ff3157d1a1b` retains measured
+eager-table row geometry and removes the duplicate automatic selection tag from
+direct outline-list initializers. Public initializer signatures and authored
+ambiguity diagnostics remain unchanged.
+
+New native journeys realize rows, hide them, change their content and size, then
+reveal and revisit them. They cover indexed, builder and sectioned lists;
+indexed and eager tables; composed outlines; and both lazy stack directions.
+Assertions distinguish focus, selection, membership, visible content and current
+action handlers. Eight direct outline-list initializer cases check native row
+navigation. Additional cases inspect first committed frames, collapsed or removed
+targets, disabled controls and bounded table chrome. Lazy
+control traversal is checked after realization; no implicit offscreen Tab reveal
+or new focus fallback policy is claimed.
+
+Focused hidden-update checks pass at `f87e881e`. Its full gate exposed a compact
+eager-table indicator regression. The corrected `ab0c305d` preserves one arrow
+when only two body cells remain. Forty-one test functions across four suites pass,
+including the unchanged stress regression and eight viewport/indicator cases.
+Independent source review has no remaining findings. The unmodified native
+repository gate passes all 85 steps locally at `ab0c305d`, with no failures or
+skips. All 24 checks across six fresh hosted workflows also pass:
+[Repo Gate](https://github.com/SwiftTUI/swift-tui/actions/runs/38772809564),
+[macOS](https://github.com/SwiftTUI/swift-tui/actions/runs/38772808906),
+[Windows](https://github.com/SwiftTUI/swift-tui/actions/runs/38772809145),
+[release soundness](https://github.com/SwiftTUI/swift-tui/actions/runs/38772808912),
+[API baseline](https://github.com/SwiftTUI/swift-tui/actions/runs/38772809495) and
+[TermUIPerf](https://github.com/SwiftTUI/swift-tui/actions/runs/38772808991).
+These checks test merge `82390adf9e29fdc716791ed6b390760f1856eccd`, with exact
+parents SwiftTUI 0.18.0 (`4791281a`) and candidate `ab0c305d`.
+Logs confirm that all five collection-update suites execute and pass on Linux,
+macOS, Windows arm64 and Windows amd64, including release execution on Linux.
+The unchanged compact-table stress regression also passes. Upstream acceptance
+and dependency adoption remain pending.
+
+An isolated Chio `6dc974e5` copy passes the unchanged 35 list cases and
+22 appearance cases in both debug and release against `ab0c305d`.
+These are 14 test functions across three suites, with no failures.
+The runs use official Swift 6.4, the normal SwiftPM backend and full Xcode on
+macOS arm64. Source provenance is checked before and after execution; only the
+isolated dependency manifest and lockfile differ. Other resolved dependency
+revisions remain unchanged. This establishes focused consumer integration, not
+complete Chio platform or live-terminal qualification.
+Chio still pins SwiftTUI 0.18.0.
+
 ## List row spacing qualification
 
 **Original-pin result:** BLOCKED. The added `ChioListStyleTests` qualification suite uses the
