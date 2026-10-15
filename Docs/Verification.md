@@ -218,15 +218,38 @@ baseline findings. Separate review finds no actionable issue in the reproducer
 or its documented evidence limits. These checks validate the diagnosis artifact;
 they do not make the feature ready to ship.
 
+The hosted [run 38637395321](https://github.com/echoz/Chio/actions/runs/38637395321)
+confirms the same five failures on macOS and Linux x86_64. It tests PR #17 head
+`6c1556a42bb621a03e210232ed59bd81bb03ba57` through merge commit
+`e04aa8230b40e3fb7bf841ed17e630020c2877f4`. Both platforms pass the map transport
+and online-lifecycle preflight; the other map and dashboard test executables
+also pass. The failing debug gate prevents release, product, snapshot, terminal
+and map-process checks from running. This is platform reproduction of the
+blocker, not a new failure in those later checks.
+
+The isolated [SwiftTUI #56](https://github.com/SwiftTUI/swift-tui/pull/56)
+candidate `0aadc0e392a29717f1016321b223ab5ad66595bc` passes all eighteen
+unchanged Chio qualification cases in macOS debug (49.162 seconds) and release
+(8.155 seconds) through an explicit temporary local-package dependency. The
+manifest and lockfile are restored after this qualification; the candidate is
+not adopted by the committed package.
+Native regressions fail before the respective corrections; 46 focused native
+tests, configured hooks and separate review pass. After restoring the original
+pin, Chio's SwiftRules 0.1.4 gate passes again for 352 files with the same 398
+baseline findings. The full native `bun run test` gate also passes on macOS at
+that candidate, including all three runtime shards, platform suites, performance
+tests and soundness checks. Hosted platform CI remains in progress. This does not
+establish Chio adoption, a full consumer gate, or live terminal behavior.
+
 Run the focused reproducer with the platform/toolchain setup below:
 
 ```sh
 swift test --force-resolved-versions --jobs 2 --no-parallel --filter ChioListStyleTests
 ```
 
-No new spacing API or showcase assets are qualified. Fresh release, Linux, PTY,
-pointer and broader style-change checks remain outstanding. The completed #16
-gates cover their exact merged tree; they do not cover these new qualification
+No new spacing API or showcase assets are qualified. Full consumer-gate, Linux
+candidate, PTY, pointer and broader style-change checks remain outstanding. The
+completed #16 gates cover their exact merged tree; they do not cover these new qualification
 cases. Native interaction ownership, assertions and deadlines must remain intact
 when resolving this blocker.
 

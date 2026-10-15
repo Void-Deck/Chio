@@ -80,7 +80,7 @@ The 2026-10-14 qualification uses Chio base `b79f009` and unchanged SwiftTUI
 production seam or dependency patch. It uses native row focus, stable IDs,
 selection/membership bindings and painted labels inside native focus regions.
 
-| Public case | macOS debug result |
+| Public case | macOS and Linux debug result |
 | --- | --- |
 | Automatic and Chio native styles, single/multiple selection, compact or uniformly padded rows | Eight cases pass all twelve rows down and back, then activation or membership checks |
 | Same styles and selection modes with mixed-height rows | Four cases fail upward reversal: automatic requests ID 6 but focuses ID 5; Chio requests ID 2 but focuses ID 1 |
@@ -100,13 +100,41 @@ The historical compact checklist failure is not reproduced in this qualification
 The remaining mixed-height failure also occurs using automatic native styling,
 so it is not established as a Chio padding or palette defect. Selection and focus
 diverge in the single-selection failure; the five-second wait is unchanged.
-Native row reveal and whole-row fitting require further diagnosis before a fix
-is claimed. No Chio focus/scroll workaround or public spacing control is added.
+The native retention correction below addresses the reproduced cause. No Chio
+focus/scroll workaround or public spacing control is added.
 
-These are focused macOS debug raster/hosted observations. Release, Linux, live
-SSH/PTY, pointer interaction and comprehensive resize/style-change coverage are
-not established by them. [Verification](../Verification.md#list-row-spacing-qualification)
+These are debug raster/hosted observations on macOS and Linux x86_64. Release,
+live SSH/PTY, pointer interaction and comprehensive resize/style-change coverage
+are not established by them. [Verification](../Verification.md#list-row-spacing-qualification)
 owns the reproducer command and remaining gates.
+
+### Worker-snapshot retention correction
+
+[SwiftTUI PR #56](https://github.com/SwiftTUI/swift-tui/pull/56), candidate
+`0aadc0e392a29717f1016321b223ab5ad66595bc`, corrects the reproduced native
+cause. The cancellable hosted renderer measures worker snapshots but retains the
+live canonical indexed sources. An obsolete safety check rejects those previous
+sources before comparing their now-immutable, nonisolated measurement signatures.
+In the reproduced live-to-snapshot path, subsequent hosted frames therefore
+discard previously measured row heights.
+
+On upward reversal, reveal can count a preceding tall row as one cell and choose
+it as context. Measuring that row again consumes the viewport, excludes the
+requested target and causes native focus to fall back. Retaining the valid heights
+corrects that decision without another reveal pass or changes to focus ownership.
+The same obsolete guard affects lazy-stack prefix measurements and is removed
+there too. Axis, membership and count checks remain; neither path realizes
+previous-source children on a worker.
+
+The native hosted regression fails at the same automatic-style reverse step
+before the correction and passes afterwards. A lazy-stack regression independently
+checks that seven already-scrolled one-cell rows remain one cell across the
+live-to-snapshot transition. Forty-six focused native tests and configured hooks
+pass on macOS; separate review reports no actionable findings. Chio's eighteen
+unchanged qualification cases also pass in debug and release against the explicit
+local candidate dependency. [Verification](../Verification.md#list-row-spacing-qualification)
+records remaining gates. This is candidate evidence: Chio's committed pin remains
+unchanged, and no new density API is qualified by it.
 
 ### Historical baseline
 

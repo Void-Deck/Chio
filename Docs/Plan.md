@@ -239,7 +239,7 @@ Provider downloads stay paused.
 
 ### Current slice: list row spacing
 
-**Status:** BLOCKED BY MIXED-HEIGHT ROW REVEAL. Qualification on the current
+**Status:** BLOCKED ON NATIVE FIX ADOPTION. Qualification on the current
 SwiftTUI pin passes compact and uniformly padded native list/checklist journeys,
 intrinsic padded placement and one same-ID wrapped resize journey. Mixed-height
 rows still lose native focus while reversing upward: the selected row can be
@@ -248,6 +248,13 @@ treatment or showcase recording is introduced while this remains unresolved.
 [Native integration](Decisions/NativeIntegration.md#current-row-qualification)
 owns the reproduction and [Verification](Verification.md#list-row-spacing-qualification)
 owns the checks and limits.
+
+The cause is reproduced in native hosted rendering: a stale worker-safety guard
+throws away valid measured row heights. [SwiftTUI #56](https://github.com/SwiftTUI/swift-tui/pull/56)
+corrects both collection and lazy-stack retention. Its candidate passes all
+eighteen existing Chio cases in macOS debug and release with an explicit local
+dependency; Chio's committed pin remains unchanged. Finish upstream verification and verified
+adoption before introducing the density token.
 
 Complete qualification of native padded and multiline list/checklist rows, including exact
 focus, selection, keyboard/pointer activation, scroll reveal and resize recovery.
