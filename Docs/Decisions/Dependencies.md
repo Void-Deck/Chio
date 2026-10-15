@@ -51,6 +51,11 @@ complete consumer gate rather than only the original list reproducer.
 [Verification](../Verification.md#0180-adoption-qualification) owns the results.
 No Chio focus workaround or public row-spacing field is introduced.
 
+Its multi-selection painting correction separates checked membership from the
+active unchecked cursor. Two existing test helpers now use the public native
+focus region for focus, with separate assertions for markers and checkmarks.
+The interaction contracts and five-second waits remain unchanged.
+
 Applications with an exact SwiftTUI requirement must align it with this release
 when adopting the corresponding Chio revision and verify their own workflows.
 Static Linux remains blocked; this release does not establish musl support.

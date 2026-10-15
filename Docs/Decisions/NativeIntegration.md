@@ -41,7 +41,11 @@ restoring the compact inbox width. Neither fix is part of released 0.17.0;
 both are included in the current 0.18.0 candidate.
 
 Native list focus chrome uses SwiftTUI's theme; Chio themes selected content and
-controls. The native theme environment is not public. `StatusBar` composes a text
+controls. SwiftTUI 0.18.0 separates multiple-selection membership from the active
+cursor: checked rows retain `▌`, and the active unchecked row uses `>`.
+Focus checks must associate the requested label with the current native focus
+region; a membership marker alone does not establish focus. Single-selection
+markers retain their existing behavior. The native theme environment is not public. `StatusBar` composes a text
 rule because native Divider ignores ambient foreground. Keep these upstream
 limits visible without a second focus system or renderer.
 

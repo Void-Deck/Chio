@@ -261,12 +261,29 @@ The candidate pins published [SwiftTUI 0.18.0](https://github.com/SwiftTUI/swift
 at `4791281a55e5bbdb683718a7282afd10c2f5e42c`. Release metadata and Git ancestry
 confirm that it contains the previous operational pin and merged #56. Upstream
 manifest and lockfile comparisons are unchanged; Chio's lockfile changes only
-SwiftTUI's revision and the root manifest hash. No source, test assertion, viewport,
-deadline, CI policy or baseline is changed by this dependency update.
+SwiftTUI's revision and the root manifest hash. Chio production source, the eighteen
+list qualification cases, viewports, deadlines and CI policy remain unchanged.
+
+The first released-pin macOS gate passes all eighteen list cases in debug, then
+reports eight checklist and two choice-example failures. Its map tests pass;
+the remaining dashboard run is stopped before rerunning the corrected candidate.
+Both affected suites mistake
+`▌` for focus. SwiftTUI 0.18.0 intentionally reserves it for checked membership
+and uses `>` for the active unchecked row. The public native focus regions remain
+present; this is a test-predicate compatibility issue.
+
+The two helpers now require the requested label inside the currently focused,
+activatable native row region. The checklist journey separately checks `>`/`▌`
+and `[ ]`/`[x]`, including a checked row remaining selected while another row has
+focus. Existing membership, activation and five-second checks remain intact.
+Explicit constructors in the touched suites remove two old baseline entries;
+no new entry or exclusion is added.
 
 EngineeringRules 0.1.4 remains the highest published stable release at task start.
-The fresh compiler-backed macOS gate passes over 352 files with 398 tracked
-findings and no new violations. Adoption also requires the complete local macOS
+The initial compiler-backed macOS gate passes over 352 files with 398 tracked
+findings and no new violations. After the migration, the nine checklist and three
+choice test functions pass in focused debug runs. The fresh compiler-backed gate
+passes with 396 tracked findings and no new violations. Adoption also requires the complete local macOS
 gate, hosted macOS/Linux gates and independent review. [PR #17](https://github.com/echoz/Chio/pull/17)
 records those results against the tested revision, including all eighteen list
 qualification cases in debug and release. The native candidate's earlier success

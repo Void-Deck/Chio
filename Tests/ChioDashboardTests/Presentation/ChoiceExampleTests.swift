@@ -124,7 +124,7 @@ struct ChoiceExampleTests {
                 $0.raster.cells != before.raster.cells && $0.choiceRowFocused("Test")
             }
             #expect(themed.focusedIdentity == before.focusedIdentity)
-            surface.updateSurfaceSize(.init(width: 36, height: 18))
+            surface.updateSurfaceSize(CellSize(width: 36, height: 18))
             session.requestSurfaceRefresh()
             let compact = try await recorder.wait(after: themed.sequence, description: "compact form still navigable") {
                 $0.raster.size == CellSize(width: 36, height: 18) && $0.choiceRowFocused("Test")
@@ -181,7 +181,7 @@ private func withChoiceExample(
     perform: @MainActor (HostedSceneSession, HostedRasterSurface, HostedFrameRecorder) async throws -> Void
 ) async throws {
     let recorder = HostedFrameRecorder()
-    let surface = HostedRasterSurface(surfaceSize: .init(width: 76, height: 30), appearance: .fallback,
+    let surface = HostedRasterSurface(surfaceSize: CellSize(width: 76, height: 30), appearance: .fallback,
                                       onFrame: { recorder.receive($0) })
     let session = try HostedSceneSession(for: ChoiceTestApp(draft: draft, step: step),
                                         sceneID: "choice-example-tests", surface: surface)
@@ -210,6 +210,10 @@ private extension SemanticHostFrame {
         !choiceEditorFocused && semantics.focusRegions.contains { $0.identity == focusedIdentity }
     }
     func choiceRowFocused(_ label: String) -> Bool {
-        !choiceEditorFocused && raster.lines.contains { $0.contains(label) && $0.contains("▌") }
+        guard let line = raster.lines.firstIndex(where: { $0.contains(label) }),
+              let region = semantics.focusRegions.first(where: { $0.identity == focusedIdentity }) else { return false }
+        let labelIsInsideFocusedRegion = line >= region.rect.origin.y && line < region.rect.maxY
+        let regionAcceptsActivation = region.focusInteractions == .activate
+        return labelIsInsideFocusedRegion && regionAcceptsActivation
     }
 }

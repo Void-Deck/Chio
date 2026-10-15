@@ -300,24 +300,6 @@
     {
       "count": 1,
       "identity": {
-        "anchor": ". init ( width : 36 , height : 18 )",
-        "path": "Tests/ChioDashboardTests/Presentation/ChoiceExampleTests.swift",
-        "ruleID": "explicit_constructor"
-      },
-      "reason": "Existing test-fixture constructor shorthand; migrate with the owning suite and prune this entry (Docs/Verification.md#shared-engineering-rules)."
-    },
-    {
-      "count": 1,
-      "identity": {
-        "anchor": ". init ( width : 76 , height : 30 )",
-        "path": "Tests/ChioDashboardTests/Presentation/ChoiceExampleTests.swift",
-        "ruleID": "explicit_constructor"
-      },
-      "reason": "Existing test-fixture constructor shorthand; migrate with the owning suite and prune this entry (Docs/Verification.md#shared-engineering-rules)."
-    },
-    {
-      "count": 1,
-      "identity": {
         "anchor": ". init ( width : size . width , height : size . height )",
         "path": "Tests/ChioDashboardTests/Presentation/CreateAgentRenderTests.swift",
         "ruleID": "explicit_constructor"
