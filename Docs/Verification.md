@@ -7,8 +7,8 @@ and preservation of current contracts.
 
 ## Shared engineering rules
 
-Chio pins [EngineeringRules v0.1.5](https://github.com/echoz/EngineeringRules/releases/tag/v0.1.5)
-(`d777c8ccbe990a8e90462c928042574d9dbe9d53`) through
+Chio pins [EngineeringRules v0.1.6](https://github.com/echoz/EngineeringRules/releases/tag/v0.1.6)
+(`7088419f33f118bff250202717edf6d5249746b6`) through
 [.swift-rules.json](../.swift-rules.json). This is a required local development
 gate alongside the compiler, tests and platform checks below. It is not a package
 dependency or a guarantee of purity, correct enum policy or API compatibility.
@@ -21,7 +21,7 @@ On this Mac, run:
 
 ```sh
 DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
-  bash Scripts/ci/check-rules.sh /path/to/immutable/EngineeringRules-0.1.5
+  bash Scripts/ci/check-rules.sh /path/to/immutable/EngineeringRules-0.1.6
 ```
 
 Full Xcode supplies the required Swift/SourceKit. On Linux, omit `DEVELOPER_DIR`
@@ -93,6 +93,25 @@ The gate checks module-document presence and local CommonMark file destinations.
 It does not check heading fragments, HTML, external URLs, prose accuracy or browser
 behavior. Keep manual heading and site checks, meaningful ownership review and
 the other required verification below. No new per-directory README is required.
+
+### 0.1.6 adoption
+
+The published stable release resolves to
+`7088419f33f118bff250202717edf6d5249746b6`. The SwiftRules pin and wrapper's
+explicit source revision advance together from 0.1.5. Both documentation checking
+and compiler-context export use that verified release.
+
+Version 0.1.6 packages the shared engineering-review skill and clarifies deliverable
+organization and scoped naming. Swift and documentation checker behavior, schemas,
+baselines and dependency pins are unchanged. The user-wide skill already matches
+this release; use it under the global PR-readiness workflow without copying it
+into Chio. The component-first layout and existing module-document mappings remain
+valid; this release adds no per-deliverable README requirement.
+
+This tool upgrade preserves the existing baseline and scopes. The separate
+[constructor cleanup PR #20](https://github.com/echoz/Chio/pull/20) owns removal of
+fixture shorthand debt. Application code, tests and package dependencies are
+unchanged by this adoption.
 
 ### 0.1.5 adoption
 
