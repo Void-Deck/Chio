@@ -87,11 +87,11 @@ resizing, clean exit and exact terminal-mode restoration, with no runtime warnin
 Independent review checked the code, actual images and fixture provenance; its
 endpoint-coverage and unintended-fallback findings were addressed in the matrix.
 
-The pinned SwiftRules 0.1.3 check passes over 337 files with the existing 414-entry
-baseline unchanged. Authenticated release metadata still resolves 0.1.4 to
-`fc3de546794e7e4b0429b0b03e282ac7218bde8b`; its existing
-[conformance-maintenance deferral](../../Docs/Verification.md#deferred-014-adoption)
-remains. This spike does not qualify a checker upgrade, full CI, Linux, SSH or
+At the spike checkpoint, the pinned SwiftRules 0.1.3 check passes over 337 files
+with the existing 414-entry baseline unchanged. Published 0.1.4 resolves to
+`fc3de546794e7e4b0429b0b03e282ac7218bde8b`, but adoption remains deferred at that
+checkpoint. The later [completed adoption](../../Docs/Verification.md#014-adoption-candidate)
+supersedes that status. This spike does not qualify a checker upgrade, full CI, Linux, SSH or
 actual terminal-emulator font appearance. No live route was requested.
 
 After the requested stronger muting/brighter-route refinement, the macOS release

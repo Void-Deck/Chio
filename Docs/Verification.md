@@ -7,28 +7,35 @@ and preservation of current contracts.
 
 ## Shared engineering rules
 
-Chio pins [EngineeringRules v0.1.4](https://github.com/echoz/EngineeringRules/releases/tag/v0.1.4)
-(`fc3de546794e7e4b0429b0b03e282ac7218bde8b`) through
+Chio pins [EngineeringRules v0.1.5](https://github.com/echoz/EngineeringRules/releases/tag/v0.1.5)
+(`d777c8ccbe990a8e90462c928042574d9dbe9d53`) through
 [.swift-rules.json](../.swift-rules.json). This is a required local development
 gate alongside the compiler, tests and platform checks below. It is not a package
 dependency or a guarantee of purity, correct enum policy or API compatibility.
 
-Install the pinned tool from its repository using its README. Keep a local
-EngineeringRules checkout containing that release tag. On this Mac, run:
+Install the pinned tool from its repository using its README. Prepare the released
+documentation checker's hash-pinned Python dependencies in a clean release
+checkout's `.build/docs-venv`. Several projects can share that immutable checkout
+and environment; do not change a shared development checkout for this purpose.
+On this Mac, run:
 
 ```sh
 DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
-  bash Scripts/ci/check-rules.sh /path/to/EngineeringRules
+  bash Scripts/ci/check-rules.sh /path/to/immutable/EngineeringRules-0.1.5
 ```
 
 Full Xcode supplies the required Swift/SourceKit. On Linux, omit `DEVELOPER_DIR`
 and follow the pinned tool's Swift 6.4 and Ubuntu Noble requirements. The normal
 gate does not install tools or edit source, configuration or baselines; a missing
 pinned installation is a failed prerequisite. It verifies the release commit,
-exports the shared compiler-context helper from that immutable revision, builds
+exports the documentation checker and compiler-context helper from that immutable
+revision, runs the documentation gate with the prepared Python environment, builds
 the actual `Chio` target with SwiftPM's native backend, and supplies its real
-compiler arguments to the checker. The helper stays in EngineeringRules; Chio
-does not copy or maintain its implementation.
+compiler arguments to the checker. The shared checker implementations stay in
+EngineeringRules; Chio does not copy or maintain them. The documentation checker
+requires exactly `markdown-it-py` 3.0.0 and `mdurl` 0.1.2. Missing or different
+parser dependencies fail before the native build; normal checking never installs
+packages or fetches the tool.
 
 Generated build settings and compiler context stay under ignored
 `.build/swift-rules`. The gate removes the old context before rebuilding; a build,
@@ -72,6 +79,41 @@ application behavior. The shared tool owns rule implementations.
 EngineeringRules is private. This local gate does not add credentials or a private
 fetch to Chio's public CI or package build. Hosted lint requires a separate tool
 distribution/access decision; the public platform gate below remains required.
+
+### Documentation coverage
+
+[.documentation-rules.json](../.documentation-rules.json) enrolls eight module
+directories under `Sources`, `Examples`, `Tests` and `Spikes`, with no exclusions.
+The mappings reuse Design, Examples, Verification and the routing spike guide.
+Current decision documents, release guidance and map fixture provenance are also
+enrolled: 36 unique documents. New immediate module directories require an
+explicit owning-document mapping; linked documents are not enrolled recursively.
+
+The gate checks module-document presence and local CommonMark file destinations.
+It does not check heading fragments, HTML, external URLs, prose accuracy or browser
+behavior. Keep manual heading and site checks, meaningful ownership review and
+the other required verification below. No new per-directory README is required.
+
+### 0.1.5 adoption candidate
+
+The user requires this adoption before cutting Chio 0.2.0. The published stable
+target resolves to `d777c8ccbe990a8e90462c928042574d9dbe9d53`; it retains 0.1.4's
+Swift rules and adds the separate documentation gate. The prior Swift baseline
+and source scopes remain unchanged.
+
+On macOS arm64 with Swift 6.4 and full Xcode, the complete wrapper passes:
+36 documents across eight modules, an actual native Chio build and compiler-context
+export, and 350 Swift files with no new violations and 396 baseline findings.
+Compiler witness analysis passes. Real-wrapper checks reject a missing Python
+environment, missing parser, wrong parser version and wrong release commit; each
+failure removes stale compiler evidence. The initial sandboxed build could not
+write its compiler cache; the authorized normal-cache run passes.
+
+This is developer-tool qualification. Application source, package dependencies,
+tests, the public CI workflow and its verification script are unchanged. The
+release record owns application-platform qualification. A passing macOS wrapper
+does not establish Linux execution of the private checker. Independent review
+and merge acceptance remain separate from this local candidate evidence.
 
 <a id="014-adoption-candidate"></a>
 
