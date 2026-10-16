@@ -29,7 +29,7 @@ struct MapBudgetInteractionTests {
         let fixtures = MapFixtures(worldSource: loaded.worldSource, streetSource: source,
                                    openFreeMapSource: loaded.openFreeMapSource)
         let frames = Frames()
-        let surface = HostedRasterSurface(surfaceSize: .init(width: 100, height: 30), appearance: .fallback,
+        let surface = HostedRasterSurface(surfaceSize: CellSize(width: 100, height: 30), appearance: .fallback,
                                           onFrame: { frames.latest = $0 })
         let app = MapExampleApplication(fixtures: fixtures, scene: .street, appearance: .default)
         let session = try HostedSceneSession(for: app, sceneID: WindowIdentifier("Chio maps"), surface: surface)
@@ -62,10 +62,10 @@ struct MapBudgetInteractionTests {
             let minimal = try await frames.wait(after: filled.sequence) {
                 $0.text.contains("2/4 minimal") && !$0.text.contains("Too much map detail") && $0.hasGeography
             }
-            surface.updateSurfaceSize(.init(width: 36, height: 18))
+            surface.updateSurfaceSize(CellSize(width: 36, height: 18))
             session.requestSurfaceRefresh()
             let compact = try await frames.wait(after: minimal.sequence) { $0.text.contains("More room for the map") }
-            surface.updateSurfaceSize(.init(width: 100, height: 30))
+            surface.updateSurfaceSize(CellSize(width: 100, height: 30))
             session.requestSurfaceRefresh()
             let expanded = try await frames.wait(after: compact.sequence) {
                 $0.raster.size == CellSize(width: 100, height: 30) && $0.hasGeography

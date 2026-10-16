@@ -7,7 +7,7 @@ struct SparklineTests {
     private func render(_ values: [Double?], scale: Sparkline.Scale = .automatic,
                         width: Int = 5, height: Int = 2) -> RenderSnapshot {
         DefaultRenderer().render(Sparkline(values, scale: scale).frame(width: width, height: height),
-                                 proposal: .init(width: width, height: height))
+                                 proposal: ProposedSize(width: width, height: height))
     }
 
     // Decode the public braille raster rather than inspecting private reduction.
@@ -20,7 +20,7 @@ struct SparklineTests {
                       (0x2800...0x28FF).contains(scalar.value) else { continue }
                 let mask = scalar.value - 0x2800
                 for (bit, dot) in dots.enumerated() where mask & (1 << bit) != 0 {
-                    points.insert(.init(x: x * 2 + dot.0, y: y * 4 + dot.1))
+                    points.insert(CellPoint(x: x * 2 + dot.0, y: y * 4 + dot.1))
                 }
             }
         }
@@ -38,21 +38,21 @@ struct SparklineTests {
 
     @Test("Automatic scale spans extrema; singleton is right aligned and constants are centered")
     func automatic() {
-        #expect(pixels(render([42])) == [.init(x: 9, y: 4)])
+        #expect(pixels(render([42])) == [CellPoint(x: 9, y: 4)])
         let constant = pixels(render([3, 3, 3]))
         #expect(constant.count == 10)
         #expect(constant.allSatisfy { $0.y == 4 })
         let rising = pixels(render([-20, 0, 20]))
-        #expect(rising.contains(.init(x: 0, y: 7)))
-        #expect(rising.contains(.init(x: 9, y: 0)))
+        #expect(rising.contains(CellPoint(x: 0, y: 7)))
+        #expect(rising.contains(CellPoint(x: 9, y: 0)))
     }
 
     @Test("Gaps occupy time slots and disconnect segments, including inside one reduced column")
     func gaps() {
         #expect(pixels(render([0, nil, 1], scale: .fixed(0...1)))
-                == [.init(x: 0, y: 7), .init(x: 9, y: 0)])
+                == [CellPoint(x: 0, y: 7), CellPoint(x: 9, y: 0)])
         let narrow = pixels(render([0, nil, 1, nil, 0], scale: .fixed(0...1), width: 1))
-        #expect(narrow == [.init(x: 0, y: 7), .init(x: 0, y: 0), .init(x: 1, y: 7)])
+        #expect(narrow == [CellPoint(x: 0, y: 7), CellPoint(x: 0, y: 0), CellPoint(x: 1, y: 7)])
     }
 
     @Test("Dense histories keep a brief spike and trough at narrow widths")
@@ -78,8 +78,8 @@ struct SparklineTests {
     func numericalLimits() {
         let greatest = Double.greatestFiniteMagnitude
         let extreme = pixels(render([-greatest, 0, greatest]))
-        #expect(extreme.contains(.init(x: 0, y: 7)))
-        #expect(extreme.contains(.init(x: 9, y: 0)))
+        #expect(extreme.contains(CellPoint(x: 0, y: 7)))
+        #expect(extreme.contains(CellPoint(x: 9, y: 0)))
         let tiny = Double.leastNonzeroMagnitude
         #expect(pixels(render([0, tiny, tiny * 2])) == pixels(render([0, 1, 2])))
         #expect(pixels(render([-greatest, greatest], scale: .fixed(0...100)))
@@ -91,7 +91,7 @@ struct SparklineTests {
         let theme = ChioStyle.btop
         let frame = DefaultRenderer().render(
             Sparkline([1, nil, 3]).frame(width: 10, height: 2).style(theme),
-            proposal: .init(width: 10, height: 2))
+            proposal: ProposedSize(width: 10, height: 2))
         #expect(frame.semanticSnapshot.focusRegions.isEmpty)
         #expect(frame.semanticSnapshot.accessibilityNodes.contains {
             $0.label == "History: 2 readings, 1 missing. Latest: 3.0. Minimum: 1.0. Maximum: 3.0."
@@ -104,7 +104,7 @@ struct SparklineTests {
         })
         let labeled = DefaultRenderer().render(
             Sparkline([1]).accessibilityLabel("CPU history in percent").frame(width: 4, height: 1),
-            proposal: .init(width: 4, height: 1))
+            proposal: ProposedSize(width: 4, height: 1))
         #expect(labeled.semanticSnapshot.accessibilityNodes.contains { $0.label == "CPU history in percent" })
     }
 

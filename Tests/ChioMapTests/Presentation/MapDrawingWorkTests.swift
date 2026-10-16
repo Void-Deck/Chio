@@ -173,22 +173,22 @@ struct MapDrawingWorkTests {
 
     private func map(lines: [PreparedMap.Line] = [], polygons: [PreparedMap.Polygon] = []) -> PreparedMap {
         PreparedMap(lines: lines, polygons: polygons, labels: [],
-                    statistics: .init(sourceVertices: 0, preparedVertices: 0, visibleFeatures: 0))
+                    statistics: PreparedMap.Statistics(sourceVertices: 0, preparedVertices: 0, visibleFeatures: 0))
     }
 
     private func line(_ points: [PreparedMap.Point]) -> PreparedMap.Line {
-        .init(featureID: "line", kind: .road, points: points)
+        PreparedMap.Line(featureID: "line", kind: .road, points: points)
     }
 
     private func polygon(_ points: [PreparedMap.Point]) -> PreparedMap.Polygon {
-        .init(featureID: "polygon", kind: .land, rings: [points])
+        PreparedMap.Polygon(featureID: "polygon", kind: .land, rings: [points])
     }
 
     private func rectangle(_ left: Double, _ top: Double, _ right: Double, _ bottom: Double) -> [PreparedMap.Point] {
         [point(left, top), point(right, top), point(right, bottom), point(left, bottom), point(left, top)]
     }
 
-    private func point(_ x: Double, _ y: Double) -> PreparedMap.Point { .init(x: x, y: y) }
+    private func point(_ x: Double, _ y: Double) -> PreparedMap.Point { PreparedMap.Point(x: x, y: y) }
 
     private func coordinate(_ longitude: Double, _ latitude: Double) throws -> MapCoordinate {
         try MapCoordinate(latitude: latitude, longitude: longitude)

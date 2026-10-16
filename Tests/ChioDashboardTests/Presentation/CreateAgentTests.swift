@@ -26,7 +26,7 @@ struct CreateAgentTests {
 
     @Test("Failed submit focuses the first invalid visible field, then the remaining conditional field")
     func firstInvalidFocusAndNarrowErrorVisibility() async throws {
-        try await withCreationScene(size: .init(width: 36, height: 18)) { session, _, recorder in
+        try await withCreationScene(size: CellSize(width: 36, height: 18)) { session, _, recorder in
             _ = try await openForm(session, recorder)
             _ = try await chooseTestRole(session, recorder)
             session.send(.key(.character("s"), modifiers: .ctrl))
@@ -120,7 +120,7 @@ struct CreateAgentTests {
             #expect(themed.hasControl(.textField, label: "Agent name", value: .text("Verifier")))
             #expect(themed.selectedRole == "Test")
             #expect(themed.hasControl(.toggle, label: "Start immediately", value: .boolean(true)))
-            surface.updateSurfaceSize(.init(width: 36, height: 18))
+            surface.updateSurfaceSize(CellSize(width: 36, height: 18))
             session.requestSurfaceRefresh()
             let resized = try await recorder.wait(after: themed.sequence, description: "narrow resize preserves suite editing") {
                 $0.raster.size == CellSize(width: 36, height: 18) && $0.focuses(.textField, label: "Test suite")
@@ -254,7 +254,7 @@ extension CreationTestApp: App {
 
 @MainActor
 private func withCreationScene(
-    size: CellSize = .init(width: 100, height: 30),
+    size: CellSize = CellSize(width: 100, height: 30),
     perform: @MainActor (HostedSceneSession, HostedRasterSurface, HostedFrameRecorder) async throws -> Void
 ) async throws {
     let recorder = HostedFrameRecorder()

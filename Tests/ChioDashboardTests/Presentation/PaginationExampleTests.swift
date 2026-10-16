@@ -12,7 +12,7 @@ struct PaginationExampleTests {
     func layout(size: CellSize, appearance: ExampleTheme) {
         let rendered = DefaultRenderer().render(
             PaginationExampleView(theme: appearance).environment(\.terminalSize, size),
-            proposal: .init(width: size.width, height: size.height), frameInstant: .zero
+            proposal: ProposedSize(width: size.width, height: size.height), frameInstant: .zero
         )
         let text = rendered.rasterSurface.lines.joined(separator: "\n")
         #expect(rendered.rasterSurface.size == size)
@@ -41,7 +41,7 @@ struct PaginationExampleTests {
             let themed = try await recorder.wait(after: last.sequence, description: "theme retains the filtered page") {
                 $0.raster.cells != last.raster.cells && $0.historyContains("2 / 2") && $0.historyQuery("build")
             }
-            surface.updateSurfaceSize(.init(width: 36, height: 18))
+            surface.updateSurfaceSize(CellSize(width: 36, height: 18))
             session.requestSurfaceRefresh()
             _ = try await recorder.wait(after: themed.sequence, description: "compact history retains page and filter") {
                 $0.raster.size == CellSize(width: 36, height: 18)
@@ -116,7 +116,7 @@ private func withHistory(
     perform: @MainActor (HostedSceneSession, HostedRasterSurface, HostedFrameRecorder) async throws -> Void
 ) async throws {
     let recorder = HostedFrameRecorder()
-    let surface = HostedRasterSurface(surfaceSize: .init(width: 100, height: 30), appearance: .fallback,
+    let surface = HostedRasterSurface(surfaceSize: CellSize(width: 100, height: 30), appearance: .fallback,
                                       onFrame: { recorder.receive($0) })
     let session = try HostedSceneSession(for: HistoryTestApp(), sceneID: "history-tests", surface: surface)
     let run = Task { try await session.start() }

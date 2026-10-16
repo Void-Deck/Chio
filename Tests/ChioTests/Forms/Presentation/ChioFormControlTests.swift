@@ -9,7 +9,7 @@ struct ChioFormControlTests {
     func nativeInput() async throws {
         let recorder = HostedFrameRecorder()
         let surface = HostedRasterSurface(
-            surfaceSize: .init(width: 60, height: 12), appearance: .fallback,
+            surfaceSize: CellSize(width: 60, height: 12), appearance: .fallback,
             onFrame: { recorder.receive($0) }
         )
         let session = try HostedSceneSession(for: FormControlTestApp(),

@@ -49,10 +49,10 @@ struct MapLabelsTests {
     @Test("Stable placement and native Unicode width apply at every detail", arguments: MapDetail.allCases)
     func stablePlacement(detail: MapDetail) {
         let candidates: [PreparedMap.Label] = [
-            .init(featureID: "water", kind: .water, text: "界e\u{301}", position: .init(x: 20, y: 8)),
-            .init(featureID: "road", kind: .primaryRoad, text: "Road", position: .init(x: 20, y: 8)),
-            .init(featureID: "duplicate", kind: .land, text: "界e\u{301}", position: .init(x: 80, y: 14)),
-            .init(featureID: "edge", kind: .land, text: "Edge", position: .init(x: 0, y: 0)),
+            PreparedMap.Label(featureID: "water", kind: .water, text: "界e\u{301}", position: PreparedMap.Point(x: 20, y: 8)),
+            PreparedMap.Label(featureID: "road", kind: .primaryRoad, text: "Road", position: PreparedMap.Point(x: 20, y: 8)),
+            PreparedMap.Label(featureID: "duplicate", kind: .land, text: "界e\u{301}", position: PreparedMap.Point(x: 80, y: 14)),
+            PreparedMap.Label(featureID: "edge", kind: .land, text: "Edge", position: PreparedMap.Point(x: 0, y: 0)),
         ]
         let placed = MapLabels(candidates: candidates, columns: 100, rows: 20, enabled: true, detail: detail)
         #expect(placed.labels.map(\.id) == ["water"])
@@ -64,6 +64,6 @@ struct MapLabelsTests {
     private func label(_ index: Int, column: Int, row: Int) -> PreparedMap.Label {
         let suffix = index < 10 ? "0\(index)" : "\(index)"
         return PreparedMap.Label(featureID: "place-\(suffix)", kind: .water,
-                                 text: "\(index)", position: .init(x: Double(column), y: Double(row)))
+                                 text: "\(index)", position: PreparedMap.Point(x: Double(column), y: Double(row)))
     }
 }

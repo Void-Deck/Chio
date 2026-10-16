@@ -14,7 +14,7 @@ struct DiffExampleTests {
     func layout(size: CellSize, appearance: ExampleTheme) throws {
         let rendered = DefaultRenderer().render(
             DiffExampleView(theme: appearance).environment(\.terminalSize, size),
-            proposal: .init(width: size.width, height: size.height), frameInstant: .zero
+            proposal: ProposedSize(width: size.width, height: size.height), frameInstant: .zero
         )
         let text = rendered.rasterSurface.lines.joined(separator: "\n")
         #expect(rendered.rasterSurface.size == size)
@@ -46,7 +46,7 @@ struct DiffExampleTests {
         let rendered = DefaultRenderer().render(
             DiffFileView(file: file, isSplit: false, minimumWidth: 60, sourceWidth: 9, activeHunk: 0)
                 .style(appearance.theme),
-            proposal: .init(width: 80, height: 15)
+            proposal: ProposedSize(width: 80, height: 15)
         )
         let lines = rendered.rasterSurface.lines
         #expect(lines.contains { $0.contains("@@ -99,5 +99,3 @@") })
@@ -76,7 +76,7 @@ struct DiffExampleTests {
         let rendered = DefaultRenderer().render(
             DiffFileView(file: try gutterFixture(), isSplit: true, minimumWidth: 60,
                          sourceWidth: 9, activeHunk: 0).style(appearance.theme),
-            proposal: .init(width: 80, height: 15)
+            proposal: ProposedSize(width: 80, height: 15)
         )
         let lines = rendered.rasterSurface.lines
         let cells = rendered.rasterSurface.cells
@@ -125,7 +125,7 @@ struct DiffExampleTests {
             ScrollView([.horizontal, .vertical]) {
                 DiffFileView(file: file, isSplit: isSplit, minimumWidth: 96, sourceWidth: sourceWidth, activeHunk: 0)
             }.frame(width: 96, height: 15).style(.default),
-            proposal: .init(width: 96, height: 15)
+            proposal: ProposedSize(width: 96, height: 15)
         )
         for source in [unicode, old, new] {
             #expect(rendered.semanticSnapshot.accessibilityNodes.contains {
@@ -153,7 +153,7 @@ struct DiffExampleTests {
         let rendered = DefaultRenderer().render(
             DiffFileView(file: DiffFile.examples[index], isSplit: isSplit, minimumWidth: 100,
                          sourceWidth: 0, activeHunk: nil).style(.default),
-            proposal: .init(width: 100, height: 8)
+            proposal: ProposedSize(width: 100, height: 8)
         )
         let text = rendered.rasterSurface.lines.joined(separator: "\n")
         #expect(text.contains(expected))
@@ -191,14 +191,14 @@ struct DiffExampleTests {
                     && $0.focusedIdentity == unified.focusedIdentity
                     && $0.raster.cells[row][column].style?.foregroundColor == ChioStyle.light.syntax.string
             }
-            surface.updateSurfaceSize(.init(width: 36, height: 18))
+            surface.updateSurfaceSize(CellSize(width: 36, height: 18))
             session.requestSurfaceRefresh()
             let narrow = try await recorder.wait(after: themed.sequence, description: "compact resize retains the last hunk and reader focus") {
                 $0.raster.size == CellSize(width: 36, height: 18) && $0.diffContains("Unified · hunk 3/3")
                     && $0.diffContains("@@ -79,6 +84,4 @@") && $0.diffReaderFocused
                     && $0.focusedIdentity == themed.focusedIdentity
             }
-            surface.updateSurfaceSize(.init(width: 160, height: 40))
+            surface.updateSurfaceSize(CellSize(width: 160, height: 40))
             session.requestSurfaceRefresh()
             let wide = try await recorder.wait(after: narrow.sequence, description: "widening retains the requested unified mode and selected hunk") {
                 $0.raster.size == CellSize(width: 160, height: 40) && $0.diffContains("Unified · hunk 3/3")
@@ -208,12 +208,12 @@ struct DiffExampleTests {
             let splitFrame = try await recorder.wait(after: wide.sequence, description: "split mode keeps the same last hunk") {
                 $0.diffContains("Split · hunk 3/3") && $0.diffContains("@@ -79,6 +84,4 @@") && $0.diffReaderFocused
             }
-            surface.updateSurfaceSize(.init(width: 36, height: 18))
+            surface.updateSurfaceSize(CellSize(width: 36, height: 18))
             session.requestSurfaceRefresh()
             let fallback = try await recorder.wait(after: splitFrame.sequence, description: "narrow terminals temporarily use unified rows") {
                 $0.raster.size == CellSize(width: 36, height: 18) && $0.diffContains("Unified · hunk 3/3") && $0.diffReaderFocused
             }
-            surface.updateSurfaceSize(.init(width: 100, height: 30))
+            surface.updateSurfaceSize(CellSize(width: 100, height: 30))
             session.requestSurfaceRefresh()
             let restored = try await recorder.wait(after: fallback.sequence, description: "widening restores the split preference and logical hunk") {
                 $0.diffContains("Split · hunk 3/3") && $0.diffContains("@@ -79,6 +84,4 @@") && $0.diffReaderFocused

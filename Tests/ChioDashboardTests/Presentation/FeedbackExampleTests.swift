@@ -9,7 +9,7 @@ struct FeedbackExampleTests {
     @Test("Confirm, Escape, completion toast and destructive reset retain native focus")
     func workflow() async throws {
         let recorder = HostedFrameRecorder()
-        let surface = HostedRasterSurface(surfaceSize: .init(width: 76, height: 26), appearance: .fallback,
+        let surface = HostedRasterSurface(surfaceSize: CellSize(width: 76, height: 26), appearance: .fallback,
                                           onFrame: recorder.receive)
         let session = try HostedSceneSession(for: FeedbackTestApp(), sceneID: "feedback-tests", surface: surface)
         let run = Task { try await session.start() }
@@ -29,7 +29,7 @@ struct FeedbackExampleTests {
             }
             session.send(.key(.return))
             let opened = try await recorder.wait(description: "confirmation opens") { $0.feedbackContains("Publish report?") }
-            surface.updateSurfaceSize(.init(width: 36, height: 18))
+            surface.updateSurfaceSize(CellSize(width: 36, height: 18))
             session.requestSurfaceRefresh()
             _ = try await recorder.wait(after: opened.sequence, description: "light prompt retains content through narrow resize") {
                 $0.raster.size == CellSize(width: 36, height: 18) && $0.feedbackContains("Publish report?")
@@ -82,7 +82,7 @@ struct FeedbackExampleTests {
           CellSize(width: 50, height: 30), CellSize(width: 36, height: 18)], ExampleTheme.allCases)
     func layout(size: CellSize, appearance: ExampleTheme) {
         let frame = DefaultRenderer().render(FeedbackExampleView(theme: appearance).environment(\.terminalSize, size),
-                                            proposal: .init(width: size.width, height: size.height), frameInstant: .zero)
+                                            proposal: ProposedSize(width: size.width, height: size.height), frameInstant: .zero)
         let text = frame.rasterSurface.lines.joined(separator: "\n")
         #expect(frame.rasterSurface.size == size)
         #expect(text.contains("Release report"))

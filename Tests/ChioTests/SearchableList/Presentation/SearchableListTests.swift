@@ -240,7 +240,7 @@ struct SearchableListTests {
             let themed = try await recorder.wait(description: "theme retains internally owned query") {
                 $0.hasQuery("q") && $0.contains("Theme=light") && $0.contains("S=q F=s A=0")
             }
-            surface.updateSurfaceSize(.init(width: 32, height: 14))
+            surface.updateSurfaceSize(CellSize(width: 32, height: 14))
             session.requestSurfaceRefresh()
             _ = try await recorder.wait(after: themed.sequence, description: "resize retains internally owned query") {
                 $0.raster.size.width == 32 && $0.hasQuery("q") && $0.contains("S=q F=s A=0")
@@ -395,7 +395,7 @@ struct SearchableListTests {
             #expect(appearanceChanged)
             #expect(markerUsesLightAccent)
 
-            surface.updateSurfaceSize(.init(width: 32, height: 14))
+            surface.updateSurfaceSize(CellSize(width: 32, height: 14))
             session.requestSurfaceRefresh()
             let resized = try await recorder.wait(after: themed.sequence, description: "narrow resized frame") {
                 $0.raster.size.width == 32 && $0.contains("Q=be S=b F=s A=0")
@@ -521,7 +521,7 @@ private func withSearchScene(
 ) async throws {
     let recorder = HostedFrameRecorder()
     let surface = HostedRasterSurface(
-        surfaceSize: .init(width: 60, height: 18),
+        surfaceSize: CellSize(width: 60, height: 18),
         appearance: .fallback,
         onFrame: { recorder.receive($0) }
     )

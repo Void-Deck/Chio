@@ -39,14 +39,14 @@ struct MapboxVectorTileDecoderTests {
         guard case .polygons(let polygons) = try MapboxVectorTileDecoder.geometry(source, extent: 4096)
         else { Issue.record("Expected polygons"); return }
         #expect(polygons.count == 2 && polygons[0].count == 1 && polygons[1].count == 2)
-        #expect(polygons[1][0][0] == .init(x: 11, y: 11))
-        #expect(polygons[1][1][0] == .init(x: 13, y: 13))
+        #expect(polygons[1][0][0] == MapboxVectorTileDecoder.Point(x: 11, y: 11))
+        #expect(polygons[1][1][0] == MapboxVectorTileDecoder.Point(x: 13, y: 13))
         #expect(polygons[1][1].first == polygons[1][1].last)
         let lines = MapboxVectorTileDecoder.Feature(id: nil, type: 2, properties: [:],
             words: [9,4,4,18,0,16,16,0,9,17,17,10,4,8])
         guard case .lines(let paths) = try MapboxVectorTileDecoder.geometry(lines, extent: 4096)
         else { Issue.record("Expected lines"); return }
-        #expect(paths.count == 2 && paths[1][0] == .init(x: 1, y: 1))
+        #expect(paths.count == 2 && paths[1][0] == MapboxVectorTileDecoder.Point(x: 1, y: 1))
     }
 
     @Test("MVT wire truncation, overflow, tags, required fields and unsupported versions reject")

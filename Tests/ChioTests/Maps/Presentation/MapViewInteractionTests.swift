@@ -76,7 +76,7 @@ struct MapViewInteractionTests {
             }
             #expect(resumed.mapContains("Selection=nil CW=2 SW=0"))
             #expect(resumed.focusedIdentity == initial.focusedIdentity)
-            surface.updateSurfaceSize(.init(width: 76, height: 30))
+            surface.updateSurfaceSize(CellSize(width: 76, height: 30))
             session.requestSurfaceRefresh()
             let resized = try await recorder.wait(after: resumed.sequence, description: "terminal resize preserves the framed map and native focus") {
                 $0.raster.size == CellSize(width: 76, height: 30) && $0.mapReady
@@ -445,7 +445,7 @@ private func withMapScene(
     perform: @MainActor (HostedSceneSession, HostedRasterSurface, HostedFrameRecorder) async throws -> Void
 ) async throws {
     let recorder = HostedFrameRecorder()
-    let surface = HostedRasterSurface(surfaceSize: .init(width: 100, height: 34), appearance: .fallback,
+    let surface = HostedRasterSurface(surfaceSize: CellSize(width: 100, height: 34), appearance: .fallback,
                                       onFrame: { recorder.receive($0) })
     let fixtures = try MapConsumerFixtures(markers: markers)
     let session = try HostedSceneSession(for: MapConsumerTestApp(fixtures: fixtures, rejectsCameraWrites: rejectsCameraWrites,

@@ -46,21 +46,21 @@ struct OnlineMapFixturesTests {
             let tile = try MapTileCoordinate(zoom: Int(parts[1])!, x: Int(parts[2])!, y: Int(parts[3])!)
             calls.withLock { $0.append(tile) }
             guard let data = bytes[tile] else { throw MapTileLoader.LoadingError.httpStatus(404) }
-            return .init(data: data, headers: ["cache-control": "max-age=60"])
+            return MapHTTPClient.Response(data: data, headers: ["cache-control": "max-age=60"])
         })
         let viewport = try MapViewport(columns: 98, rows: 19)
-        let initialRequest = try MapTileRequest(camera: .init(center: .init(latitude: 1.289, longitude: 103.866),
+        let initialRequest = try MapTileRequest(camera: MapCamera(center: MapCoordinate(latitude: 1.289, longitude: 103.866),
                                                              longitudeSpan: 0.03), viewport: viewport)
-        let panRequest = try MapTileRequest(camera: .init(center: .init(latitude: 1.289, longitude: 103.8948),
+        let panRequest = try MapTileRequest(camera: MapCamera(center: MapCoordinate(latitude: 1.289, longitude: 103.8948),
                                                          longitudeSpan: 0.03), viewport: viewport)
         let markers = MapFixtures.Scene.street.overlays.markers
         let merlion = try #require(markers.first { $0.id == "merlion" })
         let gardens = try #require(markers.first { $0.id == "gardens" })
-        #expect(merlion.coordinate == (try .init(latitude: 1.2868, longitude: 103.8545)))
-        #expect(gardens.coordinate == (try .init(latitude: 1.2816, longitude: 103.8636)))
-        let merlionRequest = try MapTileRequest(camera: .init(center: merlion.coordinate,
+        #expect(merlion.coordinate == (try MapCoordinate(latitude: 1.2868, longitude: 103.8545)))
+        #expect(gardens.coordinate == (try MapCoordinate(latitude: 1.2816, longitude: 103.8636)))
+        let merlionRequest = try MapTileRequest(camera: MapCamera(center: merlion.coordinate,
                                                              longitudeSpan: 0.03), viewport: viewport)
-        let gardensRequest = try MapTileRequest(camera: .init(center: gardens.coordinate,
+        let gardensRequest = try MapTileRequest(camera: MapCamera(center: gardens.coordinate,
                                                              longitudeSpan: 0.03), viewport: viewport)
         // Independent protobuf command decoding counted complete multipart parts
         // using original integer-coordinate projection and inclusive exterior/path
@@ -144,17 +144,17 @@ struct OnlineMapFixturesTests {
             let parts = url.deletingPathExtension().pathComponents
             let tile = try MapTileCoordinate(zoom: Int(parts[1])!, x: Int(parts[2])!, y: Int(parts[3])!)
             guard let data = bytes[tile] else { throw MapTileLoader.LoadingError.httpStatus(404) }
-            return .init(data: data, headers: ["cache-control": "max-age=60"])
+            return MapHTTPClient.Response(data: data, headers: ["cache-control": "max-age=60"])
         })
-        let camera = try MapCamera(center: .init(latitude: 1.289, longitude: 103.866), longitudeSpan: 0.03)
+        let camera = try MapCamera(center: MapCoordinate(latitude: 1.289, longitude: 103.866), longitudeSpan: 0.03)
         let viewport = try MapViewport(columns: 98, rows: 19)
-        let initial = try await loader.load(.init(camera: camera, viewport: viewport))
+        let initial = try await loader.load(MapTileRequest(camera: camera, viewport: viewport))
         // Independently counted from original integer commands and inclusive
         // projected bounds, before any simplification, including retained holes.
         #expect(initial.source.dataset.features.count == 345)
         #expect(initial.source.dataset.vertexCount == 2_071)
         #expect(initial.attainedZoom == 12)
-        let moved = try MapTileRequest(camera: .init(center: .init(latitude: 1.289, longitude: 103.8948),
+        let moved = try MapTileRequest(camera: MapCamera(center: MapCoordinate(latitude: 1.289, longitude: 103.8948),
                                                    longitudeSpan: 0.03), viewport: viewport)
         let adjacent = try await loader.load(moved)
         #expect(adjacent.source.dataset.features.count == 29)

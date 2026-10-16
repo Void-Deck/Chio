@@ -14,7 +14,7 @@ struct InboxExampleTests {
     func layout(size: CellSize, appearance: ExampleTheme) throws {
         let rendered = DefaultRenderer().render(
             InboxExampleView(theme: appearance).environment(\.terminalSize, size),
-            proposal: .init(width: size.width, height: size.height)
+            proposal: ProposedSize(width: size.width, height: size.height)
         )
         let text = rendered.rasterSurface.lines.joined(separator: "\n")
         #expect(rendered.rasterSurface.size == size)
@@ -44,14 +44,14 @@ struct InboxExampleTests {
 
     @Test("Opening compact then widening fills adjacent panels and retains live search focus")
     func compactLaunchAndWideResize() async throws {
-        try await withInboxExample(initialSize: .init(width: 36, height: 18)) { session, surface, recorder in
+        try await withInboxExample(initialSize: CellSize(width: 36, height: 18)) { session, surface, recorder in
             let ready = try await inboxReady(recorder)
             #expect(!ready.inboxContains("Preview"))
             session.sendInput(Array("/select".utf8))
             let editing = try await recorder.wait(after: ready.sequence, description: "compact startup accepts search text") {
                 $0.inboxQuery("select") && $0.inboxEditorFocused && $0.inboxSelected(214)
             }
-            surface.updateSurfaceSize(.init(width: 240, height: 50))
+            surface.updateSurfaceSize(CellSize(width: 240, height: 50))
             session.requestSurfaceRefresh()
             let wide = try await recorder.wait(after: editing.sequence, description: "wide terminal restores the preview without replacing search") {
                 $0.raster.size == CellSize(width: 240, height: 50) && $0.inboxContains("Preview")
@@ -84,7 +84,7 @@ struct InboxExampleTests {
                     && $0.inboxSelected(214) && $0.focusedIdentity == editing.focusedIdentity
             }
             #expect(inboxPanelGeometry(shown.raster.lines)?.gap == 2)
-            surface.updateSurfaceSize(.init(width: 36, height: 18))
+            surface.updateSurfaceSize(CellSize(width: 36, height: 18))
             session.requestSurfaceRefresh()
             _ = try await recorder.wait(after: shown.sequence, description: "shrinking again preserves search and selection") {
                 $0.raster.size == CellSize(width: 36, height: 18) && !$0.inboxContains("Preview")
@@ -169,14 +169,14 @@ struct InboxExampleTests {
                 !$0.inboxContains("Preview") && $0.inboxQuery("214") && $0.inboxSelected(214)
                     && $0.focusedIdentity == editing.focusedIdentity
             }
-            surface.updateSurfaceSize(.init(width: 36, height: 18))
+            surface.updateSurfaceSize(CellSize(width: 36, height: 18))
             session.requestSurfaceRefresh()
             let compact = try await recorder.wait(after: hidden.sequence, description: "compact resize retains native query editor") {
                 $0.raster.size == CellSize(width: 36, height: 18) && $0.inboxQuery("214")
                     && $0.inboxSelected(214) && $0.focusedIdentity == editing.focusedIdentity
                     && $0.inboxContains("^Q quit")
             }
-            surface.updateSurfaceSize(.init(width: 100, height: 30))
+            surface.updateSurfaceSize(CellSize(width: 100, height: 30))
             session.requestSurfaceRefresh()
             let wide = try await recorder.wait(after: compact.sequence, description: "wide resize retains hidden preview and editor identity") {
                 $0.raster.size == CellSize(width: 100, height: 30) && $0.inboxQuery("214")
@@ -265,7 +265,7 @@ extension InboxExampleTestApp: App {
 
 @MainActor
 private func withInboxExample(
-    initialSize: CellSize = .init(width: 100, height: 30),
+    initialSize: CellSize = CellSize(width: 100, height: 30),
     perform: @MainActor (HostedSceneSession, HostedRasterSurface, HostedFrameRecorder) async throws -> Void
 ) async throws {
     let recorder = HostedFrameRecorder()
