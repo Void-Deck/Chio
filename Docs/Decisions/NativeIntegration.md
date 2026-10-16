@@ -1,7 +1,7 @@
 # Native integration boundaries
 
 **Status:** The approved 0.2.0 candidate uses merged SwiftTUI #57 at
-`7e62e95c913508f4fef42db36fde6fd60acb541c`; final Chio qualification is pending.
+`7e62e95c913508f4fef42db36fde6fd60acb541c`; final Chio macOS/Linux qualification passes.
 The earlier [PR #17](https://github.com/echoz/Chio/pull/17) adopted published
 0.18.0 on `main` at `7d44bd6bd85290f2c6e3526cf19e6647d551797c`, including
 merged #47/#49/#50/#56.
@@ -62,7 +62,7 @@ renderer, focus system or hidden dependency patch.
 | Native style hooks | Table border/background chrome, list focus gutter, palette shell, prompt headers and disabled-editor glyph paint are not fully controlled by Chio. Keep native behavior and resolve missing hooks upstream. |
 | Layout and lifecycle | Scroll focus reveal can move a viewport horizontally by one cell; nested tab strips can receive stale width proposals; expanded disclosure focus includes descendants. Keep the documented native contracts for [scrolling](Scrolling.md#scrolling), [tabs](Tabs.md#tabs) and [disclosure](DisclosureGroups.md#expandable-groups-and-trees). |
 | Choice composition | Changing choice fields inside `GeometryReader` triggered a native debug lifecycle-publication assertion. The full-window example uses `terminalSize`; arbitrary nesting remains unproved. |
-| List density and focus | The 0.2.0 candidate adds merged #57 to the previous #46/#47/#56 corrections. Final Chio qualification of composed-row padding, pointer and style changes remains pending. See [dynamic spacing](#dynamic-row-spacing-candidate) and [retained qualification](#current-row-qualification). |
+| List density and focus | The 0.2.0 candidate adds merged #57 to the previous #46/#47/#56 corrections. Chio qualification of composed-row padding, pointer and style changes passes on macOS/Linux. See [dynamic spacing](#dynamic-row-spacing-candidate) and [retained qualification](#current-row-qualification). |
 | Collection measurement | Native ideal-size probes can realize all rows before a bounded viewport commits and emit deferred `collection.unboundedRealization` warnings. Small fixtures do not prove virtualization or large-dataset performance; diagnostics are retained. |
 | Early input | Search, palette and form handoffs cover documented type-ahead/batched paths. Arbitrary multi-control input before presentation settles needs native support, not an application-built editor or focus graph. |
 | Editor navigation | End at the end of a native text field is unhandled when it makes no change, so an enclosing ScrollView can scroll to the bottom. The appearance study reproduced this at 36 × 18; ordinary editing remains focused. Its capture moves Left before End to exercise a real caret movement. Repeated no-op End is unresolved at the native input owner. |
@@ -139,7 +139,7 @@ layout or focus mechanism. Local and hosted checks pass for this candidate.
 The owning verification record preserves those candidate results. #57 merged on
 2026-10-15 Pacific (2026-10-16 UTC) at
 `7e62e95c913508f4fef42db36fde6fd60acb541c`. The user approved that exact revision
-for 0.2.0; final Chio qualification remains pending. The published SwiftTUI 0.18.0
+for 0.2.0; final Chio qualification passes on macOS/Linux. The published SwiftTUI 0.18.0
 release lacks #57. A later 0.2.1 patch will qualify a published release containing
 it. Separate ready upstream follow-ups [#58](https://github.com/SwiftTUI/swift-tui/pull/58)
 and [#59](https://github.com/SwiftTUI/swift-tui/pull/59) are outside 0.2.0 adoption.

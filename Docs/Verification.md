@@ -408,7 +408,9 @@ no actionable findings. Source, tests, dependency revisions, assertions and
 deadlines remain unchanged during the final documentation and media refresh.
 
 A fresh external consumer resolves, builds, links and runs against the immutable
-Chio code candidate and matching SwiftTUI revision. It checks custom views,
+Chio code candidate and again against combined candidate
+`bdd9fcd93f7e44d058bcb7075a8bf0ee1e3c8cab`, with the matching SwiftTUI revision.
+It checks custom views,
 inherited `ChioStyle`, canonical APIs, duration formatting and initializer
 references, checked list-row spacing and raster positions, map values and a
 no-source map raster, and instrumentation construction. Its fresh resolution
@@ -445,10 +447,21 @@ qualification, not a passing platform gate.
 
 The release candidate increases only the overall Linux job limit to 90 minutes.
 Builds and tests account for the elapsed time; assertions, individual interaction
-deadlines, verification stages and macOS limits stay unchanged. A fresh complete
-hosted run must pass before 0.2.0 publication. EngineeringRules 0.1.5 is now merged
-into the release branch; its separate local developer gate does not substitute
-for the remaining application-platform check.
+deadlines, verification stages and macOS limits stay unchanged.
+The complete combined [hosted run](https://github.com/echoz/Chio/actions/runs/38938281033)
+passes on macOS and Linux. It tests merge
+`dc2b03e41992660d1ced5ff96c6aca96f0439442`, with base
+`7d44bd6bd85290f2c6e3526cf19e6647d551797c` and head
+`bdd9fcd93f7e44d058bcb7075a8bf0ee1e3c8cab`. EngineeringRules 0.1.5 is included;
+its integrated local wrapper passes separately, with the same baseline.
+macOS completes in 45 minutes 52 seconds and Linux in 58 minutes 49 seconds.
+Both pass the same platform-specific test counts recorded above and every
+terminal/process stage, including map search, routing, HTTP loading, persistent
+cache and offline packs. The completed Linux gate replaces the earlier partial
+platform evidence without erasing that timeout.
+The [site build](https://github.com/echoz/Chio/actions/runs/38938281006) also passes.
+Final changes reconcile release status in documentation only; unchanged source,
+test, dependency, workflow and capture evidence remains applicable.
 
 ## List row spacing qualification
 

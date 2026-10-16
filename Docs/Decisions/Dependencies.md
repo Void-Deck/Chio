@@ -12,7 +12,7 @@ All four direct dependencies are revision-pinned:
 
 | Dependency | Pin and reason |
 | --- | --- |
-| SwiftTUI merged #57 revision | `7e62e95c913508f4fef42db36fde6fd60acb541c`; approved 0.2.0 candidate with row-geometry focus recovery, eager-table measurement and outline focus corrections; final Chio qualification pending |
+| SwiftTUI merged #57 revision | `7e62e95c913508f4fef42db36fde6fd60acb541c`; qualified 0.2.0 candidate with row-geometry focus recovery, eager-table measurement and outline focus corrections |
 | Swift Markdown 0.9.0 | `25cb61d3482054b09ae76ca4f281b1bfe7fe5a43`; revision permits conditional Windows unsafe flags |
 | Tree-sitter 0.26.13 | `d97971e24500218865c05ed1febdee2acf41bae1`; last release with upstream SwiftPM manifest |
 | tree-sitter-swift 0.7.4 | `82bb3a533e0801fd2bbaa11dc49676e10bf41948`; generated C grammar |
@@ -39,8 +39,8 @@ blocker is below. Ordinary glibc support does not establish static-musl distribu
 
 ## 0.2.0 merged native correction
 
-**Status:** Exact merged revision approved for the 0.2.0 candidate; final Chio
-qualification and publication remain pending.
+**Status:** Exact merged revision approved and qualified for Chio 0.2.0.
+Publication and downstream adoption remain separate from qualification.
 
 [SwiftTUI #57](https://github.com/SwiftTUI/swift-tui/pull/57) merged on 2026-10-15
 Pacific (2026-10-16 UTC) at `7e62e95c913508f4fef42db36fde6fd60acb541c`.
@@ -52,9 +52,10 @@ waiting for the next SwiftTUI release.
 
 Historical isolated Chio and upstream candidate results are recorded in
 [Verification](../Verification.md#dynamic-row-spacing-candidate). They do not
-qualify this final merged pin. Complete Chio platform, terminal, installation and
-review gates must pass before release acceptance. Chio adds no private native
-patch, second focus system or renderer.
+qualify this final merged pin. The separate
+[merged-pin qualification](../Verification.md#020-merged-pin-qualification)
+passes complete Chio platform, terminal, installation and review gates.
+Chio adds no private native patch, second focus system or renderer.
 
 The user also approved a Chio 0.2.1 dependency patch after SwiftTUI publishes a
 release containing #57. Recheck the release contents, align the exact requirement

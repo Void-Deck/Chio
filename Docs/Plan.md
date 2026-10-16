@@ -16,15 +16,14 @@ dependency patch after SwiftTUI publishes a release containing the correction.
 The user also requires EngineeringRules 0.1.5 and its documentation gate before
 publication. [PR #19](https://github.com/echoz/Chio/pull/19) targets the release
 branch and is merged at `af6cb366`; its local developer gates and separate review
-pass. The application
-code candidate is `40b5d8c2da40bda2640758ceacb30a76bc7caa2a`. Its compiler
-gate, complete local gate, source review, external-consumer installation, fresh
-captures, local browser checks and final documentation review pass. Hosted macOS
-passes. Linux passes all test suites and dashboard workflows, then reaches its
-one-hour job limit during map checks. The candidate raises that overall job
-limit to 90 minutes without changing test assertions or interaction deadlines.
-A complete hosted rerun must pass before publication and immutable release
-verification.
+pass. The combined candidate `bdd9fcd93f7e44d058bcb7075a8bf0ee1e3c8cab`
+passes the complete hosted macOS/Linux gate, compiler and documentation checks,
+external-consumer installation and independent review. Its unchanged application
+code also passes the complete local gate, refreshed captures and browser checks.
+The earlier Linux run reached its one-hour job limit during an active map probe.
+The passing combined run uses a 90-minute Linux limit, with unchanged assertions
+and interaction deadlines. Final changes reconcile documentation only; tag and
+published-site verification follow merge.
 [PR #18](https://github.com/echoz/Chio/pull/18) carries
 the release preparation. The [release record](Releases/0.2.0.md)
 owns scope, migration and evidence. Publication requires reviewed implementation,
@@ -292,7 +291,8 @@ complete local gate passes all 85 steps, and all 24 hosted checks pass across si
 workflows. #57 merged on 2026-10-15 Pacific (2026-10-16 UTC) at
 `7e62e95c913508f4fef42db36fde6fd60acb541c`. The latest published SwiftTUI release
 checked for this slice is 0.18.0, which lacks #57. Final Chio qualification of the
-merged pin remains pending; earlier candidate results do not substitute for it.
+merged pin passes on macOS and Linux, with installation, terminal and review
+evidence recorded in [Verification](Verification.md#020-merged-pin-qualification).
 SwiftTUI [#58](https://github.com/SwiftTUI/swift-tui/pull/58) and
 [#59](https://github.com/SwiftTUI/swift-tui/pull/59) are separate ready upstream
 follow-ups and are outside 0.2.0 adoption.
