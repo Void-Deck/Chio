@@ -7,6 +7,16 @@ live in [Design](Design.md) and its decision index; implementation and showcase
 checks live in [Verification](Verification.md). Completed release scope and results
 live in [0.2.0](Releases/0.2.0.md), with [0.1.0](Releases/0.1.0.md) retained as history.
 
+## Current maintenance: source-root documentation
+
+[PR #21](https://github.com/echoz/Chio/pull/21) adopts EngineeringRules 0.1.7 and
+schema 2 deliverable checking. The inventory covers the library, sixteen public
+views, two example applications and the showcase. Each gets a source-root guide;
+seven views move out of shared family roots without changing their source contents
+or public APIs. [Design](Design.md#source-ownership) owns the resulting source map;
+[Verification](Verification.md#017-adoption) owns checks and adoption limits.
+The candidate remains separate from the published 0.2.0 release.
+
 ## Current slice: Chio 0.2.0 release
 
 The user approved a 0.2.0 source release on 2026-10-15, then added list-row spacing

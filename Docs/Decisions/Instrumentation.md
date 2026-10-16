@@ -449,8 +449,8 @@ records the reference audit and extraction rationale.
 
 ## Implementation and verification
 
-- [MeasurementGauge.swift](../../Sources/Chio/Instrumentation/Presentation/MeasurementGauge.swift)
-- [InstrumentReadout.swift](../../Sources/Chio/Instrumentation/Presentation/InstrumentReadout.swift)
-- [Sparkline.swift](../../Sources/Chio/Instrumentation/Presentation/Sparkline.swift)
-- [SparklineTests.swift](../../Tests/ChioTests/Instrumentation/Presentation/SparklineTests.swift)
-- [DurationTextTests.swift](../../Tests/ChioTests/Instrumentation/Presentation/DurationTextTests.swift)
+- [MeasurementGauge.swift](../../Sources/Chio/MeasurementGauge/Presentation/MeasurementGauge.swift)
+- [InstrumentReadout.swift](../../Sources/Chio/InstrumentReadout/Presentation/InstrumentReadout.swift)
+- [Sparkline.swift](../../Sources/Chio/Sparkline/Presentation/Sparkline.swift)
+- [SparklineTests.swift](../../Tests/ChioTests/Sparkline/Presentation/SparklineTests.swift)
+- [DurationTextTests.swift](../../Tests/ChioTests/DurationText/Presentation/DurationTextTests.swift)

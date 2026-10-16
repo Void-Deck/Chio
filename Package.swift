@@ -51,6 +51,25 @@ let package = Package(
                 .product(name: "Markdown", package: "swift-markdown"),
                 .product(name: "TreeSitter", package: "tree-sitter"),
                 .product(name: "TreeSitterSwift", package: "tree-sitter-swift"),
+            ],
+            exclude: [
+                "README.md",
+                "Composition/README.md",
+                "DurationText/README.md",
+                "FilePicker/README.md",
+                "Forms/README.md",
+                "HistoryChart/README.md",
+                "InstrumentReadout/README.md",
+                "KeyHint/README.md",
+                "KeyHints/README.md",
+                "KeyboardHelp/README.md",
+                "Maps/README.md",
+                "Markdown/README.md",
+                "MeasurementGauge/README.md",
+                "Pagination/README.md",
+                "SearchableChecklist/README.md",
+                "SearchableList/README.md",
+                "Sparkline/README.md",
             ]
         ),
         .executableTarget(
@@ -59,7 +78,8 @@ let package = Package(
                 "Chio",
                 .product(name: "SwiftTUI", package: "swift-tui"),
             ],
-            path: "Examples/AgentDashboard"
+            path: "Examples/AgentDashboard",
+            exclude: ["README.md"]
         ),
         .testTarget(
             name: "ChioTests",
@@ -83,6 +103,7 @@ let package = Package(
                 .product(name: "SwiftTUI", package: "swift-tui"),
             ],
             path: "Examples/Maps",
+            exclude: ["README.md"],
             resources: [.copy("Fixtures")]
         ),
         .testTarget(
