@@ -1,7 +1,8 @@
 # Online tile acquisition
 
 **Status:** Accepted decision and implementation, 2026-10-09.
-[Plan](../Plan.md) lists delivery gates.
+[Plan](../Plan.md) tracks active work; the [0.2.0 release preparation](../Releases/0.2.0.md)
+records integrated scope and evidence.
 [Geographic maps](GeographicMaps.md) continues to own projection, geometry bounds,
 interaction and rendering.
 
@@ -155,10 +156,12 @@ Adjacent tiles are normalized and aggregated. Buffered geometry can overlap,
 and clipped polygon edges can appear as artificial outlines. This is not polygon
 stitching or a topology engine. Provider comparison work remains shelved.
 
-Provider archive downloads, geocoding and route calculation remain
-[approved follow-up scope](../Plan.md#approved-map-expansion). Pack acquisition needs a separately evaluated source and
-download policy; this approval does not turn the interactive loader into a bulk
-downloader. Credential storage remains application-owned.
+[Forward/reverse geocoding](PlaceSearch.md) and [submitted routing](Routing.md)
+are implemented as separate explicit adapters. [Programmatic offline packs](OfflineTilePacks.md)
+provide durable local tiles. Provider archive downloads remain paused; PMTiles/MBTiles
+ingestion is unsupported. Provider acquisition needs a separately evaluated source
+and download policy; the interactive loader is not a bulk downloader.
+Credential storage remains application-owned.
 
 There is no new Swift package dependency. FoundationNetworking on Linux adds its
 normal libcurl transport requirements; existing static Linux limitations in

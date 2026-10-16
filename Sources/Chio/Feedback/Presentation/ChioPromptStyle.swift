@@ -3,9 +3,9 @@ import SwiftTUIViews
 /// Compact themed chrome for native alerts and confirmation dialogs.
 /// SwiftTUI retains header paint, placement, action behavior, and modal focus.
 public struct ChioPromptStyle {
-    public let theme: ChioTheme
+    public let theme: ChioStyle
 
-    public init(theme: ChioTheme = .default) {
+    public init(theme: ChioStyle = .default) {
         self.theme = theme
     }
 }

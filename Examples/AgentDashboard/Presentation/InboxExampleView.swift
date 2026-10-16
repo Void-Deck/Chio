@@ -96,8 +96,8 @@ struct InboxExampleView {
         }, set: { readerPresentation = $0.map(ReaderPresentation.presented) ?? .closed })
     }
 
-    private var theme: ChioTheme {
-        let base: ChioTheme = themeChoice.theme
+    private var theme: ChioStyle {
+        let base: ChioStyle = themeChoice.theme
         return base.replacing(spacing: base.spacing.replacing(sectionGap: 0))
     }
     private var isCompact: Bool { terminalSize.height < 26 || terminalSize.width < 88 }
@@ -262,7 +262,7 @@ extension InboxExampleView: View {
         .padding(.horizontal, isCompact ? 0 : 1)
         .padding(.vertical, isCompact ? 0 : 1)
         .frame(width: terminalSize.width, height: terminalSize.height, alignment: .topLeading)
-        .chioTheme(theme)
+        .style(theme)
         .onKeyPress(perform: handleKey)
         .onChange(of: readerPresentation) { _, _ in
             // A committed background frame lets native results focus settle
@@ -294,7 +294,7 @@ extension InboxExampleView.ReaderPresentation: Sendable {}
 
 extension InboxExampleView.Reader: View {
     var body: some View {
-        let theme: ChioTheme = themeChoice.theme
+        let theme: ChioStyle = themeChoice.theme
         VStack(alignment: .leading, spacing: 1) {
             Text("chio / review #\(selection.id)").bold().foregroundStyle(theme.colors.accent)
             ScrollView {
@@ -315,7 +315,7 @@ extension InboxExampleView.Reader: View {
         .padding(.horizontal, 1)
         .padding(.vertical, 1)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .chioTheme(theme)
+        .style(theme)
         .onAppear { isReading = true }
         .onKeyPress { press in
             if press.key == .escape { close(); return .handled }

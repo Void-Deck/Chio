@@ -53,7 +53,7 @@ Return inserts a newline; Home/End navigate the logical line. Secure-field Retur
 uses native submission when supplied.
 
 Enabled editor text samples the surrounding foreground before styling;
-`.chioTheme` supplies both foreground and frame style. A standalone style cannot
+`.style` supplies both foreground and frame style. A standalone style cannot
 retroactively change sampled text paint. Disabled text keeps native placeholder
 paint/dimming without an extra opacity layer or replacement editing content.
 The local example clears passwords on Save/Cancel and never authenticates,

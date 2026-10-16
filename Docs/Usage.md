@@ -9,6 +9,10 @@ rendering, layout, state, input, focus, and scrolling.
 The package exports one `Chio` library. Applications also depend on SwiftTUI
 for the native views and runtime. See [Package.swift](../Package.swift) for the
 current dependency pins and [the design](Design.md) for interaction contracts.
+The [0.2.0 release record](Releases/0.2.0.md) records dependency requirements,
+migration and release evidence.
+SwiftPM version requirements such as `from: "0.2.0"` cannot consume this revision-pinned graph.
+See the [migration notes](Releases/0.2.0.md#migration-from-010) when upgrading from 0.1.0.
 
 ## Search and keyboard hints
 
@@ -46,12 +50,10 @@ and `.onResultKeyPress` for application shortcuts that must not consume search
 text. Native row focus chrome currently remains an upstream styling boundary;
 see [the design](Design.md).
 
-For keyboard navigation in overflowing native lists, keep authored rows to one
-line, as in the example above. Unconstrained text can wrap
-into tall rows at narrow widths. Arbitrary wrapped or multiline
-rows inherit the pinned native collection's [tall-row reveal limitation](Decisions/NativeIntegration.md#tall-list-rows);
-one-line truncation avoids that layout in this recipe but does not fix the native
-issue. Applications own row content and available width.
+This recipe uses one-line rows for a compact presentation. Applications own
+row content and available width; SwiftTUI owns measured-row navigation and focus.
+See [native list contracts and evidence](Decisions/NativeIntegration.md#tall-list-rows)
+for padded, mixed-height and wrapped rows.
 
 ## Expanded keyboard help
 
@@ -108,7 +110,7 @@ surfaces, and each part can be customized.
 let base = ChioStyle.opencode
 let style = base.replacing(
     colors: base.colors.replacing(accent: Color(hexRGB: 0x02BF87)),
-    spacing: base.spacing.replacing(inputVerticalInset: 1),
+    spacing: base.spacing.replacing(inputVerticalInset: 1, listRowVerticalInset: 1),
     surfaces: base.surfaces.replacing(input: .color(Color(hexRGB: 0x282522)))
 )
 
@@ -119,21 +121,43 @@ VStack {
 .style(style)
 ```
 
-`inputVerticalInset` defaults to zero and accepts `0...32` terminal cells.
-A missing key in historical encoded spacing decodes as zero. The original four
-spacing fields keep their existing nonnegative contract. New per-row density
-controls are deferred because of unresolved [native list reveal/focus limitations](Decisions/NativeIntegration.md#tall-list-rows).
+`inputVerticalInset` and `listRowVerticalInset` each default to zero and accept
+`0...32` terminal cells through construction, replacement and decoding. Historical
+encoded spacing with either key missing decodes that distance as zero. The original
+four spacing fields keep their existing nonnegative contract.
+
+`SearchableList` and `SearchableChecklist` apply `listRowVerticalInset` above and
+below each complete row, including checklist content and its checkbox. `FilePicker`
+uses the same searchable-list presentation. Avoid adding the token again to those
+row closures. Native `List` needs ordinary authored padding because its public
+style API has no per-row content hook:
+
+```swift
+// In a View that declares @Environment(\.chioStyle) private var style:
+List(agents, selection: $selection) { agent in
+    Text(agent.name)
+        .padding(.vertical, style.spacing.listRowVerticalInset)
+}
+```
+
+The [release record](Releases/0.2.0.md#release-verification) owns qualification
+evidence for spacing and dynamic style changes.
+
 `surfaces.canvas` and `surfaces.input` use `.base` to inherit `colors.surface`,
 or `.color(...)` for an explicit override. `.base` continues to follow later
 palette replacements.
 
 `.btop` now installs border headings on groups; `.opencode` supplies leading
-panel/input edges and roomier inputs, with compact list rows. Default/light appearance
-is preserved. Application layout, breakpoints, column widths, navigation and data
-remain application decisions. Native component style modifiers remain specific
+panel/input edges, roomier inputs and one cell above and below each Chio searchable
+row. Default, light and btop keep zero list-row inset. Application layout,
+breakpoints, column widths, navigation and data remain application decisions. Native component style modifiers remain specific
 overrides inside the `.style(...)` scope, and their `theme:` initializer labels
-are retained. `ChioTheme` and `.chioTheme(...)` remain compatibility aliases using
-the same value and environment key. See [the style decision](Decisions/Themes.md).
+are retained and take `ChioStyle`. Migrate `ChioTheme` to `ChioStyle`, `.chioTheme(...)`
+to `.style(...)`, and `@Environment(\.chioTheme)` to `@Environment(\.chioStyle)`.
+The aliases and legacy initializer/replacement function-signature overloads are
+removed. Rebind function references to the current signatures or use explicit
+closures. See [the style decision](Decisions/Themes.md) and
+[migration notes](Releases/0.2.0.md#migration-from-010).
 
 ## Compact metrics and history
 
@@ -236,9 +260,9 @@ updates, missing and empty history, theme changes and adaptive composition.
 
 ## Instruments and time-aware history
 
-The instrumentation expansion merged in [PR #8](https://github.com/echoz/Chio/pull/8).
-It has not been included in a tagged release. The `.style(...)` spelling below
-belongs to the approved unified-style migration in PR #10.
+The 0.2.0 scope includes the instrumentation expansion from
+[PR #8](https://github.com/echoz/Chio/pull/8) and unified `.style(...)` API from
+[PR #10](https://github.com/echoz/Chio/pull/10).
 
 Opt into native labelled-content hierarchy while retaining arbitrary content:
 

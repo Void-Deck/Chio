@@ -22,7 +22,7 @@ struct TimerExampleView {
         self.now = now
     }
 
-    private var theme: ChioTheme { themeChoice.theme }
+    private var theme: ChioStyle { themeChoice.theme }
 
     private var timelineSchedule: TimerSchedule {
         if stopwatch.isRunning || countdown.isRunning { return .running }
@@ -193,7 +193,7 @@ extension TimerExampleView: View {
             } else { return .ignored }
             return .handled
         }
-        .chioTheme(theme)
+        .style(theme)
     }
 }
 

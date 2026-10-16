@@ -36,7 +36,7 @@ struct AgentReportRenderTests {
         let summary = "`swift` _test_ <tag> \\path"
         let agent = Agent(id: "literal", name: name, summary: summary, phase: .idle)
         let surface = DefaultRenderer().render(
-            MarkdownView(AgentReport(agent: agent).document).chioTheme(.default),
+            MarkdownView(AgentReport(agent: agent).document).style(.default),
             proposal: .init(width: 100, height: nil)
         ).rasterSurface
         let text = surface.lines.joined(separator: "\n")

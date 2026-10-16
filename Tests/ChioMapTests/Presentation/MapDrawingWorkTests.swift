@@ -166,7 +166,7 @@ struct MapDrawingWorkTests {
     }
 
     private func drawing(_ map: PreparedMap, viewport: MapViewport, fills: Bool) throws -> MapDrawing {
-        let colors = ChioTheme.default.colors
+        let colors = ChioStyle.default.colors
         return try MapDrawing(map: map, viewport: viewport, colors: colors,
                               waterColor: colors.selectedSurface, parkColor: colors.selectedSurface, fills: fills)
     }

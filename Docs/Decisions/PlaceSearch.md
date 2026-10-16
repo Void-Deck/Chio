@@ -1,9 +1,10 @@
 # Place search
 
-**Status:** Accepted for implementation, 2026-10-12. The candidate is not yet
-released. Forward search is the first slice of the approved geocoding scope.
-Separate reverse lookup was approved on 2026-10-13 and is implemented in the candidate;
-[Plan](../Plan.md#approved-map-expansion) retains routing as later work. Provider archive downloads remain paused.
+**Status:** Forward search merged in [PR #11](https://github.com/echoz/Chio/pull/11)
+at `ec41b3f`; separate reverse lookup merged in
+[PR #13](https://github.com/echoz/Chio/pull/13) at `d940d56` on 2026-10-13.
+Both are included in the [0.2.0 release preparation](../Releases/0.2.0.md).
+[Submitted routing](Routing.md) is also merged. Provider archive downloads remain paused.
 
 ## First useful outcome
 
@@ -39,7 +40,7 @@ The reviewed Photon documentation provides no demo-specific retention guarantee.
 
 ## Public surface
 
-The first implementation follows this shape:
+The implemented public surface follows this shape:
 
 ```swift
 public protocol MapGeocodingProvider: Sendable {
@@ -251,12 +252,15 @@ to retain usable result rows and response credits. Credits for the hidden map's
 opened marker remain retained and reappear with that map. Keep rows one line with a separate selected-place detail;
 give the native results list a finite viewport so measurement and scroll reveal
 remain bounded. Row foreground and selected/unselected surfaces use the inherited
-Chio style, including the light palette. Do not depend on the pending SwiftTUI
-tall-row corrections. Styles change
+Chio style, including the light palette. Search rows retain their one-line content
+policy independently of the adopted SwiftTUI tall-row corrections. Styles change
 presentation only. Offline results outside fixture coverage stay honestly outside
 coverage; there is no fallback to live tiles.
 
 ## Implementation and acceptance order
+
+The delivered slices followed this order. These requirements remain relevant to
+future provider or interaction changes; [0.2.0](../Releases/0.2.0.md) records release evidence.
 
 1. Review this API/provider choice, then add checked values and the provider
    protocol under `Sources/Chio/Maps/Domain` and `Protocol`. Keep pure Photon

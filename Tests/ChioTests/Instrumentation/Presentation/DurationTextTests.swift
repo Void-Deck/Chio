@@ -146,14 +146,14 @@ struct DurationTextTests {
 
     @Test("Duration styles inherit accent and callers can replace the spoken label before theme composition")
     func segmentedThemeAndOverride() {
-        let custom = ChioTheme.default.replacing(
-            colors: ChioTheme.default.colors.replacing(accent: Color(hexRGB: 0x123456)))
-        for theme in [ChioTheme.default, .light, .btop, custom] {
+        let custom = ChioStyle.default.replacing(
+            colors: ChioStyle.default.colors.replacing(accent: Color(hexRGB: 0x123456)))
+        for theme in [ChioStyle.default, .light, .btop, custom] {
             for style in [InstrumentReadout.Style.plain, .segmented] {
                 for proposal in [ProposedSize(width: 32, height: 3), ProposedSize(width: 8, height: 1)] {
                     let result = DefaultRenderer().render(
                         DurationText(remaining: .milliseconds(1), style: style)
-                            .accessibilityLabel("Cooldown: one second").chioTheme(theme),
+                            .accessibilityLabel("Cooldown: one second").style(theme),
                         proposal: proposal)
                     #expect(result.semanticSnapshot.accessibilityNodes.compactMap(\.label) == ["Cooldown: one second"])
                     #expect(result.semanticSnapshot.focusRegions.isEmpty)
@@ -170,13 +170,13 @@ struct DurationTextTests {
         let proposal = ProposedSize(width: 32, height: 3)
         let native = DefaultRenderer().render(
             Text(verbatim: "0:01").accessibilityLabel("Remaining time: 1 second")
-                .chioTheme(.btop).accessibilityLabel("Cooldown"), proposal: proposal)
+                .style(.btop).accessibilityLabel("Cooldown"), proposal: proposal)
         #expect(native.semanticSnapshot.accessibilityNodes.compactMap(\.label)
                 == ["Cooldown", "Remaining time: 1 second"])
         for style in [InstrumentReadout.Style.plain, .segmented] {
             let result = DefaultRenderer().render(
                 DurationText(remaining: .milliseconds(1), style: style)
-                    .chioTheme(.btop).accessibilityLabel("Cooldown"), proposal: proposal)
+                    .style(.btop).accessibilityLabel("Cooldown"), proposal: proposal)
             #expect(result.semanticSnapshot.accessibilityNodes.compactMap(\.label)
                     == native.semanticSnapshot.accessibilityNodes.compactMap(\.label))
         }
@@ -184,16 +184,16 @@ struct DurationTextTests {
 
     @Test("Both duration roles use the current accent without assigning completion meaning", arguments: [false, true])
     func theme(light: Bool) {
-        let base: ChioTheme = light ? .light : .default
+        let base: ChioStyle = light ? .light : .default
         let themes = [base, base.replacing(colors: base.colors.replacing(accent: Color(hexRGB: 0x123456)))]
         for theme in themes {
             for duration in [Duration.zero, .seconds(65)] {
                 let elapsed = DefaultRenderer().render(
-                    DurationText(elapsed: duration).chioTheme(theme),
+                    DurationText(elapsed: duration).style(theme),
                     proposal: ProposedSize(width: nil, height: nil)
                 ).rasterSurface
                 let remaining = DefaultRenderer().render(
-                    DurationText(remaining: duration).chioTheme(theme),
+                    DurationText(remaining: duration).style(theme),
                     proposal: ProposedSize(width: nil, height: nil)
                 ).rasterSurface
                 #expect(elapsed == remaining)

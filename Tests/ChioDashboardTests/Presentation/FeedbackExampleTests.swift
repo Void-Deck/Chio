@@ -34,7 +34,7 @@ struct FeedbackExampleTests {
             _ = try await recorder.wait(after: opened.sequence, description: "light prompt retains content through narrow resize") {
                 $0.raster.size == CellSize(width: 36, height: 18) && $0.feedbackContains("Publish report?")
                     && $0.feedbackContains("Cancel") && $0.raster.cells.flatMap { $0 }.contains {
-                        $0.style?.foregroundColor == ChioTheme.light.colors.accent
+                        $0.style?.foregroundColor == ChioStyle.light.colors.accent
                     }
             }
             session.send(.key(.escape))

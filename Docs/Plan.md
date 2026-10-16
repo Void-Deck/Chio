@@ -5,39 +5,46 @@
 This document tracks active work, next steps and open questions. Current contracts
 live in [Design](Design.md) and its decision index; implementation and showcase
 checks live in [Verification](Verification.md). Completed release scope and results
-live in [0.1.0](Releases/0.1.0.md).
+live in [0.2.0](Releases/0.2.0.md), with [0.1.0](Releases/0.1.0.md) retained as history.
 
-## Latest slice: online maps
+## Current slice: Chio 0.2.0 release
 
-**Status:** Accepted implementation with explicit offline and online world/street modes.
-Provider comparisons remain shelved.
+The user approved a 0.2.0 source release on 2026-10-15, then added list-row spacing
+and removal of the legacy theme API to its scope. The user subsequently approved
+cutting 0.2.0 with the exact merged SwiftTUI #57 revision, followed by a 0.2.1
+dependency patch after SwiftTUI publishes a release containing the correction.
+The user also requires EngineeringRules 0.1.5 and its documentation gate before
+publication. [PR #19](https://github.com/echoz/Chio/pull/19) targets the release
+branch and is merged at `af6cb366`; its local developer gates and separate review
+pass. The combined candidate `bdd9fcd93f7e44d058bcb7075a8bf0ee1e3c8cab`
+passes the complete hosted macOS/Linux gate, compiler and documentation checks,
+external-consumer installation and independent review. Its unchanged application
+code also passes the complete local gate, refreshed captures and browser checks.
+The earlier Linux run reached its one-hour job limit during an active map probe.
+The passing combined run uses a 90-minute Linux limit, with unchanged assertions
+and interaction deadlines. Final changes reconcile documentation only; tag and
+published-site verification follow merge.
+[PR #18](https://github.com/echoz/Chio/pull/18) carries
+the release preparation. The [release record](Releases/0.2.0.md)
+owns scope, migration and evidence. Publication requires reviewed implementation,
+applicable checks, consumer installation and showcase verification, followed by
+verification of the immutable tag and published release.
 
-The explicit loader and opt-in online example are implemented. Current contracts
-live in [online tile acquisition](Decisions/OnlineMaps.md), with rendering owned by
-[geographic maps](Decisions/GeographicMaps.md). Offline launches remain the default.
+Marquee, Blackbox and Pitwall are the confirmed application consumers. Their
+owning tasks are preparing focused upgrades and will use the published 0.2.0
+commit with its exact SwiftTUI dependency. Dispatch is not completed adoption; each
+project retains its own checks and merge approval.
 
-The source choice is explicit: bundled data or online tiles. Online world views
-use the same pipeline as regions and streets, starting at source zoom 1; there is
-no automatic bundled-world fallback. Initial loading has no geographic source;
-subsequent loads retain the last online snapshot. Native focus, complete coverage
-and existing geometry/rendering budgets remain in force. Bundled copies of online
-tiles can later supply the same tile pipeline;
-disk caches and tile archives are not part of this correction.
+<a id="latest-slice-online-maps"></a>
 
-Required verification for this slice:
+## Delivered map scope
 
-- Verify checked values, acquisition lifecycle and exact marker fixtures, plus
-  required macOS/Linux CI. CI uses deterministic local data.
-- Run a separate bounded live-provider probe and adjacent-tile inspection.
-  These establish integration, not provider availability or universal coverage.
-- Capture the verified release recording, theme previews and showcase checks;
-  deploy and inspect the published result before declaring the slice complete.
-
-Disk caches, tile packs and routing/geocoding were excluded from that delivered
-slice and are now approved follow-up scope below. Arbitrary schemas and provider
-parity remain outside it. Existing polygon cut-edge limitations remain explicit.
-Keep revision-specific results in release records rather than expanding this
-active plan with completed implementation history.
+World and street maps use explicit offline or opt-in online sources. Markers,
+routes, adjustable detail and outline presentation compose with native Canvas.
+Persistent raw-tile caching, programmatic read-only packs, forward/reverse place
+lookup and routing adapters are implemented. Their owning decisions appear in
+[Design](Design.md); provider comparisons remain shelved and archive downloads
+remain paused. The release adds no further map feature.
 
 <a id="current-slice-responsive-instrumentation"></a>
 <a id="current-slice-unified-styles-and-appearance-comparison"></a>
@@ -45,16 +52,17 @@ active plan with completed implementation history.
 ## Completed implementation: unified styles and appearance comparison
 
 **Status:** Public API consolidation implemented and verified in
-[PR #10](https://github.com/echoz/Chio/pull/10). It is not yet in a tagged release.
+[PR #10](https://github.com/echoz/Chio/pull/10), included in the 0.2.0 scope.
 The Pages workflow publishes the showcase after merge to `main`.
 
 Responsive instrumentation and target dials merged in
 [PR #8](https://github.com/echoz/Chio/pull/8) and
-[PR #9](https://github.com/echoz/Chio/pull/9); they are not yet in a tagged release.
+[PR #9](https://github.com/echoz/Chio/pull/9), also included in the 0.2.0 scope.
 
-Themes and example recipes now use immutable `ChioStyle` values applied
-with inherited `View.style(_:)`, one environment key and compatible
-`ChioTheme`/`.chioTheme(...)` forwarding. Static default/light/btop/opencode values
+Themes and example recipes use immutable `ChioStyle` values applied
+with inherited `View.style(_:)` and one environment key. The release slice removes
+the former `ChioTheme`/`.chioTheme(...)` forwarding by explicit user request.
+Static default/light/btop/opencode values
 compose colors, spacing, treatments and surfaces. Leading edges and input
 surfaces/padding are public style values; applications retain breakpoints,
 column widths, data and navigation. [Styles](Decisions/Themes.md) owns
@@ -82,7 +90,7 @@ measured-height navigation/builder correction in
 [#47](https://github.com/SwiftTUI/swift-tui/pull/47).
 [Native integration](Decisions/NativeIntegration.md#tall-list-rows) owns the
 remaining qualification conditions; the current list-spacing slice below
-must establish Chio's padded and multiline row contracts before adding a token.
+must establish Chio's padded and multiline row contracts before releasing the token.
 
 Provider archive acquisition remains on hold at the user's request. No archive
 reader or downloader has been adopted; existing local pack APIs remain available.
@@ -237,37 +245,70 @@ Provider downloads stay paused.
 
 <a id="current-slice-restore-ci-and-diagnose-interaction-timeouts"></a>
 
-### Current slice: list row spacing
+<a id="current-slice-list-row-spacing"></a>
 
-**Status:** QUALIFYING SWIFTTUI 0.18.0. [PR #17](https://github.com/echoz/Chio/pull/17)
-updates the dependency to the published release containing the native retention
-fix. The previous pin loses native focus on mixed-height upward reversal; the
-selected row can be absent while focus falls back to a different row. Its retained
-tests also cover compact/uniform padding, intrinsic placement and same-ID resize.
-No new spacing token, example treatment or showcase recording is introduced in
-this dependency slice.
-[Native integration](Decisions/NativeIntegration.md#current-row-qualification)
-owns the reproduction and [Verification](Verification.md#list-row-spacing-qualification)
-owns the checks and limits.
+### Current slice: list row spacing and style migration
 
-The cause is reproduced in native hosted rendering: a stale worker-safety guard
-throws away valid measured row heights. [SwiftTUI #56](https://github.com/SwiftTUI/swift-tui/pull/56)
-corrects both collection and lazy-stack retention and is now merged in 0.18.0.
-The prior local candidate passes all eighteen Chio cases in macOS debug and
-release. Qualify the actual published release through the complete consumer gate
-and independent review before adoption. Candidate checks do not establish
-default-branch adoption or qualification of a new density token.
+[PR #17](https://github.com/echoz/Chio/pull/17) merged SwiftTUI 0.18.0 adoption at
+`7d44bd6bd85290f2c6e3526cf19e6647d551797c`. It contains the native measured-height
+retention fix from [SwiftTUI #56](https://github.com/SwiftTUI/swift-tui/pull/56).
+All eighteen unchanged list qualification cases pass in debug and release on
+macOS and Linux, alongside the complete consumer gates and independent review.
+The first macOS attempt hit the documented tab timeout; the unchanged retry
+passed, without establishing that intermittent issue's cause.
 
-Complete qualification of native padded and multiline list/checklist rows, including exact
-focus, selection, keyboard/pointer activation, scroll reveal and resize recovery.
-Use public raster and hosted-session APIs and preserve native interaction
-ownership. If those contracts hold, add the bounded style spacing token and its
-compatibility coverage, then validate the affected examples and showcase through
-[the existing verification workflow](Verification.md#demo-site). Record actual
-results before declaring implementation or qualification complete.
+The user approved this slice before 0.2.0 publication. `listRowVerticalInset`
+adds 0...32 terminal cells above and below each complete Chio searchable-list or
+checklist row, including its marker and selected surface. It defaults to zero;
+the OpenCode preset and roomy example override use one. File picking inherits
+the token through its searchable list. Native `ListStyle` has no per-row padding
+hook, so application-authored native `List` rows use ordinary padding with the
+same value. There is no new renderer, row wrapper or focus/scroll system.
 
-Provider downloads remain paused. This dependency update carries the requested
-published-release follow-up; no automatic release monitoring is requested.
+The user also approved a breaking style migration: remove `ChioTheme`,
+`.chioTheme(...)`, the old environment accessor and style compatibility overloads.
+Current code and examples use `ChioStyle`, `.style(...)` and `\.chioStyle`.
+Persisted spacing keeps absent optional keys at zero; malformed values still fail.
+
+Local debug and release checks pass the eighteen retained regressions and fifteen
+of seventeen new row-spacing cases. The two mixed-height style-change cases expose
+a native focus-recovery gap: increasing row padding at the same viewport size
+moves focus from ID 7 to ID 6. These are historical results on 0.18.0. The native
+correction in [SwiftTUI #57](https://github.com/SwiftTUI/swift-tui/pull/57) is merged;
+the approved 0.2.0 candidate uses its exact merged revision below.
+[Verification](Verification.md#dynamic-row-spacing-candidate) owns the evidence.
+
+An isolated copy passes the unchanged dynamic style-change, retained list and
+appearance checks in debug and release against the native candidate. That
+candidate passes the complete local gate and all hosted checks. Expanded focus
+regressions at native `0d39074a` pass focused checks, the full local gate, all
+hosted checks and independent review. The user approved expanding #57 after broader
+tests found eager-table row overlap and missing focus in direct outline-list
+initializers. Candidate `ab0c305d` fixes both and adds hidden-row update journeys
+across lists, tables, outlines and both lazy stack directions. Focused checks,
+independent review and isolated Chio debug/release requalification pass. Its
+complete local gate passes all 85 steps, and all 24 hosted checks pass across six
+workflows. #57 merged on 2026-10-15 Pacific (2026-10-16 UTC) at
+`7e62e95c913508f4fef42db36fde6fd60acb541c`. The latest published SwiftTUI release
+checked for this slice is 0.18.0, which lacks #57. Final Chio qualification of the
+merged pin passes on macOS and Linux, with installation, terminal and review
+evidence recorded in [Verification](Verification.md#020-merged-pin-qualification).
+SwiftTUI [#58](https://github.com/SwiftTUI/swift-tui/pull/58) and
+[#59](https://github.com/SwiftTUI/swift-tui/pull/59) are separate ready upstream
+follow-ups and are outside 0.2.0 adoption.
+The historical external-consumer probe passes the canonical API on SwiftTUI
+0.18.0. Refreshed terminal recordings,
+preview inspection, site assembly and focused Safari checks pass. Capture-only
+cleanup removes native startup announcements from published clips while retaining
+full raw logs. [Verification](Verification.md#demo-site) owns the showcase workflow.
+
+After a SwiftTUI release includes #57, prepare the approved Chio 0.2.1 patch.
+Align the exact SwiftTUI requirement and lockfile, run the complete consumer and
+installation checks, obtain separate review, and publish through a focused PR.
+The future release contents and any adoption of #58/#59 require explicit assessment;
+neither follow-up is part of the current 0.2.0 pin.
+
+Provider downloads remain paused. No automatic release monitoring is requested.
 
 <a id="next-slice-offline-pack-acquisition"></a>
 
@@ -348,10 +389,9 @@ filters, extensible upstream/raw-input switches, native wrappers and private
 nested conformances retain their documented roles.
 
 The map expansion above remains approved. Provider archive acquisition remains
-paused at the user's request; list row spacing is the current qualification slice.
-Real application use of the public map
-remains useful validation. Other component additions and a
-new stable release remain possible directions, not delivery promises.
+paused at the user's request; list row spacing is included in the 0.2.0 scope.
+Real application use of the public map remains useful validation. Other component
+additions remain possible directions, not delivery promises.
 
 Prioritize demonstrated regressions in shipped behavior: focus, selection,
 editing, narrow layout, presentation, responsiveness and supported-platform
@@ -379,9 +419,9 @@ workflow. Visible changes also follow the [showcase workflow](Verification.md#de
 
 Earlier deep links remain here; follow the owning document for current details.
 
-- <a id="current-release"></a><a id="component-coverage"></a>[0.1.0 release and delivered coverage](Releases/0.1.0.md#component-coverage)
+- <a id="current-release"></a><a id="component-coverage"></a>[0.2.0 scope and delivered coverage](Releases/0.2.0.md#component-coverage)
 - <a id="running-checks"></a><a id="demo-site"></a><a id="linux-and-ci"></a>[Current verification and showcase requirements](Verification.md)
-- <a id="release-verification"></a><a id="platform-verification"></a><a id="showcase-verification"></a><a id="responsiveness-baseline"></a><a id="verified-on-macos"></a>[0.1.0 verification evidence](Releases/0.1.0.md#release-verification)
+- <a id="release-verification"></a><a id="platform-verification"></a><a id="showcase-verification"></a><a id="responsiveness-baseline"></a><a id="verified-on-macos"></a>[0.2.0 verification evidence](Releases/0.2.0.md#release-verification)
 - <a id="macos-toolchain-findings"></a><a id="static-linux-blocker"></a>[Dependencies, toolchains and static Linux](Decisions/Dependencies.md)
 - <a id="remaining-boundaries"></a>[Native integration boundaries](Decisions/NativeIntegration.md)
 - <a id="btop-inspired-ui-inventory"></a>[Instrumentation decision and btop inventory](Decisions/Instrumentation.md#btop-inspired-ui-inventory)

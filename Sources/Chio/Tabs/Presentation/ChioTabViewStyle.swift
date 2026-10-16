@@ -2,9 +2,9 @@ import SwiftTUIViews
 
 /// A compact native tab strip with distinct selection and keyboard-focus paint.
 public struct ChioTabViewStyle {
-    public let theme: ChioTheme
+    public let theme: ChioStyle
 
-    public init(theme: ChioTheme = .default) {
+    public init(theme: ChioStyle = .default) {
         self.theme = theme
     }
 }
@@ -60,7 +60,7 @@ extension ChioTabViewStyle: Equatable {}
 @MainActor
 private struct ChioTabViewBody {
     let configuration: TabViewStyleBodyConfiguration
-    let theme: ChioTheme
+    let theme: ChioStyle
     @Environment(\.isEnabled) private var isEnabled
 
     private func stripLabel(_ label: String, isSelected: Bool, isFocused: Bool, width: Int) -> some View {

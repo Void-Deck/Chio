@@ -2,10 +2,10 @@ import SwiftTUIViews
 
 /// Padded content with terminal chrome and an optional compact border title.
 public struct ChioGroupBoxStyle {
-    public let theme: ChioTheme
+    public let theme: ChioStyle
     public let titlePlacement: TitlePlacement
 
-    public init(theme: ChioTheme = .default, titlePlacement: TitlePlacement = .content) {
+    public init(theme: ChioStyle = .default, titlePlacement: TitlePlacement = .content) {
         self.theme = theme
         self.titlePlacement = titlePlacement
     }

@@ -7,7 +7,7 @@ import Testing
 struct KeyHintsRenderTests {
     @Test("Extreme constructed hint gaps wrap without overflowing", arguments: [10, 40])
     func extremeConstructedGap(width: Int) {
-        let spacing = ChioTheme.Spacing(hintGap: Int.max)
+        let spacing = ChioStyle.Spacing(hintGap: Int.max)
         #expect(spacing.hintGap == Int.max)
         expectSeparatedHints(spacing: spacing, width: width)
     }
@@ -15,7 +15,7 @@ struct KeyHintsRenderTests {
     @Test("Extreme decoded hint gaps wrap without overflowing", arguments: [10, 40])
     func extremeDecodedGap(width: Int) throws {
         let fixture = Data("{\"horizontalInset\":1,\"verticalInset\":0,\"sectionGap\":0,\"hintGap\":\(Int.max)}".utf8)
-        let spacing = try JSONDecoder().decode(ChioTheme.Spacing.self, from: fixture)
+        let spacing = try JSONDecoder().decode(ChioStyle.Spacing.self, from: fixture)
         #expect(spacing.hintGap == Int.max)
         expectSeparatedHints(spacing: spacing, width: width)
     }
@@ -27,7 +27,7 @@ struct KeyHintsRenderTests {
                 KeyHint("q", "quit")
                 KeyHint("/", "search")
                 KeyHint("esc", "clear")
-            }.chioTheme(ChioTheme.default.replacing(spacing: ChioTheme.Spacing(hintGap: 0))),
+            }.style(ChioStyle.default.replacing(spacing: ChioStyle.Spacing(hintGap: 0))),
             proposal: ProposedViewSize(width: width, height: nil)
         ).rasterSurface
 
@@ -40,7 +40,7 @@ struct KeyHintsRenderTests {
     func singleHintExtremeGap() {
         let surface = DefaultRenderer().render(
             KeyHints { KeyHint("q", "quit") }
-                .chioTheme(ChioTheme.default.replacing(spacing: ChioTheme.Spacing(hintGap: Int.max))),
+                .style(ChioStyle.default.replacing(spacing: ChioStyle.Spacing(hintGap: Int.max))),
             proposal: ProposedViewSize(width: 40, height: nil)
         ).rasterSurface
 
@@ -56,7 +56,7 @@ struct KeyHintsRenderTests {
                 KeyHint("/", "search")
                 KeyHint("↵", "run")
                 KeyHint("esc", "clear")
-            }.chioTheme(.default),
+            }.style(.default),
             proposal: ProposedViewSize(width: width, height: nil)
         ).rasterSurface
 
@@ -77,7 +77,7 @@ struct KeyHintsRenderTests {
             KeyHints {
                 KeyHint("界", "広い")
                 KeyHint("q", "quit")
-            }.chioTheme(.default),
+            }.style(.default),
             proposal: ProposedViewSize(width: width, height: nil)
         ).rasterSurface
 
@@ -89,17 +89,17 @@ struct KeyHintsRenderTests {
 
     @Test("Hints use customized accent, secondary text, and spacing")
     func hintTheme() {
-        var theme = ChioTheme.default
+        var theme = ChioStyle.default
         theme = theme.replacing(colors: theme.colors.replacing(
             accent: Color(hexRGB: 0x102030),
             secondaryText: Color(hexRGB: 0x405060)
         ))
-        theme = theme.replacing(spacing: ChioTheme.Spacing(hintGap: 3))
+        theme = theme.replacing(spacing: ChioStyle.Spacing(hintGap: 3))
         let surface = DefaultRenderer().render(
             KeyHints {
                 KeyHint("q", "quit")
                 KeyHint("/", "search")
-            }.chioTheme(theme),
+            }.style(theme),
             proposal: ProposedViewSize(width: 32, height: nil)
         ).rasterSurface
 
@@ -114,7 +114,7 @@ struct KeyHintsRenderTests {
 
     @Test("Status footer retains its separator and wrapped hints at narrow widths")
     func statusBarWrapping() {
-        var theme = ChioTheme.default
+        var theme = ChioStyle.default
         theme = theme.replacing(colors: theme.colors.replacing(border: Color(hexRGB: 0x234567)))
         let surface = DefaultRenderer().render(
             StatusBar {
@@ -122,7 +122,7 @@ struct KeyHintsRenderTests {
                     KeyHint("/", "search")
                     KeyHint("esc", "clear")
                 }
-            }.chioTheme(theme),
+            }.style(theme),
             proposal: ProposedViewSize(width: 16, height: nil)
         ).rasterSurface
 
@@ -132,13 +132,13 @@ struct KeyHintsRenderTests {
         #expect(surface.cells[0].allSatisfy { $0.style?.foregroundColor == theme.colors.border })
     }
 
-    private func expectSeparatedHints(spacing: ChioTheme.Spacing, width: Int) {
+    private func expectSeparatedHints(spacing: ChioStyle.Spacing, width: Int) {
         let surface = DefaultRenderer().render(
             KeyHints {
                 KeyHint("q", "quit")
                 KeyHint("/", "search")
                 KeyHint("esc", "clear")
-            }.chioTheme(ChioTheme.default.replacing(spacing: spacing)),
+            }.style(ChioStyle.default.replacing(spacing: spacing)),
             proposal: ProposedViewSize(width: width, height: nil)
         ).rasterSurface
 

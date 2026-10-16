@@ -11,7 +11,7 @@ Present supplied measurements and durations; applications retain sampling, timin
 
 ## Compact instrumentation
 
-`ChioTheme.btop` uses near-black/cyan semantic roles and native strokes, without
+`ChioStyle.btop` uses near-black/cyan semantic roles and native strokes, without
 a palette dependency or separate component family.
 
 `ChioGroupBoxStyle(titlePlacement: .border)` overlays a passive, single-row title
@@ -111,14 +111,14 @@ LabeledContent("Temperature") {
 .labeledContentStyle(.instrument)
 ```
 
-The style consumes the current `chioTheme`, arranging a muted label above an
+The style consumes the current `chioStyle`, arranging a muted label above an
 accented reading with semantic spacing. It hosts each authored label/content slot
 once. Content remains arbitrary native views: it never parses formatted text,
 formats measurements or infers missing values. It adds no state, tasks, clock
 reads, acquisition, border, fixed dimensions or focus stop. Caller content may
 retain its own native state and effects; the style adds none.
 
-The style is opt-in. `.chioTheme` does not install it on ordinary labelled facts.
+The style is opt-in. `.style` does not install it on ordinary labelled facts.
 The nearest native style scope wins. There is no universal instrument style
 protocol, role flag or compact/prominent variant. An already-titled `GroupBox`
 can compose `InstrumentReadout` or custom content directly; the pinned native
@@ -139,7 +139,7 @@ GroupBox("Temperature") {
         LabeledContent("Recorded maximum", value: "24.8 °C")
     }
 }
-.chioTheme(.btop)
+.style(.btop)
 
 HStack(alignment: .top, spacing: 2) {
     LabeledContent("Inlet", value: "18.2 °C")
@@ -372,7 +372,7 @@ Unavailable comparison is distinct from stable or zero. Chio infers no trend and
 provides no trend enum, grouping DTO or domain-specific instrument model.
 
 **Playback and adjustment:** compose native buttons, integer `Slider` for sequence
-position and `Stepper` for discrete adjustments. `.chioTheme` now installs
+position and `Stepper` for discrete adjustments. `.style` now installs
 `ChioSliderStyle()` and `ChioStepperStyle()` globally in its scope. Both are pure
 presentation transformations using environment and native configuration. They
 retain authored label/value slots, enabled/focus feedback, the native routed slider

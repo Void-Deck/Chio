@@ -2,7 +2,8 @@
 
 **Status:** Approved first service slice merged in
 [PR #14](https://github.com/echoz/Chio/pull/14) on 2026-10-13 at `6f3c630`;
-not yet in a versioned release. The preceding visual proof is retained under
+included in the [0.2.0 release preparation](../Releases/0.2.0.md).
+The preceding visual proof is retained under
 [MapRouting](../../Spikes/MapRouting/README.md). Provider archive downloads stay paused.
 
 ## Boundary and values
@@ -72,7 +73,8 @@ Each operation owns its transfer and cannot cancel another consumer.
 No dependency is added. Existing [static Linux limitations](Dependencies.md#static-linux-blocker)
 remain. Application operators remain responsible for endpoint permission, quotas,
 privacy, data licensing and appropriate attribution. Tests and showcase recordings
-use fixtures; a bounded live probe would establish integration only.
+use fixtures; no live OSRM probe is recorded. A bounded live probe would establish
+integration only.
 
 ## Example and presentation
 

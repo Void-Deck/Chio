@@ -7,7 +7,7 @@ import Testing
 struct ChioButtonStyleTests {
     @Test("Native button focus changes the outline without painting a rectangle", arguments: [false, true], [false, true])
     func focusOutline(light: Bool, customSurface: Bool) async throws {
-        let theme: ChioTheme = light ? .light : .default
+        let theme: ChioStyle = light ? .light : .default
         let backdrop = customSurface ? theme.colors.selectedSurface : theme.colors.surface
         let recorder = HostedFrameRecorder()
         let surface = HostedRasterSurface(surfaceSize: CellSize(width: 36, height: 18), appearance: .fallback,
@@ -74,7 +74,7 @@ struct ChioButtonStyleTests {
 private struct ButtonTestApp {
     let light: Bool
     let backdrop: Color
-    nonisolated init() { light = false; backdrop = ChioTheme.default.colors.surface }
+    nonisolated init() { light = false; backdrop = ChioStyle.default.colors.surface }
     nonisolated init(light: Bool, backdrop: Color) { self.light = light; self.backdrop = backdrop }
 }
 
@@ -101,7 +101,7 @@ extension ButtonTestView: View {
             Text("Activated=\(activations)")
         }
         .background(backdrop)
-        .chioTheme(light ? .light : .default)
+        .style(light ? .light : .default)
     }
 }
 

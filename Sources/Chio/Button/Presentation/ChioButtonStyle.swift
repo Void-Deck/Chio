@@ -2,9 +2,9 @@ import SwiftTUIViews
 
 /// A compact action with an accent focus outline over its enclosing surface.
 public struct ChioButtonStyle {
-    public let theme: ChioTheme
+    public let theme: ChioStyle
 
-    public init(theme: ChioTheme = .default) {
+    public init(theme: ChioStyle = .default) {
         self.theme = theme
     }
 }

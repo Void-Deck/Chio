@@ -176,7 +176,7 @@ extension MarkdownCodeTestView: View {
             .codeHighlighting(plain ? .plain : .automatic)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .chioTheme(light ? .light : .default)
+        .style(light ? .light : .default)
         .onKeyPress { press in
             if press == KeyPress(.character("t"), modifiers: .ctrl) {
                 light.toggle()

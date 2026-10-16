@@ -6,7 +6,7 @@ import SwiftTUIViews
 struct MapDrawing {
     let map: PreparedMap
     let viewport: MapViewport
-    let colors: ChioTheme.Colors
+    let colors: ChioStyle.Colors
     let waterColor: Color
     let parkColor: Color
     let fills: Bool
@@ -14,7 +14,7 @@ struct MapDrawing {
     let routes: [PreparedMap.Line]
     let markers: [MapMarkerPlacement.Marker]
 
-    init(prepared: PreparedMapDrawing, colors: ChioTheme.Colors, waterColor: Color, parkColor: Color,
+    init(prepared: PreparedMapDrawing, colors: ChioStyle.Colors, waterColor: Color, parkColor: Color,
          markers: [MapMarkerPlacement.Marker] = []) {
         map = prepared.map
         routes = prepared.routes
@@ -27,7 +27,7 @@ struct MapDrawing {
         self.parkColor = parkColor
     }
 
-    init(map: PreparedMap, viewport: MapViewport, colors: ChioTheme.Colors,
+    init(map: PreparedMap, viewport: MapViewport, colors: ChioStyle.Colors,
          waterColor: Color, parkColor: Color, fills: Bool, routes: [PreparedMap.Line] = [],
          markers: [MapMarkerPlacement.Marker] = []) throws {
         let work = try MapDrawingWork(map: map, viewport: viewport, fills: fills, routes: routes)

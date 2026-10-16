@@ -19,7 +19,7 @@ struct ChioCompactStyleTests {
         #expect(surface.size.height <= 3)
         if width < 5 {
             #expect(!surface.cells.flatMap { $0 }.contains {
-                $0.style?.foregroundColor == ChioTheme.default.colors.heading
+                $0.style?.foregroundColor == ChioStyle.default.colors.heading
             })
         } else {
             #expect(surface.lines.first?.hasPrefix("╭") == true)
@@ -28,8 +28,8 @@ struct ChioCompactStyleTests {
     }
 
     @Test("Compact Unicode titles mask only their title and retain content and border paint",
-          arguments: [ChioTheme.default, .light, .btop])
-    func titlePaint(theme: ChioTheme) throws {
+          arguments: [ChioStyle.default, .light, .btop])
+    func titlePaint(theme: ChioStyle) throws {
         let surface = DefaultRenderer().render(
             GroupBox("界 e\u{301} instrumentation and history") {
                 Text("Ready").frame(width: 28, alignment: .leading)
@@ -136,8 +136,8 @@ struct ChioCompactStyleTests {
     }
 
     @Test("Full measurement retains accent while full progress remains semantic success",
-          arguments: [ChioTheme.default, .light, .btop], [0.0, 0.5, 1.0])
-    func measurement(theme: ChioTheme, value: Double) throws {
+          arguments: [ChioStyle.default, .light, .btop], [0.0, 0.5, 1.0])
+    func measurement(theme: ChioStyle, value: Double) throws {
         for treatment in [ChioProgressViewStyle.Treatment.progress, .measurement] {
             let rendered = DefaultRenderer().render(
                 ProgressView(value: value, barWidth: 8) { Text("CPU") } currentValueLabel: { Text("percent") }
@@ -166,7 +166,7 @@ struct ChioCompactStyleTests {
 
     @Test("Measurement uses customized glyphs and leaves native indeterminate presentation unchanged")
     func measurementTreatments() {
-        let theme = ChioTheme.btop.replacing(treatments: ChioTheme.btop.treatments.replacing(
+        let theme = ChioStyle.btop.replacing(treatments: ChioStyle.btop.treatments.replacing(
             progressFilledGlyph: "#", progressEmptyGlyph: "."
         ))
         let measurement = DefaultRenderer().render(

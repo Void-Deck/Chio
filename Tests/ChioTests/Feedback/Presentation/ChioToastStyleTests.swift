@@ -6,13 +6,13 @@ import Testing
 @Suite(.serialized)
 struct ChioToastStyleTests {
     @Test("Native toast declarations retain each semantic tone and theme through hosting",
-          arguments: TerminalTone.allCases, [ChioTheme.default, .light])
-    func semanticTone(tone: TerminalTone, theme: ChioTheme) throws {
+          arguments: TerminalTone.allCases, [ChioStyle.default, .light])
+    func semanticTone(tone: TerminalTone, theme: ChioStyle) throws {
         let size = CellSize(width: 36, height: 18)
         let rendered = DefaultRenderer().render(
             Text("Base").frame(width: size.width, height: size.height)
                 .toast("Local feedback", isPresented: .constant(true), style: ChioToastStyle(theme: theme, tone: tone), duration: nil)
-                .chioTheme(theme).environment(\.terminalSize, size),
+                .style(theme).environment(\.terminalSize, size),
             proposal: ProposedViewSize(width: size.width, height: size.height)
         )
         let icon: Character
@@ -39,7 +39,7 @@ struct ChioToastStyleTests {
         let rendered = DefaultRenderer().render(
             Text("Base").frame(width: size.width, height: size.height)
                 .toast("Local feedback", isPresented: .constant(true), style: ChioToastStyle(tone: .success), duration: nil)
-                .chioTheme(.default).environment(\.terminalSize, size),
+                .style(.default).environment(\.terminalSize, size),
             proposal: ProposedViewSize(width: size.width, height: size.height)
         )
         let text = rendered.rasterSurface.lines.joined(separator: "\n")
@@ -54,13 +54,13 @@ struct ChioToastStyleTests {
         let size = CellSize(width: 36, height: 18)
         let errorColor = Color(hexRGB: 0x123456)
         let surfaceColor = Color(hexRGB: 0x192837)
-        let theme = ChioTheme.default.replacing(colors: ChioTheme.default.colors.replacing(
+        let theme = ChioStyle.default.replacing(colors: ChioStyle.default.colors.replacing(
             surface: surfaceColor, error: errorColor
         ))
         let rendered = DefaultRenderer().render(
             Text("Base").frame(width: size.width, height: size.height)
                 .toast("Local feedback", isPresented: .constant(true), style: ChioToastStyle(theme: theme, tone: .danger), duration: nil)
-                .chioTheme(theme).environment(\.terminalSize, size),
+                .style(theme).environment(\.terminalSize, size),
             proposal: ProposedViewSize(width: size.width, height: size.height)
         )
         let cells = rendered.rasterSurface.cells.flatMap { $0 }
@@ -142,7 +142,7 @@ private struct ToastTestView {
 
 extension ToastTestView: View {
     var body: some View {
-        let theme: ChioTheme = light ? .light : .default
+        let theme: ChioStyle = light ? .light : .default
         VStack(alignment: .leading) {
             Text("Dismissed=\(dismissed) Light=\(light)")
             TextField("Draft", text: $query).focused($editing)
@@ -152,7 +152,7 @@ extension ToastTestView: View {
         .toast("Local feedback", isPresented: $isPresented,
                style: ChioToastStyle(theme: theme, tone: .success), duration: timed ? 1 : nil,
                onDismiss: { dismissed += 1 })
-        .chioTheme(theme)
+        .style(theme)
         .onAppear { editing = true }
         .onKeyPress { press in
             guard press.modifiers == .ctrl else { return .ignored }

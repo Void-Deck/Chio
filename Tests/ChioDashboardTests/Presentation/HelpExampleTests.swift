@@ -246,7 +246,7 @@ struct HelpExampleTests {
             session.send(.key(.character("t"), modifiers: .ctrl))
             let themed = try await recorder.wait(after: viewport.sequence, description: "help adopts the light theme with native viewport focus") {
                 $0.helpIsPresented && $0.helpViewportFocused && $0.raster.cells != viewport.raster.cells
-                    && $0.raster.cells.flatMap { $0 }.contains { $0.style?.foregroundColor == ChioTheme.light.colors.heading }
+                    && $0.raster.cells.flatMap { $0 }.contains { $0.style?.foregroundColor == ChioStyle.light.colors.heading }
             }
             #expect(themed.focusedIdentity == viewport.focusedIdentity)
             surface.updateSurfaceSize(.init(width: 36, height: 18))
@@ -272,7 +272,7 @@ struct HelpExampleTests {
             session.send(.key(.character("t"), modifiers: .ctrl))
             let closeThemed = try await recorder.wait(after: close.sequence, description: "Close advances to btop without losing native focus") {
                 $0.helpIsPresented && $0.helpButtonFocused("Close") && $0.raster.cells != close.raster.cells
-                    && $0.raster.cells.flatMap { $0 }.contains { $0.style?.foregroundColor == ChioTheme.btop.colors.heading }
+                    && $0.raster.cells.flatMap { $0 }.contains { $0.style?.foregroundColor == ChioStyle.btop.colors.heading }
             }
             #expect(closeThemed.focusedIdentity == close.focusedIdentity)
             session.send(.key(.escape))

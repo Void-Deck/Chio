@@ -39,7 +39,7 @@ struct MapExampleCommand {
 
     enum Appearance: String {
         case `default`, light, btop
-        var theme: ChioTheme {
+        var theme: ChioStyle {
             switch self {
             case .default: .default
             case .light: .light

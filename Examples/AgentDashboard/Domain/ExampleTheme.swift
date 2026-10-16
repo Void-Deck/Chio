@@ -7,7 +7,7 @@ enum ExampleTheme: String {
     case light
     case btop
 
-    var theme: ChioTheme {
+    var theme: ChioStyle {
         switch self {
         case .default: .default
         case .light: .light

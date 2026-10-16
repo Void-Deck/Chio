@@ -10,7 +10,7 @@ rendering, layout, input, and focus.
 
 [![Watch Chio's dashboard recording](Docs/Media/dashboard.png)](https://echoz.github.io/Chio/)
 
-[▶ Watch Chio in action](https://echoz.github.io/Chio/) · [Examples and controls](Docs/Examples.md)
+[▶ Watch Chio in action](https://echoz.github.io/Chio/) · [Examples and controls](Docs/Examples.md) · [0.2.0 release record](Docs/Releases/0.2.0.md)
 
 ## Development and stability
 
@@ -47,15 +47,24 @@ struct AgentsView: View {
 
 One immutable style gives descendants consistent colors, spacing, surfaces and
 focus styling. Start with `.default`, `.light`, `.btop` or `.opencode`, and customize
-with `replacing(...)`.
+with `replacing(...)`. `Spacing.listRowVerticalInset` adds bounded padding around
+Chio searchable-list and checklist rows; `.opencode` uses one cell per side.
+Native list rows can apply the same value with ordinary padding.
+
+The current API uses `ChioStyle`, `.style(...)` and `@Environment(\.chioStyle)`.
+Former theme aliases are removed. The [0.2.0 release record](Docs/Releases/0.2.0.md)
+owns migration and qualification evidence.
 [API usage and recipes →](Docs/Usage.md)
 
 ## Try it
 
 Requires **Swift 6.4+**, on **macOS 15+ or Linux**. From a repository checkout:
 
-This revision pins [SwiftTUI 0.18.0](Docs/Decisions/Dependencies.md#0180-adoption-candidate),
-including the list scrolling and layout fixes.
+This revision pins [the merged SwiftTUI correction](Docs/Decisions/Dependencies.md#020-merged-native-correction)
+at `7e62e95c913508f4fef42db36fde6fd60acb541c`. SwiftTUI 0.18.0 does not contain
+that correction. For use in another package, follow the compatible exact revisions
+in the [release record](Docs/Releases/0.2.0.md).
+Version-based Chio requirements remain unsupported by the revision-pinned dependency graph.
 
 ```sh
 swift run -c release chio-dashboard
@@ -97,7 +106,7 @@ Chio adapts these ideas to native SwiftTUI composition and Swift APIs.
 - [API usage](Docs/Usage.md) — styles and component recipes
 - [Examples](Docs/Examples.md) — controls, screenshots, and SSH guidance
 - [Design](Docs/Design.md) — architecture and interaction contracts
-- [Coverage](Docs/Releases/0.1.0.md#component-coverage) · [Plan](Docs/Plan.md) · [Development checks](Docs/Verification.md#running-checks)
+- [0.2.0 scope and migration](Docs/Releases/0.2.0.md) · [Plan](Docs/Plan.md) · [Development checks](Docs/Verification.md#running-checks)
 
 Code: [MIT License](LICENSE). Bundled map data retains its
 [source licenses](Examples/Maps/Fixtures/Provenance.md).

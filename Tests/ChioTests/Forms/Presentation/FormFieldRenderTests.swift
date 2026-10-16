@@ -8,11 +8,11 @@ struct FormFieldRenderTests {
     @Test("Default and explicit empty descriptions omit helper rows and semantic text")
     func emptyDescription() {
         let omitted = DefaultRenderer().render(
-            FormField("Name") { Text("Value") }.chioTheme(.default),
+            FormField("Name") { Text("Value") }.style(.default),
             proposal: .init(width: 24, height: nil)
         )
         let empty = DefaultRenderer().render(
-            FormField("Name", description: "") { Text("Value") }.chioTheme(.default),
+            FormField("Name", description: "") { Text("Value") }.style(.default),
             proposal: .init(width: 24, height: nil)
         )
         #expect(omitted.rasterSurface.size.height == 2)
@@ -25,7 +25,7 @@ struct FormFieldRenderTests {
     func emptyError() {
         let rendered = DefaultRenderer().render(
             FormField("Name", description: "Hidden helper", error: "") { Text("Value") }
-                .chioTheme(.default), proposal: .init(width: 24, height: nil)
+                .style(.default), proposal: .init(width: 24, height: nil)
         )
         #expect(rendered.rasterSurface.size.height == 3)
         #expect(rendered.rasterSurface.lines.contains { $0.contains("Error:") })
@@ -34,13 +34,13 @@ struct FormFieldRenderTests {
         #expect(labels.contains("Error: "))
         #expect(!labels.contains("Hidden helper"))
         #expect(rendered.rasterSurface.cells.flatMap { $0 }.contains {
-            $0.character == "E" && $0.style?.foregroundColor == ChioTheme.default.colors.error
+            $0.character == "E" && $0.style?.foregroundColor == ChioStyle.default.colors.error
         })
     }
 
     @Test("Headings and helpers wrap within narrow field widths", arguments: [12, 24])
     func helperTheme(width: Int) {
-        var theme = ChioTheme.default
+        var theme = ChioStyle.default
         theme = theme.replacing(colors: theme.colors.replacing(
             heading: Color(hexRGB: 0x123456),
             secondaryText: Color(hexRGB: 0x654321)
@@ -48,7 +48,7 @@ struct FormFieldRenderTests {
         let surface = DefaultRenderer().render(
             FormField("Agent name", description: "Helpful words wrap here") {
                 Text("Value")
-            }.chioTheme(theme),
+            }.style(theme),
             proposal: .init(width: width, height: 10)
         ).rasterSurface
         #expect(surface.size.width <= width)
@@ -64,12 +64,12 @@ struct FormFieldRenderTests {
     @Test("Clearly marked errors replace helpers and use the current error palette",
           arguments: [12, 24])
     func errorTheme(width: Int) {
-        var theme = ChioTheme.default
+        var theme = ChioStyle.default
         theme = theme.replacing(colors: theme.colors.replacing(error: Color(hexRGB: 0xA12345)))
         let surface = DefaultRenderer().render(
             FormField("Name", description: "Hidden helper", error: "Required name") {
                 Text("Value")
-            }.chioTheme(theme),
+            }.style(theme),
             proposal: .init(width: width, height: 10)
         ).rasterSurface
         #expect(surface.size.width <= width)
@@ -94,7 +94,7 @@ struct FormFieldRenderTests {
                     }
                 }
                 FormField("Confirm") { Toggle("Confirm", isOn: .constant(true)) }
-            }.chioTheme(.default),
+            }.style(.default),
             proposal: .init(width: 24, height: 10)
         )
         let text = rendered.rasterSurface.lines.joined(separator: "\n")
@@ -108,7 +108,7 @@ struct FormFieldRenderTests {
 
     @Test("Themed picker and toggle content stays compact and uses semantic colors")
     func nativeTheme() {
-        var theme = ChioTheme.default
+        var theme = ChioStyle.default
         theme = theme.replacing(colors: theme.colors.replacing(
             foreground: Color(hexRGB: 0x123456),
             mutedText: Color(hexRGB: 0x345678),
@@ -119,7 +119,7 @@ struct FormFieldRenderTests {
             Picker("Model", selection: .constant("s")) {
                 Text("Small").tag("s")
                 Text("Large").tag("l")
-            }.chioTheme(theme), proposal: .init(width: 24, height: 1)
+            }.style(theme), proposal: .init(width: 24, height: 1)
         ).rasterSurface
         #expect(picker.size.height == 1)
         #expect(picker.cells.flatMap { $0 }.contains {
@@ -127,7 +127,7 @@ struct FormFieldRenderTests {
                 && $0.style?.backgroundColor == theme.colors.surface
         })
         let toggle = DefaultRenderer().render(
-            Toggle("Confirm", isOn: .constant(true)).chioTheme(theme),
+            Toggle("Confirm", isOn: .constant(true)).style(theme),
             proposal: .init(width: 24, height: 1)
         ).rasterSurface
         #expect(toggle.size.height == 1)
@@ -141,12 +141,12 @@ struct FormFieldRenderTests {
 
     @Test("Disabled native controls remain visible and dimmed")
     func disabledControls() throws {
-        let theme = ChioTheme.default
+        let theme = ChioStyle.default
         let surface = DefaultRenderer().render(
             VStack(alignment: .leading, spacing: 0) {
                 Picker("Model", selection: .constant("s")) { Text("Small").tag("s") }
                 Toggle("Confirm", isOn: .constant(false))
-            }.disabled(true).chioTheme(theme),
+            }.disabled(true).style(theme),
             proposal: .init(width: 24, height: 2)
         ).rasterSurface
         #expect(surface.lines.contains { $0.contains("Small") })

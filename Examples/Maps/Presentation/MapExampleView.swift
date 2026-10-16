@@ -60,7 +60,7 @@ struct MapExampleView {
         _detail = State(wrappedValue: detail)
     }
 
-    private var theme: ChioTheme { appearance.theme }
+    private var theme: ChioStyle { appearance.theme }
     private var source: MapSource { fixtures.source(for: scene, streetSource: streetSource) }
     private var overlays: MapOverlays {
         let base = openedPlace?.overlays ?? scene.overlays
@@ -418,7 +418,7 @@ extension MapExampleView: View {
         .onDisappear { owner.close(); routingOwner.close() }
         .task { await owner.observeLifetime() }
         .task { await routingOwner.observeLifetime() }
-        .chioTheme(theme)
+        .style(theme)
     }
 
     @ViewBuilder

@@ -37,7 +37,7 @@ struct DashboardView {
         self.shouldAnimate = shouldAnimate
     }
 
-    private var theme: ChioTheme { themeChoice.theme }
+    private var theme: ChioStyle { themeChoice.theme }
     private var selectedAgent: Agent? { agents.first { $0.id == selection } }
     private var isPresentingOverlay: Bool {
         if isCreating { return true }
@@ -239,9 +239,9 @@ extension DashboardView: View {
             let isWide = geometry.size.width >= 88
             let isCompact = !isWide || geometry.size.height < 30
             let isBrief = geometry.size.height < 26
-            let layoutTheme = ChioTheme(
+            let layoutTheme = ChioStyle(
                 colors: theme.colors,
-                spacing: ChioTheme.Spacing(sectionGap: isCompact ? 0 : 1),
+                spacing: ChioStyle.Spacing(sectionGap: isCompact ? 0 : 1),
                 treatments: theme.treatments
             )
             let layout = isWide
@@ -301,7 +301,7 @@ extension DashboardView: View {
             .padding(.vertical, 1)
             .frame(width: geometry.size.width, height: geometry.size.height, alignment: .topLeading)
             .clipped()
-            .chioTheme(layoutTheme)
+            .style(layoutTheme)
         }
         .panel(id: "dashboard")
         .keyCommand("Commands", key: .character("k"), modifiers: .ctrl,

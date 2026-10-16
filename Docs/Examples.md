@@ -46,12 +46,17 @@ swift run -c release chio-dashboard --appearance --treatment opencode --density 
 ```
 
 Chio uses rounded outlines; OpenCode inspires raised surfaces and leading accent
-edges with roomier input padding and compact list rows; btop uses compact groups
-with border headings.
+edges with roomier input padding and one-cell searchable-row insets; btop uses
+compact groups with border headings.
 The retained `--treatment` spelling selects static style values. `--theme` and
 `--light` do not apply to this study. `--density recipe` uses the recipe's spacing;
-`compact` and `roomy` override only spacing. All values and measurements are local
-fixtures; Save changes only the example's message.
+`compact` and `roomy` override only spacing, including zero or one cell above and
+below searchable rows respectively. `SearchableList` applies the inherited
+`ChioStyle.Spacing.listRowVerticalInset` automatically. File-selection lists and
+checklists consume the same token; native `List` content uses ordinary authored
+padding. All values and measurements are local fixtures; Save changes only the
+example's message. The [release record](Releases/0.2.0.md) owns migration
+and qualification evidence for row density and the current style API.
 
 **Ctrl-T** cycles looks, **Ctrl-D** cycles spacing, **Ctrl-E** reveals and focuses
 the workspace editor, **Ctrl-G** reveals graphs, **Ctrl-L** reveals the list, and
@@ -62,8 +67,8 @@ small interactive check. The application owns this breakpoint and section naviga
 
 [Compare the rendered treatments](https://echoz.github.io/Chio/appearance.html).
 The [style decision](Decisions/Themes.md#appearance-study) owns the accepted API
-and application boundaries. Captures must be refreshed from the verified candidate;
-site deployment waits for merge. The main catalog retains three captured themes,
+and application boundaries. [Verification](Verification.md#demo-site) owns capture
+and browser checks. The main catalog retains three captured themes,
 so its selector does not yet offer opencode for every example.
 
 ## Maps
@@ -664,8 +669,8 @@ COLORTERM=truecolor swift run -c release chio-dashboard --instruments
 swift run -c release chio-dashboard --instruments --theme btop --snapshot
 ```
 
-**Merged in PR #8; not yet included in a tagged release.** This
-example passed macOS/Linux qualification in [PR #8](https://github.com/echoz/Chio/pull/8).
+This example belongs to the [0.2.0 scope](Releases/0.2.0.md) and passed
+macOS/Linux qualification in [PR #8](https://github.com/echoz/Chio/pull/8).
 It composes the native instrument style, a
 synthetic temperature reading, a reservoir fact, supplied mean/maximum reference
 marks and a desired band. The response-time history includes distinct same-time

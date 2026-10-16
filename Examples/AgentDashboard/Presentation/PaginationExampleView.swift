@@ -13,7 +13,7 @@ struct PaginationExampleView {
 
     init(theme: ExampleTheme = .default) { _themeChoice = State(wrappedValue: theme) }
 
-    private var theme: ChioTheme { themeChoice.theme }
+    private var theme: ChioStyle { themeChoice.theme }
     private static let entries = (1...23).map { index in
         Entry(id: index, title: ["Build", "Review", "Test", "Docs"][(index - 1) % 4],
               outcome: index % 5 == 0 ? .failed : .passed)
@@ -63,7 +63,7 @@ struct PaginationExampleView {
         case passed = "Passed"
         case failed = "Failed"
 
-        func color(in theme: ChioTheme) -> Color {
+        func color(in theme: ChioStyle) -> Color {
             switch self {
             case .passed: theme.colors.success
             case .failed: theme.colors.error
@@ -137,6 +137,6 @@ extension PaginationExampleView: View {
             }
             return .handled
         }
-        .chioTheme(theme)
+        .style(theme)
     }
 }

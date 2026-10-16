@@ -2,7 +2,8 @@
 
 **Status:** Implemented programmatic storage and loading.
 [Verification](../Verification.md) defines the required delivery gates.
-[Plan](../Plan.md) tracks delivery. [Online acquisition](OnlineMaps.md) owns the
+The [0.2.0 release preparation](../Releases/0.2.0.md) records integrated scope and evidence.
+[Online acquisition](OnlineMaps.md) owns the
 shared loader and HTTP-cache contracts; [geographic maps](GeographicMaps.md)
 owns projection, admission and rendering.
 
@@ -88,9 +89,9 @@ Abrupt process termination can leave that temporary behind, but it is not a
 completed destination and readers do not discover or repair it. This establishes
 a process-interruption boundary, not power-loss durability.
 
-PMTiles/MBTiles ingestion, provider archive downloads, resumable preparation and
-combined pack/network fallback remain separate work. This format adds no package
-dependency and does not resolve the existing static-Linux transport limitations.
+PMTiles/MBTiles ingestion is unsupported; provider archive downloads remain paused.
+Resumable preparation and combined pack/network fallback remain separate work.
+This format adds no package dependency and does not resolve the existing static-Linux transport limitations.
 
 ## Example and verification
 

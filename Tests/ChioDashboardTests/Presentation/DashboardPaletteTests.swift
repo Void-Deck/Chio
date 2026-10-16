@@ -155,7 +155,7 @@ struct DashboardPaletteTests {
             _ = try await recorder.wait(description: "theme action dismisses palette") { !$0.hasPalette }
             let light = try await openPalette(session, recorder)
             #expect(light.raster.cells.flatMap { $0 }.contains {
-                $0.style?.backgroundColor == ChioTheme.light.colors.surface
+                $0.style?.backgroundColor == ChioStyle.light.colors.surface
             })
             session.sendInput(Array("theme".utf8))
             _ = try await recorder.wait(description: "theme command reflects changed state") {

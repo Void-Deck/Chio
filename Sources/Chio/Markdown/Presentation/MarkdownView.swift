@@ -80,7 +80,7 @@ private enum MarkdownLinks {
 @MainActor
 private struct MarkdownBlocks {
     let blocks: [MarkdownDocument.Block]
-    let theme: ChioTheme
+    let theme: ChioStyle
     let links: MarkdownLinks
     let highlighting: MarkdownView.CodeHighlighting
 }
@@ -99,7 +99,7 @@ extension MarkdownBlocks: View {
 @MainActor
 private struct MarkdownBlock {
     let block: MarkdownDocument.Block
-    let theme: ChioTheme
+    let theme: ChioStyle
     let links: MarkdownLinks
     let highlighting: MarkdownView.CodeHighlighting
 

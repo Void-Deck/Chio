@@ -390,7 +390,7 @@ struct SearchableListTests {
             #expect(themed.focusedIdentity == before.focusedIdentity)
             let appearanceChanged = themed.raster.cells != before.raster.cells
             let markerUsesLightAccent = themed.raster.cells.flatMap { $0 }.contains {
-                $0.character == ">" && $0.style?.foregroundColor == ChioTheme.light.colors.accent
+                $0.character == ">" && $0.style?.foregroundColor == ChioStyle.light.colors.accent
             }
             #expect(appearanceChanged)
             #expect(markerUsesLightAccent)
@@ -458,8 +458,8 @@ private struct SearchTestView {
     @State private var barrier = 0
     @State private var lightTheme = false
 
-    private var theme: ChioTheme {
-        var theme = lightTheme ? ChioTheme.light : .default
+    private var theme: ChioStyle {
+        var theme = lightTheme ? ChioStyle.light : .default
         theme = theme.replacing(treatments: theme.treatments.replacing(selectionMarker: ">"))
         return theme
     }
@@ -498,7 +498,7 @@ extension SearchTestView: View {
             Text("Last=\(lastActivation ?? "-") Quit=\(quitCount) Barrier=\(barrier)")
             Text("Theme=\(lightTheme ? "light" : "dark")")
         }
-        .chioTheme(theme)
+        .style(theme)
         .onKeyPress { press in
             if press == KeyPress(.character("t"), modifiers: .ctrl) {
                 lightTheme.toggle()

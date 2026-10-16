@@ -16,7 +16,7 @@ struct FileSelectionExampleView {
         _themeChoice = State(wrappedValue: theme)
     }
 
-    private var theme: ChioTheme { themeChoice.theme }
+    private var theme: ChioStyle { themeChoice.theme }
     private enum Phase: Equatable {
         case choosing, confirmed, cancelled
 
@@ -32,7 +32,7 @@ struct FileSelectionExampleView {
             case .cancelled: "Cancelled"
             }
         }
-        func resultColor(in theme: ChioTheme) -> Color {
+        func resultColor(in theme: ChioStyle) -> Color {
             switch self {
             case .choosing, .confirmed: theme.colors.success
             case .cancelled: theme.colors.secondaryText
@@ -96,7 +96,7 @@ extension FileSelectionExampleView: View {
         .padding(.vertical, isShort ? 0 : 1)
         .frame(maxWidth: 90, maxHeight: .infinity, alignment: .topLeading)
         .frame(width: terminalSize.width, height: terminalSize.height, alignment: .top)
-        .chioTheme(theme)
+        .style(theme)
         .onKeyPress { press in
             guard press.modifiers == .ctrl else { return .ignored }
             switch press.key {

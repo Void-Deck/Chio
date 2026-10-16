@@ -24,7 +24,7 @@ struct DiffExampleView {
         sourceWidths = DiffFile.examples.map(Self.sourceWidth)
     }
 
-    private var theme: ChioTheme { themeChoice.theme }
+    private var theme: ChioStyle { themeChoice.theme }
     private var file: DiffFile { files[fileIndex] }
     private var isCompact: Bool { terminalSize.height < 24 }
     private var canSplit: Bool { terminalSize.width >= 92 }
@@ -147,7 +147,7 @@ extension DiffExampleView: View {
             }
             .padding(isCompact ? 0 : 1)
             .frame(width: terminalSize.width, height: terminalSize.height, alignment: .topLeading)
-            .chioTheme(theme)
+            .style(theme)
             .onKeyPress(perform: handleKey)
             // Reveal after layout commits, using the retained logical target even
             // when view/file commands arrive in the same terminal input batch.

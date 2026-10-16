@@ -3,7 +3,7 @@ import SwiftTUI
 
 @MainActor
 struct AgentDetail {
-    @Environment(\.chioTheme) private var theme
+    @Environment(\.chioStyle) private var theme
     let agent: Agent?
     let isCompact: Bool
     let run: @MainActor @Sendable () -> Void

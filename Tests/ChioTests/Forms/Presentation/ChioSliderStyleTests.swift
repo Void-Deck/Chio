@@ -7,13 +7,13 @@ import Testing
 struct ChioSliderStyleTests {
     @Test("Slider preserves native label, formatted value, endpoint geometry and theme inheritance")
     func rasterAndSemantics() throws {
-        let custom = ChioTheme.default.replacing(
-            colors: ChioTheme.default.colors.replacing(accent: Color(hexRGB: 0x123456)))
-        for theme in [ChioTheme.default, .light, .btop, custom] {
+        let custom = ChioStyle.default.replacing(
+            colors: ChioStyle.default.colors.replacing(accent: Color(hexRGB: 0x123456)))
+        for theme in [ChioStyle.default, .light, .btop, custom] {
             for value in [0, 3, 7] {
                 let result = DefaultRenderer().render(
                     Slider("Sample", value: Binding<Int>.constant(value), in: 0...7)
-                        .sliderStyle(ChioSliderStyle()).environment(\.chioTheme, theme),
+                        .sliderStyle(ChioSliderStyle()).environment(\.chioStyle, theme),
                     proposal: ProposedSize(width: 32, height: 1))
                 let expectedTrack = String(repeating: "━", count: value) + "●"
                     + String(repeating: "─", count: 7 - value)
@@ -28,7 +28,7 @@ struct ChioSliderStyleTests {
         }
         let disabled = DefaultRenderer().render(
             Slider("Sample", value: Binding<Int>.constant(0), in: 0...7)
-                .disabled(true).chioTheme(.btop), proposal: ProposedSize(width: 32, height: 1))
+                .disabled(true).style(.btop), proposal: ProposedSize(width: 32, height: 1))
         #expect(disabled.semanticSnapshot.focusRegions.isEmpty)
         #expect(disabled.semanticSnapshot.accessibilityNodes.first { $0.role == .slider }?.isEnabled == false)
     }
@@ -94,7 +94,7 @@ struct ChioSliderStyleTests {
                 $0.numericFocused("Speed") && $0.numericStatus("Theme=light") && $0.numericStatus("Index=3 Speed=4")
             }
             let labelCell = try #require(themed.raster.cells[speedRow].first { $0.character == "S" })
-            #expect(labelCell.style?.foregroundColor == ChioTheme.light.colors.secondaryText)
+            #expect(labelCell.style?.foregroundColor == ChioStyle.light.colors.secondaryText)
             surface.updateSurfaceSize(CellSize(width: 26, height: 8))
             session.requestSurfaceRefresh()
             let resized = try await recorder.wait(after: themed.sequence, description: "resize keeps native control identity") {
@@ -154,7 +154,7 @@ extension NumericStyleView: View {
             Text("Index=\(index) Speed=\(speed)")
             Text(isLight ? "Theme=light" : "Theme=default")
         }
-        .chioTheme(isLight ? .light : .default)
+        .style(isLight ? .light : .default)
         .onKeyPress { press in
             switch press {
             case KeyPress(.character("t"), modifiers: .ctrl): isLight.toggle(); return .handled

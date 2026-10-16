@@ -31,12 +31,33 @@ screen_reader = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(screen_reader)
 
 
+def terminal_events(captured):
+    """Omit only the known reader notice before the first ANSI control.
+
+    Keep all terminal setup bytes and timestamps. Unknown startup output fails
+    rather than being hidden; full logs and full casts retain the entire session.
+    """
+    prefix = ""
+    for index, event in enumerate(captured):
+        control = event[2].find("\x1b")
+        if control < 0:
+            prefix += event[2]
+            continue
+        prefix += event[2][:control]
+        notice = "Terminal reader available: start with --reader or press F12 in the running app."
+        assert prefix.strip() in ("", notice), f"Unexpected terminal startup output: {prefix!r}"
+        return [[event[0], event[1], event[2][control:]]] + captured[index + 1:]
+    raise AssertionError("Terminal capture has no ANSI setup controls")
+
+
 def capture(binary, output, recipe, width, height, label, verify_only):
     screen_reader.WIDTH, screen_reader.HEIGHT = width, height
     master, slave = pty.openpty()
     original = termios.tcgetattr(slave)
     fcntl.ioctl(slave, termios.TIOCSWINSZ, struct.pack("HHHH", height, width, 0, 0))
-    environment = dict(os.environ, TERM="xterm-256color", COLORTERM="truecolor")
+    # Record only the terminal UI; the native browser companion has its own UI
+    # and announces an ephemeral local URL before the terminal starts.
+    environment = dict(os.environ, TERM="xterm-256color", COLORTERM="truecolor", SWIFTTUI_COMPANION="off")
     for key in ("NO_COLOR", "CLICOLOR", "CLICOLOR_FORCE", "FORCE_COLOR"):
         environment.pop(key, None)
     command = [str(binary), "--appearance", "--treatment", recipe]
@@ -87,13 +108,13 @@ def capture(binary, output, recipe, width, height, label, verify_only):
 
     def write_cast(path, captured):
         header = dict(version=2, width=width, height=height,
-                      env=dict(TERM="xterm-256color", COLORTERM="truecolor"),
+                      env=dict(TERM="xterm-256color", COLORTERM="truecolor", SWIFTTUI_COMPANION="off"),
                       title=f"Chio appearance · {recipe} · synthetic content")
         path.write_text("\n".join(json.dumps(item, ensure_ascii=False) for item in [header] + captured) + "\n")
 
     try:
         phase("initial", ["appearance", "Build Agent", "^Q quit"], hold=1)
-        initial_events = list(events) + [[round(time.monotonic() - began, 4), "o", ""]]
+        initial_events = terminal_events(list(events)) + [[round(time.monotonic() - began, 4), "o", ""]]
         (output / f"{name}-initial.txt").write_text(screen_reader.screen(raw))
         phase("edit", ["Field notes", "^Q quit"], b"\x05")
         # Move left first: native no-op End currently bubbles to ScrollView.
@@ -105,7 +126,7 @@ def capture(binary, output, recipe, width, height, label, verify_only):
         phase("recipe spacing", ["spacing: recipe"], b"\x04")
         phase("graphs", ["Instruments", "21.4 °C"], b"\x07")
         phase("agents", ["Agents", "Build Agent"], b"\x0c", hold=1)
-        published = list(events) + [[round(time.monotonic() - began, 4), "o", ""]]
+        published = terminal_events(list(events)) + [[round(time.monotonic() - began, 4), "o", ""]]
         assert not termios.tcgetattr(slave)[3] & (termios.ECHO | termios.ICANON)
         os.write(master, b"\x11")
         deadline = time.monotonic() + 10
@@ -118,7 +139,8 @@ def capture(binary, output, recipe, width, height, label, verify_only):
         assert termios.tcgetattr(slave) == original, "Terminal settings were not restored"
         assert b"\x1b[?1049l" in raw and b"\x1b[?25h" in raw
         clip_text = "".join(event[2] for event in published)
-        for unwanted in ("\x1b[?1049l", "runtime warning", "error:", "/Users/"):
+        for unwanted in ("\x1b[?1049l", "runtime warning", "error:", "/Users/",
+                         "Browser accessibility companion", "http://127.0.0.1:", "Terminal reader available:"):
             assert unwanted not in clip_text, f"Unexpected published diagnostic: {unwanted}"
         assert b"error:" not in raw.lower()
         if not verify_only:

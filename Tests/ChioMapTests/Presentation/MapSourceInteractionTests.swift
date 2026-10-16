@@ -40,7 +40,7 @@ struct MapSourceInteractionTests {
             // Marker and selected-location cells may carry their own overlay feedback.
             #expect(selected.raster.cells[4..<24].flatMap { Array($0[1..<99]) }
                 .filter { $0.character.unicodeScalars.contains { (0x2801...0x28FF).contains($0.value) } }
-                .allSatisfy { $0.style?.backgroundColor == ChioTheme.light.colors.surface })
+                .allSatisfy { $0.style?.backgroundColor == ChioStyle.light.colors.surface })
             session.send(.key(.return))
             let activated = try await frames.wait(after: selected.sequence) {
                 $0.text.contains("Opened Singapore Flyer")

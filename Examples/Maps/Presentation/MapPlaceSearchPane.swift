@@ -17,7 +17,7 @@ struct MapPlaceSearchPane {
     let submit: @MainActor () -> Void
     let open: @MainActor (MapPlace, [MapPlaceMatches.Attribution]) -> Void
     @Environment(\.terminalSize) private var terminalSize
-    @Environment(\.chioTheme) private var theme
+    @Environment(\.chioStyle) private var theme
 
     private struct Row: Identifiable {
         struct ID: Hashable, Sendable {

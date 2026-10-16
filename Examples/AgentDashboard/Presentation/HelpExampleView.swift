@@ -45,7 +45,7 @@ struct HelpExampleView {
     private static let scroll = ShortcutHint("↑↓ / pgup/pgdn", "scroll", detail: "Scroll the help viewport. Tab moves between the viewport and Close.")
     private static let close = ShortcutHint("esc", "close", detail: "Close help and return to the control you were using.")
 
-    private var theme: ChioTheme { themeChoice.theme }
+    private var theme: ChioStyle { themeChoice.theme }
     private var selectedAgent: Agent? { Agent.examples.first { $0.id == selection } }
     private var context: Context {
         if actionFocus != nil { return .actions }
@@ -177,7 +177,7 @@ extension HelpExampleView: View {
                 .padding(.horizontal, isShort ? 0 : 1)
                 .frame(maxWidth: 76, maxHeight: .infinity, alignment: .topLeading)
                 .frame(width: terminalSize.width, height: terminalSize.height, alignment: .top)
-                .chioTheme(theme)
+                .style(theme)
                 .onKeyPress { press in
                     if press == KeyPress(.character("t"), modifiers: .ctrl) {
                         themeChoice = themeChoice.next
@@ -190,6 +190,6 @@ extension HelpExampleView: View {
                     return .ignored
                 }
         }
-        .chioTheme(theme)
+        .style(theme)
     }
 }

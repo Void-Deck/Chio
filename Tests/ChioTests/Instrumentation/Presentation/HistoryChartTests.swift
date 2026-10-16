@@ -10,10 +10,10 @@ struct HistoryChartTests {
 
     private func render(_ series: HistorySeries, start: Duration = .zero, end: Duration = .seconds(10),
                         scale: Sparkline.Scale = .automatic, width: Int = 5, height: Int = 2,
-                        theme: ChioTheme = .default) throws -> RenderSnapshot {
+                        theme: ChioStyle = .default) throws -> RenderSnapshot {
         let window = try HistoryInterval(start: start, end: end)
         return DefaultRenderer().render(
-            HistoryChart(series, window: window, scale: scale).frame(width: width, height: height).chioTheme(theme),
+            HistoryChart(series, window: window, scale: scale).frame(width: width, height: height).style(theme),
             proposal: ProposedSize(width: width, height: height))
     }
 
@@ -207,9 +207,9 @@ struct HistoryChartTests {
     @Test("One accent series and window-only observed facts preserve passive semantics")
     func semanticsAndThemes() throws {
         let history = try series([(.zero, 100), (.seconds(5), 0), (.seconds(7), nil), (.seconds(10), 3)])
-        let custom = ChioTheme.default.replacing(
-            colors: ChioTheme.default.colors.replacing(accent: Color(hexRGB: 0x123456)))
-        for theme in [ChioTheme.default, .light, .btop, custom] {
+        let custom = ChioStyle.default.replacing(
+            colors: ChioStyle.default.colors.replacing(accent: Color(hexRGB: 0x123456)))
+        for theme in [ChioStyle.default, .light, .btop, custom] {
             let frame = try render(history, start: .seconds(5), theme: theme)
             #expect(frame.semanticSnapshot.focusRegions.isEmpty)
             #expect(frame.semanticSnapshot.accessibilityNodes.contains {
@@ -290,7 +290,7 @@ struct HistoryChartTests {
             let painted = cropped.raster.cells.flatMap { $0 }.filter {
                 $0.character.unicodeScalars.contains { (0x2801...0x28FF).contains($0.value) }
             }
-            #expect(painted.allSatisfy { $0.style?.foregroundColor == ChioTheme.btop.colors.accent })
+            #expect(painted.allSatisfy { $0.style?.foregroundColor == ChioStyle.btop.colors.accent })
             surface.updateSurfaceSize(CellSize(width: 8, height: 5))
             session.requestSurfaceRefresh()
             let resized = try await recorder.wait(after: cropped.sequence, description: "the chart recovers at a smaller allocation") {
@@ -319,7 +319,7 @@ private struct HistoryChartSnapshot: Sendable {
     let series: HistorySeries
     let window: HistoryInterval
     let scale: Sparkline.Scale
-    let theme: ChioTheme
+    let theme: ChioStyle
 }
 
 private struct HistoryChartTestApp {
@@ -355,6 +355,6 @@ extension HistoryChartTestView: View {
             HistoryChart(snapshot.series, window: snapshot.window, scale: snapshot.scale)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .chioTheme(snapshot.theme)
+        .style(snapshot.theme)
     }
 }

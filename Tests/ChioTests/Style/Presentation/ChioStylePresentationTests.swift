@@ -31,40 +31,39 @@ struct ChioStylePresentationTests {
         #expect(cells.contains { $0.character == "c" && $0.style?.foregroundColor == child.colors.secondaryText })
     }
 
-    @Test("The legacy theme modifier renders the same custom presentation as the style modifier")
-    func legacyModifier() {
+    @Test("An inherited style configures native group content and border headings")
+    func inheritedNativeStyle() {
         let base = ChioStyle.default
         let custom = base.replacing(
             colors: base.colors.replacing(heading: .yellow, foreground: .cyan, surface: .black),
             treatments: base.treatments.replacing(groupBoxTitlePlacement: .border)
         )
-        let canonical = DefaultRenderer().render(
-            GroupBox("Heading") { Text("Content") }.style(custom),
+        let surface = DefaultRenderer().render(
+            VStack {
+                GroupBox("Heading") { Text("Content") }
+            }.style(custom),
             proposal: ProposedViewSize(width: 18, height: 6)
         ).rasterSurface
-        let legacy = DefaultRenderer().render(
-            GroupBox("Heading") { Text("Content") }.chioTheme(custom),
-            proposal: ProposedViewSize(width: 18, height: 6)
-        ).rasterSurface
+        let cells = surface.cells.flatMap { $0 }
 
-        #expect(canonical.lines == legacy.lines)
-        #expect(canonical.cells == legacy.cells)
-        #expect(canonical.lines.contains { $0.contains("Heading") })
-        #expect(canonical.lines.contains { $0.contains("Content") })
+        #expect(surface.lines.first?.contains("Heading") == true)
+        #expect(surface.lines.contains { $0.contains("Content") })
+        #expect(cells.contains { $0.character == "H" && $0.style?.foregroundColor == .yellow })
+        #expect(cells.contains { $0.character == "C" && $0.style?.foregroundColor == .cyan })
+        #expect(cells.contains { $0.character == "C" && $0.style?.backgroundColor == .black })
     }
 
-    @Test("Both public environment spellings read and write one shared style value")
-    func environmentAliases() {
+    @Test("The public style environment defaults to the default style and retains replacements")
+    func styleEnvironment() {
         var environment = EnvironmentValues()
         #expect(environment.chioStyle == .default)
-        #expect(environment.chioTheme == .default)
         let first = ChioStyle.light.replacing(colors: ChioStyle.light.colors.replacing(accent: .blue))
         let second = ChioStyle.default.replacing(spacing: ChioStyle.default.spacing.replacing(inputVerticalInset: 2))
 
-        environment.chioTheme = first
+        environment.chioStyle = first
         #expect(environment.chioStyle == first)
         environment.chioStyle = second
-        #expect(environment.chioTheme == second)
+        #expect(environment.chioStyle == second)
     }
 
     @Test("Arbitrary custom values select leading group edges and bordered headings without preset identity")

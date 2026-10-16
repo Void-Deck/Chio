@@ -165,7 +165,7 @@ extension TextEntryTestView: View {
             Text("Length=\(password.count) Submits=\(submissions)")
             Text("Light=\(light)")
         }
-        .chioTheme(light ? .light : .default)
+        .style(light ? .light : .default)
         .onSubmit { submissions += 1 }
         .onKeyPress { press in
             guard press.modifiers == .ctrl else { return .ignored }

@@ -167,7 +167,7 @@ private struct MeasurementDrawing {
     let targetBand: MeasurementGauge.TargetBand?
     let referenceMarks: [MeasurementGauge.ReferenceMark]
     let style: MeasurementGauge.Style
-    let gaugeColors: ChioTheme.GaugeColors
+    let gaugeColors: ChioStyle.GaugeColors
 
     private func drawBar(into context: inout CanvasContext, width: Int) {
         let filled = position.map { Int(($0 * Double(width)).rounded()) }

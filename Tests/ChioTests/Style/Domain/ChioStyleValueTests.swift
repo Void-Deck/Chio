@@ -3,12 +3,12 @@ import Foundation
 import SwiftTUIRuntime
 import Testing
 
-struct ChioThemeTests {
+struct ChioStyleValueTests {
     @Test("Custom gauge colors compose independently and survive successive theme replacements")
     func gaugeCustomization() {
-        let base = ChioTheme.btop
-        let palette = ChioTheme.GaugeColors(arc: .red, target: .green, needle: .blue)
-        let composed = ChioTheme(colors: base.colors, spacing: base.spacing,
+        let base = ChioStyle.btop
+        let palette = ChioStyle.GaugeColors(arc: .red, target: .green, needle: .blue)
+        let composed = ChioStyle(colors: base.colors, spacing: base.spacing,
                                  treatments: base.treatments, syntax: base.syntax,
                                  map: base.map, gauge: palette)
         let changedPalette = palette.replacing(target: .yellow).replacing(needle: .cyan)
@@ -16,10 +16,10 @@ struct ChioThemeTests {
             .replacing(colors: base.colors.replacing(accent: .magenta))
 
         #expect(composed == base.replacing(gauge: palette))
-        #expect(palette == ChioTheme.GaugeColors(arc: .red, target: .green, needle: .blue))
-        #expect(changed.gauge == ChioTheme.GaugeColors(arc: .red, target: .yellow, needle: .cyan))
+        #expect(palette == ChioStyle.GaugeColors(arc: .red, target: .green, needle: .blue))
+        #expect(changed.gauge == ChioStyle.GaugeColors(arc: .red, target: .yellow, needle: .cyan))
         #expect(composed.gauge == palette)
-        #expect(base.gauge == ChioTheme.GaugeColors(arc: Color(hexRGB: 0x565F66),
+        #expect(base.gauge == ChioStyle.GaugeColors(arc: Color(hexRGB: 0x565F66),
                                                   target: Color(hexRGB: 0x6FFFFF),
                                                   needle: Color(hexRGB: 0xFFFFFF)))
         #expect(changed.colors == base.colors.replacing(accent: .magenta))
@@ -33,48 +33,31 @@ struct ChioThemeTests {
 
     @Test("Gauge palettes preserve distinct roles through serialization and hashing")
     func gaugeRoundTrip() throws {
-        let palette = ChioTheme.GaugeColors(arc: Color(hexRGB: 0x102030),
+        let palette = ChioStyle.GaugeColors(arc: Color(hexRGB: 0x102030),
                                            target: Color(hexRGB: 0x405060),
                                            needle: Color(hexRGB: 0x708090))
         let data = try JSONEncoder().encode(palette)
-        let decoded = try JSONDecoder().decode(ChioTheme.GaugeColors.self, from: data)
+        let decoded = try JSONDecoder().decode(ChioStyle.GaugeColors.self, from: data)
         #expect(decoded == palette)
         #expect(Set([palette, decoded]).count == 1)
         #expect(Set([palette, palette.replacing(arc: .red),
                      palette.replacing(target: .red), palette.replacing(needle: .red)]).count == 4)
     }
 
-    @Test("Original theme function references remain available and retain a customized gauge")
-    func themeFunctionReferences() {
-        let construct: (ChioTheme.Colors, ChioTheme.Spacing, ChioTheme.Treatments,
-                        ChioTheme.SyntaxColors, ChioTheme.MapColors) -> ChioTheme = ChioTheme.init
-        let base = ChioTheme.light
-        let constructed = construct(base.colors, base.spacing, base.treatments, base.syntax, base.map)
-        #expect(constructed.gauge == ChioTheme.GaugeColors())
-        #expect(constructed == base.replacing(gauge: ChioTheme.GaugeColors()))
-
-        let customized = base.replacing(gauge: ChioTheme.GaugeColors(arc: .red))
-        let replace: (ChioTheme.Colors?, ChioTheme.Spacing?, ChioTheme.Treatments?,
-                      ChioTheme.SyntaxColors?, ChioTheme.MapColors?) -> ChioTheme = customized.replacing
-        #expect(replace(nil, nil, nil, nil, nil) == customized)
-        #expect(replace(base.colors.replacing(accent: .blue), nil, nil, nil, nil)
-            == customized.replacing(colors: base.colors.replacing(accent: .blue)))
-    }
-
     @Test("The instrumentation preset preserves semantic customization and native treatments")
     func instrumentationPreset() throws {
-        let base = ChioTheme.btop
+        let base = ChioStyle.btop
         let copy = base
         let customized = base.replacing(colors: base.colors.replacing(accent: .red))
         #expect(base == copy)
-        #expect(base != ChioTheme.default)
-        #expect(base != ChioTheme.light)
+        #expect(base != ChioStyle.default)
+        #expect(base != ChioStyle.light)
         #expect(customized.colors.accent == .red)
         #expect(customized.colors.success == base.colors.success)
         #expect(customized.spacing == base.spacing)
         #expect(customized.treatments == base.treatments)
         #expect(base.spacing.sectionGap == 0)
-        #expect(base.treatments == ChioTheme.default.treatments.replacing(groupBoxTitlePlacement: .border))
+        #expect(base.treatments == ChioStyle.default.treatments.replacing(groupBoxTitlePlacement: .border))
         #expect(base.replacing() == base)
         let title = ChioGroupBoxStyle.TitlePlacement.border
         #expect(try JSONDecoder().decode(ChioGroupBoxStyle.TitlePlacement.self,
@@ -88,7 +71,7 @@ struct ChioThemeTests {
 
     @Test("Successive customization leaves the base palette and unrelated values unchanged")
     func replacementIsolation() {
-        let base = ChioTheme.light
+        let base = ChioStyle.light
         let copy = base
         let accent = Color(hexRGB: 0x123456)
         let error = Color(hexRGB: 0x654321)
@@ -105,7 +88,7 @@ struct ChioThemeTests {
 
         #expect(base == copy)
         #expect(base == .light)
-        #expect(ChioTheme.default == ChioTheme())
+        #expect(ChioStyle.default == ChioStyle())
         #expect(first.spacing == base.spacing)
         #expect(first.treatments == base.treatments)
         #expect(customized.colors.accent == accent)
@@ -119,7 +102,7 @@ struct ChioThemeTests {
         #expect(customized.colors.border == base.colors.border)
         #expect(customized.colors.success == base.colors.success)
         #expect(customized.colors.warning == base.colors.warning)
-        #expect(customized.spacing == ChioTheme.Spacing(horizontalInset: 3, sectionGap: 2, hintGap: 4))
+        #expect(customized.spacing == ChioStyle.Spacing(horizontalInset: 3, sectionGap: 2, hintGap: 4))
         #expect(customized.treatments.borderStyle == stroke)
         #expect(customized.treatments.selectionMarker == ">")
         #expect(customized.treatments.progressFilledGlyph == "#")
@@ -132,8 +115,8 @@ struct ChioThemeTests {
 
     @Test("All color roles can be replaced together without retaining defaults")
     func allColorRoles() {
-        let palette = ChioTheme.default.colors
-        let expected = ChioTheme.Colors(
+        let palette = ChioStyle.default.colors
+        let expected = ChioStyle.Colors(
             accent: Color(hexRGB: 0x010203), heading: Color(hexRGB: 0x040506),
             foreground: Color(hexRGB: 0x070809), secondaryText: Color(hexRGB: 0x101112),
             mutedText: Color(hexRGB: 0x131415), surface: Color(hexRGB: 0x161718),
@@ -149,16 +132,16 @@ struct ChioThemeTests {
             warning: expected.warning, error: expected.error
         )
         #expect(changed == expected)
-        #expect(palette == ChioTheme.default.colors)
+        #expect(palette == ChioStyle.default.colors)
     }
 
     @Test("Zero distances and single-cell Unicode remain valid theme values")
     func validBoundaries() {
-        let spacing = ChioTheme.Spacing(horizontalInset: 2, verticalInset: 3, sectionGap: 4, hintGap: 5)
+        let spacing = ChioStyle.Spacing(horizontalInset: 2, verticalInset: 3, sectionGap: 4, hintGap: 5)
         let zero = spacing.replacing(horizontalInset: 0, verticalInset: 0, sectionGap: 0, hintGap: 0)
-        #expect(zero == ChioTheme.Spacing(horizontalInset: 0, verticalInset: 0, sectionGap: 0, hintGap: 0))
+        #expect(zero == ChioStyle.Spacing(horizontalInset: 0, verticalInset: 0, sectionGap: 0, hintGap: 0))
         #expect(spacing.verticalInset == 3)
-        let treatments = ChioTheme.Treatments(selectionMarker: "é", progressFilledGlyph: "#", progressEmptyGlyph: " ")
+        let treatments = ChioStyle.Treatments(selectionMarker: "é", progressFilledGlyph: "#", progressEmptyGlyph: " ")
         let replacement = treatments.replacing(selectionMarker: "e\u{301}")
         #expect(replacement.selectionMarker == "e\u{301}")
         #expect(replacement.progressFilledGlyph == "#")
@@ -170,14 +153,14 @@ struct ChioThemeTests {
     func negativeSpacing(component: Int) async {
         await #expect(processExitsWith: .failure) { [component] in
             switch component {
-            case 0: _ = ChioTheme.Spacing(horizontalInset: -1)
-            case 1: _ = ChioTheme.Spacing(verticalInset: -1)
-            case 2: _ = ChioTheme.Spacing(sectionGap: -1)
-            default: _ = ChioTheme.Spacing(hintGap: -1)
+            case 0: _ = ChioStyle.Spacing(horizontalInset: -1)
+            case 1: _ = ChioStyle.Spacing(verticalInset: -1)
+            case 2: _ = ChioStyle.Spacing(sectionGap: -1)
+            default: _ = ChioStyle.Spacing(hintGap: -1)
             }
         }
         await #expect(processExitsWith: .failure) { [component] in
-            let base = ChioTheme.default.spacing
+            let base = ChioStyle.default.spacing
             switch component {
             case 0: _ = base.replacing(horizontalInset: -1)
             case 1: _ = base.replacing(verticalInset: -1)
@@ -191,36 +174,36 @@ struct ChioThemeTests {
           arguments: ["", "ab", "界", "\n", "\t", "\u{1B}"])
     func invalidMarkers(glyph: String) async {
         await #expect(processExitsWith: .failure) { [glyph] in
-            _ = ChioTheme.Treatments(selectionMarker: glyph)
+            _ = ChioStyle.Treatments(selectionMarker: glyph)
         }
         await #expect(processExitsWith: .failure) { [glyph] in
-            _ = ChioTheme.default.treatments.replacing(selectionMarker: glyph)
+            _ = ChioStyle.default.treatments.replacing(selectionMarker: glyph)
         }
     }
 
     @Test("Both progress glyphs retain their restrictions during construction and replacement")
     func invalidProgressGlyphs() async {
         await #expect(processExitsWith: .failure) {
-            _ = ChioTheme.Treatments(progressFilledGlyph: "界")
+            _ = ChioStyle.Treatments(progressFilledGlyph: "界")
         }
         await #expect(processExitsWith: .failure) {
-            _ = ChioTheme.Treatments(progressEmptyGlyph: "")
+            _ = ChioStyle.Treatments(progressEmptyGlyph: "")
         }
         await #expect(processExitsWith: .failure) {
-            _ = ChioTheme.default.treatments.replacing(progressFilledGlyph: "界")
+            _ = ChioStyle.default.treatments.replacing(progressFilledGlyph: "界")
         }
         await #expect(processExitsWith: .failure) {
-            _ = ChioTheme.default.treatments.replacing(progressEmptyGlyph: "")
+            _ = ChioStyle.default.treatments.replacing(progressEmptyGlyph: "")
         }
     }
 
     @Test("Spacing decodes valid distances and round-trips without changing zero values")
     func spacingRoundTrip() throws {
         let fixture = Data(#"{"horizontalInset":3,"verticalInset":0,"sectionGap":2,"hintGap":0}"#.utf8)
-        let decoded = try JSONDecoder().decode(ChioTheme.Spacing.self, from: fixture)
-        #expect(decoded == ChioTheme.Spacing(horizontalInset: 3, verticalInset: 0, sectionGap: 2, hintGap: 0))
+        let decoded = try JSONDecoder().decode(ChioStyle.Spacing.self, from: fixture)
+        #expect(decoded == ChioStyle.Spacing(horizontalInset: 3, verticalInset: 0, sectionGap: 2, hintGap: 0))
         let data = try JSONEncoder().encode(decoded)
-        #expect(try JSONDecoder().decode(ChioTheme.Spacing.self, from: data) == decoded)
+        #expect(try JSONDecoder().decode(ChioStyle.Spacing.self, from: data) == decoded)
         #expect(Set([decoded, decoded.replacing()]).count == 1)
         #expect(Set([decoded, decoded.replacing(hintGap: 1)]).count == 2)
     }
@@ -232,7 +215,7 @@ struct ChioThemeTests {
         let invalid = valid.merging([field: -1]) { _, replacement in replacement }
         let fixture = try JSONSerialization.data(withJSONObject: invalid)
         do {
-            _ = try JSONDecoder().decode(ChioTheme.Spacing.self, from: fixture)
+            _ = try JSONDecoder().decode(ChioStyle.Spacing.self, from: fixture)
             Issue.record("Negative spacing unexpectedly decoded")
         } catch DecodingError.dataCorrupted(let context) {
             #expect(context.codingPath.map(\.stringValue) == [field])
@@ -247,13 +230,13 @@ struct ChioThemeTests {
         ])
     func malformedSpacingDecode(fixture: String) {
         #expect(throws: DecodingError.self) {
-            try JSONDecoder().decode(ChioTheme.Spacing.self, from: Data(fixture.utf8))
+            try JSONDecoder().decode(ChioStyle.Spacing.self, from: Data(fixture.utf8))
         }
     }
 
     @Test("Native palette values retain every role through Codable and Hashable synthesis")
     func colorsRoundTrip() throws {
-        let palette = ChioTheme.light.colors.replacing(
+        let palette = ChioStyle.light.colors.replacing(
             accent: Color(hexRGB: 0x010203), heading: Color(hexRGB: 0x040506),
             foreground: Color(hexRGB: 0x070809), secondaryText: Color(hexRGB: 0x101112),
             mutedText: Color(hexRGB: 0x131415), surface: Color(hexRGB: 0x161718),
@@ -262,7 +245,7 @@ struct ChioThemeTests {
             error: Color(hexRGB: 0x313233)
         )
         let data = try JSONEncoder().encode(palette)
-        let decoded = try JSONDecoder().decode(ChioTheme.Colors.self, from: data)
+        let decoded = try JSONDecoder().decode(ChioStyle.Colors.self, from: data)
         #expect(decoded == palette)
         #expect(Set([palette, decoded]).count == 1)
         #expect(Set([palette, palette.replacing(accent: .red)]).count == 2)

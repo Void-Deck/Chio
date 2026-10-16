@@ -83,9 +83,9 @@ private struct HintTestView {
     @State private var phase = 0
     @FocusState private var focused: Bool
 
-    private var theme: ChioTheme {
-        var theme = ChioTheme.default
-        theme = theme.replacing(spacing: ChioTheme.Spacing(hintGap: widerGap ? 4 : 2))
+    private var theme: ChioStyle {
+        var theme = ChioStyle.default
+        theme = theme.replacing(spacing: ChioStyle.Spacing(hintGap: widerGap ? 4 : 2))
         return theme
     }
 }
@@ -101,7 +101,7 @@ extension HintTestView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .chioTheme(theme)
+        .style(theme)
         .focusable()
         .focused($focused)
         .defaultFocus($focused, true)

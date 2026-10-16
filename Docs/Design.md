@@ -6,7 +6,8 @@ cross-cutting architecture and indexes the detailed decisions.
 
 [Plan](Plan.md) owns active work and open questions; [Verification](Verification.md)
 owns current checks; [Usage](Usage.md) and [Examples](Examples.md) own public recipes
-and launch workflows. [Release records](Releases/0.1.0.md) preserve dated evidence.
+and launch workflows. Release records preserve [0.2.0](Releases/0.2.0.md) scope
+and evidence, with [0.1.0](Releases/0.1.0.md) retained as the earlier baseline.
 
 ## Ownership
 
@@ -28,11 +29,11 @@ validate the framework; their domain models do not define its product scope.
 Coverage inventories describe gaps, without committing to catalog parity.
 
 The [approved map expansion](Plan.md#approved-map-expansion) adds disk storage
-and planned downloadable tile packs, geocoding and routing adapters at explicit
+and programmatic tile packs, geocoding and routing adapters at explicit
 effect boundaries beside the view. Applications retain invocation, storage and
 provider policy, credentials and workflow ownership. These capabilities are
-delivered one slice at a time. Submitted place search now has an explicit Photon
-adapter; the approved reverse slice adds a separate capability and Photon client
+delivered one slice at a time. Submitted place search has an explicit Photon
+adapter; reverse lookup supplies a separate capability and Photon client
 using the same attributed place values. [Routing](Decisions/Routing.md) provides
 an explicit OSRM adapter beside the unchanged overlay view. Provider archive
 downloads remain paused. The current
@@ -53,10 +54,21 @@ cache's expiry and eviction. Applications own distribution and any management UI
 The approved unified `ChioStyle` value holds colors, spacing, treatments and
 surfaces. `View.style(_:)` installs native control styles and an inherited subtree
 value through one `EnvironmentValues.chioStyle` key. The nearest complete style
-overrides its ancestor. Legacy `ChioTheme` and `.chioTheme(...)` forward to the
-same value/key. Native component style modifiers remain specific overrides.
-[Styles](Decisions/Themes.md) owns presets, surface inheritance, bounded input
-padding and compatibility; [Plan](Plan.md) records delivery and verification.
+overrides its ancestor. The current API uses `ChioStyle`, `.style(...)` and
+`EnvironmentValues.chioStyle`; the former theme aliases and legacy function-signature
+overloads are removed. Native component style modifiers remain specific overrides,
+with descriptive `theme:` initializer labels taking `ChioStyle` values.
+[Styles](Decisions/Themes.md) owns presets, surface inheritance, bounded input and
+list-row padding, and migration; [Plan](Plan.md) records delivery and verification.
+
+`Spacing.listRowVerticalInset` is a checked `0...32` cell distance, defaulting to
+zero and set to one by `.opencode`. `SearchableList` and `SearchableChecklist`
+apply it around complete authored rows; `FilePicker` inherits that presentation
+through its searchable list. Native `List` content applies the token with ordinary
+row padding because its public style hook cannot transform each row. SwiftTUI
+retains focus, measurement, selection and scrolling.
+[Plan](Plan.md#current-slice-list-row-spacing) and the [release record](Releases/0.2.0.md)
+own delivery status and qualification evidence.
 Applications retain layout, breakpoints, column widths and navigation.
 
 Prefer a native style when an existing view already expresses the required
@@ -211,7 +223,7 @@ in Releases; avoid duplicating full contracts across documents.
 | Topic | Status and responsibility |
 | --- | --- |
 | <a id="theme"></a>[Styles and native control styling](Decisions/Themes.md) | Accepted |
-| <a id="compact-instrumentation"></a><a id="duration-presentation-and-example-owned-timekeeping"></a>[Compact instrumentation and duration display](Decisions/Instrumentation.md) | Accepted instrumentation; high-contrast target dial follow-up; tile deferred |
+| <a id="compact-instrumentation"></a><a id="duration-presentation-and-example-owned-timekeeping"></a>[Compact instrumentation and duration display](Decisions/Instrumentation.md) | Accepted instrumentation and high-contrast target dials; tile deferred |
 | <a id="searchable-selection"></a><a id="searchable-multiple-choice"></a>[Searchable selection and membership](Decisions/SearchableSelection.md) | Accepted |
 | <a id="composition-and-layout"></a>[Responsive composition and status](Decisions/Composition.md) | Accepted |
 | <a id="contextual-keyboard-help"></a>[Contextual keyboard help](Decisions/KeyboardHelp.md) | Accepted |

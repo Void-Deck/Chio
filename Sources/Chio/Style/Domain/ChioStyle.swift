@@ -28,27 +28,6 @@ public struct ChioStyle {
         self.surfaces = surfaces
     }
 
-    /// Preserves the six-component initializer's function-reference signature.
-    public init(
-        colors: Colors, spacing: Spacing, treatments: Treatments,
-        syntax: SyntaxColors, map: MapColors, gauge: GaugeColors
-    ) {
-        self.init(colors: colors, spacing: spacing, treatments: treatments,
-                  syntax: syntax, map: map, gauge: gauge, surfaces: Surfaces())
-    }
-
-    /// Preserves the original initializer's function-reference signature.
-    public init(
-        colors: Colors,
-        spacing: Spacing,
-        treatments: Treatments,
-        syntax: SyntaxColors,
-        map: MapColors
-    ) {
-        self.init(colors: colors, spacing: spacing, treatments: treatments,
-                  syntax: syntax, map: map, gauge: GaugeColors())
-    }
-
     /// Returns a new style; omitted components retain their current values.
     public func replacing(
         colors: Colors? = nil,
@@ -63,27 +42,6 @@ public struct ChioStyle {
              treatments: treatments ?? self.treatments, syntax: syntax ?? self.syntax,
              map: map ?? self.map, gauge: gauge ?? self.gauge,
              surfaces: surfaces ?? self.surfaces)
-    }
-
-    /// Preserves the six-component replacement's function-reference signature.
-    public func replacing(
-        colors: Colors?, spacing: Spacing?, treatments: Treatments?,
-        syntax: SyntaxColors?, map: MapColors?, gauge: GaugeColors?
-    ) -> Self {
-        replacing(colors: colors, spacing: spacing, treatments: treatments,
-                  syntax: syntax, map: map, gauge: gauge, surfaces: nil)
-    }
-
-    /// Preserves the original replacement's function-reference signature.
-    public func replacing(
-        colors: Colors?,
-        spacing: Spacing?,
-        treatments: Treatments?,
-        syntax: SyntaxColors?,
-        map: MapColors?
-    ) -> Self {
-        replacing(colors: colors, spacing: spacing, treatments: treatments,
-                  syntax: syntax, map: map, gauge: nil)
     }
 
     /// A dark palette inspired by Charm's Huh controls and Bubbles lists.
@@ -151,7 +109,7 @@ public struct ChioStyle {
             error: Color(hexRGB: 0xEE8C86)
         ),
         spacing: Spacing(horizontalInset: 2, verticalInset: 1, sectionGap: 1, hintGap: 2,
-                         inputVerticalInset: 1),
+                         inputVerticalInset: 1, listRowVerticalInset: 1),
         treatments: Treatments(borderStyle: .single, groupBoxBorder: .leading, textFieldBorder: .leading),
         surfaces: Surfaces(canvas: .color(Color(hexRGB: 0x111111)),
                            input: .color(Color(hexRGB: 0x282522)))
@@ -304,14 +262,6 @@ public struct ChioStyle {
             self.textFieldBorder = textFieldBorder
         }
 
-        /// Compatibility with the original four-component initializer.
-        public init(borderStyle: StrokeStyle, selectionMarker: String,
-                    progressFilledGlyph: String, progressEmptyGlyph: String) {
-            self.init(borderStyle: borderStyle, selectionMarker: selectionMarker,
-                      progressFilledGlyph: progressFilledGlyph, progressEmptyGlyph: progressEmptyGlyph,
-                      groupBoxBorder: .all, groupBoxTitlePlacement: .content, textFieldBorder: .all)
-        }
-
         /// Returns checked treatments; omitted values retain their current values.
         public func replacing(
             borderStyle: StrokeStyle? = nil,
@@ -329,14 +279,6 @@ public struct ChioStyle {
                  groupBoxBorder: groupBoxBorder ?? self.groupBoxBorder,
                  groupBoxTitlePlacement: groupBoxTitlePlacement ?? self.groupBoxTitlePlacement,
                  textFieldBorder: textFieldBorder ?? self.textFieldBorder)
-        }
-
-        /// Compatibility with the original four-component replacement.
-        public func replacing(borderStyle: StrokeStyle?, selectionMarker: String?,
-                              progressFilledGlyph: String?, progressEmptyGlyph: String?) -> Self {
-            replacing(borderStyle: borderStyle, selectionMarker: selectionMarker,
-                      progressFilledGlyph: progressFilledGlyph, progressEmptyGlyph: progressEmptyGlyph,
-                      groupBoxBorder: nil, groupBoxTitlePlacement: nil, textFieldBorder: nil)
         }
 
         private static func requireSingleCellGlyph(_ glyph: String) {

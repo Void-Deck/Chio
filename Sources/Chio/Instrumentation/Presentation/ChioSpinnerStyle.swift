@@ -3,9 +3,9 @@ import SwiftTUIViews
 /// Semantic paint around SwiftTUI's native braille spinner and cadence.
 /// The native control owns animation, stage semantics, and reduced motion.
 public struct ChioSpinnerStyle {
-    public let theme: ChioTheme
+    public let theme: ChioStyle
 
-    public init(theme: ChioTheme = .default) {
+    public init(theme: ChioStyle = .default) {
         self.theme = theme
     }
 }

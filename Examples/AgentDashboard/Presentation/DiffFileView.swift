@@ -9,7 +9,7 @@ struct DiffFileView {
     let minimumWidth: Int
     let sourceWidth: Int
     let activeHunk: Int?
-    @Environment(\.chioTheme) private var theme
+    @Environment(\.chioStyle) private var theme
 
     struct HunkAnchor {
         let fileID: String

@@ -535,7 +535,7 @@ extension FilePickerTestView: View {
             Text("S=\(selection?.lastPathComponent ?? "-") W=\(writes) C=\(confirmations) X=\(cancellations)")
             Text("R=\(reads) V=\(validations) D=\(completed) B=\(barrier)")
         }
-        .chioTheme(light ? .light : .default)
+        .style(light ? .light : .default)
         .onKeyPress { press in
             guard press.modifiers == .ctrl else { return .ignored }
             switch press.key {

@@ -7,7 +7,7 @@ struct MapCanvasView {
     let drawing: MapDrawing
     let positioned: MapLabels
 
-    init(map: PreparedMap, viewport: MapViewport, theme: ChioTheme, fills: Bool, labels: Bool,
+    init(map: PreparedMap, viewport: MapViewport, theme: ChioStyle, fills: Bool, labels: Bool,
          waterColor: Color, parkColor: Color, detail: MapDetail = .source) throws {
         drawing = try MapDrawing(map: map, viewport: viewport, colors: theme.colors,
                                  waterColor: waterColor, parkColor: parkColor, fills: fills)

@@ -2,9 +2,9 @@ import SwiftTUIViews
 
 /// Native rounded table chrome with semantic header colors.
 public struct ChioTableStyle {
-    public let theme: ChioTheme
+    public let theme: ChioStyle
 
-    public init(theme: ChioTheme = .default) {
+    public init(theme: ChioStyle = .default) {
         self.theme = theme
     }
 }

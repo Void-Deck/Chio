@@ -3,10 +3,10 @@ import SwiftTUIViews
 /// Compact semantic chrome for a native toast notification.
 /// Pass explicitly to `.toast(..., style:)`; SwiftTUI owns placement and dismissal.
 public struct ChioToastStyle {
-    public let theme: ChioTheme
+    public let theme: ChioStyle
     public let tone: TerminalTone
 
-    public init(theme: ChioTheme = .default, tone: TerminalTone = .info) {
+    public init(theme: ChioStyle = .default, tone: TerminalTone = .info) {
         self.theme = theme
         self.tone = tone
     }

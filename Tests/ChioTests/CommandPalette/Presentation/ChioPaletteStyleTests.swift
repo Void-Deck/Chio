@@ -43,7 +43,7 @@ struct ChioPaletteStyleTests {
     @Test("Native palettes inherit customized Chio tokens through the theme modifier",
           arguments: [false, true])
     func themedPalette(light: Bool) async throws {
-        var theme = light ? ChioTheme.light : .default
+        var theme = light ? ChioStyle.light : .default
         theme = theme.replacing(colors: theme.colors.replacing(
             accent: Color(hexRGB: 0xA65432),
             heading: Color(hexRGB: 0x123456),
@@ -88,10 +88,10 @@ struct ChioPaletteStyleTests {
 }
 
 private struct PaletteStyleTestApp {
-    let theme: ChioTheme
+    let theme: ChioStyle
 
     nonisolated init() { theme = .default }
-    nonisolated init(theme: ChioTheme) { self.theme = theme }
+    nonisolated init(theme: ChioStyle) { self.theme = theme }
 }
 
 extension PaletteStyleTestApp: App {
@@ -102,7 +102,7 @@ extension PaletteStyleTestApp: App {
 
 @MainActor
 private struct PaletteStyleTestView {
-    let theme: ChioTheme
+    let theme: ChioStyle
     @State private var isPresented = true
     @State private var activations = 0
 }
@@ -124,6 +124,6 @@ extension PaletteStyleTestView: View {
             .paletteCommand(name: "Lambda") {}
             .paletteCommand(name: "Mu") {}
             .paletteSheet("Commands", isPresented: $isPresented)
-            .chioTheme(theme)
+            .style(theme)
     }
 }

@@ -49,7 +49,7 @@ struct FeedbackExampleView {
             }
         }
 
-        func color(in theme: ChioTheme) -> Color {
+        func color(in theme: ChioStyle) -> Color {
             switch self {
             case .ready, .publishing: theme.colors.foreground
             case .published: theme.colors.success
@@ -65,7 +65,7 @@ struct FeedbackExampleView {
         }
     }
 
-    private var theme: ChioTheme { themeChoice.theme }
+    private var theme: ChioStyle { themeChoice.theme }
 
     private func publish() {
         guard phase.canPublish else { return }
@@ -157,7 +157,7 @@ extension FeedbackExampleView: View {
         }
         .toast("Published · ready to share", isPresented: $showsToast,
                style: ChioToastStyle(theme: theme, tone: .success), duration: 3)
-        .chioTheme(theme)
+        .style(theme)
         .task(id: phase) {
             guard phase.isPublishing else { return }
             do { try await Task.sleep(for: .seconds(1.5)) } catch { return }
