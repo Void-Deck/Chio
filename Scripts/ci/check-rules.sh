@@ -18,9 +18,10 @@ gate_directory="$repository_root/.build/swift-rules"
 scratch_path="$gate_directory/native"
 compiler_context="$gate_directory/compiler-context.json"
 helper_directory=""
-rules_version=0.1.4
-rules_commit=fc3de546794e7e4b0429b0b03e282ac7218bde8b
+rules_version=0.1.5
+rules_commit=d777c8ccbe990a8e90462c928042574d9dbe9d53
 launcher="$HOME/.local/bin/swift-rules"
+documentation_python="$rules_checkout/.build/docs-venv/bin/python"
 
 fail() {
   echo "check-rules: $*" >&2
@@ -45,6 +46,7 @@ for command in git python3 swift; do
   command -v "$command" >/dev/null || fail "Required command is unavailable: $command"
 done
 [[ -x "$launcher" ]] || fail "Install SwiftRules $rules_version at $launcher first"
+[[ -x "$documentation_python" ]] || fail "Prepare the pinned documentation environment at $documentation_python first"
 
 if [[ "$(uname -s)" == Darwin ]]; then
   # Respect the caller's selection; never change the system developer directory.
@@ -62,6 +64,12 @@ helper_directory="$(mktemp -d "$gate_directory/helper.XXXXXX")"
 helper="$helper_directory/compiler-context.py"
 # Read immutable Git objects, never a possibly modified working-tree helper.
 git -C "$rules_checkout" show "$rules_commit:Scripts/compiler-context.py" > "$helper"
+documentation_checker="$helper_directory/check-docs.py"
+git -C "$rules_checkout" show "$rules_commit:Scripts/check-docs.py" > "$documentation_checker"
+
+# The released checker validates exact parser versions before scanning.
+# Checking never installs dependencies or fetches the private tool repository.
+"$documentation_python" -B "$documentation_checker" --root "$repository_root"
 
 # Refresh the native build before exporting; SwiftPM checks current inputs while
 # retaining already-built dependencies in this gate's dedicated scratch path.

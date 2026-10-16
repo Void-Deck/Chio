@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "moduleRoots": [
+    "Sources",
+    "Examples",
+    "Tests",
+    "Spikes"
+  ],
+  "modules": [
+    {
+      "path": "Sources/Chio",
+      "document": "Docs/Design.md"
+    },
+    {
+      "path": "Sources/ChioFileSystem",
+      "document": "Docs/Design.md"
+    },
+    {
+      "path": "Examples/AgentDashboard",
+      "document": "Docs/Examples.md"
+    },
+    {
+      "path": "Examples/Maps",
+      "document": "Docs/Examples.md"
+    },
+    {
+      "path": "Tests/ChioTests",
+      "document": "Docs/Verification.md"
+    },
+    {
+      "path": "Tests/ChioDashboardTests",
+      "document": "Docs/Verification.md"
+    },
+    {
+      "path": "Tests/ChioMapTests",
+      "document": "Docs/Verification.md"
+    },
+    {
+      "path": "Spikes/MapRouting",
+      "document": "Spikes/MapRouting/README.md"
+    }
+  ],
+  "excludedModules": [],
+  "documents": [
+    "AGENTS.md",
+    "README.md",
+    "Docs/Plan.md",
+    "Docs/Usage.md",
+    "Docs/Releases/0.2.0.md",
+    "Docs/Decisions/CommandPalette.md",
+    "Docs/Decisions/Composition.md",
+    "Docs/Decisions/Dependencies.md",
+    "Docs/Decisions/DiffReader.md",
+    "Docs/Decisions/DisclosureGroups.md",
+    "Docs/Decisions/Feedback.md",
+    "Docs/Decisions/FileSelection.md",
+    "Docs/Decisions/Forms.md",
+    "Docs/Decisions/GeographicMaps.md",
+    "Docs/Decisions/Instrumentation.md",
+    "Docs/Decisions/KeyboardHelp.md",
+    "Docs/Decisions/Markdown.md",
+    "Docs/Decisions/NativeIntegration.md",
+    "Docs/Decisions/OfflineTilePacks.md",
+    "Docs/Decisions/OnlineMaps.md",
+    "Docs/Decisions/Pagination.md",
+    "Docs/Decisions/PlaceSearch.md",
+    "Docs/Decisions/ReviewInbox.md",
+    "Docs/Decisions/Routing.md",
+    "Docs/Decisions/Scrolling.md",
+    "Docs/Decisions/SearchableSelection.md",
+    "Docs/Decisions/TableRendering.md",
+    "Docs/Decisions/Tabs.md",
+    "Docs/Decisions/TerminalColors.md",
+    "Docs/Decisions/Themes.md",
+    "Examples/Maps/Fixtures/Provenance.md",
+    "Examples/Maps/Fixtures/OnlineTiles/Provenance.md"
+  ]
+}
