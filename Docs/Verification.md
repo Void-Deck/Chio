@@ -94,7 +94,7 @@ It does not check heading fragments, HTML, external URLs, prose accuracy or brow
 behavior. Keep manual heading and site checks, meaningful ownership review and
 the other required verification below. No new per-directory README is required.
 
-### 0.1.5 adoption candidate
+### 0.1.5 adoption
 
 The user requires this adoption before cutting Chio 0.2.0. The published stable
 target resolves to `d777c8ccbe990a8e90462c928042574d9dbe9d53`; it retains 0.1.4's
@@ -112,8 +112,13 @@ write its compiler cache; the authorized normal-cache run passes.
 This is developer-tool qualification. Application source, package dependencies,
 tests, the public CI workflow and its verification script are unchanged. The
 release record owns application-platform qualification. A passing macOS wrapper
-does not establish Linux execution of the private checker. Independent review
-and merge acceptance remain separate from this local candidate evidence.
+does not establish Linux execution of the private checker. Independent review reports no actionable findings.
+[PR #19](https://github.com/echoz/Chio/pull/19) merged into the release branch at
+`af6cb3664e9609716fd7b3594dfb3f9959073972`, whose tree matches the reviewed
+`8ce64608ac96c022609947757428e75c92c1a689` candidate. Default-branch delivery and
+0.2.0 publication remain with release PR #18. After integrating the release
+documents and recordings, the complete wrapper passes again with the same
+36 documents, eight modules, 350 Swift files and 396 baseline findings.
 
 <a id="014-adoption-candidate"></a>
 
@@ -388,11 +393,62 @@ upstream candidate `8408901e1b8703fcf046eaaf16722fc4d920f4a7`. Other dependency
 revisions and the existing assertions, deadlines and verification policy remain
 unchanged. SwiftTUI #58 and #59 are separate follow-ups outside this pin.
 
+Chio code candidate `40b5d8c2da40bda2640758ceacb30a76bc7caa2a` passes the complete
+local gate on macOS arm64 with official Swift 6.4 and full Xcode. Debug runs pass
+507 library, 166 map and 147 example tests. Release runs pass 507 library,
+166 map and 177 example tests. The gate also passes both release products,
+24 snapshot commands, 16 dashboard terminal workflows, all three compact
+appearance sessions, map fixture verification, offline/search/routing/online
+terminal journeys, and the real-process persistent-cache and offline-pack probes.
+Online checks use retained bytes over loopback, not a public provider.
+
 Compiler-backed SwiftRules 0.1.4 checks 350 files with no new violations and
 396 retained baseline findings. Separate read-only source/API/test review has
-no actionable findings. Complete local and hosted gates, external installation,
-showcase checks and final documentation review remain in progress. Publication
-requires those checks and immutable tag verification.
+no actionable findings. Source, tests, dependency revisions, assertions and
+deadlines remain unchanged during the final documentation and media refresh.
+
+A fresh external consumer resolves, builds, links and runs against the immutable
+Chio code candidate and matching SwiftTUI revision. It checks custom views,
+inherited `ChioStyle`, canonical APIs, duration formatting and initializer
+references, checked list-row spacing and raster positions, map values and a
+no-source map raster, and instrumentation construction. Its fresh resolution
+selects Collections 1.7.3; Chio's retained lockfile still uses 1.7.2. This is
+noninteractive public-API installation evidence, not a live terminal or service test.
+
+All six appearance recordings were refreshed from a release build of the same
+code candidate at 100 × 30 and 36 × 64. The later product-build stage relinks the
+executable; capture evidence retains its own binary digest. Each session passes
+clean exit, termios restoration,
+cursor restoration and alternate-screen restoration. Their initial PNG previews
+are byte-identical to the retained previews and pass visual inspection. Each raw
+session retains one native `collection.unboundedRealization` diagnostic for the
+four-row fixture after teardown; published clips omit that diagnostic and startup
+announcements. This does not establish large-collection performance.
+
+Site assembly passes. Safari checks confirm matching appearance choices,
+commands and previews, clean playback of refreshed wide btop and narrow OpenCode
+clips, and the main catalog's btop map selection. Site implementation is unchanged;
+earlier six-clip, responsive-layout and asset-fallback checks remain applicable.
+Final documentation/media review passes, including 246 local links and 96
+Markdown fragments. Published-site and immutable-tag verification follow release
+acceptance.
+
+The first hosted [run](https://github.com/echoz/Chio/actions/runs/38929764539) tests
+merge `6513fbbcf7c53f15fc6cebf6b90c362f4cfae559`, with base `7d44bd6` and head
+`40b5d8c`. macOS passes the complete gate with the same test counts above.
+Linux passes 506 library, 166 map and 147 example tests in debug; release passes
+506 library, 166 map and 177 example tests. All dashboard and appearance terminal
+checks pass. The offline-map probe continues progressing when the 60-minute job
+limit cancels it. Later map search, routing, HTTP, cache and pack probes do not
+run. No assertion failure or stalled probe is observed; this is incomplete Linux
+qualification, not a passing platform gate.
+
+The release candidate increases only the overall Linux job limit to 90 minutes.
+Builds and tests account for the elapsed time; assertions, individual interaction
+deadlines, verification stages and macOS limits stay unchanged. A fresh complete
+hosted run must pass before 0.2.0 publication. EngineeringRules 0.1.5 is now merged
+into the release branch; its separate local developer gate does not substitute
+for the remaining application-platform check.
 
 ## List row spacing qualification
 
@@ -833,11 +889,13 @@ Use public raster and hosted-session checks for the supported searchable compose
 lists: native focus, selection, query, activation and scroll reveal through width
 and style changes. Include clicks on row padding, adjacent boundaries and disabled
 checklist entries. Check `listRowVerticalInset` construction, replacement, decoding,
-zero defaults and maximum-inset clipping. Row density is in qualification under the
-[native list conditions](Decisions/NativeIntegration.md#tall-list-rows) and
-[the current checks](#list-row-spacing-qualification).
+zero defaults and maximum-inset clipping. The
+[native list conditions](Decisions/NativeIntegration.md#tall-list-rows) define the
+supported contract; [merged-pin qualification](#020-merged-pin-qualification)
+records current results and the earlier sections preserve failure evidence.
 Single-line truncation limits row height but does not establish that arbitrary
-list/checklist scrolling is safe or fix the separate reproduced focus failure.
+list/checklist scrolling is safe. The merged correction addresses the reproduced
+same-viewport focus failure; broader native follow-ups remain separate.
 Inspect unchanged default/light presentation, the intentional btop border-heading
 change, and opencode leading edges, roomy inputs and padded searchable rows.
 The CI terminal probe exercises every comparison style at 36 × 18, including
@@ -904,8 +962,10 @@ Xcode 27 and the Swift 6.4.0 Ubuntu 24.04 container. The Linux image uses
 pinned to the same image digest verified from Docker Hub, to avoid depending on
 Docker Hub authentication during runner initialization. Builds/tests serialize
 within each job; artifacts retain logs, text captures and xUnit reports.
-Both jobs allow sixty minutes for the complete gate. Earlier forty-five-minute
-caps cancelled runs during forward progress: Linux after its test suites passed,
+macOS allows sixty minutes and Linux allows ninety minutes for the complete gate.
+The 0.2.0 Linux run exhausted its former sixty-minute budget during an actively
+progressing map probe, after all test suites and dashboard workflows passed.
+Earlier forty-five-minute caps cancelled runs during forward progress: Linux after its test suites passed,
 and macOS after all debug/release suites and dashboard terminal workflows passed,
 as the map build started. The larger job budget preserves all test assertions,
 frame deadlines and terminal workflows; it does not extend an individual test's

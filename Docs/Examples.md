@@ -55,8 +55,8 @@ below searchable rows respectively. `SearchableList` applies the inherited
 `ChioStyle.Spacing.listRowVerticalInset` automatically. File-selection lists and
 checklists consume the same token; native `List` content uses ordinary authored
 padding. All values and measurements are local fixtures; Save changes only the
-example's message. The new density behavior and removal of theme aliases are
-pending qualification; the 0.2.0 release is held until that work completes.
+example's message. The [release record](Releases/0.2.0.md) owns migration
+and qualification evidence for row density and the current style API.
 
 **Ctrl-T** cycles looks, **Ctrl-D** cycles spacing, **Ctrl-E** reveals and focuses
 the workspace editor, **Ctrl-G** reveals graphs, **Ctrl-L** reveals the list, and
@@ -67,8 +67,8 @@ small interactive check. The application owns this breakpoint and section naviga
 
 [Compare the rendered treatments](https://echoz.github.io/Chio/appearance.html).
 The [style decision](Decisions/Themes.md#appearance-study) owns the accepted API
-and application boundaries. Captures must be refreshed from the verified candidate;
-site deployment waits for merge. The main catalog retains three captured themes,
+and application boundaries. [Verification](Verification.md#demo-site) owns capture
+and browser checks. The main catalog retains three captured themes,
 so its selector does not yet offer opencode for every example.
 
 ## Maps

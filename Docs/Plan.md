@@ -13,7 +13,18 @@ The user approved a 0.2.0 source release on 2026-10-15, then added list-row spac
 and removal of the legacy theme API to its scope. The user subsequently approved
 cutting 0.2.0 with the exact merged SwiftTUI #57 revision, followed by a 0.2.1
 dependency patch after SwiftTUI publishes a release containing the correction.
-Final qualification and publication remain pending.
+The user also requires EngineeringRules 0.1.5 and its documentation gate before
+publication. [PR #19](https://github.com/echoz/Chio/pull/19) targets the release
+branch and is merged at `af6cb366`; its local developer gates and separate review
+pass. The application
+code candidate is `40b5d8c2da40bda2640758ceacb30a76bc7caa2a`. Its compiler
+gate, complete local gate, source review, external-consumer installation, fresh
+captures, local browser checks and final documentation review pass. Hosted macOS
+passes. Linux passes all test suites and dashboard workflows, then reaches its
+one-hour job limit during map checks. The candidate raises that overall job
+limit to 90 minutes without changing test assertions or interaction deadlines.
+A complete hosted rerun must pass before publication and immutable release
+verification.
 [PR #18](https://github.com/echoz/Chio/pull/18) carries
 the release preparation. The [release record](Releases/0.2.0.md)
 owns scope, migration and evidence. Publication requires reviewed implementation,
@@ -378,7 +389,7 @@ filters, extensible upstream/raw-input switches, native wrappers and private
 nested conformances retain their documented roles.
 
 The map expansion above remains approved. Provider archive acquisition remains
-paused at the user's request; list row spacing is included in the held 0.2.0 candidate.
+paused at the user's request; list row spacing is included in the 0.2.0 scope.
 Real application use of the public map remains useful validation. Other component
 additions remain possible directions, not delivery promises.
 

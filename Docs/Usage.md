@@ -9,8 +9,8 @@ rendering, layout, state, input, focus, and scrolling.
 The package exports one `Chio` library. Applications also depend on SwiftTUI
 for the native views and runtime. See [Package.swift](../Package.swift) for the
 current dependency pins and [the design](Design.md) for interaction contracts.
-The [0.2.0 release preparation](Releases/0.2.0.md) records dependency and migration requirements.
-Release publication is held pending qualification of list-row spacing and the style API cleanup.
+The [0.2.0 release record](Releases/0.2.0.md) records dependency requirements,
+migration and release evidence.
 SwiftPM version requirements such as `from: "0.2.0"` cannot consume this revision-pinned graph.
 See the [migration notes](Releases/0.2.0.md#migration-from-010) when upgrading from 0.1.0.
 
@@ -50,11 +50,10 @@ and `.onResultKeyPress` for application shortcuts that must not consume search
 text. Native row focus chrome currently remains an upstream styling boundary;
 see [the design](Design.md).
 
-This recipe uses one-line rows for a compact presentation. SwiftTUI 0.18.0 fixes
-the measured-height retention failure during upward scrolling; retained Chio
-tests cover padded, mixed-height and wrapped rows. Broader pointer and dynamic
-style-change qualification remains separate from those checks. Applications own
-row content and available width; see [native list qualification](Decisions/NativeIntegration.md#current-row-qualification).
+This recipe uses one-line rows for a compact presentation. Applications own
+row content and available width; SwiftTUI owns measured-row navigation and focus.
+See [native list contracts and evidence](Decisions/NativeIntegration.md#tall-list-rows)
+for padded, mixed-height and wrapped rows.
 
 ## Expanded keyboard help
 
@@ -141,9 +140,8 @@ List(agents, selection: $selection) { agent in
 }
 ```
 
-The new spacing behavior is pending fresh interaction, platform and visual
-qualification. Earlier [native list regressions](Decisions/NativeIntegration.md#current-row-qualification)
-qualify the dependency, not this added style behavior.
+The [release record](Releases/0.2.0.md#release-verification) owns qualification
+evidence for spacing and dynamic style changes.
 
 `surfaces.canvas` and `surfaces.input` use `.base` to inherit `colors.surface`,
 or `.color(...)` for an explicit override. `.base` continues to follow later

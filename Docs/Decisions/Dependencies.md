@@ -65,9 +65,9 @@ follow-ups, outside the 0.2.0 pin. No automatic release monitoring is requested.
 
 <a id="0180-adoption-candidate"></a>
 
-## 0.18.0 adoption
+## Historical 0.18.0 adoption
 
-**Status:** Adopted on `main` through [PR #17](https://github.com/echoz/Chio/pull/17),
+**Historical status:** Adopted on `main` through [PR #17](https://github.com/echoz/Chio/pull/17),
 merged at `7d44bd6bd85290f2c6e3526cf19e6647d551797c`. Included in
 [0.2.0 release preparation](../Releases/0.2.0.md); release publication remains separate.
 

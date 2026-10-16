@@ -1,13 +1,11 @@
 # Styles and native control styling
 
-**Status:** Accepted and implemented. The unified `ChioStyle` API and promotion of
-the appearance recipes are verified in [PR #10](https://github.com/echoz/Chio/pull/10).
-They are included in the [0.2.0 release preparation](../Releases/0.2.0.md), which records scope and evidence.
-The list-row spacing addition and removal of theme compatibility APIs are approved
-and implemented in the working candidate, with fresh qualification pending.
-The 0.2.0 release is held for those checks. The
-[release migration notes](../Releases/0.2.0.md#migration-from-010) describe the source changes;
-earlier PR #10 evidence does not qualify this expanded candidate.
+**Status:** Accepted and implemented. The current contract includes unified
+`ChioStyle` values, list-row spacing and removal of theme compatibility APIs.
+[Plan](../Plan.md#current-slice-list-row-spacing) owns delivery status; the
+[release record](../Releases/0.2.0.md) owns migration and qualification evidence.
+Earlier [PR #10](https://github.com/echoz/Chio/pull/10) evidence covers the original
+unified style API and appearance recipes, before row spacing and alias removal.
 
 Use an immutable style and native control styles to give a subtree coherent
 presentation while retaining SwiftTUI behavior.
@@ -60,11 +58,10 @@ padding: the public native `ListStyle` hook has no per-row content transformatio
 Do not double-pad Chio searchable rows. SwiftTUI continues to own measurement,
 focus, selection and scroll reveal; applications own row content and width policy.
 
-[Native integration](NativeIntegration.md#current-row-qualification) retains the
-mixed-height reveal regression and native measurement-retention correction.
-SwiftTUI 0.18.0 adoption qualifies those retained regressions. The new inset,
-interactive density changes, pointer routing and refreshed appearance require
-fresh qualification before release.
+[Native integration](NativeIntegration.md#tall-list-rows) owns measured-row
+navigation and focus boundaries, including the merged native corrections.
+[Verification](../Verification.md) owns interaction, platform and visual checks;
+earlier dependency qualification remains distinct from the row-spacing addition.
 
 Construction and replacement preserve printable single-cell glyph preconditions.
 Options own component behavior. Applications own content, data, breakpoints,
@@ -107,16 +104,11 @@ the main catalog currently has only default, light and btop captures.
 
 OpenCode's authored padding, background surfaces and leading edges inspire the
 roomy style; btop informs compact border headings. These are interpretations,
-not integrations or claims of upstream parity. Before the new list-row inset,
-all six comparison captures and affected btop catalog previews were refreshed and
-inspected alongside interactive narrow sessions and assembled-site browser checks.
-The current candidate refreshes all six comparison captures to show roomier rows;
-terminal restoration and still inspection pass. Browser verification and the
-mixed-height focus correction remain pending in
-[Verification](../Verification.md#dynamic-row-spacing-candidate). Future appearance
-changes require the same [verification](../Verification.md); captures alone do
-not establish native interaction or platform correctness. Pages publishes from
-`main` after merge.
+not integrations or claims of upstream parity. Appearance changes require
+refreshed captures, interactive narrow sessions and assembled-site browser checks
+under [Verification](../Verification.md#demo-site). Captures alone do not establish
+native interaction or platform correctness. [Release records](../Releases/0.2.0.md)
+identify the candidate and retained evidence. Pages publishes from `main` after merge.
 
 ## References
 

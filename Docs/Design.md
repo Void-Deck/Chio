@@ -66,8 +66,9 @@ zero and set to one by `.opencode`. `SearchableList` and `SearchableChecklist`
 apply it around complete authored rows; `FilePicker` inherits that presentation
 through its searchable list. Native `List` content applies the token with ordinary
 row padding because its public style hook cannot transform each row. SwiftTUI
-retains focus, measurement, selection and scrolling. The density addition and API
-removal require fresh qualification; the 0.2.0 release is held pending those checks.
+retains focus, measurement, selection and scrolling.
+[Plan](Plan.md#current-slice-list-row-spacing) and the [release record](Releases/0.2.0.md)
+own delivery status and qualification evidence.
 Applications retain layout, breakpoints, column widths and navigation.
 
 Prefer a native style when an existing view already expresses the required

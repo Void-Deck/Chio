@@ -41,7 +41,7 @@ regression. The [local correction candidate](Dependencies.md#local-correction-ca
 preserves those column assertions and native ownership. It also corrects an
 ordinary Spacer's stretched allocation being reused as a required minimum,
 restoring the compact inbox width. Neither fix is part of released 0.17.0;
-both are included in the adopted 0.18.0 pin.
+both are included in 0.18.0 and retained by the current pin.
 
 Native list focus chrome uses SwiftTUI's theme; Chio themes selected content and
 controls. SwiftTUI 0.18.0 separates multiple-selection membership from the active
@@ -76,8 +76,8 @@ renderer, focus system or hidden dependency patch.
 `3701604e009bc113e4c6f01b25e3d5e7aa7b00eb`. The measured-height correction in
 [PR #47](https://github.com/SwiftTUI/swift-tui/pull/47) merged on 2026-10-12,
 after 0.17.0, and is included in the adopted upstream revision and 0.18.0.
-The user approved Chio row padding before the 0.2.0 release, after dependency
-qualification. The new field and composed-control changes require fresh checks.
+Chio row padding is approved within the 0.2.0 scope. The
+[release record](../Releases/0.2.0.md#release-verification) owns final qualification.
 
 `ChioStyle.Spacing.listRowVerticalInset` uses native padding around each complete
 `SearchableList` or `SearchableChecklist` row. `FilePicker` inherits this through
@@ -92,9 +92,12 @@ must exercise growth and shrinkage after scrolling, alongside padded pointer tar
 Bounds prevent excessive individual configuration; they do not promise every row
 fits every viewport. A row taller than its viewport can clip its authored content.
 
-### Dynamic row-spacing candidate
+<a id="dynamic-row-spacing-candidate"></a>
 
-The 0.2.0 spacing candidate exposes another native case on SwiftTUI 0.18.0.
+### Dynamic row-spacing correction
+
+The historical 0.2.0 spacing candidate exposed another native case on SwiftTUI
+0.18.0.
 After scrolling mixed-height rows to ID 7, increasing row padding from zero to
 one makes the preceding row and focused row exceed the unchanged viewport.
 The next layout omits ID 7, and native focus falls to ID 6. This occurs for both
@@ -115,8 +118,9 @@ reproduce both selection modes before the correction; 55 focused native tests
 pass afterward, with independent review.
 
 An isolated copy of Chio `f01569f` passes the unchanged new row-spacing, retained
-list and appearance checks in debug and release against that candidate. Its full
-local repository gate and all 24 hosted checks pass. Expanded focus-interaction
+list and appearance checks in debug and release against that candidate. The
+SwiftTUI candidate's full local repository gate and all 24 upstream hosted checks
+pass. Expanded focus-interaction
 coverage at `0d39074a` also passes the full local gate, all hosted checks and
 independent review. See
 [the current evidence](../Verification.md#dynamic-row-spacing-candidate).
@@ -140,7 +144,9 @@ release lacks #57. A later 0.2.1 patch will qualify a published release containi
 it. Separate ready upstream follow-ups [#58](https://github.com/SwiftTUI/swift-tui/pull/58)
 and [#59](https://github.com/SwiftTUI/swift-tui/pull/59) are outside 0.2.0 adoption.
 
-### Current row qualification
+<a id="current-row-qualification"></a>
+
+### Historical row qualification
 
 The original 2026-10-14 qualification uses Chio base `b79f009` and unchanged SwiftTUI
 `bf9a697f2a5da4d0392730d0cba9e3ddcbbfa5d1`. The retained
@@ -168,10 +174,10 @@ The historical compact checklist failure is not reproduced in this qualification
 The remaining mixed-height failure also occurs using automatic native styling,
 so it is not established as a Chio padding or palette defect. Selection and focus
 diverge in the single-selection failure; the five-second wait is unchanged.
-The native retention correction below addresses the reproduced cause. The current
-0.18.0 adoption retains all these cases; [Verification](../Verification.md#0180-adoption-qualification)
+The native retention correction below addresses the reproduced cause. The later
+0.18.0 adoption retained all these cases; [Verification](../Verification.md#0180-adoption-qualification)
 records the released-pin results. That qualification added no Chio focus/scroll
-workaround or public spacing control; the current spacing candidate is described above.
+workaround or public spacing control; the later spacing correction is described above.
 
 The table retains original-pin debug raster/hosted observations on macOS and Linux
 x86_64. With adopted 0.18.0, all eighteen retained cases pass in debug and release
@@ -337,7 +343,7 @@ before claiming compliance with the complete upstream contribution process.
 `87dc035869d2d58817511efe9f09bb4ace689808` and supersedes
 [PR #45](https://github.com/SwiftTUI/swift-tui/pull/45). It is included in the
 published [0.17.0 release](https://github.com/SwiftTUI/swift-tui/releases/tag/0.17.0),
-`ee572e38487284092f367ef5b095460a04374ba3`, and retained by the adopted 0.18.0 pin.
+`ee572e38487284092f367ef5b095460a04374ba3`, and retained by the current pin.
 
 The runtime observes invalidations without changing SwiftTUIGraph or public APIs.
 Termination vetoes run before shutdown begins. Accepted cooperative exit cancels

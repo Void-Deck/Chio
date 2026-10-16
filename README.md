@@ -10,7 +10,7 @@ rendering, layout, input, and focus.
 
 [![Watch Chio's dashboard recording](Docs/Media/dashboard.png)](https://echoz.github.io/Chio/)
 
-[▶ Watch Chio in action](https://echoz.github.io/Chio/) · [Examples and controls](Docs/Examples.md) · [0.2.0 release preparation](Docs/Releases/0.2.0.md)
+[▶ Watch Chio in action](https://echoz.github.io/Chio/) · [Examples and controls](Docs/Examples.md) · [0.2.0 release record](Docs/Releases/0.2.0.md)
 
 ## Development and stability
 
@@ -52,19 +52,18 @@ Chio searchable-list and checklist rows; `.opencode` uses one cell per side.
 Native list rows can apply the same value with ordinary padding.
 
 The current API uses `ChioStyle`, `.style(...)` and `@Environment(\.chioStyle)`.
-Former theme aliases are removed. The 0.2.0 source release is in preparation;
-final qualification covers these API and spacing changes with the merged native fix.
+Former theme aliases are removed. The [0.2.0 release record](Docs/Releases/0.2.0.md)
+owns migration and qualification evidence.
 [API usage and recipes →](Docs/Usage.md)
 
 ## Try it
 
 Requires **Swift 6.4+**, on **macOS 15+ or Linux**. From a repository checkout:
 
-The 0.2.0 candidate pins [the merged SwiftTUI correction](Docs/Decisions/Dependencies.md#020-merged-native-correction)
+This revision pins [the merged SwiftTUI correction](Docs/Decisions/Dependencies.md#020-merged-native-correction)
 at `7e62e95c913508f4fef42db36fde6fd60acb541c`. SwiftTUI 0.18.0 does not contain
 that correction. For use in another package, follow the compatible exact revisions
-in the [release preparation](Docs/Releases/0.2.0.md). Publication remains pending
-final qualification.
+in the [release record](Docs/Releases/0.2.0.md).
 Version-based Chio requirements remain unsupported by the revision-pinned dependency graph.
 
 ```sh
