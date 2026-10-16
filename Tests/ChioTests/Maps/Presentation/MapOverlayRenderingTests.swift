@@ -8,8 +8,8 @@ struct MapOverlayRenderingTests {
     func waterBoundaryContrast() throws {
         let viewport = try MapViewport(columns: 10, rows: 10)
         let points = rectangle(2, 2, 8, 8)
-        let geometry = map(lines: [.init(featureID: "lake", kind: .water, points: points)],
-                           polygons: [.init(featureID: "lake", kind: .water, rings: [points])])
+        let geometry = map(lines: [PreparedMap.Line(featureID: "lake", kind: .water, points: points)],
+                           polygons: [PreparedMap.Polygon(featureID: "lake", kind: .water, rings: [points])])
         for theme in [ChioStyle.default, .light, .btop] {
             for fills in [false, true] {
                 let drawing = try MapDrawing(map: geometry, viewport: viewport, colors: theme.colors,
@@ -63,7 +63,7 @@ struct MapOverlayRenderingTests {
         #expect(clipped.labels.first?.text == long.title)
         let labelView = Text(verbatim: long.title).lineLimit(1)
             .frame(width: 32, height: 1, alignment: .leading).clipped()
-        let surface = DefaultRenderer().render(labelView, proposal: .init(width: 32, height: 1)).rasterSurface
+        let surface = DefaultRenderer().render(labelView, proposal: ProposedSize(width: 32, height: 1)).rasterSurface
         #expect(surface.size == CellSize(width: 32, height: 1))
         #expect(surface.cells[0].filter { $0.character == "界" && $0.spanWidth == 2 }.count == 15)
         #expect(surface.lines[0].contains("…")) // Native one-line truncation keeps whole clusters.
@@ -109,8 +109,8 @@ struct MapOverlayRenderingTests {
         let placement = MapMarkerPlacement(markers: [marker], selection: marker.id,
                                             camera: camera, viewport: viewport, showsLabels: true)
         let candidates: [PreparedMap.Label] = [
-            .init(featureID: "near", kind: .water, text: "Lake", position: .init(x: 22, y: 10)),
-            .init(featureID: "far", kind: .park, text: "Elsewhere", position: .init(x: 5, y: 3)),
+            PreparedMap.Label(featureID: "near", kind: .water, text: "Lake", position: PreparedMap.Point(x: 22, y: 10)),
+            PreparedMap.Label(featureID: "far", kind: .park, text: "Elsewhere", position: PreparedMap.Point(x: 5, y: 3)),
         ]
         let unreserved = MapLabels(candidates: candidates, columns: 40, rows: 20, enabled: true)
         #expect(Set(unreserved.labels.map(\.id)) == ["near", "far"])
@@ -125,9 +125,9 @@ struct MapOverlayRenderingTests {
     func routePaintPriority() throws {
         let viewport = try MapViewport(columns: 10, rows: 10)
         let geography = PreparedMap.Line(featureID: "road", kind: .primaryRoad,
-                                         points: [.init(x: 2, y: 4.1), .init(x: 8, y: 4.1)])
+                                         points: [PreparedMap.Point(x: 2, y: 4.1), PreparedMap.Point(x: 8, y: 4.1)])
         let route = PreparedMap.Line(featureID: "route", kind: .primaryRoad,
-                                    points: [.init(x: 4.6, y: 2), .init(x: 4.6, y: 8)])
+                                    points: [PreparedMap.Point(x: 4.6, y: 2), PreparedMap.Point(x: 4.6, y: 8)])
         let land = PreparedMap.Polygon(featureID: "land", kind: .land, rings: [rectangle(0, 0, 10, 10)])
         for theme in [ChioStyle.default, .light, .btop] {
             let drawing = try MapDrawing(map: map(lines: [geography], polygons: [land]), viewport: viewport,
@@ -152,8 +152,8 @@ struct MapOverlayRenderingTests {
     func combinedDrawingAllowance() throws {
         let viewport = try MapViewport(columns: 240, rows: 100)
         func zigzag(_ segments: Int, id: String) -> PreparedMap.Line {
-            .init(featureID: id, kind: .primaryRoad, points: (0...segments).map {
-                .init(x: $0.isMultiple(of: 2) ? 0 : 240, y: 50)
+            PreparedMap.Line(featureID: id, kind: .primaryRoad, points: (0...segments).map {
+                PreparedMap.Point(x: $0.isMultiple(of: 2) ? 0 : 240, y: 50)
             })
         }
         let geography = map(lines: [zigzag(259, id: "road")])
@@ -239,8 +239,8 @@ struct MapOverlayRenderingTests {
     func geographicThemeColors() throws {
         let viewport = try MapViewport(columns: 10, rows: 10)
         let geography = map(polygons: [
-            .init(featureID: "park", kind: .park, rings: [rectangle(0, 0, 10, 10)]),
-            .init(featureID: "water", kind: .water, rings: [rectangle(2, 2, 8, 8)]),
+            PreparedMap.Polygon(featureID: "park", kind: .park, rings: [rectangle(0, 0, 10, 10)]),
+            PreparedMap.Polygon(featureID: "water", kind: .water, rings: [rectangle(2, 2, 8, 8)]),
         ])
         for theme in [ChioStyle.default, .light, .btop] {
             let syntax = theme.syntax.replacing(type: Color(hexRGB: 0xFF0000), string: Color(hexRGB: 0x00FF00))
@@ -271,17 +271,17 @@ struct MapOverlayRenderingTests {
     private func render(_ drawing: MapDrawing) -> RasterSurface {
         let view = Canvas(drawing).frame(width: drawing.viewport.columns, height: drawing.viewport.rows)
             .background(drawing.colors.surface)
-        return DefaultRenderer().render(view, proposal: .init(width: drawing.viewport.columns,
+        return DefaultRenderer().render(view, proposal: ProposedSize(width: drawing.viewport.columns,
                                                               height: drawing.viewport.rows)).rasterSurface
     }
 
     private func map(lines: [PreparedMap.Line] = [], polygons: [PreparedMap.Polygon] = []) -> PreparedMap {
-        .init(lines: lines, polygons: polygons, labels: [],
-              statistics: .init(sourceVertices: 0, preparedVertices: 0, visibleFeatures: 0))
+        PreparedMap(lines: lines, polygons: polygons, labels: [],
+              statistics: PreparedMap.Statistics(sourceVertices: 0, preparedVertices: 0, visibleFeatures: 0))
     }
 
     private func rectangle(_ left: Double, _ top: Double, _ right: Double, _ bottom: Double) -> [PreparedMap.Point] {
-        [.init(x: left, y: top), .init(x: right, y: top), .init(x: right, y: bottom),
-         .init(x: left, y: bottom), .init(x: left, y: top)]
+        [PreparedMap.Point(x: left, y: top), PreparedMap.Point(x: right, y: top), PreparedMap.Point(x: right, y: bottom),
+         PreparedMap.Point(x: left, y: bottom), PreparedMap.Point(x: left, y: top)]
     }
 }

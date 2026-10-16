@@ -8,7 +8,7 @@ struct ChioTextEntryRenderTests {
     func emptyViewport() {
         let surface = DefaultRenderer().render(
             TextEditor(text: .constant("")).frame(width: 24, height: 8).style(.default),
-            proposal: .init(width: 24, height: 8)
+            proposal: ProposedSize(width: 24, height: 8)
         ).rasterSurface
         #expect(surface.size == CellSize(width: 24, height: 8))
         #expect(surface.lines.first?.contains("╭") == true)
@@ -25,7 +25,7 @@ struct ChioTextEntryRenderTests {
         let rendered = DefaultRenderer().render(
             TextEditor(text: .constant("Notes\nSecond line"))
                 .frame(width: 24, height: 7).style(theme),
-            proposal: .init(width: 24, height: 7)
+            proposal: ProposedSize(width: 24, height: 7)
         )
         let cells = rendered.rasterSurface.cells.flatMap { $0 }
         let first = try #require(cells.first { $0.character == "N" })
@@ -43,7 +43,7 @@ struct ChioTextEntryRenderTests {
         let rendered = DefaultRenderer().render(
             SecureField("Demo password", text: .constant(secret))
                 .disabled(disabled).style(theme),
-            proposal: .init(width: 36, height: 5)
+            proposal: ProposedSize(width: 36, height: 5)
         )
         let display = rendered.rasterSurface.lines.joined(separator: "\n")
         #expect(!display.contains(secret))
@@ -58,7 +58,7 @@ struct ChioTextEntryRenderTests {
         let rendered = DefaultRenderer().render(
             TextEditor(text: .constant("Local notes"))
                 .disabled(true).frame(width: 24, height: 5).style(theme),
-            proposal: .init(width: 24, height: 5)
+            proposal: ProposedSize(width: 24, height: 5)
         )
         let cells = rendered.rasterSurface.cells.flatMap { $0 }
         let glyph = try #require(cells.first { $0.character == "L" })

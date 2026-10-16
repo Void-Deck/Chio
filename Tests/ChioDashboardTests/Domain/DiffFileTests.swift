@@ -113,15 +113,15 @@ struct DiffFileTests {
     @Test("Hunk construction and decoding reject each malformed relationship")
     func invalidHunks() throws {
         let cases: [(HunkPayload, DiffFile.ValidationError)] = [
-            (.init(oldOffset: -1, newOffset: 0, blocks: [.context("x")]), .negativeOffset),
-            (.init(oldOffset: 0, newOffset: -1, blocks: [.context("x")]), .negativeOffset),
-            (.init(oldOffset: 0, newOffset: 0, blocks: []), .emptyHunk),
-            (.init(oldOffset: 0, newOffset: 0, blocks: [.change(removed: [], added: [])]), .emptyChange),
-            (.init(oldOffset: 0, newOffset: 0, blocks: [.context("one\ntwo")]), .multilineText),
-            (.init(oldOffset: 0, newOffset: 0, blocks: [.change(removed: ["one\rtwo"], added: [])]), .multilineText),
-            (.init(oldOffset: 0, newOffset: 0, blocks: [.change(removed: [], added: ["one\u{2028}two"])]), .multilineText),
-            (.init(oldOffset: Int.max, newOffset: 0, blocks: [.context("x")]), .lineNumberOverflow),
-            (.init(oldOffset: 0, newOffset: Int.max, blocks: [.change(removed: [], added: ["x"])]), .lineNumberOverflow),
+            (HunkPayload(oldOffset: -1, newOffset: 0, blocks: [.context("x")]), .negativeOffset),
+            (HunkPayload(oldOffset: 0, newOffset: -1, blocks: [.context("x")]), .negativeOffset),
+            (HunkPayload(oldOffset: 0, newOffset: 0, blocks: []), .emptyHunk),
+            (HunkPayload(oldOffset: 0, newOffset: 0, blocks: [.change(removed: [], added: [])]), .emptyChange),
+            (HunkPayload(oldOffset: 0, newOffset: 0, blocks: [.context("one\ntwo")]), .multilineText),
+            (HunkPayload(oldOffset: 0, newOffset: 0, blocks: [.change(removed: ["one\rtwo"], added: [])]), .multilineText),
+            (HunkPayload(oldOffset: 0, newOffset: 0, blocks: [.change(removed: [], added: ["one\u{2028}two"])]), .multilineText),
+            (HunkPayload(oldOffset: Int.max, newOffset: 0, blocks: [.context("x")]), .lineNumberOverflow),
+            (HunkPayload(oldOffset: 0, newOffset: Int.max, blocks: [.change(removed: [], added: ["x"])]), .lineNumberOverflow),
         ]
         for (payload, error) in cases {
             #expect(throws: error) {
@@ -163,24 +163,24 @@ struct DiffFileTests {
         let skippedDeletion = try DiffFile.Hunk(oldOffset: 1, newOffset: 0,
             blocks: [.change(removed: ["x"], added: [])])
         let cases: [(FilePayload, DiffFile.ValidationError)] = [
-            (.init(id: "", change: .modified(path: "x"), content: .text([])), .emptyIdentity),
-            (.init(id: "x", change: .modified(path: ""), content: .text([])), .emptyPath),
-            (.init(id: "x", change: .added(path: ""), content: .binary), .emptyPath),
-            (.init(id: "x", change: .deleted(path: ""), content: .binary), .emptyPath),
-            (.init(id: "x", change: .renamed(from: "", to: "x"), content: .text([])), .emptyPath),
-            (.init(id: "x", change: .renamed(from: "x", to: ""), content: .text([])), .emptyPath),
-            (.init(id: "x", change: .added(path: "x"), content: .text([context])), .inconsistentSide),
-            (.init(id: "x", change: .deleted(path: "x"), content: .text([context])), .inconsistentSide),
-            (.init(id: "x", change: .added(path: "x"), content: .text([wrongAddedOffset])), .inconsistentSide),
-            (.init(id: "x", change: .deleted(path: "x"), content: .text([wrongDeletedOffset])), .inconsistentSide),
-            (.init(id: "x", change: .modified(path: "x"), content: .text([later, context])), .overlappingHunks),
-            (.init(id: "x", change: .modified(path: "x"), content: .text([context, oldOverlap])), .overlappingHunks),
-            (.init(id: "x", change: .modified(path: "x"), content: .text([context, newOverlap])), .overlappingHunks),
-            (.init(id: "x", change: .modified(path: "x"), content: .text([unequalPrefix])), .inconsistentHunkGaps),
-            (.init(id: "x", change: .modified(path: "x"), content: .text([context, unequalGap])), .inconsistentHunkGaps),
-            (.init(id: "x", change: .renamed(from: "x", to: "y"), content: .text([context, unequalGap])), .inconsistentHunkGaps),
-            (.init(id: "x", change: .added(path: "x"), content: .text([skippedAddition])), .inconsistentHunkGaps),
-            (.init(id: "x", change: .deleted(path: "x"), content: .text([skippedDeletion])), .inconsistentHunkGaps),
+            (FilePayload(id: "", change: .modified(path: "x"), content: .text([])), .emptyIdentity),
+            (FilePayload(id: "x", change: .modified(path: ""), content: .text([])), .emptyPath),
+            (FilePayload(id: "x", change: .added(path: ""), content: .binary), .emptyPath),
+            (FilePayload(id: "x", change: .deleted(path: ""), content: .binary), .emptyPath),
+            (FilePayload(id: "x", change: .renamed(from: "", to: "x"), content: .text([])), .emptyPath),
+            (FilePayload(id: "x", change: .renamed(from: "x", to: ""), content: .text([])), .emptyPath),
+            (FilePayload(id: "x", change: .added(path: "x"), content: .text([context])), .inconsistentSide),
+            (FilePayload(id: "x", change: .deleted(path: "x"), content: .text([context])), .inconsistentSide),
+            (FilePayload(id: "x", change: .added(path: "x"), content: .text([wrongAddedOffset])), .inconsistentSide),
+            (FilePayload(id: "x", change: .deleted(path: "x"), content: .text([wrongDeletedOffset])), .inconsistentSide),
+            (FilePayload(id: "x", change: .modified(path: "x"), content: .text([later, context])), .overlappingHunks),
+            (FilePayload(id: "x", change: .modified(path: "x"), content: .text([context, oldOverlap])), .overlappingHunks),
+            (FilePayload(id: "x", change: .modified(path: "x"), content: .text([context, newOverlap])), .overlappingHunks),
+            (FilePayload(id: "x", change: .modified(path: "x"), content: .text([unequalPrefix])), .inconsistentHunkGaps),
+            (FilePayload(id: "x", change: .modified(path: "x"), content: .text([context, unequalGap])), .inconsistentHunkGaps),
+            (FilePayload(id: "x", change: .renamed(from: "x", to: "y"), content: .text([context, unequalGap])), .inconsistentHunkGaps),
+            (FilePayload(id: "x", change: .added(path: "x"), content: .text([skippedAddition])), .inconsistentHunkGaps),
+            (FilePayload(id: "x", change: .deleted(path: "x"), content: .text([skippedDeletion])), .inconsistentHunkGaps),
         ]
         for (payload, error) in cases {
             #expect(throws: error) { try DiffFile(id: payload.id, change: payload.change, content: payload.content) }

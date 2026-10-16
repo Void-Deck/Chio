@@ -12,7 +12,7 @@ struct CreateAgentRenderTests {
         let view = CreateAgentView(draft: .constant(AgentDraft()), themeChoice: .constant(appearance),
                                    create: {}, cancel: {})
         let frame = DefaultRenderer().render(
-            view, proposal: .init(width: size.width, height: size.height), frameInstant: .zero
+            view, proposal: ProposedSize(width: size.width, height: size.height), frameInstant: .zero
         )
         let text = frame.rasterSurface.lines.joined(separator: "\n")
         #expect(frame.rasterSurface.size == size)

@@ -12,9 +12,9 @@ struct GroupedFormExampleTests {
     func layout(size: CellSize, appearance: ExampleTheme) {
         for scheduled in [false, true] {
             let rendered = DefaultRenderer().render(
-                GroupedFormExampleView(theme: appearance, initialDraft: .init(automaticRuns: scheduled))
+                GroupedFormExampleView(theme: appearance, initialDraft: RunSettingsDraft(automaticRuns: scheduled))
                     .environment(\.terminalSize, size),
-                proposal: .init(width: size.width, height: size.height), frameInstant: .zero
+                proposal: ProposedSize(width: size.width, height: size.height), frameInstant: .zero
             )
             let text = rendered.rasterSurface.lines.joined(separator: "\n")
             #expect(rendered.rasterSurface.size == size)
@@ -218,7 +218,7 @@ struct GroupedFormExampleTests {
                     && $0.formContains("Timeout must be shorter") && $0.raster.cells != related.raster.cells
             }
             #expect(themed.focusedIdentity == related.focusedIdentity)
-            surface.updateSurfaceSize(.init(width: 36, height: 18))
+            surface.updateSurfaceSize(CellSize(width: 36, height: 18))
             session.requestSurfaceRefresh()
             let compact = try await recorder.wait(after: themed.sequence, description: "compact focus reveals the wrapping error and retains actions") {
                 $0.raster.size == CellSize(width: 36, height: 18) && $0.formFocused("Timeout")
@@ -257,7 +257,7 @@ struct GroupedFormExampleTests {
 
 private struct GroupedFormTestApp {
     let initialDraft: RunSettingsDraft
-    nonisolated init() { initialDraft = .init() }
+    nonisolated init() { initialDraft = RunSettingsDraft() }
     nonisolated init(initialDraft: RunSettingsDraft) { self.initialDraft = initialDraft }
 }
 
@@ -269,11 +269,11 @@ extension GroupedFormTestApp: App {
 
 @MainActor
 private func withGroupedForm(
-    initialDraft: RunSettingsDraft = .init(),
+    initialDraft: RunSettingsDraft = RunSettingsDraft(),
     perform: @MainActor (HostedSceneSession, HostedRasterSurface, HostedFrameRecorder) async throws -> Void
 ) async throws {
     let recorder = HostedFrameRecorder()
-    let surface = HostedRasterSurface(surfaceSize: .init(width: 100, height: 30), appearance: .fallback,
+    let surface = HostedRasterSurface(surfaceSize: CellSize(width: 100, height: 30), appearance: .fallback,
                                       onFrame: { recorder.receive($0) })
     let session = try HostedSceneSession(for: GroupedFormTestApp(initialDraft: initialDraft),
                                         sceneID: "grouped-form-tests", surface: surface)

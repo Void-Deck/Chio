@@ -15,7 +15,7 @@ struct MarkdownTableRenderTests {
             | **Agent** | `done` |
             | plain | ready |
             """)).style(theme),
-            proposal: .init(width: 40, height: 20)
+            proposal: ProposedSize(width: 40, height: 20)
         )
         let surface = rendered.rasterSurface
         let text = surface.lines.joined(separator: "\n")
@@ -56,7 +56,7 @@ struct MarkdownTableRenderTests {
             | xxxxxxxx | yyyyyyy | zzzzzzzzz |
             | 你好 | | Z |
             """)).style(.default),
-            proposal: .init(width: 60, height: 20)
+            proposal: ProposedSize(width: 60, height: 20)
         ).rasterSurface
         let row = try #require(surface.cells.first { cells in
             cells.contains { $0.character == "L" }
@@ -96,7 +96,7 @@ struct MarkdownTableRenderTests {
 
             After
             """)).style(.default),
-            proposal: .init(width: width, height: 24)
+            proposal: ProposedSize(width: width, height: 24)
         )
         let surface = rendered.rasterSurface
         #expect(surface.size.width <= width)
@@ -125,13 +125,13 @@ struct MarkdownTableRenderTests {
         let markdown = DefaultRenderer().render(
             MarkdownView(MarkdownDocument("| Header |\n| --- |"))
                 .style(theme),
-            proposal: .init(width: 24, height: 12)
+            proposal: ProposedSize(width: 24, height: 12)
         )
         let native = DefaultRenderer().render(
             Table(columns: [TableColumn("Header")]) {
                 TableRow { Text("value") }
             }.style(theme),
-            proposal: .init(width: 24, height: 12)
+            proposal: ProposedSize(width: 24, height: 12)
         )
         for rendered in [markdown, native] {
             #expect(rendered.rasterSurface.lines.contains { $0.contains("Header") })

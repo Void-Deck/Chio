@@ -13,7 +13,7 @@ struct TextEntryExampleRenderTests {
         let rendered = DefaultRenderer().render(
             TextEntryExampleView(theme: appearance, initialPassword: syntheticPassword, initialNotes: "First note\nSecond note")
                 .environment(\.terminalSize, size),
-            proposal: .init(width: size.width, height: size.height), frameInstant: .zero
+            proposal: ProposedSize(width: size.width, height: size.height), frameInstant: .zero
         )
         let surface = rendered.rasterSurface
         let text = surface.lines.joined(separator: "\n")
@@ -45,7 +45,7 @@ struct TextEntryExampleRenderTests {
     func validationLayout(size: CellSize, appearance: ExampleTheme) {
         let rendered = DefaultRenderer().render(
             TextEntryExampleView(theme: appearance, showsValidation: true).environment(\.terminalSize, size),
-            proposal: .init(width: size.width, height: size.height), frameInstant: .zero
+            proposal: ProposedSize(width: size.width, height: size.height), frameInstant: .zero
         )
         let text = rendered.rasterSurface.lines.joined(separator: "\n")
         #expect(text.contains("Demo password") && text.contains("Notes"))
@@ -63,7 +63,7 @@ struct TextEntryExampleRenderTests {
         let rendered = DefaultRenderer().render(
             TextEntryExampleView(theme: appearance, initialPassword: syntheticPassword, initialNotes: "Local notes",
                                  areInputsDisabled: true).environment(\.terminalSize, size),
-            proposal: .init(width: size.width, height: size.height), frameInstant: .zero
+            proposal: ProposedSize(width: size.width, height: size.height), frameInstant: .zero
         )
         let text = rendered.rasterSurface.lines.joined(separator: "\n")
         let concealsPassword = !text.contains(syntheticPassword)

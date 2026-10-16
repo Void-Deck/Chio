@@ -76,14 +76,14 @@ struct MapPreparationWorkerTests {
         let worker = MapPreparationWorker()
         var firstRoutes: [PreparedMap.Line]?
         for detail in MapDetail.allCases {
-            let local = try await worker.prepare(.init(dataset: dataset, camera: localCamera, viewport: viewport,
+            let local = try await worker.prepare(MapPreparationRequest(dataset: dataset, camera: localCamera, viewport: viewport,
                                                        detail: detail, routes: [route], fills: false))
             #expect(local.routes.count == 1)
             #expect(local.routes[0].featureID == "route")
-            #expect(local.routes[0].points == [.init(x: 45, y: 20), .init(x: 65, y: 20)])
+            #expect(local.routes[0].points == [PreparedMap.Point(x: 45, y: 20), PreparedMap.Point(x: 65, y: 20)])
             if let firstRoutes { #expect(local.routes == firstRoutes) } else { firstRoutes = local.routes }
             if detail == .silhouette { #expect(local.map.lines.isEmpty) }
-            let world = try await worker.prepare(.init(dataset: dataset, camera: worldCamera, viewport: viewport,
+            let world = try await worker.prepare(MapPreparationRequest(dataset: dataset, camera: worldCamera, viewport: viewport,
                                                        detail: detail, routes: [route], fills: false))
             #expect(world.routes.count == 2)
             #expect(world.routes.contains { $0.points.first?.x == 0 })
@@ -108,21 +108,21 @@ struct MapPreparationWorkerTests {
         let viewport = try MapViewport(columns: 100, rows: 40)
         let camera = try MapCamera(center: MapCoordinate(latitude: 0, longitude: 0), longitudeSpan: 20)
         let worker = MapPreparationWorker()
-        let baseline = try await worker.prepare(.init(dataset: dataset, camera: camera, viewport: viewport,
+        let baseline = try await worker.prepare(MapPreparationRequest(dataset: dataset, camera: camera, viewport: viewport,
                                                        detail: .source, routes: [], fills: false))
-        let drawing = try await worker.prepare(.init(dataset: dataset, camera: camera, viewport: viewport,
+        let drawing = try await worker.prepare(MapPreparationRequest(dataset: dataset, camera: camera, viewport: viewport,
                                                       detail: .source, routes: [named, unnamed], fills: false))
         #expect(drawing.map == baseline.map)
         #expect(drawing.map.labels.map(\.text) == ["Street"])
         #expect(drawing.routes.count == 2)
         #expect(drawing.routeLabels == [
-            .init(featureID: "shared", kind: .primaryRoad, text: "Walk", position: .init(x: 50, y: 20)),
+            PreparedMap.Label(featureID: "shared", kind: .primaryRoad, text: "Walk", position: PreparedMap.Point(x: 50, y: 20)),
         ])
         #expect(baseline.routeLabels.isEmpty)
     }
 
     private func request(span: Double) throws -> MapPreparationRequest {
-        try .init(dataset: MapDataset(features: []),
+        try MapPreparationRequest(dataset: MapDataset(features: []),
                   camera: MapCamera(center: MapCoordinate(latitude: 0, longitude: 0), longitudeSpan: span),
                   viewport: MapViewport(columns: 100, rows: 40), detail: .minimal, routes: [], fills: true)
     }
@@ -155,7 +155,7 @@ struct MapPreparationWorkerTests {
                 try releaseFirst.waitSynchronously()
             }
             let map = PreparedMap(lines: [], polygons: [], labels: [],
-                                  statistics: .init(sourceVertices: 0, preparedVertices: 0, visibleFeatures: 0))
+                                  statistics: PreparedMap.Statistics(sourceVertices: 0, preparedVertices: 0, visibleFeatures: 0))
             return try PreparedMapDrawing(map: map, routes: [], viewport: request.viewport, fills: request.fills)
         }
 

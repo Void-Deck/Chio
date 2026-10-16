@@ -12,7 +12,7 @@ struct TreeExampleTests {
     func layout(size: CellSize, appearance: ExampleTheme) {
         let rendered = DefaultRenderer().render(
             TreeExampleView(theme: appearance).environment(\.terminalSize, size),
-            proposal: .init(width: size.width, height: size.height), frameInstant: .zero
+            proposal: ProposedSize(width: size.width, height: size.height), frameInstant: .zero
         )
         let text = rendered.rasterSurface.lines.joined(separator: "\n")
         #expect(rendered.rasterSurface.size == size)
@@ -58,7 +58,7 @@ struct TreeExampleTests {
                 $0.treeFocused("Sources") && $0.treeExpanded("Presentation", false)
                     && $0.raster.cells != reopened.raster.cells
             }
-            surface.updateSurfaceSize(.init(width: 36, height: 18))
+            surface.updateSurfaceSize(CellSize(width: 36, height: 18))
             session.requestSurfaceRefresh()
             _ = try await recorder.wait(after: themed.sequence, description: "compact tree retains hierarchy, choices and hints") {
                 $0.raster.size == CellSize(width: 36, height: 18) && $0.treeFocused("Sources")
@@ -107,7 +107,7 @@ private func withTree(
     perform: @MainActor (HostedSceneSession, HostedRasterSurface, HostedFrameRecorder) async throws -> Void
 ) async throws {
     let recorder = HostedFrameRecorder()
-    let surface = HostedRasterSurface(surfaceSize: .init(width: 100, height: 30), appearance: .fallback,
+    let surface = HostedRasterSurface(surfaceSize: CellSize(width: 100, height: 30), appearance: .fallback,
                                       onFrame: { recorder.receive($0) })
     let session = try HostedSceneSession(for: TreeTestApp(), sceneID: "tree-tests", surface: surface)
     let run = Task { try await session.start() }

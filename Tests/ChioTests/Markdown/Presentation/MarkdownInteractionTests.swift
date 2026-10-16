@@ -9,7 +9,7 @@ struct MarkdownInteractionTests {
     func codeHorizontalScrolling() async throws {
         let recorder = HostedFrameRecorder()
         let surface = HostedRasterSurface(
-            surfaceSize: .init(width: 20, height: 10),
+            surfaceSize: CellSize(width: 20, height: 10),
             appearance: .fallback,
             onFrame: { recorder.receive($0) }
         )
@@ -67,7 +67,7 @@ struct MarkdownInteractionTests {
             #expect(automatic.focusedIdentity == plain.focusedIdentity)
             #expect(automatic.raster.lines == themed.raster.lines)
 
-            surface.updateSurfaceSize(.init(width: 16, height: 10))
+            surface.updateSurfaceSize(CellSize(width: 16, height: 10))
             session.requestSurfaceRefresh()
             let resized = try await recorder.wait(after: automatic.sequence, description: "narrow resize retains code focus and the native offset") {
                 self.hasCodeFocus($0) && $0.raster.size.width == 16

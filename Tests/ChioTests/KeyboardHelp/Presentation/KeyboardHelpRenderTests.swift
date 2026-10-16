@@ -10,12 +10,12 @@ struct KeyboardHelpRenderTests {
         let omitted = DefaultRenderer().render(
             KeyboardHelp([ShortcutGroup("Actions", shortcuts: [
                 ShortcutHint("q", "Quit"), ShortcutHint("x", "Cancel"),
-            ])]).style(.default), proposal: .init(width: 32, height: nil)
+            ])]).style(.default), proposal: ProposedSize(width: 32, height: nil)
         )
         let empty = DefaultRenderer().render(
             KeyboardHelp([ShortcutGroup("Actions", shortcuts: [
                 ShortcutHint("q", "Quit", detail: ""), ShortcutHint("x", "Cancel", detail: ""),
-            ])]).style(.default), proposal: .init(width: 32, height: nil)
+            ])]).style(.default), proposal: ProposedSize(width: 32, height: nil)
         )
         #expect(omitted.rasterSurface.size.height == 5)
         #expect(empty.rasterSurface == omitted.rasterSurface)
@@ -42,7 +42,7 @@ struct KeyboardHelpRenderTests {
         assertColors(theme)
         let hints = DefaultRenderer().render(
             KeyHints([ShortcutHint("k", "Label", detail: "Detail")]).style(theme),
-            proposal: .init(width: 32, height: nil)
+            proposal: ProposedSize(width: 32, height: nil)
         ).rasterSurface
         #expect(hints.lines.map(trim) == ["k Label"])
     }
@@ -54,7 +54,7 @@ struct KeyboardHelpRenderTests {
             KeyboardHelp([
                 ShortcutGroup("Hidden", shortcuts: []),
                 ShortcutGroup("Actions", shortcuts: [shortcut, shortcut]),
-            ]).style(.default), proposal: .init(width: 32, height: nil)
+            ]).style(.default), proposal: ProposedSize(width: 32, height: nil)
         ).rasterSurface
         let lines = surface.lines.map(trim)
         #expect(lines.contains("Actions"))
@@ -62,7 +62,7 @@ struct KeyboardHelpRenderTests {
         #expect(lines.filter { $0 == "q Quit" }.count == 2)
         let hints = DefaultRenderer().render(
             KeyHints([shortcut, shortcut]).style(.default),
-            proposal: .init(width: 32, height: nil)
+            proposal: ProposedSize(width: 32, height: nil)
         ).rasterSurface
         #expect(hints.lines.map(trim) == ["q Quit  q Quit"])
     }
@@ -72,7 +72,7 @@ struct KeyboardHelpRenderTests {
         let groups = hasEmptyGroup ? [ShortcutGroup("Hidden", shortcuts: [])] : []
         let surface = DefaultRenderer().render(
             KeyboardHelp(groups).style(.default),
-            proposal: .init(width: 32, height: nil)
+            proposal: ProposedSize(width: 32, height: nil)
         ).rasterSurface
         #expect(normalize(surface.lines) == "No keyboard shortcuts available.")
         #expect(surface.size.width <= 32)
@@ -84,7 +84,7 @@ struct KeyboardHelpRenderTests {
             KeyboardHelp([ShortcutGroup("Navigation commands", shortcuts: [
                 ShortcutHint("界界", "Move through all available results", detail: "Details wrap and finish visibly."),
                 ShortcutHint("Ctrl-Shift-Alt-Command-K", "Open commands", detail: ""),
-            ])]).style(.default), proposal: .init(width: width, height: nil)
+            ])]).style(.default), proposal: ProposedSize(width: width, height: nil)
         ).rasterSurface
         #expect(surface.size.width <= width)
         let words = normalize(surface.lines)
@@ -102,7 +102,7 @@ struct KeyboardHelpRenderTests {
     private func assertColors(_ theme: ChioStyle) {
         let surface = DefaultRenderer().render(
             KeyboardHelp([ShortcutGroup("Group", shortcuts: [ShortcutHint("k", "Label", detail: "Detail")])])
-                .style(theme), proposal: .init(width: 32, height: nil)
+                .style(theme), proposal: ProposedSize(width: 32, height: nil)
         ).rasterSurface
         #expect(surface.lines.map(trim).filter { !$0.isEmpty } == ["Group", "k Label", "Detail"])
         let cells = surface.cells.flatMap { $0 }

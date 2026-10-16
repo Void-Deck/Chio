@@ -10,7 +10,7 @@ struct MapTileLoaderTests {
         let clock = Mutex<TimeInterval>(0)
         let loader = MapTileLoader(source: try source(), transport: { url, _ in
             calls.withLock { $0.append(url) }
-            return .init(data: Data(), headers: ["cache-control": "max-age=60", "age": "10"])
+            return MapHTTPClient.Response(data: Data(), headers: ["cache-control": "max-age=60", "age": "10"])
         }, now: { clock.withLock { $0 } })
         let request = try request()
         let initial = try await loader.load(request)
@@ -62,18 +62,18 @@ struct MapTileLoaderTests {
         let plan = try MapTilePlan(request: request, zoom: 14)
         #expect(plan.tiles.count == 4)
         let boundedLoader = MapTileLoader(source: try source(range: 14...14), transport: { url, _ in
-            .init(data: visibleTransportationTile(url: url, features: 1_000), headers: [:])
+            MapHTTPClient.Response(data: visibleTransportationTile(url: url, features: 1_000), headers: [:])
         })
         let accepted = try await boundedLoader.load(request)
         #expect(accepted.source.dataset.features.count == 4_000)
         #expect(Set(accepted.source.dataset.features.map(\.id)).count == 4_000)
         #expect(accepted.source.dataset.vertexCount == 8_000)
         let rejectedLoader = MapTileLoader(source: try source(range: 14...14), transport: { url, _ in
-            .init(data: visibleTransportationTile(url: url, features: 1_001), headers: [:])
+            MapHTTPClient.Response(data: visibleTransportationTile(url: url, features: 1_001), headers: [:])
         })
         await #expect(throws: MapValidationError.budgetExceeded) { try await rejectedLoader.load(request) }
         let fallback = MapTileLoader(source: try source(), transport: { url, _ in
-            .init(data: visibleTransportationTile(url: url, features: Int(url.pathComponents[2]) == 14 ? 1_001 : 1), headers: [:])
+            MapHTTPClient.Response(data: visibleTransportationTile(url: url, features: Int(url.pathComponents[2]) == 14 ? 1_001 : 1), headers: [:])
         })
         let lowered = try await fallback.load(request)
         #expect(lowered.requestedZoom == 14 && lowered.attainedZoom == 13)
@@ -161,7 +161,7 @@ struct MapTileLoaderTests {
         // Empty tiles still consume address slots. Widely separated cameras
         // exercise eviction without relying on source-feature truncation.
         let loader = MapTileLoader(source: try source(range: 10...10), transport: { _, _ in
-            .init(data: Data(), headers: [:])
+            MapHTTPClient.Response(data: Data(), headers: [:])
         })
         for index in 0..<40 {
             _ = try await loader.load(request(longitude: Double(index) * 8 - 160, span: 0.5))
@@ -173,7 +173,7 @@ struct MapTileLoaderTests {
         // bytes; each tile decodes to an empty canonical dataset.
         let padded = paddingTile(bytes: 12 * 1_024 * 1_024)
         let byteLoader = MapTileLoader(source: try source(range: 10...10), transport: { _, _ in
-            .init(data: padded, headers: [:])
+            MapHTTPClient.Response(data: padded, headers: [:])
         })
         _ = try await byteLoader.load(request(span: 0.5))
         let statistics = await byteLoader.statistics()
@@ -190,7 +190,7 @@ struct MapTileLoaderTests {
             let zoom = Int(url.pathComponents[2])!
             attempts.withLock { $0.append(zoom) }
             if zoom == wanted { throw MapTileLoader.LoadingError.responseTooLarge }
-            return .init(data: Data(), headers: [:])
+            return MapHTTPClient.Response(data: Data(), headers: [:])
         })
         let snapshot = try await loader.load(request)
         #expect(snapshot.requestedZoom == wanted)
@@ -212,7 +212,7 @@ struct MapTileLoaderTests {
             let loader = MapTileLoader(source: try source(), transport: { url, _ in
                 _ = zooms.withLock { $0.insert(Int(url.pathComponents[2])!) }
                 if mode == 0 { throw MapTileLoader.LoadingError.httpStatus(503) }
-                return .init(data: Data([0xff]), headers: [:])
+                return MapHTTPClient.Response(data: Data([0xff]), headers: [:])
             })
             do { _ = try await loader.load(request()); Issue.record("Incomplete/invalid plan succeeded") }
             catch {
@@ -223,7 +223,7 @@ struct MapTileLoaderTests {
         }
         let calls = Mutex(0)
         let wide = MapTileLoader(source: try source(range: 0...0), transport: { _, _ in
-            calls.withLock { $0 += 1 }; return .init(data: Data(), headers: [:])
+            calls.withLock { $0 += 1 }; return MapHTTPClient.Response(data: Data(), headers: [:])
         })
         await #expect(throws: MapTileLoader.LoadingError.unsupportedViewport) {
             try await wide.load(request(span: 360))
@@ -324,13 +324,13 @@ struct MapTileLoaderTests {
     }
 
     private func source(range: ClosedRange<Int> = 0...14) throws -> OpenMapTilesSource {
-        try .init(template: "https://example.test/tiles/{z}/{x}/{y}.pbf", zoomRange: range,
+        try OpenMapTilesSource(template: "https://example.test/tiles/{z}/{x}/{y}.pbf", zoomRange: range,
                   metadata: MapSourceMetadata(attribution: "Fixture", license: "Fixture",
                                               licenseURL: URL(string: "https://example.test/license")!,
                                               sourceURL: URL(string: "https://example.test")!, sourceRevision: "fixture"))
     }
     private func request(longitude: Double = 0, span: Double = 5) throws -> MapTileRequest {
-        try .init(camera: MapCamera(center: MapCoordinate(latitude: 0, longitude: longitude), longitudeSpan: span),
+        try MapTileRequest(camera: MapCamera(center: MapCoordinate(latitude: 0, longitude: longitude), longitudeSpan: span),
                   viewport: MapViewport(columns: 96, rows: 32))
     }
     /// Put every tile's lines beside the shared world origin, inside the tiny
@@ -449,7 +449,7 @@ struct MapTileLoaderTests {
                 }
             }
             try Task.checkCancellation()
-            return .init(data: Data(), headers: [:])
+            return MapHTTPClient.Response(data: Data(), headers: [:])
         }
     }
 
@@ -479,7 +479,7 @@ struct MapTileLoaderTests {
             if calls == 2 { let waiting = pairWaiters; pairWaiters = [:]; for waiter in waiting.values { waiter.resume() } }
             if blocked { try await Task.sleep(for: .seconds(4)) }
             try Task.checkCancellation()
-            return .init(data: Data(), headers: [:])
+            return MapHTTPClient.Response(data: Data(), headers: [:])
         }
     }
 }

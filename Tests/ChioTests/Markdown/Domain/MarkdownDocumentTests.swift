@@ -55,7 +55,7 @@ struct MarkdownDocumentTests {
         #expect(items.map(\.marker) == ["7.", "8."])
         #expect(items[0].blocks == [
             .paragraph([.text("seven", [])]),
-            .list([.init(marker: "•", blocks: [
+            .list([MarkdownDocument.Item(marker: "•", blocks: [
                 .paragraph([.text("nested", [])]),
             ])]),
         ])

@@ -8,8 +8,8 @@ struct MapRenderingTests {
     @Test("Scanline interpolation stays within the geometry counted by drawing admission")
     func crossingRoundoff() throws {
         let triangle = PreparedMap.Polygon(featureID: "extreme", kind: .land, rings: [[
-            .init(x: -1e16, y: 1), .init(x: 3.5, y: 0.5),
-            .init(x: -1e16, y: 0), .init(x: -1e16, y: 1),
+            PreparedMap.Point(x: -1e16, y: 1), PreparedMap.Point(x: 3.5, y: 0.5),
+            PreparedMap.Point(x: -1e16, y: 0), PreparedMap.Point(x: -1e16, y: 1),
         ]])
         let prepared = map(polygons: [triangle])
         let viewport = try MapViewport(columns: 10, rows: 10)
@@ -30,10 +30,10 @@ struct MapRenderingTests {
         // A shallow bay crosses a cell center: removing it must visibly change
         // the fill, even with no names or labels anywhere in the input.
         let coast: [PreparedMap.Point] = [
-            .init(x: 2.2, y: 2.2), .init(x: 7.2, y: 2.2),
-            .init(x: 7.2, y: 2.8), .init(x: 9.2, y: 2.8),
-            .init(x: 9.2, y: 2.2), .init(x: 18.2, y: 2.2),
-            .init(x: 18.2, y: 14.2), .init(x: 2.2, y: 14.2), .init(x: 2.2, y: 2.2),
+            PreparedMap.Point(x: 2.2, y: 2.2), PreparedMap.Point(x: 7.2, y: 2.2),
+            PreparedMap.Point(x: 7.2, y: 2.8), PreparedMap.Point(x: 9.2, y: 2.8),
+            PreparedMap.Point(x: 9.2, y: 2.2), PreparedMap.Point(x: 18.2, y: 2.2),
+            PreparedMap.Point(x: 18.2, y: 14.2), PreparedMap.Point(x: 2.2, y: 14.2), PreparedMap.Point(x: 2.2, y: 2.2),
         ]
         let rings = try [coast, rectangle(12.2, 8.2, 14.2, 10.2)].map { points in
             try MapRing(coordinates: points.map {
@@ -129,9 +129,9 @@ struct MapRenderingTests {
     @Test("A single native Canvas merges braille dots and applies prominent-road cell color")
     func overlappingLines() throws {
         let horizontal = PreparedMap.Line(featureID: "road", kind: .road,
-                                          points: [.init(x: 2, y: 4.1), .init(x: 8, y: 4.1)])
+                                          points: [PreparedMap.Point(x: 2, y: 4.1), PreparedMap.Point(x: 8, y: 4.1)])
         let vertical = PreparedMap.Line(featureID: "primary", kind: .primaryRoad,
-                                        points: [.init(x: 4.6, y: 2), .init(x: 4.6, y: 8)])
+                                        points: [PreparedMap.Point(x: 4.6, y: 2), PreparedMap.Point(x: 4.6, y: 8)])
         let land = PreparedMap.Polygon(featureID: "land", kind: .land, rings: [rectangle(0, 0, 10, 10)])
         for theme in [ChioStyle.default, .light, .btop] {
             let surface = try render(map(lines: [vertical, horizontal], polygons: [land]), columns: 10, rows: 10, theme: theme)
@@ -153,12 +153,12 @@ struct MapRenderingTests {
     @Test("Native text label placement rejects collisions, duplicates and edges by stable priority")
     func labelPlacement() {
         let candidates: [PreparedMap.Label] = [
-            .init(featureID: "road", kind: .primaryRoad, text: "Main Road", position: .init(x: 10, y: 4)),
-            .init(featureID: "lake", kind: .water, text: "Lake", position: .init(x: 10, y: 4)),
-            .init(featureID: "duplicate", kind: .water, text: "Lake", position: .init(x: 30, y: 3)),
-            .init(featureID: "edge", kind: .park, text: "Edge", position: .init(x: 1, y: 0)),
-            .init(featureID: "oversized", kind: .park, text: String(repeating: "x", count: 21), position: .init(x: 20, y: 2)),
-            .init(featureID: "far", kind: .road, text: "Far Road", position: .init(x: 30, y: 7)),
+            PreparedMap.Label(featureID: "road", kind: .primaryRoad, text: "Main Road", position: PreparedMap.Point(x: 10, y: 4)),
+            PreparedMap.Label(featureID: "lake", kind: .water, text: "Lake", position: PreparedMap.Point(x: 10, y: 4)),
+            PreparedMap.Label(featureID: "duplicate", kind: .water, text: "Lake", position: PreparedMap.Point(x: 30, y: 3)),
+            PreparedMap.Label(featureID: "edge", kind: .park, text: "Edge", position: PreparedMap.Point(x: 1, y: 0)),
+            PreparedMap.Label(featureID: "oversized", kind: .park, text: String(repeating: "x", count: 21), position: PreparedMap.Point(x: 20, y: 2)),
+            PreparedMap.Label(featureID: "far", kind: .road, text: "Far Road", position: PreparedMap.Point(x: 30, y: 7)),
         ]
         let positioned = MapLabels(candidates: candidates, columns: 40, rows: 10, enabled: true)
         // Duplicate names use ascending ID within a kind, so "duplicate" wins.
@@ -173,7 +173,7 @@ struct MapRenderingTests {
     @Test("Native Text preserves wide and combining characters using terminal-cell width")
     func unicodeLabels() throws {
         let text = "界e\u{301}"
-        let candidate = PreparedMap.Label(featureID: "unicode", kind: .water, text: text, position: .init(x: 10, y: 4))
+        let candidate = PreparedMap.Label(featureID: "unicode", kind: .water, text: text, position: PreparedMap.Point(x: 10, y: 4))
         let positioned = MapLabels(candidates: [candidate], columns: 20, rows: 10, enabled: true)
         let label = try #require(positioned.labels.first)
         #expect(label.width == 3 && label.column == 9 && label.row == 4)
@@ -282,7 +282,7 @@ struct MapRenderingTests {
                 let view = MapExampleView(fixtures: fixtures, scene: scene, appearance: .default)
                     .environment(\.terminalSize, CellSize(width: width, height: height))
                     .environment(\.cellPixelMetrics, CellPixelMetrics(width: 8, height: 16, source: .estimated))
-                let surface = DefaultRenderer().render(view, proposal: .init(width: width, height: height), frameInstant: .zero).rasterSurface
+                let surface = DefaultRenderer().render(view, proposal: ProposedSize(width: width, height: height), frameInstant: .zero).rasterSurface
                 let text = surface.lines.joined(separator: "\n")
                 #expect(surface.size == CellSize(width: width, height: height))
                 #expect(text.contains("More room for the map"))
@@ -301,7 +301,7 @@ struct MapRenderingTests {
                                   openFreeMapSource: loaded.openFreeMapSource)
         let view = MapExampleView(fixtures: swapped, scene: .world, appearance: .default)
             .environment(\.terminalSize, CellSize(width: 100, height: 30))
-        let frame = DefaultRenderer().render(view, proposal: .init(width: 100, height: 30), frameInstant: .zero)
+        let frame = DefaultRenderer().render(view, proposal: ProposedSize(width: 100, height: 30), frameInstant: .zero)
         let text = frame.rasterSurface.lines.joined(separator: "\n")
         #expect(text.contains("OpenStreetMap contributors"))
         #expect(text.contains("ODbL 1.0"))
@@ -314,21 +314,21 @@ struct MapRenderingTests {
         let view = try MapCanvasView(map: map, viewport: MapViewport(columns: columns, rows: rows),
                                  theme: theme, fills: fills, labels: labels,
                                  waterColor: waterColor(theme), parkColor: parkColor(theme), detail: detail).style(theme)
-        return DefaultRenderer().render(view, proposal: .init(width: columns, height: rows), frameInstant: .zero).rasterSurface
+        return DefaultRenderer().render(view, proposal: ProposedSize(width: columns, height: rows), frameInstant: .zero).rasterSurface
     }
 
     private func map(lines: [PreparedMap.Line] = [], polygons: [PreparedMap.Polygon] = [],
                      labels: [PreparedMap.Label] = []) -> PreparedMap {
         PreparedMap(lines: lines, polygons: polygons, labels: labels,
-                    statistics: .init(sourceVertices: 0,
+                    statistics: PreparedMap.Statistics(sourceVertices: 0,
                                       preparedVertices: lines.reduce(0) { $0 + $1.points.count }
                                         + polygons.reduce(0) { $0 + $1.rings.reduce(0) { $0 + $1.count } },
                                       visibleFeatures: Set(lines.map(\.featureID) + polygons.map(\.featureID)).count))
     }
 
     private func rectangle(_ left: Double, _ top: Double, _ right: Double, _ bottom: Double) -> [PreparedMap.Point] {
-        [.init(x: left, y: top), .init(x: right, y: top), .init(x: right, y: bottom),
-         .init(x: left, y: bottom), .init(x: left, y: top)]
+        [PreparedMap.Point(x: left, y: top), PreparedMap.Point(x: right, y: top), PreparedMap.Point(x: right, y: bottom),
+         PreparedMap.Point(x: left, y: bottom), PreparedMap.Point(x: left, y: top)]
     }
 
     // Use the demo's supplied colors; expected paint locations are independent rectangles.

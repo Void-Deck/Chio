@@ -43,7 +43,7 @@ struct FileSelectionExampleTests {
             let themed = try await recorder.wait(after: before.sequence, description: "theme preserves query and focus") {
                 $0.fileQuery("alpha") && $0.focusedIdentity == before.focusedIdentity && $0.raster.cells != before.raster.cells
             }
-            surface.updateSurfaceSize(.init(width: 36, height: 18))
+            surface.updateSurfaceSize(CellSize(width: 36, height: 18))
             session.requestSurfaceRefresh()
             let compact = try await recorder.wait(after: themed.sequence, description: "compact picker ready") {
                 $0.raster.size == CellSize(width: 36, height: 18) && $0.fileQuery("alpha") && $0.fileResultsFocused
@@ -90,7 +90,7 @@ private func withFileSelectionExample(
     try Data("alpha".utf8).write(to: directory.appendingPathComponent("alpha.txt"))
     try Data("inside".utf8).write(to: directory.appendingPathComponent("nested/inside.txt"))
     let recorder = HostedFrameRecorder()
-    let surface = HostedRasterSurface(surfaceSize: .init(width: 100, height: 30), appearance: .fallback,
+    let surface = HostedRasterSurface(surfaceSize: CellSize(width: 100, height: 30), appearance: .fallback,
                                       onFrame: recorder.receive)
     let session = try HostedSceneSession(for: FileSelectionTestApp(directory: directory), sceneID: "file-selection-tests", surface: surface)
     let run = Task { try await session.start() }

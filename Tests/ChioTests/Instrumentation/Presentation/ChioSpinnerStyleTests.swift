@@ -9,12 +9,12 @@ struct ChioSpinnerStyleTests {
         let native = DefaultRenderer().render(
             Spinner().spinnerStyle(GlyphSpinnerStyle.automatic)
                 .environment(\.accessibilityReduceMotion, reduceMotion),
-            proposal: .init(width: 1, height: 1), frameInstant: .zero
+            proposal: ProposedSize(width: 1, height: 1), frameInstant: .zero
         )
         let chio = DefaultRenderer().render(
             Spinner().spinnerStyle(ChioSpinnerStyle())
                 .environment(\.accessibilityReduceMotion, reduceMotion),
-            proposal: .init(width: 1, height: 1), frameInstant: .zero
+            proposal: ProposedSize(width: 1, height: 1), frameInstant: .zero
         )
         #expect(chio.rasterSurface.lines == native.rasterSurface.lines)
         #expect(chio.rasterSurface.lines == ["⠋"])
@@ -26,7 +26,7 @@ struct ChioSpinnerStyleTests {
         let rendered = DefaultRenderer().render(
             Spinner(stage: stage).spinnerStyle(ChioSpinnerStyle(theme: theme))
                 .environment(\.accessibilityReduceMotion, true),
-            proposal: .init(width: 1, height: 1), frameInstant: .zero
+            proposal: ProposedSize(width: 1, height: 1), frameInstant: .zero
         )
         let glyph: Character
         let color: Color
@@ -47,8 +47,8 @@ struct ChioSpinnerStyleTests {
     func reducedMotionStaticFrame() {
         let renderer = DefaultRenderer()
         let view = Spinner().spinnerStyle(ChioSpinnerStyle()).environment(\.accessibilityReduceMotion, true)
-        let first = renderer.render(view, proposal: .init(width: 1, height: 1), frameInstant: .zero)
-        let later = renderer.render(view, proposal: .init(width: 1, height: 1),
+        let first = renderer.render(view, proposal: ProposedSize(width: 1, height: 1), frameInstant: .zero)
+        let later = renderer.render(view, proposal: ProposedSize(width: 1, height: 1),
                                     frameInstant: MonotonicInstant.zero.advanced(by: .seconds(2)))
         #expect(first.rasterSurface.lines == ["⠋"])
         #expect(later.rasterSurface.cells == first.rasterSurface.cells)
@@ -59,7 +59,7 @@ struct ChioSpinnerStyleTests {
         let theme = ChioStyle.default.replacing(colors: ChioStyle.default.colors.replacing(accent: Color(hexRGB: 0x123456)))
         let rendered = DefaultRenderer().render(
             Spinner().spinnerStyle(ChioSpinnerStyle(theme: theme)).environment(\.accessibilityReduceMotion, true),
-            proposal: .init(width: 1, height: 1)
+            proposal: ProposedSize(width: 1, height: 1)
         )
         let cell = try #require(rendered.rasterSurface.cells.flatMap { $0 }.first { $0.character == "⠋" })
         #expect(cell.style?.foregroundColor == Color(hexRGB: 0x123456))

@@ -40,7 +40,7 @@ struct TerminalColorEmissionTests {
         }
         let surface = DefaultRenderer().render(
             Text("Chio").style(.default),
-            proposal: .init(width: 4, height: 1)
+            proposal: ProposedSize(width: 4, height: 1)
         ).rasterSurface
         let host = TerminalHost(
             inputFileDescriptor: pipe.fileHandleForReading.fileDescriptor,

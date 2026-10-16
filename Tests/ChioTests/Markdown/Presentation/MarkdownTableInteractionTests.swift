@@ -8,7 +8,7 @@ struct MarkdownTableInteractionTests {
     func horizontalScrolling() async throws {
         let recorder = HostedFrameRecorder()
         let surface = HostedRasterSurface(
-            surfaceSize: .init(width: 20, height: 12), appearance: .fallback,
+            surfaceSize: CellSize(width: 20, height: 12), appearance: .fallback,
             onFrame: { recorder.receive($0) }
         )
         let session = try HostedSceneSession(for: TableTestApp(), sceneID: "markdown-table", surface: surface)
@@ -41,7 +41,7 @@ struct MarkdownTableInteractionTests {
                     && $0.raster.lines.contains { $0.contains("LAST") }
             }
             #expect(themed.focusedIdentity == end.focusedIdentity)
-            surface.updateSurfaceSize(.init(width: 16, height: 12))
+            surface.updateSurfaceSize(CellSize(width: 16, height: 12))
             session.requestSurfaceRefresh()
             let resized = try await recorder.wait(after: themed.sequence, description: "resize retains the table's focus") {
                 $0.raster.size.width == 16 && self.hasScrollFocus($0)

@@ -14,7 +14,7 @@ struct MapPreparationTests {
         #expect(abs(point.x - 60) < 1e-9)
         #expect(abs(point.y - -5.2494933552631) < 1e-9)
         #expect(abs(square.project(position, camera: camera).y - -30.4989867105262) < 1e-9)
-        #expect(tall.project(camera.center, camera: camera) == .init(x: 50, y: 20))
+        #expect(tall.project(camera.center, camera: camera) == PreparedMap.Point(x: 50, y: 20))
         #expect(tall.project(try coordinate(0, 90), camera: camera) == tall.project(try coordinate(0, MapLimits.mercatorLatitude), camera: camera))
         let tiny = try MapCamera(center: coordinate(179, 80), longitudeSpan: MapLimits.minimumLongitudeSpan)
         let distant = tall.project(try coordinate(-100, -90), camera: tiny)
@@ -28,8 +28,8 @@ struct MapPreparationTests {
         let local = try MapPreparation.prepare(dataset: dataset,
                                                camera: MapCamera(center: coordinate(179, 0), longitudeSpan: 20), viewport: viewport)
         #expect(local.lines.count == 1)
-        #expect(local.lines[0].points.first == .init(x: 45, y: 20))
-        #expect(local.lines[0].points.last == .init(x: 65, y: 20))
+        #expect(local.lines[0].points.first == PreparedMap.Point(x: 45, y: 20))
+        #expect(local.lines[0].points.last == PreparedMap.Point(x: 65, y: 20))
         let world = try MapPreparation.prepare(dataset: dataset,
                                                camera: MapCamera(center: coordinate(0, 0), longitudeSpan: 360), viewport: viewport)
         #expect(world.lines.count == 2)
@@ -45,7 +45,7 @@ struct MapPreparationTests {
         let crossingShort = try line([coordinate(-50, 0), coordinate(50, 0)])
         let prepared = try MapPreparation.prepare(dataset: crossingShort, camera: camera, viewport: viewport)
         #expect(prepared.lines.count == 1)
-        #expect(prepared.lines[0].points == [.init(x: 0, y: 20), .init(x: 100, y: 20)])
+        #expect(prepared.lines[0].points == [PreparedMap.Point(x: 0, y: 20), PreparedMap.Point(x: 100, y: 20)])
         let outside = try MapPreparation.prepare(dataset: line([coordinate(-1, 70), coordinate(1, 70)]), camera: camera, viewport: viewport)
         #expect(outside.lines.isEmpty && outside.labels.isEmpty && outside.statistics.visibleFeatures == 0)
         #expect(crossingShort.features[0].geometry.vertexCount == 2)
@@ -60,8 +60,8 @@ struct MapPreparationTests {
                                                 camera: MapCamera(center: coordinate(0.5, 0), longitudeSpan: 100), viewport: viewport)
         let fine = try MapPreparation.prepare(dataset: dataset,
                                               camera: MapCamera(center: coordinate(0.5, 0), longitudeSpan: 2), viewport: viewport)
-        #expect(coarse.lines[0].points.first == .init(x: 49.5, y: 20))
-        #expect(coarse.lines[0].points.last == .init(x: 50.5, y: 20))
+        #expect(coarse.lines[0].points.first == PreparedMap.Point(x: 49.5, y: 20))
+        #expect(coarse.lines[0].points.last == PreparedMap.Point(x: 50.5, y: 20))
         #expect(coarse.statistics.preparedVertices < fine.statistics.preparedVertices)
         #expect(coarse.statistics.preparedVertices <= 6)
         #expect(dataset.vertexCount == 201)
@@ -225,11 +225,11 @@ struct MapPreparationTests {
         let viewport = try MapViewport(columns: 100, rows: 40)
         let prepared = try MapPreparation.prepare(dataset: line([coordinate(-50, 0), coordinate(50, 0)]),
                                                   camera: camera, viewport: viewport)
-        #expect(prepared.lines[0].points == [.init(x: 0, y: 20), .init(x: 100, y: 20)])
-        #expect(prepared.labels.map(\.position) == [.init(x: 50, y: 20)])
+        #expect(prepared.lines[0].points == [PreparedMap.Point(x: 0, y: 20), PreparedMap.Point(x: 100, y: 20)])
+        #expect(prepared.labels.map(\.position) == [PreparedMap.Point(x: 50, y: 20)])
         let unequal = try MapPreparation.prepare(dataset: line([coordinate(-10, 0), coordinate(-9, 0), coordinate(10, 0)]),
                                                  camera: camera, viewport: viewport)
-        #expect(unequal.labels.map(\.position) == [.init(x: 50, y: 20)])
+        #expect(unequal.labels.map(\.position) == [PreparedMap.Point(x: 50, y: 20)])
     }
 
     @Test("Empty prepared snapshots have zero work and preserve source values")
@@ -239,7 +239,7 @@ struct MapPreparationTests {
         let viewport = try MapViewport(columns: 100, rows: 40)
         let prepared = try MapPreparation.prepare(dataset: dataset, camera: camera, viewport: viewport)
         #expect(prepared.lines.isEmpty && prepared.polygons.isEmpty && prepared.labels.isEmpty)
-        #expect(prepared.statistics == .init(sourceVertices: 0, preparedVertices: 0, visibleFeatures: 0))
+        #expect(prepared.statistics == PreparedMap.Statistics(sourceVertices: 0, preparedVertices: 0, visibleFeatures: 0))
         #expect(try MapPreparation.prepare(dataset: dataset, camera: camera, viewport: viewport) == prepared)
     }
 

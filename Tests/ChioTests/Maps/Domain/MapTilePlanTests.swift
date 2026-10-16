@@ -77,16 +77,16 @@ struct MapTilePlanTests {
     }
 
     private func camera(span: Double) throws -> MapCamera {
-        try .init(center: .init(latitude: 0, longitude: 0), longitudeSpan: span)
+        try MapCamera(center: MapCoordinate(latitude: 0, longitude: 0), longitudeSpan: span)
     }
 
     private func request(latitude: Double = 0, longitude: Double = 0, span: Double,
                          columns: Int = 100, rows: Int = 50, aspect: Double = 2) throws -> MapTileRequest {
-        try .init(camera: .init(center: .init(latitude: latitude, longitude: longitude), longitudeSpan: span),
-                  viewport: .init(columns: columns, rows: rows, cellAspectRatio: aspect))
+        try MapTileRequest(camera: MapCamera(center: MapCoordinate(latitude: latitude, longitude: longitude), longitudeSpan: span),
+                  viewport: MapViewport(columns: columns, rows: rows, cellAspectRatio: aspect))
     }
 
     private func tile(_ zoom: Int, _ x: Int, _ y: Int) throws -> MapTileCoordinate {
-        try .init(zoom: zoom, x: x, y: y)
+        try MapTileCoordinate(zoom: zoom, x: x, y: y)
     }
 }
