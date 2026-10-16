@@ -30,7 +30,7 @@ struct OpenMapTilesAdapterTests {
 
     @Test("Unsupported layers and road classes skip deliberately while supported malformed geometry rejects")
     func subsetPolicy() throws {
-        let adapter = OpenMapTilesAdapter(tile: try .init(zoom: 14, x: 12918, y: 8133), metadata: try credit())
+        let adapter = OpenMapTilesAdapter(tile: try MapTileCoordinate(zoom: 14, x: 12918, y: 8133), metadata: try credit())
         let validLine: [UInt32] = [9,0,0,10,2,2]
         let ignored = layer("waterway", type: 2, words: validLine)
             + layer("transportation_name", type: 2, words: validLine, sourceClass: "primary", name: "Label")
@@ -78,7 +78,7 @@ struct OpenMapTilesAdapterTests {
 
     @Test("Park point labels are excluded while park polygons retain strict geometry validation")
     func parkLabels() throws {
-        let adapter = OpenMapTilesAdapter(tile: try .init(zoom: 12, x: 3229, y: 2033), metadata: try credit())
+        let adapter = OpenMapTilesAdapter(tile: try MapTileCoordinate(zoom: 12, x: 3229, y: 2033), metadata: try credit())
         // Exact geometry words from the retained Central Catchment Nature Reserve label.
         let point = integer(3, 1) + message(4, [UInt32(9),590,5441].flatMap { varint(UInt64($0)) })
         let polygon = integer(3, 3) + message(4, [UInt32(9),0,0,18,2,0,0,2,15].flatMap { varint(UInt64($0)) })
@@ -106,7 +106,7 @@ struct OpenMapTilesAdapterTests {
         let layers = try MapboxVectorTileDecoder.decode(data)
         #expect(data.count == 104_054)
         #expect(layers.contains { $0.name == "transportation" && $0.features.count == 377 })
-        let source = try OpenMapTilesAdapter(tile: .init(zoom: 14, x: 12919, y: 8133), metadata: credit()).adapt(data)
+        let source = try OpenMapTilesAdapter(tile: MapTileCoordinate(zoom: 14, x: 12919, y: 8133), metadata: credit()).adapt(data)
         // Independently counted from the pinned raw tile's integer commands,
         // including multipart expansion and explicit ring closure vertices.
         #expect(source.dataset.features.count == 384)
@@ -134,7 +134,7 @@ struct OpenMapTilesAdapterTests {
 
     @Test("Canonical admission accepts exactly 4000 supported parts and rejects the next whole feature")
     func canonicalFeatureBoundary() throws {
-        let adapter = OpenMapTilesAdapter(tile: try .init(zoom: 14, x: 12919, y: 8133), metadata: try credit())
+        let adapter = OpenMapTilesAdapter(tile: try MapTileCoordinate(zoom: 14, x: 12919, y: 8133), metadata: try credit())
         // Every raw record is one complete two-vertex road. Repeated source IDs
         // remain distinct through tile/layer/ordinal/part identities. Both inputs
         // are below decoder byte, raw-feature, word and canonical vertex limits.
@@ -318,12 +318,12 @@ struct OpenMapTilesAdapterTests {
 
     @Test("Spatial admission uses the renderer's longitude branch across the dateline")
     func datelineAdmission() throws {
-        let line = try MapGeometry.polyline(.init(coordinates: [.init(latitude: 0, longitude: 178),
-                                                               .init(latitude: 0, longitude: -178)]))
+        let line = try MapGeometry.polyline(MapPolyline(coordinates: [MapCoordinate(latitude: 0, longitude: 178),
+                                                               MapCoordinate(latitude: 0, longitude: -178)]))
         let viewport = try MapViewport(columns: 100, rows: 50)
-        let seam = try MapTileRequest(camera: .init(center: .init(latitude: 0, longitude: 179), longitudeSpan: 4),
+        let seam = try MapTileRequest(camera: MapCamera(center: MapCoordinate(latitude: 0, longitude: 179), longitudeSpan: 4),
                                       viewport: viewport)
-        let distant = try MapTileRequest(camera: .init(center: .init(latitude: 0, longitude: 0), longitudeSpan: 4),
+        let distant = try MapTileRequest(camera: MapCamera(center: MapCoordinate(latitude: 0, longitude: 0), longitudeSpan: 4),
                                          viewport: viewport)
         #expect(try MapPreparation.mayIntersect(line, request: seam))
         #expect(try !MapPreparation.mayIntersect(line, request: distant))
@@ -447,9 +447,9 @@ struct OpenMapTilesAdapterTests {
     }
 
     private func centeredRequest(tile: MapTileCoordinate) throws -> MapTileRequest {
-        try .init(camera: .init(center: tile.coordinate(x: 2048, y: 2048, extent: 4096),
+        try MapTileRequest(camera: MapCamera(center: tile.coordinate(x: 2048, y: 2048, extent: 4096),
                                 longitudeSpan: 360 / Double(1 << tile.zoom) / 4),
-                  viewport: .init(columns: 100, rows: 50))
+                  viewport: MapViewport(columns: 100, rows: 50))
     }
 
     private func layer(_ name: String, type: UInt64, featureWords: [[UInt32]],

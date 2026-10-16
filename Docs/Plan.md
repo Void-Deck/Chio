@@ -381,12 +381,14 @@ internal Boolean names and dedicated conformances across production and examples
 with affected tests updated alongside their owners. Public labels, persisted keys,
 native state identity and rendering remain compatibility constraints.
 
-Older untouched test fixtures can adopt constructor spelling when their behavior
-is next changed; the [pinned local lint gate](Verification.md#shared-engineering-rules)
-tracks their reviewed baseline and rejects new findings. They do not justify a
-separate rewrite. Intentional single-case
-filters, extensible upstream/raw-input switches, native wrappers and private
-nested conformances retain their documented roles.
+The user approved clearing the remaining constructor debt after 0.2.0 publication.
+[PR #20](https://github.com/echoz/Chio/pull/20) carries 395 spelling-only test
+constructor changes for the next patch. Its baseline retains only the documented
+private geometry work-budget exception. The
+[pinned local lint gate](Verification.md#shared-engineering-rules) rejects new
+findings and stale entries. Intentional single-case filters, extensible
+upstream/raw-input switches, native wrappers and private nested conformances
+retain their documented roles.
 
 The map expansion above remains approved. Provider archive acquisition remains
 paused at the user's request; list row spacing is included in the 0.2.0 scope.

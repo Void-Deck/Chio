@@ -26,10 +26,10 @@ struct MapShapeSimplificationTests {
         let tall = original.map { $0.map { PreparedMap.Point(x: $0.x, y: $0.y / 2) } }
         let ordinary = simplify(original, tolerance: 0.75)
         let tallReduced = simplify(tall, tolerance: 0.75, aspect: 2)
-        #expect(tallReduced == ordinary.map { $0.map { .init(x: $0.x, y: $0.y / 2) } })
+        #expect(tallReduced == ordinary.map { $0.map { PreparedMap.Point(x: $0.x, y: $0.y / 2) } })
         let translated = original.map { $0.map { PreparedMap.Point(x: $0.x + 71, y: $0.y - 19) } }
         #expect(simplify(translated, tolerance: 1.5)
-                == simplify(original, tolerance: 1.5).map { $0.map { .init(x: $0.x + 71, y: $0.y - 19) } })
+                == simplify(original, tolerance: 1.5).map { $0.map { PreparedMap.Point(x: $0.x + 71, y: $0.y - 19) } })
         let zoomed = original.map { $0.map { PreparedMap.Point(x: $0.x * 2, y: $0.y * 2) } }
         #expect(simplify(zoomed, tolerance: 1.5)[0].count > simplify(original, tolerance: 1.5)[0].count)
     }
@@ -38,10 +38,10 @@ struct MapShapeSimplificationTests {
     func narrowWater() {
         let narrow = [rectangle(0, 0, 20, 0.1)]
         #expect(simplify(narrow, tolerance: 1.5) == narrow)
-        let channel: [[PreparedMap.Point]] = [[.init(x: 0, y: 0), .init(x: 6, y: 0),
-                                              .init(x: 6, y: 1), .init(x: 14, y: 1),
-                                              .init(x: 14, y: 0), .init(x: 20, y: 0),
-                                              .init(x: 20, y: 2), .init(x: 0, y: 2), .init(x: 0, y: 0)]]
+        let channel: [[PreparedMap.Point]] = [[PreparedMap.Point(x: 0, y: 0), PreparedMap.Point(x: 6, y: 0),
+                                              PreparedMap.Point(x: 6, y: 1), PreparedMap.Point(x: 14, y: 1),
+                                              PreparedMap.Point(x: 14, y: 0), PreparedMap.Point(x: 20, y: 0),
+                                              PreparedMap.Point(x: 20, y: 2), PreparedMap.Point(x: 0, y: 2), PreparedMap.Point(x: 0, y: 0)]]
         #expect(simplify(channel, tolerance: 1.5) == channel) // Filling this bay would add 25% area.
     }
 
@@ -59,9 +59,9 @@ struct MapShapeSimplificationTests {
         #expect(simplify(touching, tolerance: 1.5) == touching)
         // The exterior's small elbow is safe to remove on its own, but that
         // shortcut would cut through the hole. Reject the complete candidate.
-        let elbow: [PreparedMap.Point] = [.init(x: 0, y: 0), .init(x: 20, y: 0),
-                                         .init(x: 19, y: 18), .init(x: 18, y: 19.8),
-                                         .init(x: 0, y: 20), .init(x: 0, y: 0)]
+        let elbow: [PreparedMap.Point] = [PreparedMap.Point(x: 0, y: 0), PreparedMap.Point(x: 20, y: 0),
+                                         PreparedMap.Point(x: 19, y: 18), PreparedMap.Point(x: 18, y: 19.8),
+                                         PreparedMap.Point(x: 0, y: 20), PreparedMap.Point(x: 0, y: 0)]
         #expect(simplify([elbow], tolerance: 1.5)[0].count < elbow.count)
         let endangered = [elbow, rectangle(18.7, 17, 18.9, 17.2)]
         #expect(simplify(endangered, tolerance: 1.5) == endangered)
@@ -69,9 +69,9 @@ struct MapShapeSimplificationTests {
 
     @Test("Self crossing source rings are never silently repaired")
     func sourceCrossing() {
-        let crossing: [[PreparedMap.Point]] = [[.init(x: 0, y: 0), .init(x: 2, y: 1.9),
-                                               .init(x: 20, y: 20), .init(x: 0, y: 20),
-                                               .init(x: 20, y: 0), .init(x: 20, y: -10), .init(x: 0, y: 0)]]
+        let crossing: [[PreparedMap.Point]] = [[PreparedMap.Point(x: 0, y: 0), PreparedMap.Point(x: 2, y: 1.9),
+                                               PreparedMap.Point(x: 20, y: 20), PreparedMap.Point(x: 0, y: 20),
+                                               PreparedMap.Point(x: 20, y: 0), PreparedMap.Point(x: 20, y: -10), PreparedMap.Point(x: 0, y: 0)]]
         #expect(simplify(crossing, tolerance: 1.5) == crossing)
     }
 
@@ -95,14 +95,14 @@ struct MapShapeSimplificationTests {
     }
 
     private func bay() -> [PreparedMap.Point] {
-        [.init(x: 0, y: 0), .init(x: 8, y: 0), .init(x: 8, y: 1), .init(x: 12, y: 1),
-         .init(x: 12, y: 0), .init(x: 20, y: 0), .init(x: 20, y: 20),
-         .init(x: 0, y: 20), .init(x: 0, y: 0)]
+        [PreparedMap.Point(x: 0, y: 0), PreparedMap.Point(x: 8, y: 0), PreparedMap.Point(x: 8, y: 1), PreparedMap.Point(x: 12, y: 1),
+         PreparedMap.Point(x: 12, y: 0), PreparedMap.Point(x: 20, y: 0), PreparedMap.Point(x: 20, y: 20),
+         PreparedMap.Point(x: 0, y: 20), PreparedMap.Point(x: 0, y: 0)]
     }
 
     private func rectangle(_ left: Double, _ top: Double, _ right: Double, _ bottom: Double) -> [PreparedMap.Point] {
-        [.init(x: left, y: top), .init(x: right, y: top), .init(x: right, y: bottom),
-         .init(x: left, y: bottom), .init(x: left, y: top)]
+        [PreparedMap.Point(x: left, y: top), PreparedMap.Point(x: right, y: top), PreparedMap.Point(x: right, y: bottom),
+         PreparedMap.Point(x: left, y: bottom), PreparedMap.Point(x: left, y: top)]
     }
 
     private func signedArea(_ ring: [PreparedMap.Point]) -> Double {

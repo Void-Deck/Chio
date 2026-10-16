@@ -249,7 +249,7 @@ struct HelpExampleTests {
                     && $0.raster.cells.flatMap { $0 }.contains { $0.style?.foregroundColor == ChioStyle.light.colors.heading }
             }
             #expect(themed.focusedIdentity == viewport.focusedIdentity)
-            surface.updateSurfaceSize(.init(width: 36, height: 18))
+            surface.updateSurfaceSize(CellSize(width: 36, height: 18))
             session.requestSurfaceRefresh()
             let compact = try await recorder.wait(after: themed.sequence, description: "compact help retains its native viewport") {
                 $0.helpIsPresented && $0.helpViewportFocused && $0.raster.size == CellSize(width: 36, height: 18)
@@ -289,7 +289,7 @@ struct HelpExampleTests {
           arguments: [false, true])
     func quitFromHelp(closeFocused: Bool) async throws {
         let recorder = HostedFrameRecorder()
-        let surface = HostedRasterSurface(surfaceSize: .init(width: 76, height: 30), appearance: .fallback,
+        let surface = HostedRasterSurface(surfaceSize: CellSize(width: 76, height: 30), appearance: .fallback,
                                           onFrame: { recorder.receive($0) })
         let session = try HostedSceneSession(for: HelpTestApp(), sceneID: "help-example-tests", surface: surface)
         let run = Task { try await session.start() }
@@ -324,7 +324,7 @@ struct HelpExampleTests {
     func layout(size: CellSize, appearance: ExampleTheme) {
         let frame = DefaultRenderer().render(
             HelpExampleView(theme: appearance).environment(\.terminalSize, size),
-            proposal: .init(width: size.width, height: size.height), frameInstant: .zero
+            proposal: ProposedSize(width: size.width, height: size.height), frameInstant: .zero
         )
         let text = frame.rasterSurface.lines.joined(separator: "\n")
         #expect(frame.rasterSurface.size == size)
@@ -358,7 +358,7 @@ private func withHelpExample(
     perform: @MainActor (HostedSceneSession, HostedRasterSurface, HostedFrameRecorder) async throws -> Void
 ) async throws {
     let recorder = HostedFrameRecorder()
-    let surface = HostedRasterSurface(surfaceSize: .init(width: 76, height: 30), appearance: .fallback,
+    let surface = HostedRasterSurface(surfaceSize: CellSize(width: 76, height: 30), appearance: .fallback,
                                       onFrame: { recorder.receive($0) })
     let session = try HostedSceneSession(for: HelpTestApp(), sceneID: "help-example-tests", surface: surface)
     let run = Task { try await session.start() }

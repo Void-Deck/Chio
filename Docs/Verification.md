@@ -61,15 +61,18 @@ SwiftLint rules are still checked. Tests receive the latter checks too. Extend
 the configuration when introducing retained source roots such as new spikes;
 empty local directories and `Package.swift` are not scanned by this version.
 
-The initial [.swift-rules-baseline.json](../.swift-rules-baseline.json) records
-reviewed existing findings, with exact paths, source anchors and occurrence counts:
+The [.swift-rules-baseline.json](../.swift-rules-baseline.json) retains one
+reviewed exception, with its exact path, source anchor and occurrence count.
+`MapShapeSimplification.Budget.remaining` is invocation-owned, private scratch
+storage passed `inout` through bounded geometry work. Its local mutation is an
+intentional exception to the checker's lexical stored-property rule; public
+domain inputs remain immutable. Preserve its work and cancellation bounds.
 
-- Older test-fixture constructor shorthand is adoption debt. Replace it with
-  concrete types when changing the owning suite, then prune the fixed entries.
-- `MapShapeSimplification.Budget.remaining` is invocation-owned, private scratch
-  storage passed `inout` through bounded geometry work. Its local mutation is an
-  intentional exception to the checker's lexical stored-property rule; public
-  domain inputs remain immutable. Preserve its work and cancellation bounds.
+The test suites now spell out all 395 formerly baselined constructor calls.
+Their fixture values, assertions and interaction deadlines are unchanged. The
+316 resolved baseline entries are removed; ordinary initializer delegation and
+enum-case shorthand remain valid. Historical adoption results below describe
+their original candidates, before this cleanup.
 
 New findings and stale baseline entries fail the check. Baseline expansion,
 exclusions and tool upgrades require review; do not regenerate the baseline to

@@ -143,7 +143,7 @@ struct DashboardPaletteTests {
             let filtered = try await recorder.wait(description: "theme command filtered") {
                 $0.paletteQuery == "theme" && $0.hasPaletteText("Switch to light theme")
             }
-            surface.updateSurfaceSize(.init(width: 36, height: 18))
+            surface.updateSurfaceSize(CellSize(width: 36, height: 18))
             session.requestSurfaceRefresh()
             let narrow = try await recorder.wait(after: filtered.sequence, description: "palette fits narrow terminal") {
                 $0.raster.size == CellSize(width: 36, height: 18) && $0.paletteQuery == "theme"
@@ -200,7 +200,7 @@ struct DashboardPaletteTests {
             let edited = try await recorder.wait(after: seeded.sequence, description: "native editor extends initial query") {
                 $0.paletteQuery == "quit"
             }
-            surface.updateSurfaceSize(.init(width: 36, height: 18))
+            surface.updateSurfaceSize(CellSize(width: 36, height: 18))
             session.requestSurfaceRefresh()
             let resized = try await recorder.wait(after: edited.sequence, description: "resize retains native edits after type-ahead") {
                 $0.raster.size == CellSize(width: 36, height: 18) && $0.paletteQuery == "quit"
@@ -234,7 +234,7 @@ private func withPaletteScene(
     perform: @MainActor (HostedSceneSession, HostedRasterSurface, HostedFrameRecorder) async throws -> Void
 ) async throws {
     let recorder = HostedFrameRecorder()
-    let surface = HostedRasterSurface(surfaceSize: .init(width: 100, height: 30), appearance: .fallback,
+    let surface = HostedRasterSurface(surfaceSize: CellSize(width: 100, height: 30), appearance: .fallback,
                                       onFrame: { recorder.receive($0) })
     let session = try HostedSceneSession(for: PaletteTestApp(scenario: scenario), sceneID: "palette-tests", surface: surface)
     let run = Task { try await session.start() }

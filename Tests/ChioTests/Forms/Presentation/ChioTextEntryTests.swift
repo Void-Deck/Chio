@@ -37,7 +37,7 @@ struct ChioTextEntryTests {
             _ = try await recorder.wait(description: "reenabled secure editing receives focus") { $0.textEntryFocus(.secureField) }
             session.send(.key(.character("Z")))
             _ = try await recorder.wait(description: "reenabled native input changes binding") { $0.textEntryContains("Length=14") }
-            session.send(.paste(.init(content: "A\nB")))
+            session.send(.paste(PasteEvent(content: "A\nB")))
             _ = try await recorder.wait(description: "secure paste uses native single-line filtering") { $0.textEntryContains("Length=16") }
         }
     }
@@ -49,7 +49,7 @@ struct ChioTextEntryTests {
             session.send(.key(.tab))
             _ = try await recorder.wait(description: "Tab reaches one native editor focus stop") { $0.textEntryFocus(.textEditor) }
             let content = "FIRST-abcdefghijklmnopqrstuvwxyz-0123456789\nSECOND\nTHIRD\nFOURTH\nFIFTH\nLAST"
-            session.send(.paste(.init(content: content)))
+            session.send(.paste(PasteEvent(content: content)))
             let pasted = try await recorder.wait(description: "multiline paste retained exactly with final caret visible") {
                 $0.textEntryEditor?.control?.value == .text(content) && $0.textEntryContains("LAST")
             }
@@ -74,7 +74,7 @@ struct ChioTextEntryTests {
             _ = try await recorder.wait(description: "typing replaces the selected character") {
                 $0.textEntryEditor?.control?.value == .text(replaced)
             }
-            surface.updateSurfaceSize(.init(width: 24, height: 16))
+            surface.updateSurfaceSize(CellSize(width: 24, height: 16))
             session.requestSurfaceRefresh()
             let resized = try await recorder.wait(description: "narrow resize retains editor and text") {
                 $0.raster.size.width == 24 && $0.textEntryFocus(.textEditor)
@@ -118,7 +118,7 @@ struct ChioTextEntryTests {
 @MainActor
 private func withTextEntry(_ body: (HostedSceneSession, HostedRasterSurface, HostedFrameRecorder) async throws -> Void) async throws {
     let recorder = HostedFrameRecorder()
-    let surface = HostedRasterSurface(surfaceSize: .init(width: 60, height: 16), appearance: .fallback, onFrame: { frame in
+    let surface = HostedRasterSurface(surfaceSize: CellSize(width: 60, height: 16), appearance: .fallback, onFrame: { frame in
         // Inspect every delivered frame, including focus and submission transitions.
         #expect(!frame.raster.lines.joined().contains("Synthetic-"))
         #expect(!String(reflecting: frame.semantics).contains("Synthetic-"))

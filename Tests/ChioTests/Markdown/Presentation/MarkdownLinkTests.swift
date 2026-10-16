@@ -13,7 +13,7 @@ struct MarkdownLinkTests {
             MarkdownView(MarkdownDocument("Before [**你好** *café* `code`](../guide#intro)[again](../guide#intro) after."),
                          openLink: OpenLinkAction { _ in Issue.record("Rendering activated a link"); return false })
                 .style(theme),
-            proposal: .init(width: width, height: 20)
+            proposal: ProposedSize(width: width, height: 20)
         )
         #expect(rendered.rasterSurface.size.width <= width)
         let cells = rendered.rasterSurface.cells.flatMap { $0 }
@@ -32,7 +32,7 @@ struct MarkdownLinkTests {
             MarkdownView(MarkdownDocument("**[Docs](guide.md)** ![Chart](plot.png) [empty]()"))
                 .openLinkAction(OpenLinkAction { _ in Issue.record("Passive document activated"); return true })
                 .style(.default),
-            proposal: .init(width: 80, height: 5)
+            proposal: ProposedSize(width: 80, height: 5)
         )
         #expect(rendered.rasterSurface.lines.joined().contains("Docs (guide.md) Chart (plot.png) empty"))
         #expect(rendered.rasterSurface.cells.flatMap { $0 }.allSatisfy { $0.hyperlink == nil })
@@ -45,7 +45,7 @@ struct MarkdownLinkTests {
         let rendered = DefaultRenderer().render(
             MarkdownView(MarkdownDocument("| [Header](head.md) |\n| --- |\n| [Body](body.md) |"),
                          openLink: OpenLinkAction { _ in false }).style(.default),
-            proposal: .init(width: 40, height: 15)
+            proposal: ProposedSize(width: 40, height: 15)
         )
         #expect(rendered.rasterSurface.lines.joined().contains("Header (head.md)"))
         let destinations = Set(rendered.rasterSurface.cells.flatMap { $0 }.compactMap(\.hyperlink))
@@ -59,7 +59,7 @@ struct MarkdownLinkTests {
             let rendered = DefaultRenderer().render(
                 MarkdownView(MarkdownDocument(source), openLink: OpenLinkAction { _ in false })
                     .disabled(true).style(.default),
-                proposal: .init(width: 70, height: 5)
+                proposal: ProposedSize(width: 70, height: 5)
             )
             #expect(rendered.semanticSnapshot.focusRegions.isEmpty)
         }
@@ -70,7 +70,7 @@ struct MarkdownLinkTests {
         let rendered = DefaultRenderer().render(
             MarkdownView(MarkdownDocument("![foo [bar](/url)](/url2) [![chart](plot.png)](guide.md)"),
                          openLink: OpenLinkAction { _ in false }).style(.default),
-            proposal: .init(width: 80, height: 5)
+            proposal: ProposedSize(width: 80, height: 5)
         )
         #expect(rendered.rasterSurface.lines.joined().contains("foo bar (/url) (/url2) chart (plot.png)"))
         #expect(Set(rendered.rasterSurface.cells.flatMap { $0 }.compactMap(\.hyperlink)) == ["guide.md"])
@@ -80,7 +80,7 @@ struct MarkdownLinkTests {
     @Test("Native links dispatch once, retain focus through theme and wrapping, and respect disabled/focus effects")
     func interaction() async throws {
         let recorder = HostedFrameRecorder()
-        let surface = HostedRasterSurface(surfaceSize: .init(width: 48, height: 16), appearance: .fallback,
+        let surface = HostedRasterSurface(surfaceSize: CellSize(width: 48, height: 16), appearance: .fallback,
                                           onFrame: { recorder.receive($0) })
         let session = try HostedSceneSession(for: LinkTestApp(), sceneID: "links", surface: surface)
         let run = Task { try await session.start() }
@@ -106,7 +106,7 @@ struct MarkdownLinkTests {
             }
             #expect(themed.focusedIdentity == focused.focusedIdentity)
             #expect(linkCells(themed).contains { $0.style?.backgroundColor == ChioStyle.light.colors.selectedSurface })
-            surface.updateSurfaceSize(.init(width: 24, height: 18))
+            surface.updateSurfaceSize(CellSize(width: 24, height: 18))
             session.requestSurfaceRefresh()
             let narrow = try await recorder.wait(after: themed.sequence, description: "wrapped label keeps native focus") {
                 $0.raster.size.width == 24 && self.focusedDestination($0) == "guide.md"
@@ -170,7 +170,7 @@ struct MarkdownLinkTests {
         | [First](first.md) | Some wide content | [Last](last.md) |
         """)
         let recorder = HostedFrameRecorder()
-        let surface = HostedRasterSurface(surfaceSize: .init(width: 30, height: 18), appearance: .fallback,
+        let surface = HostedRasterSurface(surfaceSize: CellSize(width: 30, height: 18), appearance: .fallback,
                                           onFrame: { recorder.receive($0) })
         let session = try HostedSceneSession(for: LinkTestApp(document), sceneID: "links", surface: surface)
         let run = Task { try await session.start() }

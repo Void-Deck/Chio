@@ -8,7 +8,7 @@ struct MapSourceAdapterTests {
     @Test("Normalized GeoJSON preserves required source context without altering geometry")
     func normalizedInput() throws {
         let metadata = try credit("GeoJSON source")
-        let coverage = try MapCoverage.boundedOfflineExtract(.init(
+        let coverage = try MapCoverage.boundedOfflineExtract(MapCoverage.Bounds(
             southwest: MapCoordinate(latitude: -1, longitude: -1),
             northeast: MapCoordinate(latitude: 2, longitude: 2)))
         let adapter = NormalizedGeoJSONMapAdapter(metadata: metadata, coverage: coverage)
@@ -70,7 +70,7 @@ struct MapSourceAdapterTests {
             let view = try MapCanvasView(map: map, viewport: viewport, theme: theme, fills: true, labels: true,
                                      waterColor: theme.colors.selectedSurface,
                                      parkColor: theme.colors.selectedSurface).style(theme)
-            return DefaultRenderer().render(view, proposal: .init(width: viewport.columns, height: viewport.rows),
+            return DefaultRenderer().render(view, proposal: ProposedSize(width: viewport.columns, height: viewport.rows),
                                             frameInstant: .zero).rasterSurface
         }
         let originalRaster = try raster(original)

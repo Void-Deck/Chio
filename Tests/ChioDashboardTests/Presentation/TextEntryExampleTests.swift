@@ -73,7 +73,7 @@ struct TextEntryExampleTests {
                 $0.raster.cells != before.raster.cells && $0.notesFocused
             }
             #expect(themed.focusedIdentity == before.focusedIdentity)
-            surface.updateSurfaceSize(.init(width: 36, height: 18))
+            surface.updateSurfaceSize(CellSize(width: 36, height: 18))
             session.requestSurfaceRefresh()
             let compact = try await recorder.wait(after: themed.sequence, description: "compact editor retains draft and focus") {
                 $0.raster.size == CellSize(width: 36, height: 18) && $0.notesFocused
@@ -148,7 +148,7 @@ private func withTextEntryExample(
     perform: @MainActor (HostedSceneSession, HostedRasterSurface, HostedFrameRecorder) async throws -> Void
 ) async throws {
     let recorder = HostedFrameRecorder()
-    let surface = HostedRasterSurface(surfaceSize: .init(width: 76, height: 30), appearance: .fallback,
+    let surface = HostedRasterSurface(surfaceSize: CellSize(width: 76, height: 30), appearance: .fallback,
                                       onFrame: { frame in
                                           let concealsSyntheticPassword = frame.concealsSyntheticPassword
                                           let secureMetadataConcealsValue = frame.semantics.accessibilityNodes

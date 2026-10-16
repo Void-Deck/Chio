@@ -9,11 +9,11 @@ struct FormFieldRenderTests {
     func emptyDescription() {
         let omitted = DefaultRenderer().render(
             FormField("Name") { Text("Value") }.style(.default),
-            proposal: .init(width: 24, height: nil)
+            proposal: ProposedSize(width: 24, height: nil)
         )
         let empty = DefaultRenderer().render(
             FormField("Name", description: "") { Text("Value") }.style(.default),
-            proposal: .init(width: 24, height: nil)
+            proposal: ProposedSize(width: 24, height: nil)
         )
         #expect(omitted.rasterSurface.size.height == 2)
         #expect(empty.rasterSurface == omitted.rasterSurface)
@@ -25,7 +25,7 @@ struct FormFieldRenderTests {
     func emptyError() {
         let rendered = DefaultRenderer().render(
             FormField("Name", description: "Hidden helper", error: "") { Text("Value") }
-                .style(.default), proposal: .init(width: 24, height: nil)
+                .style(.default), proposal: ProposedSize(width: 24, height: nil)
         )
         #expect(rendered.rasterSurface.size.height == 3)
         #expect(rendered.rasterSurface.lines.contains { $0.contains("Error:") })
@@ -49,7 +49,7 @@ struct FormFieldRenderTests {
             FormField("Agent name", description: "Helpful words wrap here") {
                 Text("Value")
             }.style(theme),
-            proposal: .init(width: width, height: 10)
+            proposal: ProposedSize(width: width, height: 10)
         ).rasterSurface
         #expect(surface.size.width <= width)
         let text = surface.lines.joined(separator: " ")
@@ -70,7 +70,7 @@ struct FormFieldRenderTests {
             FormField("Name", description: "Hidden helper", error: "Required name") {
                 Text("Value")
             }.style(theme),
-            proposal: .init(width: width, height: 10)
+            proposal: ProposedSize(width: width, height: 10)
         ).rasterSurface
         #expect(surface.size.width <= width)
         let text = surface.lines.joined(separator: " ")
@@ -95,7 +95,7 @@ struct FormFieldRenderTests {
                 }
                 FormField("Confirm") { Toggle("Confirm", isOn: .constant(true)) }
             }.style(.default),
-            proposal: .init(width: 24, height: 10)
+            proposal: ProposedSize(width: 24, height: 10)
         )
         let text = rendered.rasterSurface.lines.joined(separator: "\n")
         #expect(text.components(separatedBy: "Model").count == 2)
@@ -119,7 +119,7 @@ struct FormFieldRenderTests {
             Picker("Model", selection: .constant("s")) {
                 Text("Small").tag("s")
                 Text("Large").tag("l")
-            }.style(theme), proposal: .init(width: 24, height: 1)
+            }.style(theme), proposal: ProposedSize(width: 24, height: 1)
         ).rasterSurface
         #expect(picker.size.height == 1)
         #expect(picker.cells.flatMap { $0 }.contains {
@@ -128,7 +128,7 @@ struct FormFieldRenderTests {
         })
         let toggle = DefaultRenderer().render(
             Toggle("Confirm", isOn: .constant(true)).style(theme),
-            proposal: .init(width: 24, height: 1)
+            proposal: ProposedSize(width: 24, height: 1)
         ).rasterSurface
         #expect(toggle.size.height == 1)
         #expect(toggle.cells.flatMap { $0 }.contains {
@@ -147,7 +147,7 @@ struct FormFieldRenderTests {
                 Picker("Model", selection: .constant("s")) { Text("Small").tag("s") }
                 Toggle("Confirm", isOn: .constant(false))
             }.disabled(true).style(theme),
-            proposal: .init(width: 24, height: 2)
+            proposal: ProposedSize(width: 24, height: 2)
         ).rasterSurface
         #expect(surface.lines.contains { $0.contains("Small") })
         #expect(surface.lines.contains { $0.contains("Off") })

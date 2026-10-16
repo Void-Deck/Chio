@@ -65,7 +65,7 @@ struct AgentReportInteractionTests {
                 $0.isReport && $0.raster.cells != focused.raster.cells && $0.containsReportText("Link: #outcome")
             }
             #expect(themed.focusedIdentity == focused.focusedIdentity)
-            surface.updateSurfaceSize(.init(width: 36, height: 18))
+            surface.updateSurfaceSize(CellSize(width: 36, height: 18))
             session.requestSurfaceRefresh()
             let narrow = try await recorder.wait(after: themed.sequence, description: "compact report keeps focused link, persistent feedback, and navigation hints") {
                 $0.isReport && $0.raster.size == CellSize(width: 36, height: 18)
@@ -117,7 +117,7 @@ struct AgentReportInteractionTests {
                 $0.isReport && $0.containsReportText("Docs Agent")
             }
             #expect(home.focusedIdentity == top.focusedIdentity)
-            surface.updateSurfaceSize(.init(width: 36, height: 18))
+            surface.updateSurfaceSize(CellSize(width: 36, height: 18))
             session.requestSurfaceRefresh()
             let resized = try await recorder.wait(after: home.sequence, description: "narrow resize retains the top and native reading focus") {
                 $0.isReport && $0.raster.size == CellSize(width: 36, height: 18)
@@ -226,7 +226,7 @@ private func withReportScene(
     perform: @MainActor (HostedSceneSession, HostedRasterSurface, HostedFrameRecorder) async throws -> Void
 ) async throws {
     let recorder = HostedFrameRecorder()
-    let surface = HostedRasterSurface(surfaceSize: .init(width: 100, height: 30), appearance: .fallback,
+    let surface = HostedRasterSurface(surfaceSize: CellSize(width: 100, height: 30), appearance: .fallback,
                                       onFrame: { recorder.receive($0) })
     let session = try HostedSceneSession(for: ReportTestApp(), sceneID: "report-tests", surface: surface)
     let run = Task { try await session.start() }

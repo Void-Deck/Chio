@@ -11,7 +11,7 @@ struct PageControlTests {
         let theme: ChioStyle = light ? .light : .default
         let rendered = DefaultRenderer().render(
             PageControl(pagination: .constant(Pagination(totalCount: 23, pageSize: 3)))
-                .style(theme), proposal: .init(width: width, height: nil)
+                .style(theme), proposal: ProposedSize(width: width, height: nil)
         )
         #expect(rendered.rasterSurface.size.width <= width)
         #expect(rendered.rasterSurface.lines.contains { $0.contains("1 / 8") })
@@ -32,7 +32,7 @@ struct PageControlTests {
         ))
         let surface = DefaultRenderer().render(
             PageControl(pagination: .constant(Pagination(totalCount: 23, pageSize: 3)))
-                .style(theme), proposal: .init(width: 36, height: nil)
+                .style(theme), proposal: ProposedSize(width: 36, height: nil)
         ).rasterSurface
         let cells = surface.cells.flatMap { $0 }
         #expect(cells.contains { $0.character == "1" && $0.style?.foregroundColor == theme.colors.accent })
@@ -46,7 +46,7 @@ struct PageControlTests {
         let pagination = Pagination(totalCount: Int.max, pageSize: 1).movingToLastPage()
         let rendered = DefaultRenderer().render(
             PageControl(pagination: .constant(pagination)).style(.default),
-            proposal: .init(width: width, height: nil)
+            proposal: ProposedSize(width: width, height: nil)
         )
         #expect(rendered.rasterSurface.size.width <= width)
         let buttons = rendered.semanticSnapshot.accessibilityNodes.filter { $0.role == .button }
@@ -65,7 +65,7 @@ struct PageControlTests {
     func inertRendering(count: Int) {
         let rendered = DefaultRenderer().render(
             PageControl(pagination: .constant(Pagination(totalCount: count, pageSize: 3)))
-                .style(.default), proposal: .init(width: 20, height: nil)
+                .style(.default), proposal: ProposedSize(width: 20, height: nil)
         )
         let buttons = rendered.semanticSnapshot.accessibilityNodes.filter { $0.role == .button }
         #expect(buttons.count == 2 && buttons.allSatisfy { !$0.isEnabled })
@@ -208,7 +208,7 @@ struct PageControlTests {
             #expect(themed.raster.cells.flatMap { $0 }.contains {
                 $0.character == "2" && $0.style?.foregroundColor == ChioStyle.light.colors.accent
             })
-            surface.updateSurfaceSize(.init(width: 20, height: 18))
+            surface.updateSurfaceSize(CellSize(width: 20, height: 18))
             session.requestSurfaceRefresh()
             let narrow = try await recorder.wait(after: themed.sequence, description: "compact resize retains native Previous focus") {
                 $0.raster.size.width == 20 && $0.pageButtonFocused("Previous page")
@@ -345,7 +345,7 @@ private func withPageControlScene(
     perform: @MainActor (HostedSceneSession, HostedRasterSurface, HostedFrameRecorder) async throws -> Void
 ) async throws {
     let recorder = HostedFrameRecorder()
-    let surface = HostedRasterSurface(surfaceSize: .init(width: 76, height: 18), appearance: .fallback,
+    let surface = HostedRasterSurface(surfaceSize: CellSize(width: 76, height: 18), appearance: .fallback,
                                       onFrame: { recorder.receive($0) })
     let session = try HostedSceneSession(for: PageControlTestApp(initial: initial, policy: policy),
                                         sceneID: "page-control-tests", surface: surface)

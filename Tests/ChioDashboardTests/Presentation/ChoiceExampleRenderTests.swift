@@ -11,7 +11,7 @@ struct ChoiceExampleRenderTests {
     func languageLayout(size: CellSize, appearance: ExampleTheme) {
         let surface = DefaultRenderer().render(
             ChoiceExampleView(theme: appearance).environment(\.terminalSize, size),
-            proposal: .init(width: size.width, height: size.height), frameInstant: .zero
+            proposal: ProposedSize(width: size.width, height: size.height), frameInstant: .zero
         ).rasterSurface
         let text = surface.lines.joined(separator: "\n")
         #expect(surface.size == size)
@@ -38,7 +38,7 @@ struct ChoiceExampleRenderTests {
         let surface = DefaultRenderer().render(
             ChoiceExampleView(theme: appearance, initialStep: .capabilities, showsValidation: true)
                 .environment(\.terminalSize, size),
-            proposal: .init(width: size.width, height: size.height), frameInstant: .zero
+            proposal: ProposedSize(width: size.width, height: size.height), frameInstant: .zero
         ).rasterSurface
         let text = surface.lines.joined(separator: "\n")
         #expect(surface.size == size)

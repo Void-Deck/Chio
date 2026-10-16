@@ -12,7 +12,7 @@ struct TabsExampleTests {
     func initialLayout(size: CellSize, appearance: ExampleTheme) {
         let rendered = DefaultRenderer().render(
             TabsExampleView(theme: appearance).environment(\.terminalSize, size),
-            proposal: .init(width: size.width, height: size.height), frameInstant: .zero
+            proposal: ProposedSize(width: size.width, height: size.height), frameInstant: .zero
         )
         let surface = rendered.rasterSurface
         let text = surface.lines.joined(separator: "\n")
@@ -114,7 +114,7 @@ struct TabsExampleTests {
                 $0.raster.cells != beforeTheme.raster.cells && $0.workspaceFocused(.textEditor) && $0.workspaceNotes("aXc")
             }
             #expect(themed.focusedIdentity == edited.focusedIdentity)
-            surface.updateSurfaceSize(.init(width: 36, height: 18))
+            surface.updateSurfaceSize(CellSize(width: 36, height: 18))
             session.requestSurfaceRefresh()
             let compact = try await recorder.wait(after: themed.sequence, description: "compact Notes preserves the draft and native editor focus") {
                 $0.raster.size == CellSize(width: 36, height: 18) && $0.workspaceFocused(.textEditor)
@@ -127,7 +127,7 @@ struct TabsExampleTests {
             _ = try await recorder.wait(after: compact.sequence, description: "F6 targets the native tab strip from the compact editor") {
                 $0.workspaceStripFocused && $0.workspaceNotes("aXc")
             }
-            surface.updateSurfaceSize(.init(width: 100, height: 30))
+            surface.updateSurfaceSize(CellSize(width: 100, height: 30))
             session.requestSurfaceRefresh()
             _ = try await recorder.wait(description: "wide Notes returns without losing the draft") {
                 $0.raster.size == CellSize(width: 100, height: 30) && $0.workspaceNotes("aXc")
@@ -191,7 +191,7 @@ struct TabsExampleTests {
 
     @Test("Compact More opens, cancels, selects either overflow edge and reopens", arguments: [false, true])
     func compactOverflow(selectLast: Bool) async throws {
-        try await withTabsExample(size: .init(width: 36, height: 18)) { session, _, recorder in
+        try await withTabsExample(size: CellSize(width: 36, height: 18)) { session, _, recorder in
             let initial = try await recorder.wait(description: "compact workspace starts with a collapsed More trigger") {
                 $0.workspaceStripFocused && $0.workspaceContains("More ▾") && $0.workspaceContains("Demo runs: 0")
                     && $0.workspaceContains("↓ more")
@@ -251,7 +251,7 @@ struct TabsExampleTests {
             let notes = try await recorder.wait(after: initial.sequence, description: "clicking the visible Notes label selects its page") {
                 $0.workspaceContains("Scratch notes") && $0.workspaceNotes("")
             }
-            surface.updateSurfaceSize(.init(width: 36, height: 18))
+            surface.updateSurfaceSize(CellSize(width: 36, height: 18))
             session.requestSurfaceRefresh()
             let compact = try await recorder.wait(after: notes.sequence, description: "compact More trigger is ready for pointer input") {
                 $0.raster.size == CellSize(width: 36, height: 18) && $0.workspaceContains("More ▾")
@@ -274,8 +274,8 @@ struct TabsExampleTests {
 @MainActor
 private func clickWorkspacePoint(_ point: Point, session: HostedSceneSession) {
     session.send([
-        .mouse(.init(kind: .down(.primary), location: point)),
-        .mouse(.init(kind: .up(.primary), location: point)),
+        .mouse(MouseEvent(kind: .down(.primary), location: point)),
+        .mouse(MouseEvent(kind: .up(.primary), location: point)),
     ])
 }
 
@@ -320,7 +320,7 @@ extension TabsExampleTestApp: App {
 
 @MainActor
 private func withTabsExample(
-    size: CellSize = .init(width: 100, height: 30),
+    size: CellSize = CellSize(width: 100, height: 30),
     perform: @MainActor (HostedSceneSession, HostedRasterSurface, HostedFrameRecorder) async throws -> Void
 ) async throws {
     let recorder = HostedFrameRecorder()

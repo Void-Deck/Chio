@@ -7,10 +7,10 @@ struct MapTileSourceTests {
     func endpoint() throws {
         let source = try OpenMapTilesSource(template: "https://example.test/maps/{z}/{x}/{y}.pbf?format=mvt",
                                            zoomRange: 2...14, metadata: metadata())
-        #expect(try source.url(for: .init(zoom: 3, x: 7, y: 1)).absoluteString
+        #expect(try source.url(for: MapTileCoordinate(zoom: 3, x: 7, y: 1)).absoluteString
                 == "https://example.test/maps/3/7/1.pbf?format=mvt")
         #expect(try JSONDecoder().decode(OpenMapTilesSource.self, from: JSONEncoder().encode(source)) == source)
-        #expect(throws: MapValidationError.invalidTileSource) { try source.url(for: .init(zoom: 1, x: 0, y: 0)) }
+        #expect(throws: MapValidationError.invalidTileSource) { try source.url(for: MapTileCoordinate(zoom: 1, x: 0, y: 0)) }
         for template in ["/maps/{z}/{x}/{y}", "ftp://example.test/{z}/{x}/{y}",
                          "https://user:password@example.test/{z}/{x}/{y}",
                          "https://example.test/{z}/{x}/{y}#", "https://example.test/{z}/{x}/{y}#map",
@@ -41,18 +41,18 @@ struct MapTileSourceTests {
         let coverage = try MapTileCoverage(tiles: Array(addresses.reversed()), region: request)
         #expect(coverage.tiles == addresses && coverage.zoom == 2 && coverage.region == request)
         #expect(coverage.covers(request))
-        #expect(coverage.contains(try .init(latitude: 0, longitude: 179)))
-        #expect(coverage.contains(try .init(latitude: 0, longitude: -179)))
-        #expect(!coverage.contains(try .init(latitude: 0, longitude: -178.5)))
-        #expect(!coverage.contains(try .init(latitude: 0, longitude: 0)))
-        #expect(!coverage.contains(try .init(latitude: 90, longitude: 179)))
+        #expect(coverage.contains(try MapCoordinate(latitude: 0, longitude: 179)))
+        #expect(coverage.contains(try MapCoordinate(latitude: 0, longitude: -179)))
+        #expect(!coverage.contains(try MapCoordinate(latitude: 0, longitude: -178.5)))
+        #expect(!coverage.contains(try MapCoordinate(latitude: 0, longitude: 0)))
+        #expect(!coverage.contains(try MapCoordinate(latitude: 90, longitude: 179)))
         #expect(try JSONDecoder().decode(MapTileCoverage.self, from: JSONEncoder().encode(coverage)) == coverage)
         for tiles in [[], [addresses[0], addresses[0]], Array(addresses.dropLast()),
-                      [addresses[0], try .init(zoom: 1, x: 0, y: 0)]] {
+                      [addresses[0], try MapTileCoordinate(zoom: 1, x: 0, y: 0)]] {
             #expect(throws: MapValidationError.invalidTileCoverage) { try MapTileCoverage(tiles: tiles, region: request) }
         }
         #expect(throws: MapValidationError.invalidTileCoverage) {
-            try MapTileCoverage(tiles: (0..<17).map { try .init(zoom: 5, x: $0, y: 0) }, region: request)
+            try MapTileCoverage(tiles: (0..<17).map { try MapTileCoordinate(zoom: 5, x: $0, y: 0) }, region: request)
         }
         let regionWire = try JSONSerialization.jsonObject(with: JSONEncoder().encode(request))
         for tiles in [[], [["zoom": 2, "x": 0, "y": 1], ["zoom": 2, "x": 0, "y": 1]],
@@ -86,8 +86,8 @@ struct MapTileSourceTests {
         #expect(try MapTilePlan(request: movedOutside, zoom: 2).tiles == tiles)
         #expect(coverage.covers(enclosed))
         #expect(!coverage.covers(movedOutside))
-        #expect(coverage.contains(try .init(latitude: 20, longitude: 45.1)))
-        #expect(!coverage.contains(try .init(latitude: 20, longitude: 45.6)))
+        #expect(coverage.contains(try MapCoordinate(latitude: 20, longitude: 45.1)))
+        #expect(!coverage.contains(try MapCoordinate(latitude: 20, longitude: 45.6)))
         let tooTall = try request(latitude: 20, longitude: 45, span: 0.8, columns: 100, rows: 100, aspect: 4)
         #expect(!coverage.covers(tooTall))
         let crossing = try request()
@@ -101,16 +101,16 @@ struct MapTileSourceTests {
         let world = try request(longitude: 170, span: 360, rows: 100)
         let coverage = try MapTileCoverage(tiles: MapTilePlan(request: world, zoom: 2).tiles, region: world)
         #expect(coverage.covers(try request(longitude: -90, span: 360, rows: 100)))
-        #expect(coverage.contains(try .init(latitude: MapLimits.mercatorLatitude, longitude: -180)))
-        #expect(coverage.contains(try .init(latitude: -MapLimits.mercatorLatitude, longitude: 180)))
-        #expect(!coverage.contains(try .init(latitude: 90, longitude: 0)))
+        #expect(coverage.contains(try MapCoordinate(latitude: MapLimits.mercatorLatitude, longitude: -180)))
+        #expect(coverage.contains(try MapCoordinate(latitude: -MapLimits.mercatorLatitude, longitude: 180)))
+        #expect(!coverage.contains(try MapCoordinate(latitude: 90, longitude: 0)))
         let polar = try request(latitude: MapLimits.mercatorLatitude, longitude: 45, span: 1)
         let polarCoverage = try MapTileCoverage(tiles: MapTilePlan(request: polar, zoom: 2).tiles, region: polar)
         let within = try request(latitude: MapViewport.latitude(mercatorY: 179.8), longitude: 45, span: 0.1)
         let beyond = try request(latitude: MapViewport.latitude(mercatorY: 179), longitude: 45, span: 0.1)
         #expect(polarCoverage.covers(within))
         #expect(!polarCoverage.covers(beyond))
-        #expect(polarCoverage.contains(try .init(latitude: MapLimits.mercatorLatitude, longitude: 45)))
+        #expect(polarCoverage.contains(try MapCoordinate(latitude: MapLimits.mercatorLatitude, longitude: 45)))
         // A partial-world interval must not claim another 360-degree request.
         #expect(!polarCoverage.covers(world))
     }
@@ -119,7 +119,7 @@ struct MapTileSourceTests {
     func snapshot() throws {
         let request = try request()
         let addresses = try MapTilePlan(request: request, zoom: 2).tiles
-        let source = try source(coverage: .tiled(.init(tiles: addresses, region: request)))
+        let source = try source(coverage: .tiled(MapTileCoverage(tiles: addresses, region: request)))
         let snapshot = try MapTileSnapshot(request: request, source: source, requestedZoom: 4)
         #expect(snapshot.attainedZoom == 2 && snapshot.requestedZoom == 4)
         #expect(try JSONDecoder().decode(MapTileSnapshot.self, from: JSONEncoder().encode(snapshot)) == snapshot)
@@ -130,7 +130,7 @@ struct MapTileSourceTests {
         }
         let narrower = MapTileRequest(camera: try request.camera.zoomed(by: 2), viewport: request.viewport)
         for invalidSource in [try self.source(coverage: .worldwide),
-                              try self.source(coverage: .tiled(.init(tiles: addresses, region: narrower)))] {
+                              try self.source(coverage: .tiled(MapTileCoverage(tiles: addresses, region: narrower)))] {
             #expect(throws: MapValidationError.invalidTileSnapshot) {
                 try MapTileSnapshot(request: request, source: invalidSource, requestedZoom: 4)
             }
@@ -155,28 +155,28 @@ struct MapTileSourceTests {
         #expect(try JSONDecoder().decode(MapCoverage.self, from: worldwide) == .worldwide)
         #expect(try encoder.encode(MapCoverage.worldwide) == worldwide)
         let bounded = Data(#"{"boundedOfflineExtract":{"_0":{"northeast":{"latitude":20,"longitude":30},"southwest":{"latitude":10,"longitude":20}}}}"#.utf8)
-        let coverage = try MapCoverage.boundedOfflineExtract(.init(southwest: .init(latitude: 10, longitude: 20),
-                                                                   northeast: .init(latitude: 20, longitude: 30)))
+        let coverage = try MapCoverage.boundedOfflineExtract(MapCoverage.Bounds(southwest: MapCoordinate(latitude: 10, longitude: 20),
+                                                                   northeast: MapCoordinate(latitude: 20, longitude: 30)))
         #expect(try JSONDecoder().decode(MapCoverage.self, from: bounded) == coverage)
         #expect(try encoder.encode(coverage) == bounded)
         let region = try request()
-        let tiled = try MapCoverage.tiled(.init(tiles: MapTilePlan(request: region, zoom: 2).tiles, region: region))
+        let tiled = try MapCoverage.tiled(MapTileCoverage(tiles: MapTilePlan(request: region, zoom: 2).tiles, region: region))
         #expect(try JSONDecoder().decode(MapCoverage.self, from: encoder.encode(tiled)) == tiled)
     }
 
     private func request(latitude: Double = 0, longitude: Double = 179, span: Double = 4,
                          columns: Int = 100, rows: Int = 50, aspect: Double = 2) throws -> MapTileRequest {
-        try .init(camera: .init(center: .init(latitude: latitude, longitude: longitude), longitudeSpan: span),
-                  viewport: .init(columns: columns, rows: rows, cellAspectRatio: aspect))
+        try MapTileRequest(camera: MapCamera(center: MapCoordinate(latitude: latitude, longitude: longitude), longitudeSpan: span),
+                  viewport: MapViewport(columns: columns, rows: rows, cellAspectRatio: aspect))
     }
 
     private func source(coverage: MapCoverage) throws -> MapSource {
-        try .init(dataset: .init(features: []), metadata: metadata(), coverage: coverage)
+        try MapSource(dataset: MapDataset(features: []), metadata: metadata(), coverage: coverage)
     }
 
     private func metadata() throws -> MapSourceMetadata {
         let url = try #require(URL(string: "https://example.test/maps"))
-        return try .init(attribution: "Test provider", license: "Test license", licenseURL: url,
+        return try MapSourceMetadata(attribution: "Test provider", license: "Test license", licenseURL: url,
                          sourceURL: url, sourceRevision: "revision")
     }
 }

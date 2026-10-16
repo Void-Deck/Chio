@@ -9,7 +9,7 @@ struct MapSourceInteractionTests {
     func retainedPresentation() async throws {
         let fixtures = try MapFixtures.load()
         let frames = Frames()
-        let surface = HostedRasterSurface(surfaceSize: .init(width: 100, height: 30), appearance: .fallback,
+        let surface = HostedRasterSurface(surfaceSize: CellSize(width: 100, height: 30), appearance: .fallback,
                                           onFrame: { frames.latest = $0 })
         let app = MapExampleApplication(fixtures: fixtures, scene: .street, appearance: .default)
         let session = try HostedSceneSession(for: app, sceneID: WindowIdentifier("Chio maps"), surface: surface)
@@ -45,7 +45,7 @@ struct MapSourceInteractionTests {
             let activated = try await frames.wait(after: selected.sequence) {
                 $0.text.contains("Opened Singapore Flyer")
             }
-            surface.updateSurfaceSize(.init(width: 60, height: 26))
+            surface.updateSurfaceSize(CellSize(width: 60, height: 26))
             session.requestSurfaceRefresh()
             let narrow = try await frames.wait(after: activated.sequence) {
                 $0.raster.size == CellSize(width: 60, height: 26) && $0.hasGeography
@@ -68,7 +68,7 @@ struct MapSourceInteractionTests {
             #expect(reset.text.contains("Overpass · 3/4 abstract · light"))
             #expect(reset.text.contains("Selected: Singapore Flyer"))
             #expect(reset.focusedIdentity == initial.focusedIdentity)
-            surface.updateSurfaceSize(.init(width: 100, height: 30))
+            surface.updateSurfaceSize(CellSize(width: 100, height: 30))
             session.requestSurfaceRefresh()
             let expanded = try await frames.wait(after: reset.sequence) {
                 $0.raster.size == CellSize(width: 100, height: 30) && $0.hasGeography
@@ -114,7 +114,7 @@ struct MapSourceInteractionTests {
         func render(_ scene: MapFixtures.Scene, _ source: MapFixtures.StreetSource) -> RasterSurface {
             let view = MapExampleView(fixtures: fixtures, scene: scene, appearance: .default, streetSource: source)
                 .environment(\.terminalSize, CellSize(width: 100, height: 30))
-            return DefaultRenderer().render(view, proposal: .init(width: 100, height: 30), frameInstant: .zero).rasterSurface
+            return DefaultRenderer().render(view, proposal: ProposedSize(width: 100, height: 30), frameInstant: .zero).rasterSurface
         }
         let overpass = render(.street, .overpass)
         let tiles = render(.street, .openfreemap)
