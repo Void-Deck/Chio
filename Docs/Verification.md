@@ -201,8 +201,8 @@ theme APIs and adds bounded `Spacing.listRowVerticalInset`. On unchanged SwiftTU
 macOS debug and release each pass fifteen of seventeen new `ListRowSpacingTests`
 cases. Both mixed-height dynamic-spacing cases fail: growing the row padding
 after scrolling moves native focus from ID 7 to ID 6. Assertions and five-second
-waits remain unchanged. Release is held for this native correction and the
-remaining final-candidate checks.
+waits remain unchanged. These are historical results before adoption of the
+merged native correction; they do not describe the current dependency pin.
 
 Passing cases cover intrinsic row positions at 0, 1 and 32 cells, composed row
 geometry and selection paint, maximum-inset clipping, wrapped-row style changes,
@@ -290,7 +290,7 @@ hosted workflows also pass: [Repo Gate](https://github.com/SwiftTUI/swift-tui/ac
 These checks test merge `d328c5042e3dd8d428384916af490030cb4ad1b7` against
 base SwiftTUI 0.18.0. Linux and macOS logs confirm both expanded runtime suites
 execute successfully.
-Upstream acceptance and dependency adoption remain pending.
+At that candidate checkpoint, upstream acceptance and dependency adoption were pending.
 
 The user approved expanding #57 after the collection audit found two more native
 defects. Candidate `ab0c305d1e204835b189c9aaf4ac9ff3157d1a1b` retains measured
@@ -326,7 +326,7 @@ parents SwiftTUI 0.18.0 (`4791281a`) and candidate `ab0c305d`.
 Logs confirm that all five collection-update suites execute and pass on Linux,
 macOS, Windows arm64 and Windows amd64, including release execution on Linux.
 The unchanged compact-table stress regression also passes. Upstream acceptance
-and dependency adoption remain pending.
+and dependency adoption were pending at that checkpoint.
 
 An isolated Chio `6dc974e5` copy passes the unchanged 35 list cases and
 22 appearance cases in both debug and release against `ab0c305d`.
@@ -336,7 +336,21 @@ macOS arm64. Source provenance is checked before and after execution; only the
 isolated dependency manifest and lockfile differ. Other resolved dependency
 revisions remain unchanged. This establishes focused consumer integration, not
 complete Chio platform or live-terminal qualification.
-Chio still pins SwiftTUI 0.18.0.
+That isolated check did not change Chio's then-current SwiftTUI 0.18.0 pin.
+
+## 0.2.0 merged-pin qualification
+
+The release candidate now pins merged SwiftTUI #57 at
+`7e62e95c913508f4fef42db36fde6fd60acb541c`. Its source tree matches the final
+upstream candidate `8408901e1b8703fcf046eaaf16722fc4d920f4a7`. Other dependency
+revisions and the existing assertions, deadlines and verification policy remain
+unchanged. SwiftTUI #58 and #59 are separate follow-ups outside this pin.
+
+Compiler-backed SwiftRules 0.1.4 checks 350 files with no new violations and
+396 retained baseline findings. Separate read-only source/API/test review has
+no actionable findings. Complete local and hosted gates, external installation,
+showcase checks and final documentation review remain in progress. Publication
+requires those checks and immutable tag verification.
 
 ## List row spacing qualification
 

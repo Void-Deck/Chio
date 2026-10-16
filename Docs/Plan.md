@@ -10,8 +10,11 @@ live in [0.2.0](Releases/0.2.0.md), with [0.1.0](Releases/0.1.0.md) retained as 
 ## Current slice: Chio 0.2.0 release
 
 The user approved a 0.2.0 source release on 2026-10-15, then added list-row spacing
-and removal of the legacy theme API to its scope. Publication is held for these
-changes and their examples. [PR #18](https://github.com/echoz/Chio/pull/18) carries
+and removal of the legacy theme API to its scope. The user subsequently approved
+cutting 0.2.0 with the exact merged SwiftTUI #57 revision, followed by a 0.2.1
+dependency patch after SwiftTUI publishes a release containing the correction.
+Final qualification and publication remain pending.
+[PR #18](https://github.com/echoz/Chio/pull/18) carries
 the release preparation. The [release record](Releases/0.2.0.md)
 owns scope, migration and evidence. Publication requires reviewed implementation,
 applicable checks, consumer installation and showcase verification, followed by
@@ -260,9 +263,9 @@ Persisted spacing keeps absent optional keys at zero; malformed values still fai
 Local debug and release checks pass the eighteen retained regressions and fifteen
 of seventeen new row-spacing cases. The two mixed-height style-change cases expose
 a native focus-recovery gap: increasing row padding at the same viewport size
-moves focus from ID 7 to ID 6. Release remains blocked. A focused native correction
-and reproducer are in [SwiftTUI #57](https://github.com/SwiftTUI/swift-tui/pull/57);
-no dependency override is adopted.
+moves focus from ID 7 to ID 6. These are historical results on 0.18.0. The native
+correction in [SwiftTUI #57](https://github.com/SwiftTUI/swift-tui/pull/57) is merged;
+the approved 0.2.0 candidate uses its exact merged revision below.
 [Verification](Verification.md#dynamic-row-spacing-candidate) owns the evidence.
 
 An isolated copy passes the unchanged dynamic style-change, retained list and
@@ -275,12 +278,24 @@ initializers. Candidate `ab0c305d` fixes both and adds hidden-row update journey
 across lists, tables, outlines and both lazy stack directions. Focused checks,
 independent review and isolated Chio debug/release requalification pass. Its
 complete local gate passes all 85 steps, and all 24 hosted checks pass across six
-workflows. Upstream acceptance and dependency adoption remain pending.
-The external-consumer
-probe passes the canonical API on the published pin. Refreshed terminal recordings,
+workflows. #57 merged on 2026-10-15 Pacific (2026-10-16 UTC) at
+`7e62e95c913508f4fef42db36fde6fd60acb541c`. The latest published SwiftTUI release
+checked for this slice is 0.18.0, which lacks #57. Final Chio qualification of the
+merged pin remains pending; earlier candidate results do not substitute for it.
+SwiftTUI [#58](https://github.com/SwiftTUI/swift-tui/pull/58) and
+[#59](https://github.com/SwiftTUI/swift-tui/pull/59) are separate ready upstream
+follow-ups and are outside 0.2.0 adoption.
+The historical external-consumer probe passes the canonical API on SwiftTUI
+0.18.0. Refreshed terminal recordings,
 preview inspection, site assembly and focused Safari checks pass. Capture-only
 cleanup removes native startup announcements from published clips while retaining
 full raw logs. [Verification](Verification.md#demo-site) owns the showcase workflow.
+
+After a SwiftTUI release includes #57, prepare the approved Chio 0.2.1 patch.
+Align the exact SwiftTUI requirement and lockfile, run the complete consumer and
+installation checks, obtain separate review, and publish through a focused PR.
+The future release contents and any adoption of #58/#59 require explicit assessment;
+neither follow-up is part of the current 0.2.0 pin.
 
 Provider downloads remain paused. No automatic release monitoring is requested.
 

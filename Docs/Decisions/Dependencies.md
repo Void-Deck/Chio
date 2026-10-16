@@ -12,7 +12,7 @@ All four direct dependencies are revision-pinned:
 
 | Dependency | Pin and reason |
 | --- | --- |
-| SwiftTUI 0.18.0 | `4791281a55e5bbdb683718a7282afd10c2f5e42c`; published release with disclosure (#49), Spacer (#50), measured-row (#47) and indexed measurement retention (#56) corrections |
+| SwiftTUI merged #57 revision | `7e62e95c913508f4fef42db36fde6fd60acb541c`; approved 0.2.0 candidate with row-geometry focus recovery, eager-table measurement and outline focus corrections; final Chio qualification pending |
 | Swift Markdown 0.9.0 | `25cb61d3482054b09ae76ca4f281b1bfe7fe5a43`; revision permits conditional Windows unsafe flags |
 | Tree-sitter 0.26.13 | `d97971e24500218865c05ed1febdee2acf41bae1`; last release with upstream SwiftPM manifest |
 | tree-sitter-swift 0.7.4 | `82bb3a533e0801fd2bbaa11dc49676e10bf41948`; generated C grammar |
@@ -20,10 +20,11 @@ All four direct dependencies are revision-pinned:
 Version-based Chio requirements (`from:` or `exact:`) cannot resolve this
 revision-pinned graph. Consumers of the experimental v0.1.0 source release pin
 Chio's immutable revision `1bcc08ce23747c8c8b1121e3add3c37951f7b09e`.
-SwiftTUI 0.18.0 retains the previous manifest and resolved dependency graph,
-including Swift Collections 1.7.2. The other direct pins and resolved dependencies
-remain unchanged by this update. New Chio row-density controls remain deferred;
-[Plan](../Plan.md#current-slice-list-row-spacing) records the remaining scope.
+The other direct revision requirements remain unchanged. Consumers with their own
+SwiftTUI requirement must use the same exact revision as the chosen Chio revision,
+then resolve their lockfile and verify their workflows.
+[Plan](../Plan.md#current-slice-list-row-spacing) records the approved row-density
+controls, merged native correction and remaining release qualification.
 The [0.2.0 release preparation](../Releases/0.2.0.md) records the current Chio release scope;
 it does not change the immutable revision requirement.
 
@@ -33,6 +34,34 @@ neither a Swift wrapper nor grammar generation. The grammar copies unused querie
 Chio does no query-resource I/O and generates no Objective-C/Foundation accessor.
 Build evidence is recorded in [0.1.0](../Releases/0.1.0.md); the current static Linux
 blocker is below. Ordinary glibc support does not establish static-musl distribution.
+
+<a id="020-merged-native-correction"></a>
+
+## 0.2.0 merged native correction
+
+**Status:** Exact merged revision approved for the 0.2.0 candidate; final Chio
+qualification and publication remain pending.
+
+[SwiftTUI #57](https://github.com/SwiftTUI/swift-tui/pull/57) merged on 2026-10-15
+Pacific (2026-10-16 UTC) at `7e62e95c913508f4fef42db36fde6fd60acb541c`.
+It corrects focus recovery after same-viewport row geometry changes, eager-table
+row placement and native outline focus. It retains the previous 0.18.0 fixes.
+The latest published SwiftTUI release checked for this slice, 0.18.0, lacks #57.
+The user approved this immutable upstream revision for Chio 0.2.0 rather than
+waiting for the next SwiftTUI release.
+
+Historical isolated Chio and upstream candidate results are recorded in
+[Verification](../Verification.md#dynamic-row-spacing-candidate). They do not
+qualify this final merged pin. Complete Chio platform, terminal, installation and
+review gates must pass before release acceptance. Chio adds no private native
+patch, second focus system or renderer.
+
+The user also approved a Chio 0.2.1 dependency patch after SwiftTUI publishes a
+release containing #57. Recheck the release contents, align the exact requirement
+and lockfile, and repeat consumer qualification and separate review before delivery.
+SwiftTUI [#58](https://github.com/SwiftTUI/swift-tui/pull/58) and
+[#59](https://github.com/SwiftTUI/swift-tui/pull/59) remain separate ready upstream
+follow-ups, outside the 0.2.0 pin. No automatic release monitoring is requested.
 
 <a id="0180-adoption-candidate"></a>
 
@@ -304,7 +333,7 @@ Chio adds no suppression flags and does not change the global developer selectio
 
 Static Linux remains unverified at the current pin. The retained blocker below
 was reproduced against the earlier `2d84ac7083993da2ef52e9d3d30255467efb9553`
-pin; it is historical evidence, not a fresh build of the current 0.18.0 pin.
+pin; it is historical evidence, not a fresh build of the current pin.
 A Swift 6.4.0 ARM64 cross-build with the matching
 `swift-6.4.0-RELEASE_static-linux-0.1.0` SDK failed because upstream SwiftFiglet's
 platform imports omit Musl, leaving POSIX symbols such as `access`, `opendir`
