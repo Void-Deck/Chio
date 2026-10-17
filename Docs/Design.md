@@ -187,11 +187,23 @@ Chio deliberately uses component-first organization inside its single library
 target: `Sources/Chio/<Component>/<Responsibility>/<Type>.swift`. This project
 override replaces the default responsibility-first order; it changes neither
 Swift modules nor public names. Maps and Markdown keep their complete implementations
-together. Style owns shared palette/environment integration, Search owns matching
-used by several controls, and KeyboardHelp owns shortcut values and views. Related
-controls stay in the Forms, Instrumentation, Composition and Feedback families;
-there is no target-wide styles or miscellaneous helper bucket. Only populated
-responsibility groups exist. Examples keep their existing application structure.
+together. Style owns shared palette/environment integration; Search owns matching
+used by several controls. KeyboardHelp owns expanded help and shared shortcut
+values; KeyHint and KeyHints each own their directly usable view. DurationText,
+HistoryChart, InstrumentReadout, MeasurementGauge and Sparkline have distinct
+component roots. HistoryChart owns its checked history values; MeasurementGauge
+owns its nested annotations. Instrumentation retains shared native control styles.
+Forms, Composition and Feedback retain related styles and presentation. Only
+populated responsibility groups exist. Examples keep their application structure.
+
+The [library guide](../Sources/Chio/README.md) links all sixteen public views.
+Each view has its own source-root README and a separate nested entry under Chio
+in [.documentation-rules.json](../.documentation-rules.json). Forms owns FormField;
+Composition owns StatusBar. Each is the sole public view at that source root, with
+its related styles. The library, both example applications and static showcase
+also have source-root guides. Private implementation targets, native SwiftTUI
+controls, supporting styles and internal spikes do not become public components.
+These documentation boundaries add no SwiftPM products or modules.
 
 Source links follow this organization. Inbox review payloads and recorded demos
 retain their fixed synthetic file paths; those are displayed snapshot content,

@@ -7,8 +7,8 @@ and preservation of current contracts.
 
 ## Shared engineering rules
 
-Chio pins [EngineeringRules v0.1.5](https://github.com/echoz/EngineeringRules/releases/tag/v0.1.5)
-(`d777c8ccbe990a8e90462c928042574d9dbe9d53`) through
+Chio pins [EngineeringRules v0.1.7](https://github.com/echoz/EngineeringRules/releases/tag/v0.1.7)
+(`4dd986441275fa768709887eaa0952218057397e`) through
 [.swift-rules.json](../.swift-rules.json). This is a required local development
 gate alongside the compiler, tests and platform checks below. It is not a package
 dependency or a guarantee of purity, correct enum policy or API compatibility.
@@ -21,7 +21,7 @@ On this Mac, run:
 
 ```sh
 DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
-  bash Scripts/ci/check-rules.sh /path/to/immutable/EngineeringRules-0.1.5
+  bash Scripts/ci/check-rules.sh /path/to/immutable/EngineeringRules-0.1.7
 ```
 
 Full Xcode supplies the required Swift/SourceKit. On Linux, omit `DEVELOPER_DIR`
@@ -85,17 +85,51 @@ distribution/access decision; the public platform gate below remains required.
 
 ### Documentation coverage
 
-[.documentation-rules.json](../.documentation-rules.json) enrolls eight module
-directories under `Sources`, `Examples`, `Tests` and `Spikes`, with no exclusions.
-The mappings reuse Design, Examples, Verification and the routing spike guide.
-Current decision documents, release guidance and map fixture provenance are also
-enrolled: 36 unique documents. New immediate module directories require an
-explicit owning-document mapping; linked documents are not enrolled recursively.
+[.documentation-rules.json](../.documentation-rules.json) uses schema 2. Its
+existing eight module mappings under `Sources`, `Examples`, `Tests` and `Spikes`
+remain unchanged, with no exclusions. They link Design, Examples, Verification
+and the routing spike guide. Current decisions, release guidance and map fixture
+provenance remain enrolled.
 
-The gate checks module-document presence and local CommonMark file destinations.
-It does not check heading fragments, HTML, external URLs, prose accuracy or browser
-behavior. Keep manual heading and site checks, meaningful ownership review and
-the other required verification below. No new per-directory README is required.
+The deliverable inventory adds twenty source-root guides: the Chio library,
+its sixteen public views, both example applications and the static showcase.
+Each view has a distinct real source root and its own `README.md`; the library
+is its declared parent. The [library guide](../Sources/Chio/README.md) links those
+views, and [source ownership](Design.md#source-ownership) explains their boundaries.
+The gate checks 56 unique documents, eight modules and twenty deliverables.
+
+Schema 2 rejects duplicate roots, invalid parents, missing or blank READMEs,
+symlinks and invalid local Markdown file destinations. Module discovery still
+covers immediate children only; linked documents are not enrolled recursively.
+The checker cannot establish complete public-view coverage, actual source ownership
+or useful documentation. Review those facts against the public API and supported
+products, including new views. Internal helpers may share their owner's guide.
+
+Heading fragments, HTML, external URLs, prose accuracy and browser behavior remain
+outside the gate. Check relevant anchors manually and keep site verification
+where visible output changes. The source README is excluded from assembled Pages
+output; SwiftPM excludes source guides from build inputs without excluding code.
+
+### 0.1.7 adoption
+
+The published stable release resolves to
+`4dd986441275fa768709887eaa0952218057397e`. The SwiftRules pin and wrapper's
+explicit source revision advance together from 0.1.5 on the default branch,
+superseding the pending 0.1.6 update in [PR #21](https://github.com/echoz/Chio/pull/21).
+Both documentation checking and compiler-context export use the verified release.
+
+This adoption adds schema 2 enforcement and source-root guides. Seven public views
+leave shared family roots; their source, supporting values and focused tests move
+without content changes. Component-first depth, public identifiers, imports,
+behavior, application dependencies and the single reviewed baseline exception stay
+unchanged. [PR #20](https://github.com/echoz/Chio/pull/20) already removed the
+constructor debt and is included in the base.
+
+The user-wide engineering-review skill covers deliverable inventory completeness,
+source ownership and README quality. Use the installed skill without copying it
+into Chio. Keep this PR draft until the pinned gate, applicable platform checks
+and independent review pass. Publication of EngineeringRules does not itself
+establish Chio default-branch adoption.
 
 ### 0.1.5 adoption
 

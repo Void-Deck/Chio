@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "moduleRoots": [
     "Sources",
     "Examples",
@@ -74,5 +74,103 @@
     "Docs/Decisions/Themes.md",
     "Examples/Maps/Fixtures/Provenance.md",
     "Examples/Maps/Fixtures/OnlineTiles/Provenance.md"
+  ],
+  "deliverables": [
+    {
+      "id": "Chio",
+      "root": "Sources/Chio"
+    },
+    {
+      "id": "Chio.DurationText",
+      "root": "Sources/Chio/DurationText",
+      "parent": "Chio"
+    },
+    {
+      "id": "Chio.FilePicker",
+      "root": "Sources/Chio/FilePicker",
+      "parent": "Chio"
+    },
+    {
+      "id": "Chio.FormField",
+      "root": "Sources/Chio/Forms",
+      "parent": "Chio"
+    },
+    {
+      "id": "Chio.HistoryChart",
+      "root": "Sources/Chio/HistoryChart",
+      "parent": "Chio"
+    },
+    {
+      "id": "Chio.InstrumentReadout",
+      "root": "Sources/Chio/InstrumentReadout",
+      "parent": "Chio"
+    },
+    {
+      "id": "Chio.KeyHint",
+      "root": "Sources/Chio/KeyHint",
+      "parent": "Chio"
+    },
+    {
+      "id": "Chio.KeyHints",
+      "root": "Sources/Chio/KeyHints",
+      "parent": "Chio"
+    },
+    {
+      "id": "Chio.KeyboardHelp",
+      "root": "Sources/Chio/KeyboardHelp",
+      "parent": "Chio"
+    },
+    {
+      "id": "Chio.MapView",
+      "root": "Sources/Chio/Maps",
+      "parent": "Chio"
+    },
+    {
+      "id": "Chio.MarkdownView",
+      "root": "Sources/Chio/Markdown",
+      "parent": "Chio"
+    },
+    {
+      "id": "Chio.MeasurementGauge",
+      "root": "Sources/Chio/MeasurementGauge",
+      "parent": "Chio"
+    },
+    {
+      "id": "Chio.PageControl",
+      "root": "Sources/Chio/Pagination",
+      "parent": "Chio"
+    },
+    {
+      "id": "Chio.SearchableChecklist",
+      "root": "Sources/Chio/SearchableChecklist",
+      "parent": "Chio"
+    },
+    {
+      "id": "Chio.SearchableList",
+      "root": "Sources/Chio/SearchableList",
+      "parent": "Chio"
+    },
+    {
+      "id": "Chio.Sparkline",
+      "root": "Sources/Chio/Sparkline",
+      "parent": "Chio"
+    },
+    {
+      "id": "Chio.StatusBar",
+      "root": "Sources/Chio/Composition",
+      "parent": "Chio"
+    },
+    {
+      "id": "chio-dashboard",
+      "root": "Examples/AgentDashboard"
+    },
+    {
+      "id": "chio-maps",
+      "root": "Examples/Maps"
+    },
+    {
+      "id": "showcase",
+      "root": "Docs/Site"
+    }
   ]
 }

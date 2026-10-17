@@ -8,6 +8,8 @@ site_output="$repo_root/.build/site"
 rm -rf "$site_output"
 mkdir -p "$site_output/recordings"
 cp -R "$repo_root/Docs/Site/." "$site_output/"
+# Keep the source-root contributor guide out of the published site.
+rm "$site_output/README.md"
 # New markup must load its matching styles and navigation script, even when a
 # browser retains assets from a previous deployment. Source remains previewable.
 python3 - "$site_output" <<'PY'

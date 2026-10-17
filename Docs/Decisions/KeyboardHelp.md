@@ -35,5 +35,5 @@ Escape, including input arriving before the next frame.
 
 - [KeyboardHelp.swift](../../Sources/Chio/KeyboardHelp/Presentation/KeyboardHelp.swift)
 - [KeyboardHelpRenderTests.swift](../../Tests/ChioTests/KeyboardHelp/Presentation/KeyboardHelpRenderTests.swift)
-- [KeyHints.swift](../../Sources/Chio/KeyboardHelp/Presentation/KeyHints.swift)
-- [KeyHintsRenderTests.swift](../../Tests/ChioTests/KeyboardHelp/Presentation/KeyHintsRenderTests.swift)
+- [KeyHints.swift](../../Sources/Chio/KeyHints/Presentation/KeyHints.swift)
+- [KeyHintsRenderTests.swift](../../Tests/ChioTests/KeyHints/Presentation/KeyHintsRenderTests.swift)
