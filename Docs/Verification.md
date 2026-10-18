@@ -7,8 +7,8 @@ and preservation of current contracts.
 
 ## Shared engineering rules
 
-Chio pins [EngineeringRules v0.1.7](https://github.com/echoz/EngineeringRules/releases/tag/v0.1.7)
-(`4dd986441275fa768709887eaa0952218057397e`) through
+Chio pins [EngineeringRules v0.1.8](https://github.com/echoz/EngineeringRules/releases/tag/v0.1.8)
+(`c535a2745b8b436a5a9d4d0598192aa106912fee`) through
 [.swift-rules.json](../.swift-rules.json). This is a required local development
 gate alongside the compiler, tests and platform checks below. It is not a package
 dependency or a guarantee of purity, correct enum policy or API compatibility.
@@ -21,7 +21,7 @@ On this Mac, run:
 
 ```sh
 DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
-  bash Scripts/ci/check-rules.sh /path/to/immutable/EngineeringRules-0.1.7
+  bash Scripts/ci/check-rules.sh /path/to/immutable/EngineeringRules-0.1.8
 ```
 
 Full Xcode supplies the required Swift/SourceKit. On Linux, omit `DEVELOPER_DIR`
@@ -83,6 +83,29 @@ EngineeringRules is private. This local gate does not add credentials or a priva
 fetch to Chio's public CI or package build. Hosted lint requires a separate tool
 distribution/access decision; the public platform gate below remains required.
 
+### Naming review
+
+Include the pinned inventory command as a separate planned check alongside the
+wrapper and applicable tests in the engineering-review evidence packet:
+
+```sh
+~/.local/bin/swift-rules review-candidates --root "$PWD" --format json
+```
+
+Retain its JSON output and logs for that exact candidate. The independent reviewer
+records each name's meaning and a concrete rename, legitimate retain reason or
+explicit out-of-scope deferral. A successful inventory command does not complete
+semantic review; candidates are neither violations nor baseline entries.
+The pinned tool's [selection contract](https://github.com/echoz/EngineeringRules/tree/v0.1.8#naming-review-candidates)
+owns matching and output. Apply the global organization guidance to the names.
+
+The current configuration includes `Sources`, `Examples`, `Tests` and `Spikes`
+without excluded paths. The collector visits Swift declarations in all conditional
+branches. References, extension subjects, values/functions, comments, strings and
+macro expansions are outside its lexical coverage. `Package.swift`, scripts,
+the private C bridge and dependencies are also outside this Swift inventory.
+Review relevant names there manually; older tools require manual review too.
+
 ### Documentation coverage
 
 [.documentation-rules.json](../.documentation-rules.json) uses schema 2. Its
@@ -109,6 +132,29 @@ Heading fragments, HTML, external URLs, prose accuracy and browser behavior rema
 outside the gate. Check relevant anchors manually and keep site verification
 where visible output changes. The source README is excluded from assembled Pages
 output; SwiftPM excludes source guides from build inputs without excluding code.
+
+### 0.1.8 adoption
+
+This focused adoption advances the pin and wrapper's verified source revision
+from 0.1.7 to published commit `c535a2745b8b436a5a9d4d0598192aa106912fee`.
+The existing lint, real compiler-context and schema 2 documentation checks remain.
+The documentation checker and compiler exporter have identical contents in the
+two releases. Source scopes, application dependencies and the single scratch-state
+baseline exception remain unchanged.
+
+The initial inventory scanned 350 Swift files and collected one declaration:
+`HelpExampleView.Context` at `Examples/AgentDashboard/Presentation/HelpExampleView.swift:22`.
+Its cases select the shortcut groups for browsing, editing, actions or all groups.
+The private enum becomes `ShortcutScope`; its derived property becomes
+`activeShortcutScope`, and `openHelp` takes a `scope`. No public identity, behavior,
+test assertion or deadline changes. Existing help-example tests cover the rendered
+groups, modal dismissal, restored focus and query, compact layouts and key handling.
+
+Manual review retains references to SwiftTUI's `CanvasContext` and Swift's
+`DecodingError.Context`: these are framework-owned drawing and decoding contracts.
+The gate's compiler-context names describe real compiler inputs and also remain.
+No collected declaration is deferred. The final inventory and separate review
+must verify this disposition; an empty final list alone does not establish it.
 
 ### 0.1.7 adoption
 

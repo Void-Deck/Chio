@@ -7,15 +7,23 @@ live in [Design](Design.md) and its decision index; implementation and showcase
 checks live in [Verification](Verification.md). Completed release scope and results
 live in [0.2.0](Releases/0.2.0.md), with [0.1.0](Releases/0.1.0.md) retained as history.
 
-## Current maintenance: source-root documentation
+## Current maintenance: naming review
 
-[PR #21](https://github.com/echoz/Chio/pull/21) adopts EngineeringRules 0.1.7 and
-schema 2 deliverable checking. The inventory covers the library, sixteen public
-views, two example applications and the showcase. Each gets a source-root guide;
-seven views move out of shared family roots without changing their source contents
-or public APIs. [Design](Design.md#source-ownership) owns the resulting source map;
-[Verification](Verification.md#017-adoption) owns checks and adoption limits.
-The candidate remains separate from the published 0.2.0 release.
+Adopt published EngineeringRules 0.1.8 with an explicit naming inventory beside
+the existing compiler, lint, documentation and project checks. The collected
+private `HelpExampleView.Context` selects shortcut groups; rename it to
+`ShortcutScope` and retain its behavior. Independent review must judge the original
+candidate and relevant manual-review scope, not only the final empty inventory.
+[Verification](Verification.md#018-adoption) owns the disposition and evidence.
+This work remains a separate candidate until its PR is reviewed and merged.
+
+[PR #21](https://github.com/echoz/Chio/pull/21) delivered EngineeringRules 0.1.7,
+schema 2 and source-root guides. It and the test-constructor cleanup in
+[PR #20](https://github.com/echoz/Chio/pull/20) are included in published
+[Chio 0.2.1](https://github.com/echoz/Chio/releases/tag/v0.2.1).
+Consumer adoption is underway in the owning Marquee, Blackbox and Pitwall tasks;
+dispatch is not completed adoption. The later SwiftTUI dependency update is
+separate from this maintenance release.
 
 ## Current slice: Chio 0.2.0 release
 
