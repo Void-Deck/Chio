@@ -23,7 +23,9 @@ the accepted searchable-selection policy requires a user decision before adoptio
 The grouped-form workflow also regresses: its focus-change callback receives the
 new field, but rereading `@FocusState` returns `nil`, preventing complete error
 reveal. The unchanged old-pin workflow passes. Preserve the existing field/error
-assertions and five-second waits while isolating the native callback boundary.
+assertions and five-second waits. [SwiftTUI #60](https://github.com/SwiftTUI/swift-tui/pull/60)
+carries a native regression and callback-owner correction; its separate draft
+and passing focused tests do not complete Chio adoption.
 
 EngineeringRules 0.1.8 adoption remains owned by
 [PR #22](https://github.com/echoz/Chio/pull/22). This dependency slice retains the

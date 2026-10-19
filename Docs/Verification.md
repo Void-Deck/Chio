@@ -236,6 +236,12 @@ A temporary native patch that retains the authored owner for `onChange` callback
 passes all five unchanged grouped-form tests, including nine layout cases.
 The dependency source is restored after this experiment. This result does not
 qualify the unmodified pin or replace native regression tests and upstream review.
+The native-only regression now fails at the direct focus read for both `onChange`
+overloads, then passes with the correction in
+[SwiftTUI #60](https://github.com/SwiftTUI/swift-tui/pull/60).
+The final native candidate `89c8fef1` passes both cases; its independent source
+review has no actionable findings. Its full gate and platform checks remain
+separate from this consumer qualification. Chio still pins the unmodified merge.
 
 The pinned EngineeringRules 0.1.7 compiler/documentation gate and static-site
 assembly pass. The gate reports no new violations and retains one reviewed
@@ -249,10 +255,26 @@ quantization; authored true-color values remain identical. Both previews are
 inspected through the vendored terminal player, and terminal restoration passes.
 This does not establish live Blink/Ghostty SSH behavior or qualify release binaries.
 
+A fresh external consumer installs Chio `cee6d152` and the matching SwiftTUI pin
+from their remotes. Its release build and five public-API probe sections pass:
+imports/style inheritance, duration labels, list spacing, map values/raster, and
+instrument construction. Fresh resolution selects a different compatible
+`swift-collections` revision than Chio's lockfile. This is consumer-installation
+and raster evidence, not interactive or cross-platform qualification.
+
+The [hosted run for `cee6d152`](https://github.com/echoz/Chio/actions/runs/39326704894)
+confirms the retained disabled-membership failure and both grouped-form failures
+on macOS. Preflight checks and all 166 map tests pass. The updated viewport
+workflow passes; release suites and terminal/process probes are not reached.
+Linux fails while pulling the pinned Swift image from public ECR with
+`toomanyrequests: Data limit exceeded`. It never checks out the repository or
+runs tests. Registry availability supplies no source or platform-test verdict.
+
 The upgrade remains a draft candidate. Complete local/platform gates, release
-terminal checks, external-consumer installation and final independent review are
-still required. The accepted disabled-row policy remains unchanged pending the
-user's decision; no workaround for the form regression ships in this candidate.
+terminal checks and final independent review are still required; consumer
+installation must be repeated if the native pin changes. The accepted disabled-row
+policy remains unchanged pending the user's decision; no workaround for the form
+regression ships in this candidate.
 
 ## Merged layout corrections
 
