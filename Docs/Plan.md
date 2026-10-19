@@ -7,7 +7,30 @@ live in [Design](Design.md) and its decision index; implementation and showcase
 checks live in [Verification](Verification.md). Completed release scope and results
 live in [0.2.0](Releases/0.2.0.md), with [0.1.0](Releases/0.1.0.md) retained as history.
 
-## Current maintenance: source-root documentation
+## Current slice: merged palette and scroll-focus fixes
+
+The user approved adopting merged SwiftTUI #58 and #59 on 2026-10-19. The
+candidate pins `13c07f3981e0bb9160f8dfc8939ffa085824b340`; the latest published
+SwiftTUI release checked, 0.18.3, does not include either fix.
+[Dependencies](Decisions/Dependencies.md#palette-and-scroll-focus-adoption)
+owns the revision and behavior contract. Qualification adds focused public-hosted
+regressions and retains the complete consumer gate, platform checks and independent
+review. [Verification](Verification.md#palette-and-scroll-focus-qualification)
+records the candidate's evidence separately from earlier release results.
+
+Qualification is blocked. The new native pin changes disabled-row focus eligibility;
+the accepted searchable-selection policy requires a user decision before adoption.
+The grouped-form workflow also regresses: its focus-change callback receives the
+new field, but rereading `@FocusState` returns `nil`, preventing complete error
+reveal. The unchanged old-pin workflow passes. Preserve the existing field/error
+assertions and five-second waits while isolating the native callback boundary.
+
+EngineeringRules 0.1.8 adoption remains owned by
+[PR #22](https://github.com/echoz/Chio/pull/22). This dependency slice retains the
+operational 0.1.7 gate while that separate maintenance PR remains unmerged.
+It does not duplicate the rules upgrade or include unrelated checkout changes.
+
+## Delivered maintenance: source-root documentation
 
 [PR #21](https://github.com/echoz/Chio/pull/21) adopts EngineeringRules 0.1.7 and
 schema 2 deliverable checking. The inventory covers the library, sixteen public
@@ -303,9 +326,8 @@ workflows. #57 merged on 2026-10-15 Pacific (2026-10-16 UTC) at
 checked for this slice is 0.18.0, which lacks #57. Final Chio qualification of the
 merged pin passes on macOS and Linux, with installation, terminal and review
 evidence recorded in [Verification](Verification.md#020-merged-pin-qualification).
-SwiftTUI [#58](https://github.com/SwiftTUI/swift-tui/pull/58) and
-[#59](https://github.com/SwiftTUI/swift-tui/pull/59) are separate ready upstream
-follow-ups and are outside 0.2.0 adoption.
+SwiftTUI #58 and #59 were separate upstream follow-ups outside 0.2.0 adoption.
+Their later merged adoption is tracked in the [current slice](#current-slice-merged-palette-and-scroll-focus-fixes).
 The historical external-consumer probe passes the canonical API on SwiftTUI
 0.18.0. Refreshed terminal recordings,
 preview inspection, site assembly and focused Safari checks pass. Capture-only

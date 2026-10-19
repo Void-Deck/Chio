@@ -60,10 +60,10 @@ owns migration and qualification evidence.
 
 Requires **Swift 6.4+**, on **macOS 15+ or Linux**. From a repository checkout:
 
-This revision pins [the merged SwiftTUI correction](Docs/Decisions/Dependencies.md#020-merged-native-correction)
-at `7e62e95c913508f4fef42db36fde6fd60acb541c`. SwiftTUI 0.18.0 does not contain
-that correction. For use in another package, follow the compatible exact revisions
-in the [release record](Docs/Releases/0.2.0.md).
+This checkout pins [the merged SwiftTUI focus corrections](Docs/Decisions/Dependencies.md#palette-and-scroll-focus-adoption)
+at `13c07f3981e0bb9160f8dfc8939ffa085824b340`. SwiftTUI 0.18.3 does not contain
+the palette and viewport-recovery fixes. Consumers with a direct SwiftTUI dependency
+must use the same revision. Published Chio releases retain their recorded pins.
 Version-based Chio requirements remain unsupported by the revision-pinned dependency graph.
 
 ```sh

@@ -198,6 +198,62 @@ Its [hosted macOS/Linux checks](https://github.com/echoz/Chio/actions/runs/38510
 also report only the same 16 issues, with all 157 map tests passing. This records
 default-branch adoption of the tool, not a new Chio release or repaired native layouts.
 
+## Palette and scroll-focus qualification
+
+The adoption candidate pins SwiftTUI
+`13c07f3981e0bb9160f8dfc8939ffa085824b340`, containing merged #58 and #59.
+Other dependency revisions remain unchanged. Earlier Chio and upstream results
+do not qualify this new combination.
+
+Qualification covers public-hosted palette navigation at short heights, focused
+scroll descendants through height changes, and deliberate scrolling followed by
+content changes. Retained list-row, search, appearance and dashboard workflows
+remain required, with the existing debug/release split and five-second waits.
+Local macOS checks use Apple Swift 6.4 and full Xcode. The library builds. The
+full consumer gate passes its 19 library HTTP and six map preflight tests, then
+stops during debug tests. All 166 map tests pass. Of 509 library tests, the
+retained disabled-membership test fails because native focus now skips disabled
+rows. The dashboard reports two grouped-form failures and an outdated viewport
+origin expectation. Release suites and later terminal/map stages are not reached.
+
+Focused checks pass native list navigation, palette visibility, selected search
+and appearance workflows, and scroll input/recovery. Corrected scroll tests now
+expect both axes at Home/End and leading-edge preservation for oversized content.
+The updated hosted viewport workflow passes; its corresponding PTY expectations
+still need release verification. Pointer coverage verifies that clicking a disabled
+row retains the enabled row's focus and does not activate the disabled row.
+
+The new descendant-focus regression fails on the prior `7e62e95c` pin after
+shrinking the viewport and passes on `13c07f39`. The short-height palette test
+passes on both pins and is compatibility coverage, not evidence of a prior defect.
+
+Both grouped-form workflows pass unchanged against `7e62e95c`. On `13c07f39`,
+the isolated ordered-validation workflow fails to reveal the invalid field's
+error. Temporary diagnostics show that the focus-change callback receives the new
+field while a direct `@FocusState` read returns `nil`. These diagnostics are not
+retained in production. Preserve the complete-error visibility contract.
+A temporary native patch that retains the authored owner for `onChange` callbacks
+passes all five unchanged grouped-form tests, including nine layout cases.
+The dependency source is restored after this experiment. This result does not
+qualify the unmodified pin or replace native regression tests and upstream review.
+
+The pinned EngineeringRules 0.1.7 compiler/documentation gate and static-site
+assembly pass. The gate reports no new violations and retains one reviewed
+baseline exception. Independent source review identified the disabled-row policy
+conflict and a search handoff risk when all visible results are disabled; readiness
+review remains incomplete.
+
+Real PTY captures compare the same paused 100-by-30 dashboard on old/new pins in
+indexed and true-color modes. New indexed output uses the corrected native color
+quantization; authored true-color values remain identical. Both previews are
+inspected through the vendored terminal player, and terminal restoration passes.
+This does not establish live Blink/Ghostty SSH behavior or qualify release binaries.
+
+The upgrade remains a draft candidate. Complete local/platform gates, release
+terminal checks, external-consumer installation and final independent review are
+still required. The accepted disabled-row policy remains unchanged pending the
+user's decision; no workaround for the form regression ships in this candidate.
+
 ## Merged layout corrections
 
 **Status:** Delivered in [PR #16](https://github.com/echoz/Chio/pull/16), merged

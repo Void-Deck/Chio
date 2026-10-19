@@ -1,15 +1,22 @@
 # Native integration boundaries
 
-**Status:** The approved 0.2.0 candidate uses merged SwiftTUI #57 at
-`7e62e95c913508f4fef42db36fde6fd60acb541c`; final Chio macOS/Linux qualification passes.
+**Status:** The current adoption candidate pins merged SwiftTUI #58/#59 at
+`13c07f3981e0bb9160f8dfc8939ffa085824b340`; consumer qualification is in progress.
+The earlier 0.2.0 candidate uses merged #57 at
+`7e62e95c913508f4fef42db36fde6fd60acb541c`, with passing macOS/Linux qualification.
 The earlier [PR #17](https://github.com/echoz/Chio/pull/17) adopted published
 0.18.0 on `main` at `7d44bd6bd85290f2c6e3526cf19e6647d551797c`, including
 merged #47/#49/#50/#56.
-[Dependencies](Dependencies.md#020-merged-native-correction) owns the current pin decision;
+[Dependencies](Dependencies.md#palette-and-scroll-focus-adoption) owns the current pin decision;
 [0.2.0 release preparation](../Releases/0.2.0.md) records integrated scope and evidence.
 Chio qualification remains distinct from upstream checks and earlier local-patch evidence.
 
 Keep native ownership and visible limitations explicit when composing or extending Chio.
+
+The new native corrections keep active palette commands visible in short terminals
+and recover previously visible focused descendants through viewport geometry changes.
+Explicit scrolling remains authoritative, including after later content changes.
+Chio applies its existing styles and verifies those public native interactions.
 
 ## Upstream contributions
 
@@ -141,8 +148,9 @@ The owning verification record preserves those candidate results. #57 merged on
 `7e62e95c913508f4fef42db36fde6fd60acb541c`. The user approved that exact revision
 for 0.2.0; final Chio qualification passes on macOS/Linux. The published SwiftTUI 0.18.0
 release lacks #57. A later 0.2.1 patch will qualify a published release containing
-it. Separate ready upstream follow-ups [#58](https://github.com/SwiftTUI/swift-tui/pull/58)
-and [#59](https://github.com/SwiftTUI/swift-tui/pull/59) are outside 0.2.0 adoption.
+it. The later merged #58/#59 adoption remains outside the immutable 0.2.0 pin;
+its [consumer qualification](../Verification.md#palette-and-scroll-focus-qualification)
+is recorded separately.
 
 <a id="current-row-qualification"></a>
 

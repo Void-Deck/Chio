@@ -717,13 +717,12 @@ colors control idle and focused indicators. Content backgrounds remain authored.
 Focus-effect suppression keeps the indicators muted without disabling scrolling.
 
 The native runtime retains keyboard, wheel, drag and position ownership.
-For a two-axis viewport, Home/End act vertically; focusing its horizontal track
-lets Home/End act horizontally. The [viewport example](Examples.md#scrolling)
+For a two-axis viewport, Home/End move both axes to the start/end. A focused
+individual track moves only its own axis. The [viewport example](Examples.md#scrolling)
 demonstrates this directly. Native Lists and Tables use their own styles.
-The pinned runtime can nudge the horizontal position by one cell when focus
-enters a viewport with reserved tracks. An oversized vertical target keeps its
-first row visible. Left corrects the initial horizontal nudge; Home returns to
-the first row after vertical scrolling. The automatic style behaves the same way.
+Oversized focus targets retain their leading edge on both axes, so initial
+viewport focus preserves the first row and column. The automatic style behaves
+the same way.
 
 ## Expandable groups
 
