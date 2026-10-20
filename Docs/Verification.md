@@ -275,6 +275,10 @@ the user's disabled-row decision below. They do not qualify the replacement pin.
 
 ### Callback correction qualification
 
+The following `16c83687` results are the earlier checkpoint. The
+[stacked-observation correction](#stacked-observation-correction) below owns the
+current candidate's evidence.
+
 On 2026-10-20, the user approved native navigation that skips disabled rows while
 retaining their visibility and membership protection. The owning
 [selection decision](Decisions/SearchableSelection.md) records the new contract.
@@ -359,6 +363,64 @@ Independent source review finds two stale current-pin documentation statements,
 now corrected in README and NativeIntegration. Qualification remains incomplete.
 Keep the adoption PR draft. Upstream merge and requalification of the merged
 revision remain necessary before the operational pin advances.
+
+### Stacked-observation correction
+
+The follow-up tests isolate shared observation slots in native stacked `onChange`
+modifiers. The same resolved identity can temporarily refer to different graph
+aliases. Each alias's counter can claim ordinal zero and overwrite another
+observer's baseline. The correction in SwiftTUI
+`0283902aa221e5d20bad2a08cc3fd2fce1e4ab6d` counts observers on the resolved
+element while retaining the existing graph baseline and lifetime rules.
+
+A native reader/focus reproduction fails on `16c83687`: focus reaches the next
+field, but no blur callback runs. With the correction, it dispatches and paints
+the validation error. Added tests cover mixed-type and same-type observers,
+unrelated child updates and repeated resolution within one pass. The focused
+debug run passes 39 tests across seven suites; the release run passes 26 tests
+across seven suites. Their filters differ. Existing exact-ID, modifier-order,
+cascade, checkpoint and lifecycle tests retain their assertions.
+
+Consumer qualification uses Chio `665540b4a43dff4776036c0cb58bc3df435dc5db`
+with an explicit local SwiftPM dependency on the clean native commit above.
+Only the manifest and lockfile differ from that Chio commit. All other resolved
+dependencies remain fixed, including swift-collections 1.7.2. There is no ignored
+dependency source patch or package mirror.
+
+The complete `Scripts/ci/verify.sh` gate passes on macOS arm64 with Apple Swift 6.4
+and in an isolated Swift 6.4 Noble Linux arm64 container:
+
+| Boundary | macOS reported tests | Linux reported tests |
+| --- | --- | --- |
+| HTTP / online preflight | 19 / 6 | 19 / 6 |
+| Debug library / maps / dashboard | 510 / 166 / 147 | 509 / 166 / 147 |
+| Release library / maps / dashboard | 510 / 166 / 177 | 509 / 166 / 177 |
+
+Each library run includes one existing filesystem skip: case-only filenames on
+macOS and permission removal in the root Linux container. All executed tests
+pass. Source inventories and dependency revisions remain unchanged across the
+Linux run. On both platforms, the unchanged gate also passes standalone release
+builds, snapshots,
+all sixteen dashboard terminal workflows, appearance checks, map terminal
+workflows, loopback HTTP, persistent cache and offline-pack process probes.
+The formerly failing blur validation, conditional-error reveal and diff hunk
+navigation pass without changing their assertions or five-second waits.
+The compiler-backed EngineeringRules 0.1.7 and documentation gate passes with
+its existing one-item baseline. Site assembly and whitespace checks pass.
+
+The native `bun run test` gate passes 84 of 85 steps on macOS arm64 with official
+Swift 6.4. Its only failure is an incremental TermUIPerf helper crash before the
+first assertion (`SIGBUS`). After cleaning only that subpackage, the exact failed
+command passes all 151 tests across twenty suites. The affected soundness scan
+also passes. The original aggregate remains failed; this separate retry does not
+prove the crash's cause. All 84 unaffected passing steps remain applicable.
+The linked native development guide returns 404, and `prek` is unavailable;
+strict formatting and standalone policy checks pass without claiming hook execution.
+
+Canonical remote installation and focused consumer checks remain pending.
+Separate source review finds no actionable production or test issues.
+These local-source results do not establish hosted Linux x86_64, upstream merge,
+release readiness or downstream adoption.
 
 ## Merged layout corrections
 

@@ -11,10 +11,10 @@ let package = Package(
         .executable(name: "chio-maps", targets: ["ChioMaps"]),
     ],
     dependencies: [
-        // Qualification candidate: merged #58/#59 plus the callback-scope fix (#60).
+        // Qualification candidate: merged #58/#59 plus the callback scope/observation fixes (#60).
         .package(
             url: "https://github.com/SwiftTUI/swift-tui.git",
-            revision: "16c8368746765e6fa9543c9d4d0e822cd84f3bc3"
+            revision: "0283902aa221e5d20bad2a08cc3fd2fce1e4ab6d"
         ),
         // Swift Markdown 0.9.0. A revision pin also permits its conditional
         // Windows build flags without modifying the upstream package.

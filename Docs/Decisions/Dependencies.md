@@ -12,7 +12,7 @@ All four direct dependencies are revision-pinned:
 
 | Dependency | Pin and reason |
 | --- | --- |
-| SwiftTUI #60 qualification candidate | `16c8368746765e6fa9543c9d4d0e822cd84f3bc3`; includes merged #58/#59 and the unmerged callback-scope correction; this draft is not a released dependency decision |
+| SwiftTUI #60 qualification candidate | `0283902aa221e5d20bad2a08cc3fd2fce1e4ab6d`; includes merged #58/#59 and the unmerged callback-scope and observation-slot corrections; this draft is not a released dependency decision |
 | Swift Markdown 0.9.0 | `25cb61d3482054b09ae76ca4f281b1bfe7fe5a43`; revision permits conditional Windows unsafe flags |
 | Tree-sitter 0.26.13 | `d97971e24500218865c05ed1febdee2acf41bae1`; last release with upstream SwiftPM manifest |
 | tree-sitter-swift 0.7.4 | `82bb3a533e0801fd2bbaa11dc49676e10bf41948`; generated C grammar |
@@ -47,9 +47,14 @@ upstream revision, not a Chio patch or fork. The latest release checked for this
 adoption, 0.18.3, predates both contributions.
 
 That merged revision regresses authored focus reads inside deferred `onChange`
-callbacks. The draft now resolves exact remote commit
-`16c8368746765e6fa9543c9d4d0e822cd84f3bc3` from the same upstream URL to test
-the correction in [#60](https://github.com/SwiftTUI/swift-tui/pull/60).
+callbacks. The first #60 correction restores those reads. A second correction
+keeps stacked observers from sharing an observation slot when graph aliases change.
+The qualification candidate is
+`0283902aa221e5d20bad2a08cc3fd2fce1e4ab6d` in
+[#60](https://github.com/SwiftTUI/swift-tui/pull/60).
+The complete gates use an explicit local SwiftPM dependency on that clean commit.
+The final manifest resolves the same commit from the canonical SwiftTUI remote;
+external installation and focused remote-pin checks remain part of qualification.
 There is no ignored source patch or package mirror. Other dependency revisions
 remain fixed. This is qualification of an unmerged PR, not permission to release
 that prototype; verify the merged upstream revision before completing adoption.

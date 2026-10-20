@@ -11,8 +11,8 @@ live in [0.2.0](Releases/0.2.0.md), with [0.1.0](Releases/0.1.0.md) retained as 
 
 The user approved adopting merged SwiftTUI #58 and #59 on 2026-10-19. Qualification
 of `13c07f3981e0bb9160f8dfc8939ffa085824b340` exposed a callback-owner regression.
-The draft now tests exact remote commit
-`16c8368746765e6fa9543c9d4d0e822cd84f3bc3`, which adds the correction in
+The draft now qualifies SwiftTUI commit
+`0283902aa221e5d20bad2a08cc3fd2fce1e4ab6d`, which adds the corrections in
 [SwiftTUI #60](https://github.com/SwiftTUI/swift-tui/pull/60).
 This is an unmerged qualification candidate, not a released or adopted pin.
 The latest published SwiftTUI release checked, 0.18.3, contains none of these fixes.
@@ -34,16 +34,20 @@ the complete consumer gate, installation and terminal workflows. Native tests
 alone do not qualify Chio. Upstream merge, verification of that merged revision
 and required consumer checks still precede adoption.
 
-The complete consumer runs at `9a659161` pass debug tests on macOS and Linux
-arm64, plus release library and map suites. Release dashboard tests expose four
-failures on both platforms: create-form blur validation, conditional-error reveal,
-diff hunk reveal, and a diff expectation that End moves only vertically.
-The corrected End test follows the accepted native two-axis contract and passes
-in a focused macOS release run. A native debug reproduction confirms that focus
-observers attached outside GeometryReader do not dispatch in the tested reader
-composition. The simple state-driven reveal counterexample passes; the diff's
-reveal failure still needs isolation before another correction.
-The gate stops before terminal workflows; keep both adoption and upstream PRs draft.
+The follow-up investigation isolates a second native defect: stacked `onChange`
+modifiers can resolve through different graph aliases and claim the same
+observation slot. The correction carries their ordinal sequence on the resolved
+element. Existing graph identity, lifetime and baseline rules remain in place.
+No Chio form or scrolling workaround is required.
+
+The corrected native candidate passes the formerly failing create-form validation,
+conditional-error reveal and diff navigation workflows. The diff's End test follows
+the accepted native two-axis contract. Complete macOS and Linux arm64 consumer
+gates pass. The native gate passes 84 of 85 steps; its only failure passes a
+separate clean rerun of the performance subpackage.
+[Verification](Verification.md#stacked-observation-correction) records exact inputs
+and evidence. Finish canonical remote installation and focused checks, then
+verify the merged upstream revision before adoption. Keep both PRs draft.
 
 EngineeringRules 0.1.8 adoption remains owned by
 [PR #22](https://github.com/echoz/Chio/pull/22). This dependency slice retains the
