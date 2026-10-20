@@ -9,23 +9,30 @@ live in [0.2.0](Releases/0.2.0.md), with [0.1.0](Releases/0.1.0.md) retained as 
 
 ## Current slice: merged palette and scroll-focus fixes
 
-The user approved adopting merged SwiftTUI #58 and #59 on 2026-10-19. The
-candidate pins `13c07f3981e0bb9160f8dfc8939ffa085824b340`; the latest published
-SwiftTUI release checked, 0.18.3, does not include either fix.
+The user approved adopting merged SwiftTUI #58 and #59 on 2026-10-19. Qualification
+of `13c07f3981e0bb9160f8dfc8939ffa085824b340` exposed a callback-owner regression.
+The draft now tests exact remote commit
+`16c8368746765e6fa9543c9d4d0e822cd84f3bc3`, which adds the correction in
+[SwiftTUI #60](https://github.com/SwiftTUI/swift-tui/pull/60).
+This is an unmerged qualification candidate, not a released or adopted pin.
+The latest published SwiftTUI release checked, 0.18.3, contains none of these fixes.
 [Dependencies](Decisions/Dependencies.md#palette-and-scroll-focus-adoption)
 owns the revision and behavior contract. Qualification adds focused public-hosted
 regressions and retains the complete consumer gate, platform checks and independent
 review. [Verification](Verification.md#palette-and-scroll-focus-qualification)
 records the candidate's evidence separately from earlier release results.
 
-Qualification is blocked. The new native pin changes disabled-row focus eligibility;
-the accepted searchable-selection policy requires a user decision before adoption.
-The grouped-form workflow also regresses: its focus-change callback receives the
-new field, but rereading `@FocusState` returns `nil`, preventing complete error
-reveal. The unchanged old-pin workflow passes. Preserve the existing field/error
-assertions and five-second waits. [SwiftTUI #60](https://github.com/SwiftTUI/swift-tui/pull/60)
-carries a native regression and callback-owner correction; its separate draft
-and passing focused tests do not complete Chio adoption.
+On 2026-10-20 the user approved native navigation that skips disabled rows.
+Choices remain visible and cannot toggle; search must remain editable when no
+enabled result can receive focus. The checklist correction and its regression
+coverage belong to this adoption slice.
+
+The grouped-form callback previously received the new field while rereading
+`@FocusState` returned `nil`, preventing complete error reveal. Preserve its
+existing field/error assertions and five-second waits while testing #60 through
+the complete consumer gate, installation and terminal workflows. Native tests
+alone do not qualify Chio. Upstream merge, verification of that merged revision
+and required consumer checks still precede adoption.
 
 EngineeringRules 0.1.8 adoption remains owned by
 [PR #22](https://github.com/echoz/Chio/pull/22). This dependency slice retains the

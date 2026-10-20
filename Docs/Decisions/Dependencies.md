@@ -12,7 +12,7 @@ All four direct dependencies are revision-pinned:
 
 | Dependency | Pin and reason |
 | --- | --- |
-| SwiftTUI merged #59 revision | `13c07f3981e0bb9160f8dfc8939ffa085824b340`; includes #58 palette visibility and #59 scroll-focus recovery, plus the earlier #57 collection corrections |
+| SwiftTUI #60 qualification candidate | `16c8368746765e6fa9543c9d4d0e822cd84f3bc3`; includes merged #58/#59 and the unmerged callback-scope correction; this draft is not a released dependency decision |
 | Swift Markdown 0.9.0 | `25cb61d3482054b09ae76ca4f281b1bfe7fe5a43`; revision permits conditional Windows unsafe flags |
 | Tree-sitter 0.26.13 | `d97971e24500218865c05ed1febdee2acf41bae1`; last release with upstream SwiftPM manifest |
 | tree-sitter-swift 0.7.4 | `82bb3a533e0801fd2bbaa11dc49676e10bf41948`; generated C grammar |
@@ -37,7 +37,7 @@ blocker is below. Ordinary glibc support does not establish static-musl distribu
 
 ## Palette and scroll-focus adoption
 
-**Status:** Approved adoption candidate; consumer qualification is blocked.
+**Status:** Approved #58/#59 adoption; testing the additional unmerged #60 correction before moving the operational pin.
 
 [SwiftTUI #58](https://github.com/SwiftTUI/swift-tui/pull/58) and
 [#59](https://github.com/SwiftTUI/swift-tui/pull/59) merged on 2026-10-19.
@@ -45,6 +45,14 @@ The latter merge, `13c07f3981e0bb9160f8dfc8939ffa085824b340`, contains both fixe
 It also includes the intervening SwiftTUI 0.18.1–0.18.3 changes. This is an
 upstream revision, not a Chio patch or fork. The latest release checked for this
 adoption, 0.18.3, predates both contributions.
+
+That merged revision regresses authored focus reads inside deferred `onChange`
+callbacks. The draft now resolves exact remote commit
+`16c8368746765e6fa9543c9d4d0e822cd84f3bc3` from the same upstream URL to test
+the correction in [#60](https://github.com/SwiftTUI/swift-tui/pull/60).
+There is no ignored source patch or package mirror. Other dependency revisions
+remain fixed. This is qualification of an unmerged PR, not permission to release
+that prototype; verify the merged upstream revision before completing adoption.
 
 The palette keeps its active command visible when terminal height limits the
 result window. Scroll recovery preserves a previously visible focused control

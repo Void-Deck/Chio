@@ -74,48 +74,86 @@ struct SearchableChecklistTests {
         }
     }
 
-    @Test("Disabled rows cannot change membership and external selection remains authoritative")
+    @Test("Native focus skips disabled rows; pointer attempts preserve checked and unchecked membership")
     func disabledMembership() async throws {
         try await withChecklistScene(selection: ["b"], disabledIDs: ["a", "b"]) { session, _, recorder in
             _ = try await recorder.wait(description: "disabled initial choices") { $0.checklistSearchFocused }
             session.send(.key(.return))
-            _ = try await recorder.wait(description: "native disabled row focus") { !$0.checklistSearchFocused }
-            session.send(.key(.character("/")))
-            _ = try await recorder.wait(description: "search disabled unchecked Alpha") { $0.checklistSearchFocused }
-            session.sendInput(Array("al".utf8))
-            _ = try await recorder.wait(description: "only disabled Alpha visible") { $0.checklistQuery("al") }
-            session.send(.key(.return))
-            let alpha = try await recorder.wait(description: "disabled Alpha native focus") { $0.checklistRowFocused("Alpha") }
-            session.send(.key(.space))
-            session.send(.key(.character("b"), modifiers: .ctrl))
-            let rejectedAdd = try await recorder.wait(after: alpha.sequence, description: "disabled unchecked row processed") {
-                $0.checklistContains("Barrier=1")
+            var previous = try await recorder.wait(description: "first enabled Quill receives native focus") {
+                $0.checklistRowFocused("Quill")
             }
-            #expect(rejectedAdd.checklistContains("S=b"))
-            #expect(rejectedAdd.checklistRow("Alpha")?.contains("[ ]") == true)
-            session.send(.key(.character("/")))
-            _ = try await recorder.wait(description: "search before disabled Beta") { $0.checklistSearchFocused }
-            session.send(.key(.escape))
-            _ = try await recorder.wait(description: "Escape restores native results") { !$0.checklistSearchFocused && $0.checklistQuery("") }
-            session.send(.key(.character("/")))
-            _ = try await recorder.wait(description: "editing Beta query") { $0.checklistSearchFocused }
-            session.sendInput(Array("be".utf8))
-            _ = try await recorder.wait(description: "disabled checked Beta match") { $0.checklistQuery("be") }
-            session.send(.key(.return))
-            let beta = try await recorder.wait(description: "disabled checked Beta focus") { $0.checklistRowFocused("Beta") }
-            session.send(.key(.return))
-            session.send(.key(.character("b"), modifiers: .ctrl))
-            let rejectedRemove = try await recorder.wait(after: beta.sequence, description: "disabled checked Return processed") {
-                $0.checklistContains("Barrier=2")
+            for (index, label) in ["Alpha", "Beta"].enumerated() {
+                let line = try #require(previous.raster.lines.firstIndex { $0.contains(label) })
+                let region = try #require(previous.semantics.focusRegions.first { $0.identity == previous.focusedIdentity })
+                let point = CellPoint(x: region.rect.origin.x + 4, y: line)
+                #expect(previous.checklistRow(label)?.contains("Unavailable") == true)
+                #expect(!previous.semantics.focusRegions.contains {
+                    $0.focusInteractions == .activate && line >= $0.rect.origin.y && line < $0.rect.maxY
+                })
+                session.send([
+                    .mouse(MouseEvent(kind: .down(.primary), location: .cellFallback(point))),
+                    .mouse(MouseEvent(kind: .up(.primary), location: .cellFallback(point))),
+                    .key(.character("b"), modifiers: .ctrl),
+                ])
+                let rejected = try await recorder.wait(after: previous.sequence, description: "disabled \(label) click processed") {
+                    $0.checklistContains("Barrier=\(index + 1)")
+                }
+                #expect(rejected.checklistContains("S=b"))
+                #expect(rejected.checklistRow("Alpha")?.contains("[ ]") == true)
+                #expect(rejected.checklistRow("Beta")?.contains("[x]") == true)
+                #expect(rejected.checklistRowFocused("Quill"))
+                #expect(rejected.focusedIdentity == previous.focusedIdentity)
+                previous = rejected
             }
-            #expect(rejectedRemove.checklistContains("S=b"))
-            #expect(rejectedRemove.checklistRow("Beta")?.contains("[x]") == true)
             session.send(.key(.character("x"), modifiers: .ctrl))
-            let external = try await recorder.wait(description: "external checked-set replacement") {
+            let external = try await recorder.wait(after: previous.sequence, description: "external checked-set replacement") {
                 $0.checklistContains("S=a,q")
             }
             #expect(external.checklistContains("2 selected"))
+            #expect(external.checklistRow("Alpha")?.contains("[x]") == true)
             #expect(external.checklistRow("Beta")?.contains("[ ]") == true)
+        }
+    }
+
+    @Test("Disabled-only Return and all-disabled Escape retain search and batched editing", arguments: [false, true])
+    func disabledOnlyEditing(escape: Bool) async throws {
+        let disabledIDs: Set<String> = escape ? ["a", "b", "q", "g"] : ["a", "b"]
+        try await withChecklistScene(selection: ["b"], disabledIDs: disabledIDs) { session, _, recorder in
+            _ = try await recorder.wait(description: "disabled-only initial editor") { $0.checklistSearchFocused }
+            session.sendInput(Array("al".utf8))
+            let filtered = try await recorder.wait(description: "only disabled Alpha matches") {
+                $0.checklistQuery("al") && $0.checklistContains("1 of 4 items")
+            }
+            let expectedQuery: String
+            if escape {
+                session.send([.key(.escape), .key(.character("q")), .key(.return), .key(.character("u"))])
+                expectedQuery = "qu"
+            } else {
+                session.sendInput(Array("\rp".utf8))
+                expectedQuery = "alp"
+            }
+            session.send(.key(.character("b"), modifiers: .ctrl))
+            let retained = try await recorder.wait(after: filtered.sequence, description: "disabled-only handoff keeps batched text editable") {
+                $0.checklistContains("Barrier=1") && $0.checklistSearchFocused && $0.checklistQuery(expectedQuery)
+            }
+            #expect(retained.checklistContains("S=b"))
+            #expect(retained.checklistContains("Quit=0"))
+            session.sendInput(Array("x".utf8))
+            let edited = try await recorder.wait(after: retained.sequence, description: "later text still reaches native editor") {
+                $0.checklistSearchFocused && $0.checklistQuery(expectedQuery + "x")
+            }
+            #expect(edited.checklistContains("S=b"))
+            if !escape {
+                session.send(.key(.escape))
+                let results = try await recorder.wait(after: edited.sequence, description: "clearing filter reaches enabled Quill") {
+                    $0.checklistQuery("") && $0.checklistRowFocused("Quill")
+                }
+                session.send(.key(.space))
+                let checked = try await recorder.wait(after: results.sequence, description: "fresh enabled row toggles normally") {
+                    $0.checklistContains("S=b,q")
+                }
+                #expect(checked.checklistRow("Quill")?.contains("[x]") == true)
+            }
         }
     }
 

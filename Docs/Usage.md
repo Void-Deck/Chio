@@ -799,8 +799,10 @@ unavailable; disabled choices cannot be toggled. Applications explicitly validat
 clear, or replace them. Selection limits and submit/cancel behavior belong to the
 form, as shown by [the choice example](../Examples/AgentDashboard/Presentation/ChoiceExampleView.swift).
 Use `.onResultKeyPress` for ordinary-character shortcuts scoped to results.
-Return into results completes at the next frame; additional keys in that same
-input batch are consumed so they cannot toggle an old row.
+Keyboard navigation skips disabled choices. Return enters results only when
+an enabled match exists; otherwise the search field stays editable.
+The handoff into results completes at the next frame; additional keys in that
+same input batch are consumed so they cannot toggle an old row.
 
 ## Text entry
 

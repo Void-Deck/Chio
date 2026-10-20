@@ -200,7 +200,7 @@ default-branch adoption of the tool, not a new Chio release or repaired native l
 
 ## Palette and scroll-focus qualification
 
-The adoption candidate pins SwiftTUI
+Initial qualification tested SwiftTUI
 `13c07f3981e0bb9160f8dfc8939ffa085824b340`, containing merged #58 and #59.
 Other dependency revisions remain unchanged. Earlier Chio and upstream results
 do not qualify this new combination.
@@ -270,11 +270,37 @@ Linux fails while pulling the pinned Swift image from public ECR with
 `toomanyrequests: Data limit exceeded`. It never checks out the repository or
 runs tests. Registry availability supplies no source or platform-test verdict.
 
-The upgrade remains a draft candidate. Complete local/platform gates, release
-terminal checks and final independent review are still required; consumer
-installation must be repeated if the native pin changes. The accepted disabled-row
-policy remains unchanged pending the user's decision; no workaround for the form
-regression ships in this candidate.
+These results describe the initial candidate before the callback correction and
+the user's disabled-row decision below. They do not qualify the replacement pin.
+
+### Callback correction qualification
+
+On 2026-10-20, the user approved native navigation that skips disabled rows while
+retaining their visibility and membership protection. The owning
+[selection decision](Decisions/SearchableSelection.md) records the new contract.
+All-disabled results must retain usable search editing.
+
+The draft resolves SwiftTUI #60 commit
+`16c8368746765e6fa9543c9d4d0e822cd84f3bc3` through the upstream URL. Its checkout
+is clean; no dependency patch or package mirror is used. The lockfile changes
+only SwiftTUI's revision and the manifest hash.
+
+This exact native commit passes its complete local 85-step gate. Hosted macOS,
+Windows arm64/amd64, public API and TermUIPerf checks pass. Both new callback
+cases execute successfully on Linux debug/release, macOS and Windows. The larger
+Linux debug runtime shard reaches its 1500-second command limit, and the separate
+actor-check job is cancelled. These are incomplete upstream CI results, not a
+passing full gate. The required external development guide remains unavailable.
+
+Both new all-disabled editing cases fail on the unchanged checklist, then pass
+after its handoff requires an enabled result. The existing five-second waits
+remain unchanged. Focused debug qualification passes fifteen checklist tests and
+all five unchanged grouped-form tests, including nine layout cases.
+
+Chio's full consumer, installation, terminal and independent review checks are
+being repeated for this exact candidate. Their results are pending. Keep the
+adoption PR draft. Upstream merge and requalification of the merged revision
+remain necessary before the operational pin advances.
 
 ## Merged layout corrections
 
