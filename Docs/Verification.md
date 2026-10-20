@@ -297,10 +297,68 @@ after its handoff requires an enabled result. The existing five-second waits
 remain unchanged. Focused debug qualification passes fifteen checklist tests and
 all five unchanged grouped-form tests, including nine layout cases.
 
-Chio's full consumer, installation, terminal and independent review checks are
-being repeated for this exact candidate. Their results are pending. Keep the
-adoption PR draft. Upstream merge and requalification of the merged revision
-remain necessary before the operational pin advances.
+Complete consumer runs at Chio `9a6591610046d6e896735f0814eb580551131ba4`
+retain the unchanged gate and interaction deadlines:
+
+| Boundary | macOS arm64 | Linux arm64 |
+| --- | --- | --- |
+| HTTP/online preflight | 19 + 6 pass | 19 + 6 pass |
+| Debug library / maps / dashboard | 510 / 166 / 147 reported; one library case skips | 509 / 166 / 147 reported; one library case skips |
+| Release library / maps | 510 / 166 reported; one library case skips | 509 / 166 reported; one library case skips |
+| Release dashboard | 177 tests, four failures | 177 tests, the same four failures |
+
+All executed tests in the first three rows pass. The library totals include each
+skip: macOS executes 509 and Linux executes 508. macOS skips the filename
+case-tie test because the host filesystem treats case-only names as the same file.
+Linux uses an isolated Swift 6.4 Noble container and an immutable source archive.
+Its permission-removal case skips because the root container can still read the
+file. The source hashes, lockfile and clean native checkout match the candidate.
+This is Linux arm64 evidence, not hosted Linux x86_64 qualification.
+
+The four failures are create-form blur validation, conditional-field error reveal,
+diff hunk reveal, and the diff's earlier vertical-only End expectation. Native
+focus reaches Role and Test suite; those waits also require visible validation.
+The narrow Test suite capture leaves its error below the viewport, so it does not
+prove missing validation state. The diff header advances to hunk two while its
+viewport remains at zero. End correctly reaches both native scroll limits; its
+test must follow the accepted [scrolling contract](Decisions/Scrolling.md).
+Those consumer logs do not establish whether the observers dispatch.
+Grouped-form tests pass unchanged in both configurations on both platforms.
+
+The follow-up diff test checks End at both scroll limits, then returns to the
+leading column before retaining the original horizontal-clamping and file-change
+assertions. Its focused macOS release run passes. This resolves the expectation
+migration; it does not qualify the other three failing workflows or Linux.
+
+A test-only native debug probe on unchanged `16c83687` reaches the next focused
+field inside `ScrollViewReader` and `GeometryReader`, but its focus observer
+records no invocation. The blur error therefore never appears. No presentation
+portal is needed to reproduce this failure. The original two callback-scope cases
+still pass. A separate plain state-driven reader probe successfully dispatches
+and accepts its scroll request, so it does not yet reproduce the diff failure.
+The probe patch and logs remain local evidence, not a published native correction.
+
+Both gates stop at release test failure. Release product, snapshot, PTY and map
+process stages are not reached; their previous-pin results cannot qualify this
+candidate. The macOS compiler-backed EngineeringRules 0.1.7 gate and site assembly
+pass. The rules gate retains one baseline finding.
+
+A fresh external consumer resolves exact Chio `9a659161` and SwiftTUI `16c83687`
+from their canonical remotes. Its release build and all five public API/raster
+probes pass. Fresh resolution selects a newer compatible `swift-collections`
+revision than Chio's lockfile. This proves installation and those probes, not
+hosted interaction or Linux execution.
+
+The [hosted run for `9a659161`](https://github.com/echoz/Chio/actions/runs/39386480023)
+confirms the same four release dashboard failures on macOS. Its tested merge has
+the reviewed base and exact candidate as parents. Hosted Linux fails before
+checkout while pulling the public ECR image: `toomanyrequests: Data limit exceeded`.
+That job runs no tests.
+
+Independent source review finds two stale current-pin documentation statements,
+now corrected in README and NativeIntegration. Qualification remains incomplete.
+Keep the adoption PR draft. Upstream merge and requalification of the merged
+revision remain necessary before the operational pin advances.
 
 ## Merged layout corrections
 

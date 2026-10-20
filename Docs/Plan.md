@@ -34,6 +34,17 @@ the complete consumer gate, installation and terminal workflows. Native tests
 alone do not qualify Chio. Upstream merge, verification of that merged revision
 and required consumer checks still precede adoption.
 
+The complete consumer runs at `9a659161` pass debug tests on macOS and Linux
+arm64, plus release library and map suites. Release dashboard tests expose four
+failures on both platforms: create-form blur validation, conditional-error reveal,
+diff hunk reveal, and a diff expectation that End moves only vertically.
+The corrected End test follows the accepted native two-axis contract and passes
+in a focused macOS release run. A native debug reproduction confirms that focus
+observers attached outside GeometryReader do not dispatch in the tested reader
+composition. The simple state-driven reveal counterexample passes; the diff's
+reveal failure still needs isolation before another correction.
+The gate stops before terminal workflows; keep both adoption and upstream PRs draft.
+
 EngineeringRules 0.1.8 adoption remains owned by
 [PR #22](https://github.com/echoz/Chio/pull/22). This dependency slice retains the
 operational 0.1.7 gate while that separate maintenance PR remains unmerged.

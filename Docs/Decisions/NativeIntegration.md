@@ -1,7 +1,9 @@
 # Native integration boundaries
 
-**Status:** The current adoption candidate pins merged SwiftTUI #58/#59 at
-`13c07f3981e0bb9160f8dfc8939ffa085824b340`; consumer qualification is in progress.
+**Status:** The current adoption candidate tests SwiftTUI
+`16c8368746765e6fa9543c9d4d0e822cd84f3bc3`, containing merged #58/#59 and the
+unmerged #60 callback correction. Consumer qualification still has form and diff
+workflow failures; this is not an operational or released pin.
 The earlier 0.2.0 candidate uses merged #57 at
 `7e62e95c913508f4fef42db36fde6fd60acb541c`, with passing macOS/Linux qualification.
 The earlier [PR #17](https://github.com/echoz/Chio/pull/17) adopted published
