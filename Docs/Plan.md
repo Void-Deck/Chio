@@ -46,8 +46,8 @@ the accepted native two-axis contract. Complete macOS and Linux arm64 consumer
 gates pass. The native gate passes 84 of 85 steps; its only failure passes a
 separate clean rerun of the performance subpackage.
 [Verification](Verification.md#stacked-observation-correction) records exact inputs
-and evidence. Finish canonical remote installation and focused checks, then
-verify the merged upstream revision before adoption. Keep both PRs draft.
+and evidence. Canonical remote installation and focused interaction checks pass.
+Verify the merged upstream revision before adoption. Keep both PRs draft.
 
 EngineeringRules 0.1.8 adoption remains owned by
 [PR #22](https://github.com/echoz/Chio/pull/22). This dependency slice retains the

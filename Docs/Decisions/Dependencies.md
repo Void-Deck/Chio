@@ -53,8 +53,8 @@ The qualification candidate is
 `0283902aa221e5d20bad2a08cc3fd2fce1e4ab6d` in
 [#60](https://github.com/SwiftTUI/swift-tui/pull/60).
 The complete gates use an explicit local SwiftPM dependency on that clean commit.
-The final manifest resolves the same commit from the canonical SwiftTUI remote;
-external installation and focused remote-pin checks remain part of qualification.
+The final manifest resolves the same commit from the canonical SwiftTUI remote.
+Fresh external installation and focused remote-pin interaction checks pass.
 There is no ignored source patch or package mirror. Other dependency revisions
 remain fixed. This is qualification of an unmerged PR, not permission to release
 that prototype; verify the merged upstream revision before completing adoption.

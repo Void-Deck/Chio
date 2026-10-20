@@ -417,10 +417,27 @@ prove the crash's cause. All 84 unaffected passing steps remain applicable.
 The linked native development guide returns 404, and `prek` is unavailable;
 strict formatting and standalone policy checks pass without claiming hook execution.
 
-Canonical remote installation and focused consumer checks remain pending.
+Canonical-remote candidate `09ed9c8d14f7e42d36485c3b4d9e151a077c11d0`
+resolves the same clean SwiftTUI commit without a mirror or source substitution.
+All seven other dependency pins remain unchanged. Its release checks pass ten
+checklist cases and eighteen create-form, diff and grouped-form cases. The
+compiler-backed rules, documentation, site assembly and input-integrity checks pass.
+Executable sources, tests, scripts and gate configuration match the complete
+platform runs above; their results remain applicable across the dependency-location
+change and subsequent documentation-only edits.
+
+A fresh external consumer resolves that exact Chio revision and SwiftTUI commit
+from their canonical remotes with empty build and package caches. Its release
+build and all five unchanged public API/raster probe sections pass: inherited
+styles, duration formatting and initializer references, bounded list spacing,
+checked map values/raster, and instrumentation construction. Fresh resolution uses
+compatible swift-collections 1.7.3; the producer lockfile retains 1.7.2. Other pins
+match, and both checkouts remain clean at the expected revisions.
+
 Separate source review finds no actionable production or test issues.
-These local-source results do not establish hosted Linux x86_64, upstream merge,
-release readiness or downstream adoption.
+These results do not establish hosted Linux x86_64, upstream merge, release
+readiness or downstream adoption. Requalify the merged native revision before
+completing adoption.
 
 ## Merged layout corrections
 
