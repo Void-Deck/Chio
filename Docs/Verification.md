@@ -562,7 +562,10 @@ configurations, site assembly and whitespace. The private help-symbol rename is
 the only executable-source difference from the full platform runs above. Their
 library, test, dependency and terminal-script inputs remain unchanged. Independent
 source review finds no actionable issues. Hosted Chio checks remain a separate
-readiness requirement; an ECR pull failure before checkout supplies no test evidence.
+readiness requirement. Repeated ECR pull failures before checkout supplied no test
+evidence. The Linux job now retrieves the same pinned image from Docker Hub;
+anonymous registry access confirms the identical multi-platform digest and its
+Linux x86_64 manifest. The image, gate and individual deadlines do not change.
 Local Linux arm64 does not establish hosted Linux x86_64 or static-musl support.
 Live providers, SSH appearance, downstream adoption and release publication remain
 outside these results. Consumers with a direct SwiftTUI requirement must align
@@ -1377,11 +1380,13 @@ Completing a visible example change includes updating the showcase:
 ## Linux and CI
 
 [CI](../.github/workflows/ci.yml) runs on `main` pushes and pull requests using
-Xcode 27 and the Swift 6.4.0 Ubuntu 24.04 container. The Linux image uses
-[Docker's official ECR mirror](https://www.docker.com/blog/news-from-aws-reinvent-docker-official-images-on-amazon-ecr-public/),
-pinned to the same image digest verified from Docker Hub, to avoid depending on
-Docker Hub authentication during runner initialization. Builds/tests serialize
-within each job; artifacts retain logs, text captures and xUnit reports.
+Xcode 27 and the Swift 6.4.0 Ubuntu 24.04 container. The Linux job retrieves
+[Docker's official Swift image](https://hub.docker.com/_/swift) from Docker Hub,
+pinned by its multi-platform digest. Anonymous registry access verifies the image
+index and its Linux x86_64 manifest. The former ECR mirror repeatedly failed before
+checkout with `toomanyrequests: Data limit exceeded`; switching registries retains
+the exact image and requires no account credentials. Builds/tests serialize within
+each job; artifacts retain logs, text captures and xUnit reports.
 macOS allows sixty minutes and Linux allows ninety minutes for the complete gate.
 The 0.2.0 Linux run exhausted its former sixty-minute budget during an actively
 progressing map probe, after all test suites and dashboard workflows passed.
