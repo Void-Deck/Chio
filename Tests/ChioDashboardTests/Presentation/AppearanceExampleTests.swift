@@ -156,7 +156,7 @@ struct AppearanceExampleTests {
         }
     }
 
-    @Test("Every recipe exposes settings and instruments through native narrow scrolling", arguments: [AppearanceRecipe.btop])
+    @Test("Every recipe exposes settings and instruments through native narrow scrolling", arguments: AppearanceRecipe.allCases)
     func narrowSections(recipe: AppearanceRecipe) async throws {
         try await withAppearance(recipe: recipe, size: CellSize(width: 36, height: 18)) { session, _, recorder in
             _ = try await recorder.wait(description: "narrow agents and persistent hints") {
@@ -215,6 +215,7 @@ private func withAppearance(
 ) async throws {
     defer { ProfileActivation.shared.finish() }
     let recorder = HostedFrameRecorder()
+    recorder.record("session started: recipe=\(recipe), size=\(size)")
     let surface = HostedRasterSurface(surfaceSize: size, appearance: .fallback, onFrame: { recorder.receive($0) })
     let app = AppearanceTestApp(recipe: recipe, observeInput: { recorder.record("input dispatched: \($0)") })
     let session = try HostedSceneSession(for: app, sceneID: "appearance-tests", surface: surface)

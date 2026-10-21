@@ -20,49 +20,33 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
-          fetch-depth: 3
-      - name: Compare unchanged test with instrumented btop workflow
+          fetch-depth: 4
+      - name: Compare complete appearance workflow in debug and release
         shell: bash
         run: |
           set -euo pipefail
           cd "$GITHUB_WORKSPACE"
-          git -c safe.directory="$PWD" rev-parse --show-toplevel
+          git -c safe.directory="$PWD" rev-parse HEAD
           mkdir -p .build/ci-results
           swift --version > .build/ci-results/toolchain.txt
           uname -a >> .build/ci-results/toolchain.txt
           lscpu >> .build/ci-results/toolchain.txt
-          files=(Package.swift Tests/ChioDashboardTests/Presentation/AppearanceExampleTests.swift Tests/ChioDashboardTests/TestSupport/HostedFrameRecorder.swift Examples/AgentDashboard/Presentation/AppearanceExampleView.swift)
-          git -c safe.directory="$PWD" diff 0c786c5b12edc33edd262395f64ed2912ed32db9 "$GITHUB_SHA" -- "${files[@]}" > .build/ci-results/instrumentation.patch
-          git -c safe.directory="$PWD" restore --source=0c786c5b12edc33edd262395f64ed2912ed32db9 -- "${files[@]}"
-          set +e
-          swift test --jobs 2 --no-parallel --force-resolved-versions \
-            --filter AppearanceExampleTests/narrowSections \
-            --xunit-output .build/ci-results/baseline.xml 2>&1 | tee .build/ci-results/baseline.log
-          baseline_status=${PIPESTATUS[0]}
-          set -e
-          printf '%s\n' "$baseline_status" > .build/ci-results/baseline.exit
-          git -c safe.directory="$PWD" restore --source="$GITHUB_SHA" -- "${files[@]}"
-          diagnostic_status=0
-          build_flags=()
-          for attempt in 1 2 3 4 5 6; do
+          git -c safe.directory="$PWD" diff 0c786c5b12edc33edd262395f64ed2912ed32db9 "$GITHUB_SHA" -- Package.swift Tests Examples > .build/ci-results/instrumentation.patch
+          result=0
+          for configuration in debug release; do
             set +e
-            SWIFTTUI_PROFILE="frames;jsonl=$PWD/.build/ci-results/profile-$attempt.jsonl" \
-              swift test --jobs 2 --no-parallel --force-resolved-versions "${build_flags[@]}" \
-              --filter AppearanceExampleTests/narrowSections \
-              --xunit-output ".build/ci-results/diagnostic-$attempt.xml" \
-              2>&1 | tee ".build/ci-results/diagnostic-$attempt.log"
-            diagnostic_status=${PIPESTATUS[0]}
+            SWIFTTUI_PROFILE="frames;jsonl=$PWD/.build/ci-results/profile-$configuration.jsonl" \
+              swift test -c "$configuration" --jobs 2 --no-parallel --force-resolved-versions \
+              --filter AppearanceExampleTests \
+              --xunit-output ".build/ci-results/$configuration.xml" \
+              2>&1 | tee ".build/ci-results/$configuration.log"
+            test_status=${PIPESTATUS[0]}
             set -e
-            printf '%s\n' "$diagnostic_status" > ".build/ci-results/diagnostic-$attempt.exit"
-            if [[ "$diagnostic_status" != 0 ]]; then break; fi
-            build_flags=(--skip-build)
+            printf '%s\n' "$test_status" > ".build/ci-results/$configuration.exit"
+            if [[ "$test_status" != 0 ]]; then result=1; fi
           done
-          set +e
-          git -c safe.directory="$PWD" diff --exit-code -- "${files[@]}" Package.resolved
-          source_status=$?
-          set -e
-          printf '%s\n' "$source_status" > .build/ci-results/source.exit
-          [[ "$baseline_status" == 0 && "$diagnostic_status" == 0 && "$source_status" == 0 ]]
+          git -c safe.directory="$PWD" diff --exit-code -- Package.swift Package.resolved Tests Examples
+          exit "$result"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:
