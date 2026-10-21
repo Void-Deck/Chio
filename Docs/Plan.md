@@ -31,17 +31,20 @@ public API/raster probes. [Verification](Verification.md#merged-callback-qualifi
 records exact inputs and limits. Hosted checks and final independent review remain
 required before the draft is ready. Chio merge and release are separate decisions.
 
-## Current maintenance: naming review
+## Delivered maintenance: naming review
 
-Advance [PR #22](https://github.com/echoz/Chio/pull/22) to published EngineeringRules
-0.1.9, preserving its explicit naming inventory and existing compiler, lint,
-documentation and project checks. The original private `HelpExampleView.Context`
-selects shortcut groups; the candidate names it `ShortcutScope` without changing
-behavior. Apply the released review workflow to all changed names, including
-identity and revision lifetimes where relevant. An empty inventory does not
-complete semantic review. [Verification](Verification.md#019-adoption) owns the
-disposition and verification scope. Default-branch adoption requires review and
-merge; the earlier Linux container-pull failure is not passing platform evidence.
+[PR #22](https://github.com/echoz/Chio/pull/22) merged EngineeringRules 0.1.9 at
+`04896a6ceb4d44bb7ed88950eaceb4d2c0a5aea6`. Its unchanged full hosted macOS and
+Linux gates pass, together with compiler-backed rules, documentation, naming
+inventory, focused help tests and independent review. The first Linux attempt
+failed before checkout; the Linux-only retry supplies the passing evidence.
+
+The private `HelpExampleView.Context` is now `ShortcutScope`, without a behavior
+change. The released review workflow covers all changed names and relevant
+identity/revision lifetimes. An empty inventory does not complete semantic review.
+[Verification](Verification.md#019-adoption) owns the disposition and evidence.
+This SwiftTUI adoption branch includes that exact maintenance change; published
+Chio 0.2.1 retains its recorded EngineeringRules 0.1.7 pin.
 
 [PR #21](https://github.com/echoz/Chio/pull/21) delivered EngineeringRules 0.1.7,
 schema 2 and source-root guides. It and the test-constructor cleanup in

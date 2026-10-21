@@ -145,9 +145,9 @@ output; SwiftPM excludes source guides from build inputs without excluding code.
 
 This focused adoption updates [PR #22](https://github.com/echoz/Chio/pull/22)
 from its 0.1.8 candidate to published commit
-`f80213f14acf839b6d5ba9f131d4c113182e2592`. The default branch remains on 0.1.7
-until the PR merges. The tool pin, documentation source and compiler exporter
-advance together; no upstream SwiftTUI enrollment or dependency update is included.
+`f80213f14acf839b6d5ba9f131d4c113182e2592`. It merged to the default branch as
+`04896a6ceb4d44bb7ed88950eaceb4d2c0a5aea6`. The tool pin, documentation source and
+compiler exporter advance together; this maintenance PR changes no dependency.
 The existing lint, real compiler-context and schema 2 documentation checks remain.
 The documentation checker and compiler exporter have identical contents in the
 0.1.8 and 0.1.9 releases. Source scopes, application dependencies and the single scratch-state
@@ -173,6 +173,19 @@ Manual review retains references to SwiftTUI's `CanvasContext` and Swift's
 The gate's compiler-context names describe real compiler inputs and also remain.
 No collected declaration is deferred. The final inventory and separate review
 must verify this disposition; an empty final list alone does not establish it.
+
+The exact candidate `c26b6a039711fa8ad2183c2ae102d2b1e4da4e73` passes all seven
+local checks and independent review. The compiler-backed gate checks 350 Swift
+files with no new violations and one retained baseline item. Documentation checks
+56 documents, eight modules and twenty deliverables with no findings. The final
+naming inventory is empty, and ten help tests pass in each configuration.
+
+[Hosted CI](https://github.com/echoz/Chio/actions/runs/39556673983/attempts/2) passes
+on macOS and Linux x86_64. Both jobs test merge `b704b23e`, with the exact candidate
+and base `3194d11f` as parents. Its tree equals the candidate and merged main tree.
+The Linux-only retry follows a container-registry failure before checkout; it
+completes the unchanged full gate. Existing runtime warnings remain in the logs.
+These results establish default-branch adoption, not a new Chio release.
 
 ### 0.1.7 adoption
 
@@ -543,8 +556,13 @@ construction. Fresh resolution selects compatible Collections 1.7.3; the produce
 retains 1.7.2. Every dependency checkout remains clean at its resolved revision.
 
 All fourteen upstream checks on `877d7765` pass. These support the native revision;
-they do not replace consumer checks. Final EngineeringRules integration, hosted
-Chio checks and independent review are tracked separately before readiness.
+they do not replace consumer checks. The integrated candidate `1c05ff9` also passes all seven local checks: compiler-backed
+EngineeringRules 0.1.9, documentation, naming inventory, help tests in both
+configurations, site assembly and whitespace. The private help-symbol rename is
+the only executable-source difference from the full platform runs above. Their
+library, test, dependency and terminal-script inputs remain unchanged. Independent
+source review finds no actionable issues. Hosted Chio checks remain a separate
+readiness requirement; an ECR pull failure before checkout supplies no test evidence.
 Local Linux arm64 does not establish hosted Linux x86_64 or static-musl support.
 Live providers, SSH appearance, downstream adoption and release publication remain
 outside these results. Consumers with a direct SwiftTUI requirement must align
