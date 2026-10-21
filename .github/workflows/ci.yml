@@ -1,65 +1,69 @@
-name: CI
+name: Appearance timing diagnostic
 
 on:
-  push:
-    branches: [main]
-  pull_request:
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
+  group: appearance-diagnostic-${{ github.ref }}
   cancel-in-progress: true
 
+# Investigation branch only. This workflow is not a replacement for Chio's gate.
 jobs:
-  macos:
-    # Swift 6.4 needs Xcode 27; this runner is currently a public preview.
-    runs-on: xcode-27
-    timeout-minutes: 60
-    env:
-      DEVELOPER_DIR: /Applications/Xcode_27.0.app/Contents/Developer
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          persist-credentials: false
-      - name: Test, build release, and exercise the terminal
-        shell: bash
-        run: bash Scripts/ci/verify.sh 2>&1 | tee ci-verification.log
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        if: always()
-        with:
-          name: macos-verification
-          include-hidden-files: true
-          path: |
-            ci-verification.log
-            .build/ci-results/*.txt
-            .build/ci-results/*.xml
-            .build/ci-results/appearance/**
-            .build/ci-results/maps/**
-
   linux:
     runs-on: ubuntu-24.04
     container: docker.io/library/swift:6.4.0-noble@sha256:31d14d727f4451f25e29bac9c42563a098c39ac66415e8bad970f48038e38aca
-    timeout-minutes: 90
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
-      - name: Install terminal smoke prerequisite
-        run: apt-get update && apt-get install -y --no-install-recommends python3
-      - name: Test, build release, and exercise the terminal
+          fetch-depth: 2
+      - name: Compare unchanged test with instrumented btop workflow
         shell: bash
-        run: bash Scripts/ci/verify.sh 2>&1 | tee ci-verification.log
+        run: |
+          set -euo pipefail
+          mkdir -p .build/ci-results
+          swift --version > .build/ci-results/toolchain.txt
+          uname -a >> .build/ci-results/toolchain.txt
+          lscpu >> .build/ci-results/toolchain.txt
+          files=(Package.swift Tests/ChioDashboardTests/Presentation/AppearanceExampleTests.swift Tests/ChioDashboardTests/TestSupport/HostedFrameRecorder.swift Examples/AgentDashboard/Presentation/AppearanceExampleView.swift)
+          git diff 0c786c5b12edc33edd262395f64ed2912ed32db9 "$GITHUB_SHA" -- "${files[@]}" > .build/ci-results/instrumentation.patch
+          git restore --source=0c786c5b12edc33edd262395f64ed2912ed32db9 -- "${files[@]}"
+          set +e
+          swift test --jobs 2 --no-parallel --force-resolved-versions \
+            --filter AppearanceExampleTests/narrowSections \
+            --xunit-output .build/ci-results/baseline.xml 2>&1 | tee .build/ci-results/baseline.log
+          baseline_status=${PIPESTATUS[0]}
+          set -e
+          printf '%s\n' "$baseline_status" > .build/ci-results/baseline.exit
+          git restore --source="$GITHUB_SHA" -- "${files[@]}"
+          diagnostic_status=0
+          build_flags=()
+          for attempt in 1 2 3 4 5 6; do
+            set +e
+            SWIFTTUI_PROFILE="frames;jsonl=$PWD/.build/ci-results/profile-$attempt.jsonl" \
+              swift test --jobs 2 --no-parallel --force-resolved-versions "${build_flags[@]}" \
+              --filter AppearanceExampleTests/narrowSections \
+              --xunit-output ".build/ci-results/diagnostic-$attempt.xml" \
+              2>&1 | tee ".build/ci-results/diagnostic-$attempt.log"
+            diagnostic_status=${PIPESTATUS[0]}
+            set -e
+            printf '%s\n' "$diagnostic_status" > ".build/ci-results/diagnostic-$attempt.exit"
+            if [[ "$diagnostic_status" != 0 ]]; then break; fi
+            build_flags=(--skip-build)
+          done
+          set +e
+          git diff --exit-code -- "${files[@]}" Package.resolved
+          source_status=$?
+          set -e
+          printf '%s\n' "$source_status" > .build/ci-results/source.exit
+          [[ "$baseline_status" == 0 && "$diagnostic_status" == 0 && "$source_status" == 0 ]]
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:
-          name: linux-verification
+          name: appearance-timing-diagnostic
           include-hidden-files: true
-          path: |
-            ci-verification.log
-            .build/ci-results/*.txt
-            .build/ci-results/*.xml
-            .build/ci-results/appearance/**
-            .build/ci-results/maps/**
+          path: .build/ci-results/**

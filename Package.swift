@@ -111,6 +111,7 @@ let package = Package(
             dependencies: [
                 "ChioDashboard",
                 .product(name: "SwiftTUIRuntime", package: "swift-tui"),
+                .product(name: "SwiftTUIProfiling", package: "swift-tui"),
             ]
         ),
     ]

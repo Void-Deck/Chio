@@ -1,5 +1,6 @@
 @testable import ChioDashboard
 import SwiftTUIRuntime
+import SwiftTUIProfiling
 import Testing
 
 @MainActor
@@ -155,7 +156,7 @@ struct AppearanceExampleTests {
         }
     }
 
-    @Test("Every recipe exposes settings and instruments through native narrow scrolling", arguments: AppearanceRecipe.allCases)
+    @Test("Every recipe exposes settings and instruments through native narrow scrolling", arguments: [AppearanceRecipe.btop])
     func narrowSections(recipe: AppearanceRecipe) async throws {
         try await withAppearance(recipe: recipe, size: CellSize(width: 36, height: 18)) { session, _, recorder in
             _ = try await recorder.wait(description: "narrow agents and persistent hints") {
@@ -203,7 +204,7 @@ extension AppearanceTestApp: App {
                     observeInput(press)
                     return .ignored
                 }
-        }.exitOnKeys([])
+        }.exitOnKeys([]).profiling()
     }
 }
 
@@ -212,6 +213,7 @@ private func withAppearance(
     recipe: AppearanceRecipe = .chio, size: CellSize = CellSize(width: 100, height: 30),
     perform: @MainActor (HostedSceneSession, HostedRasterSurface, HostedFrameRecorder) async throws -> Void
 ) async throws {
+    defer { ProfileActivation.shared.finish() }
     let recorder = HostedFrameRecorder()
     let surface = HostedRasterSurface(surfaceSize: size, appearance: .fallback, onFrame: { recorder.receive($0) })
     let app = AppearanceTestApp(recipe: recipe, observeInput: { recorder.record("input dispatched: \($0)") })
@@ -222,6 +224,9 @@ private func withAppearance(
         session.stop()
         #expect(try await run.value == .inputEnded)
     } catch {
+        recorder.record("original five-second failure retained; observing for ten seconds: \(error)")
+        try? await Task.sleep(for: .seconds(10))
+        recorder.record("post-failure ten-second observation complete; stopping original session")
         session.stop()
         _ = await run.result
         throw error

@@ -1,4 +1,5 @@
 import SwiftTUIRuntime
+import Foundation
 
 /// Records the runtime's public host frames without reading application storage.
 @MainActor
@@ -10,6 +11,7 @@ final class HostedFrameRecorder {
     private var recentObservations: [String] = []
 
     func record(_ event: String) {
+        print("APPEARANCE_DIAGNOSTIC monotonic=\(ProcessInfo.processInfo.systemUptime) event=\(event)")
         recentObservations.append("\(started.duration(to: .now)): \(event)")
         if recentObservations.count > 64 { recentObservations.removeFirst() }
     }
@@ -23,6 +25,7 @@ final class HostedFrameRecorder {
         record("frame #\(frame.sequence): \(focus); \(routes)")
         latest = frame
         guard let pending, pending.matches(frame) else { return }
+        record("receive matched pending wait at frame #\(frame.sequence)")
         self.pending = nil
         deadline?.cancel()
         deadline = nil
@@ -35,14 +38,20 @@ final class HostedFrameRecorder {
         let matches: @MainActor (SemanticHostFrame) -> Bool = { frame in
             (sequence == nil || frame.sequence > sequence!) && predicate(frame)
         }
-        if let latest, matches(latest) { return latest }
+        if let latest, matches(latest) {
+            record("wait matched latest frame #\(latest.sequence): \(description)")
+            return latest
+        }
         precondition(pending == nil)
         return try await withCheckedThrowingContinuation { continuation in
+            record("wait pending installed: \(description)")
             pending = PendingWait(matches: matches, continuation: continuation)
             deadline = Task { @MainActor [weak self] in
+                self?.record("five-second deadline task started: \(description)")
                 do { try await Task.sleep(for: .seconds(5)) }
                 catch { return }
                 guard let self, let pending = self.pending else { return }
+                self.record("original five-second deadline expired: \(description)")
                 self.pending = nil
                 self.deadline = nil
                 let focus = self.latest?.focusedIdentity

@@ -1,5 +1,6 @@
 import Chio
 import SwiftTUI
+import Foundation
 
 /// Identical local content and native controls across three presentation recipes.
 @MainActor
@@ -152,8 +153,12 @@ extension AppearanceExampleView: View {
                 case .character("t"): recipe = recipe.next
                 case .character("d"): density = density.next
                 case .character("e"):
+                    print("APPEARANCE_ACTION monotonic=\(ProcessInfo.processInfo.systemUptime) Ctrl-E handler entered; focus=\(String(describing: focus))")
                     focus = .workspace
-                    proxy.scrollTo("settings", anchor: .top)
+                    print("APPEARANCE_ACTION monotonic=\(ProcessInfo.processInfo.systemUptime) workspace focus set; focus=\(String(describing: focus))")
+                    let didScroll = proxy.scrollTo("settings", anchor: .top)
+                    print("APPEARANCE_ACTION monotonic=\(ProcessInfo.processInfo.systemUptime) scrollTo settings returned=\(didScroll)")
+                    print("APPEARANCE_ACTION monotonic=\(ProcessInfo.processInfo.systemUptime) Ctrl-E handler exiting")
                 case .character("g"):
                     focus = .overview
                     proxy.scrollTo("instruments", anchor: .top)
