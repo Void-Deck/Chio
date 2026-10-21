@@ -7,8 +7,8 @@ and preservation of current contracts.
 
 ## Shared engineering rules
 
-Chio pins [EngineeringRules v0.1.8](https://github.com/echoz/EngineeringRules/releases/tag/v0.1.8)
-(`c535a2745b8b436a5a9d4d0598192aa106912fee`) through
+Chio pins [EngineeringRules v0.1.9](https://github.com/echoz/EngineeringRules/releases/tag/v0.1.9)
+(`f80213f14acf839b6d5ba9f131d4c113182e2592`) through
 [.swift-rules.json](../.swift-rules.json). This is a required local development
 gate alongside the compiler, tests and platform checks below. It is not a package
 dependency or a guarantee of purity, correct enum policy or API compatibility.
@@ -21,7 +21,7 @@ On this Mac, run:
 
 ```sh
 DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
-  bash Scripts/ci/check-rules.sh /path/to/immutable/EngineeringRules-0.1.8
+  bash Scripts/ci/check-rules.sh /path/to/immutable/EngineeringRules-0.1.9
 ```
 
 Full Xcode supplies the required Swift/SourceKit. On Linux, omit `DEVELOPER_DIR`
@@ -96,8 +96,14 @@ Retain its JSON output and logs for that exact candidate. The independent review
 records each name's meaning and a concrete rename, legitimate retain reason or
 explicit out-of-scope deferral. A successful inventory command does not complete
 semantic review; candidates are neither violations nor baseline entries.
-The pinned tool's [selection contract](https://github.com/echoz/EngineeringRules/tree/v0.1.8#naming-review-candidates)
+The pinned tool's [selection contract](https://github.com/echoz/EngineeringRules/tree/v0.1.9#naming-review-candidates)
 owns matching and output. Apply the global organization guidance to the names.
+
+Use the released engineering-review workflow for all introduced or changed names,
+including unchanged names whose meaning changes. For identities and revisions,
+inspect creation, advancement, invalidation and comparison sites to judge the
+subject and lifetime. Retain precise scoped names and framework terminology;
+this review does not authorize unrelated renames or public/persisted contract changes.
 
 The current configuration includes `Sources`, `Examples`, `Tests` and `Spikes`
 without excluded paths. The collector visits Swift declarations in all conditional
@@ -133,14 +139,26 @@ outside the gate. Check relevant anchors manually and keep site verification
 where visible output changes. The source README is excluded from assembled Pages
 output; SwiftPM excludes source guides from build inputs without excluding code.
 
-### 0.1.8 adoption
+<a id="018-adoption"></a>
 
-This focused adoption advances the pin and wrapper's verified source revision
-from 0.1.7 to published commit `c535a2745b8b436a5a9d4d0598192aa106912fee`.
+### 0.1.9 adoption
+
+This focused adoption updates [PR #22](https://github.com/echoz/Chio/pull/22)
+from its 0.1.8 candidate to published commit
+`f80213f14acf839b6d5ba9f131d4c113182e2592`. The default branch remains on 0.1.7
+until the PR merges. The tool pin, documentation source and compiler exporter
+advance together; no upstream SwiftTUI enrollment or dependency update is included.
 The existing lint, real compiler-context and schema 2 documentation checks remain.
 The documentation checker and compiler exporter have identical contents in the
-two releases. Source scopes, application dependencies and the single scratch-state
+0.1.8 and 0.1.9 releases. Source scopes, application dependencies and the single scratch-state
 baseline exception remain unchanged.
+
+The shared engineering-review skill is installed separately from the same release.
+Its `SKILL.md` SHA-256 is
+`e72f423326e645b7530e01b7ed741305639ca9a1a8c766029a4b2449d02656c1`.
+The review packet retains the installation receipt and verified payload hashes;
+Chio does not vendor the skill or modify shared installations. Loading the workflow
+does not establish a completed review or clean naming across unrelated application code.
 
 The initial inventory scanned 350 Swift files and collected one declaration:
 `HelpExampleView.Context` at `Examples/AgentDashboard/Presentation/HelpExampleView.swift:22`.

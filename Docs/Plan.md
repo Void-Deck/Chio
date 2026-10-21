@@ -9,13 +9,15 @@ live in [0.2.0](Releases/0.2.0.md), with [0.1.0](Releases/0.1.0.md) retained as 
 
 ## Current maintenance: naming review
 
-Adopt published EngineeringRules 0.1.8 with an explicit naming inventory beside
-the existing compiler, lint, documentation and project checks. The collected
-private `HelpExampleView.Context` selects shortcut groups; rename it to
-`ShortcutScope` and retain its behavior. Independent review must judge the original
-candidate and relevant manual-review scope, not only the final empty inventory.
-[Verification](Verification.md#018-adoption) owns the disposition and evidence.
-This work remains a separate candidate until its PR is reviewed and merged.
+Advance [PR #22](https://github.com/echoz/Chio/pull/22) to published EngineeringRules
+0.1.9, preserving its explicit naming inventory and existing compiler, lint,
+documentation and project checks. The original private `HelpExampleView.Context`
+selects shortcut groups; the candidate names it `ShortcutScope` without changing
+behavior. Apply the released review workflow to all changed names, including
+identity and revision lifetimes where relevant. An empty inventory does not
+complete semantic review. [Verification](Verification.md#019-adoption) owns the
+disposition and verification scope. Default-branch adoption requires review and
+merge; the earlier Linux container-pull failure is not passing platform evidence.
 
 [PR #21](https://github.com/echoz/Chio/pull/21) delivered EngineeringRules 0.1.7,
 schema 2 and source-root guides. It and the test-constructor cleanup in
