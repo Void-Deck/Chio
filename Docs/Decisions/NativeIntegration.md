@@ -80,6 +80,27 @@ renderer, focus system or hidden dependency patch.
 | Cooperative shutdown | The current pin retains [merged #48](https://github.com/SwiftTUI/swift-tui/pull/48), superseding #45. Accepted quit/EOF retains final-input presentation and synchronous follow-ups without draining unrelated continuous writes. Arbitrarily expensive frames/callbacks and application producers retain their own bounds and ownership. |
 | Portability and accessibility | CI and pseudo-terminals cover specific workflows. Other distributions, architectures, assistive technologies and live SSH devices require separate evidence. Static Linux remains [blocked](Dependencies.md#static-linux-blocker). |
 
+## Startup input service
+
+**Status:** Reproduced in native SwiftTUI; correction proposed in
+[PR #62](https://github.com/SwiftTUI/swift-tui/pull/62), not adopted by Chio.
+
+A producer that continuously invalidates during startup can delay already queued
+input behind sixteen initial acquisitions and one follow-up frame. A deterministic
+native regression at `b23c7338` queues a key at commit 1 or 3; both cases handle it
+only at commit 17. The current `877d7765` dependency has the same startup drain.
+
+The candidate gives initial presentation its own drain policy. It preserves the
+first noncancellable acquisition and synchronous appearance/focus follow-ups, then
+services pending input before unrelated producer redraws. Schedulers without
+callback attribution retain the existing bounded fallback. This is native runtime
+work, not a Chio input owner or a longer interaction deadline.
+
+The regression proves ordering for a controlled pulling input source. It does not
+establish a wall-time limit for expensive frames or asynchronous input delivery.
+[Verification](../Verification.md#startup-input-investigation) owns consumer and
+platform results; an upstream candidate is not operational adoption.
+
 ## Tall list rows
 
 **Status:** SwiftTUI 0.17.0 includes the merged per-axis reveal correction in

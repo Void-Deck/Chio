@@ -28,8 +28,19 @@ They retain form/error assertions, five-second waits, palette and focus recovery
 native two-axis Home/End behavior, all terminal workflows and map process checks.
 A fresh canonical GitHub installation also passes its release build and five
 public API/raster probes. [Verification](Verification.md#merged-callback-qualification)
-records exact inputs and limits. Hosted checks and final independent review remain
-required before the draft is ready. Chio merge and release are separate decisions.
+records exact inputs and limits. The complete hosted macOS and Linux gates also
+pass at `d2aaeef`, with unchanged assertions and interaction deadlines. Final
+independent review remains required before the draft is ready. Chio merge and
+release are separate decisions.
+
+Hosted qualification exposed early-input waits in the file picker and appearance
+example. Investigation reproduced native startup input starvation and produced
+[SwiftTUI #62](https://github.com/SwiftTUI/swift-tui/pull/62). Its correction remains
+an unmerged candidate; Chio's dependency pin is unchanged. The
+[startup boundary](Decisions/NativeIntegration.md#startup-input-service) and
+[qualification record](Verification.md#startup-input-investigation) distinguish
+the deterministic reproducer from the passing diagnostic run. That run does not
+explain the earlier intermittent waits or prove the upstream correction.
 
 ## Delivered maintenance: naming review
 

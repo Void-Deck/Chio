@@ -571,6 +571,57 @@ Live providers, SSH appearance, downstream adoption and release publication rema
 outside these results. Consumers with a direct SwiftTUI requirement must align
 that revision with the selected Chio revision.
 
+### Startup input investigation
+
+The hosted [run at `5ba7261`](https://github.com/echoz/Chio/actions/runs/39628822320)
+reached tests on both platforms. The file-picker late-read case timed out at its
+input barrier before Parent navigation, so it did not exercise stale-read
+rejection. macOS also timed out switching to Workspace in the compact opencode
+and btop appearance cases. Linux passed those appearance cases. Release and
+terminal stages were not reached; the earlier local passes remain separate.
+
+Chio `d2aaeef` adds bounded send/dispatch observations to those fixtures, retaining
+every assertion and five-second wait. Its
+[hosted run](https://github.com/echoz/Chio/actions/runs/39651133946) passes the
+complete macOS and Linux gates, including debug/release tests, release linking,
+terminal workflows and map process probes. Both jobs test merge `5bdf1c602ca439ef4176feb08dcd656b7711d404`.
+No timeout occurs, so no failure history explains the earlier input delay.
+These observations can affect timing; this passing diagnostic run alone does not
+establish a correction.
+
+[SwiftTUI #62](https://github.com/SwiftTUI/swift-tui/pull/62) reproduces startup
+starvation without elapsed-time assertions. Input queued at commit 1 or 3 executes
+at commit 17 on base `b23c7338`, then at the requested commit with the correction.
+The synchronous appearance/focus preservation case and callback-attribution
+checks also pass. Native CI then exposed a missing startup exit flush. Its
+unchanged two-frame assertion and a new final-callback/task-lifetime regression
+pass after the correction, alongside the focused startup and termination suites.
+The upstream PR tracks its full gate and independent review; these focused results
+do not qualify that candidate for adoption.
+
+An isolated Chio `d2aaeef` checkout uses a frozen local copy of the native
+candidate. All thirteen FilePicker tests and four appearance tests, including
+their parameter cases, pass with the seven other dependency pins unchanged.
+This is local macOS qualification with an explicit dependency substitution.
+It does not qualify the unchanged Chio pin or establish hosted CI success.
+The complete local consumer gate passes preflight and debug suites: 509 executed
+library tests with the existing filesystem skip, 166 map tests and 147 dashboard
+tests. Release linking then fails on private `FocusStateLocation` metadata.
+Release tests and terminal/process checks are not reached. The failing native
+file is unchanged by the startup correction. The same Apple compiler and source
+link `chio-maps` successfully with SwiftPM's native backend. The SwiftBuild
+aggregate localizes a weak private-external metadata accessor before Chio's
+reference can resolve. Passing `-keep_private_externs` to the final link does not
+repair that earlier aggregation. Neither result qualifies the default backend.
+
+A separate [CI-only qualification](https://github.com/echoz/Chio/actions/runs/39655547059)
+at Chio `95b9d785` uses native `6c3d5f28` with the original `5ba7261` tests,
+scripts and workflow, before diagnostic instrumentation. Its macOS preflight and
+debug suites pass, then release linking fails at the same boundary. Only the
+SwiftTUI revision and lockfile origin hash differ; the other pins are unchanged.
+This experiment does not change the adoption PR's operational pin or qualify the
+newer dependency for adoption.
+
 ## Merged layout corrections
 
 **Status:** Delivered in [PR #16](https://github.com/echoz/Chio/pull/16), merged
