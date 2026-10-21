@@ -49,7 +49,7 @@ final class HostedFrameRecorder {
                 let focusedNode = self.latest?.semantics.accessibilityNodes.first { $0.identity == focus }
                 pending.continuation.resume(throwing: FrameTimeout(
                     expectation: description,
-                    frames: recentObservations.joined(separator: "\n"),
+                    observations: recentObservations.joined(separator: "\n"),
                     focus: "\(String(describing: focusedNode?.role)) / \(focusedNode?.label ?? "unlabeled") / \(String(describing: focus))",
                     raster: self.latest?.raster.lines.joined(separator: "\n") ?? "No frame received"
                 ))
@@ -64,11 +64,11 @@ final class HostedFrameRecorder {
 
     private struct FrameTimeout: Error, CustomStringConvertible {
         let expectation: String
-        let frames: String
+        let observations: String
         let focus: String
         let raster: String
         var description: String {
-            "Timed out waiting for \(expectation). Focus: \(focus). Recent observations (up to 64):\n\(frames)\nRaster:\n\(raster)"
+            "Timed out waiting for \(expectation). Focus: \(focus). Recent observations (up to 64):\n\(observations)\nRaster:\n\(raster)"
         }
     }
 }
