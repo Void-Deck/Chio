@@ -60,9 +60,9 @@ owns migration and qualification evidence.
 
 Requires **Swift 6.4+**, on **macOS 15+ or Linux**. From a repository checkout:
 
-This draft checkout tests [SwiftTUI's focus and callback corrections](Docs/Decisions/Dependencies.md#palette-and-scroll-focus-adoption)
-at `0283902aa221e5d20bad2a08cc3fd2fce1e4ab6d`. The callback corrections are unmerged.
-Local qualification is recorded in [Verification](Docs/Verification.md#stacked-observation-correction).
+This checkout tests the merged [SwiftTUI focus and callback corrections](Docs/Decisions/Dependencies.md#palette-and-scroll-focus-adoption)
+at `877d7765febd08ffc2ed434a7ef231e4132c3b80`.
+Qualification is recorded in [Verification](Docs/Verification.md#merged-callback-qualification).
 This is not a release pin.
 Consumers testing this branch with a direct SwiftTUI dependency must use the same
 revision. Published Chio releases retain their recorded pins.

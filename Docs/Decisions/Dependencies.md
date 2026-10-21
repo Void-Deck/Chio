@@ -12,7 +12,7 @@ All four direct dependencies are revision-pinned:
 
 | Dependency | Pin and reason |
 | --- | --- |
-| SwiftTUI #60 qualification candidate | `0283902aa221e5d20bad2a08cc3fd2fce1e4ab6d`; includes merged #58/#59 and the unmerged callback-scope and observation-slot corrections; this draft is not a released dependency decision |
+| SwiftTUI merged #60 | `877d7765febd08ffc2ed434a7ef231e4132c3b80`; includes #58/#59 and the callback-scope and observation-slot corrections; release publication remains separate |
 | Swift Markdown 0.9.0 | `25cb61d3482054b09ae76ca4f281b1bfe7fe5a43`; revision permits conditional Windows unsafe flags |
 | Tree-sitter 0.26.13 | `d97971e24500218865c05ed1febdee2acf41bae1`; last release with upstream SwiftPM manifest |
 | tree-sitter-swift 0.7.4 | `82bb3a533e0801fd2bbaa11dc49676e10bf41948`; generated C grammar |
@@ -37,7 +37,7 @@ blocker is below. Ordinary glibc support does not establish static-musl distribu
 
 ## Palette and scroll-focus adoption
 
-**Status:** Approved #58/#59 adoption; testing the additional unmerged #60 correction before moving the operational pin.
+**Status:** Approved #58/#59 adoption; qualifying the merged #60 correction before moving the operational pin.
 
 [SwiftTUI #58](https://github.com/SwiftTUI/swift-tui/pull/58) and
 [#59](https://github.com/SwiftTUI/swift-tui/pull/59) merged on 2026-10-19.
@@ -49,15 +49,17 @@ adoption, 0.18.3, predates both contributions.
 That merged revision regresses authored focus reads inside deferred `onChange`
 callbacks. The first #60 correction restores those reads. A second correction
 keeps stacked observers from sharing an observation slot when graph aliases change.
-The qualification candidate is
-`0283902aa221e5d20bad2a08cc3fd2fce1e4ab6d` in
-[#60](https://github.com/SwiftTUI/swift-tui/pull/60).
-The complete gates use an explicit local SwiftPM dependency on that clean commit.
-The final manifest resolves the same commit from the canonical SwiftTUI remote.
-Fresh external installation and focused remote-pin interaction checks pass.
-There is no ignored source patch or package mirror. Other dependency revisions
-remain fixed. This is qualification of an unmerged PR, not permission to release
-that prototype; verify the merged upstream revision before completing adoption.
+[SwiftTUI #60](https://github.com/SwiftTUI/swift-tui/pull/60) merged as
+`877d7765febd08ffc2ed434a7ef231e4132c3b80`. Its callback correction matches the
+reviewed patch. The merged tree also includes intervening native diagnostics and
+terminal-output routing changes. The earlier `0283902a` qualification therefore
+does not qualify the complete merged tree.
+
+Chio resolves this exact merged revision from the canonical SwiftTUI remote.
+There is no ignored source patch or package mirror. All seven other lockfile pins
+remain fixed. [Merged qualification](../Verification.md#merged-callback-qualification)
+records fresh platform, terminal and installation results. Upstream merge does not
+establish Chio adoption or release readiness.
 
 The palette keeps its active command visible when terminal height limits the
 result window. Scroll recovery preserves a previously visible focused control

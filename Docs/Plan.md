@@ -10,44 +10,26 @@ live in [0.2.0](Releases/0.2.0.md), with [0.1.0](Releases/0.1.0.md) retained as 
 ## Current slice: merged palette and scroll-focus fixes
 
 The user approved adopting merged SwiftTUI #58 and #59 on 2026-10-19. Qualification
-of `13c07f3981e0bb9160f8dfc8939ffa085824b340` exposed a callback-owner regression.
-The draft now qualifies SwiftTUI commit
-`0283902aa221e5d20bad2a08cc3fd2fce1e4ab6d`, which adds the corrections in
-[SwiftTUI #60](https://github.com/SwiftTUI/swift-tui/pull/60).
-This is an unmerged qualification candidate, not a released or adopted pin.
-The latest published SwiftTUI release checked, 0.18.3, contains none of these fixes.
+exposed deferred callback-owner reads and stacked observation-slot collisions.
+[SwiftTUI #60](https://github.com/SwiftTUI/swift-tui/pull/60) corrects both and is
+merged as `877d7765febd08ffc2ed434a7ef231e4132c3b80`. This adoption candidate now
+resolves that exact canonical upstream revision. SwiftTUI 0.18.3, the latest
+published release checked for this slice, predates these fixes.
 [Dependencies](Decisions/Dependencies.md#palette-and-scroll-focus-adoption)
-owns the revision and behavior contract. Qualification adds focused public-hosted
-regressions and retains the complete consumer gate, platform checks and independent
-review. [Verification](Verification.md#palette-and-scroll-focus-qualification)
-records the candidate's evidence separately from earlier release results.
+owns the revision and behavior contract.
 
 On 2026-10-20 the user approved native navigation that skips disabled rows.
-Choices remain visible and cannot toggle; search must remain editable when no
-enabled result can receive focus. The checklist correction and its regression
-coverage belong to this adoption slice.
+Choices remain visible and cannot toggle; search remains editable when no enabled
+result can receive focus. The checklist guard and its public interaction tests
+belong to this adoption slice. Chio adds no callback or scrolling workaround.
 
-The grouped-form callback previously received the new field while rereading
-`@FocusState` returned `nil`, preventing complete error reveal. Preserve its
-existing field/error assertions and five-second waits while testing #60 through
-the complete consumer gate, installation and terminal workflows. Native tests
-alone do not qualify Chio. Upstream merge, verification of that merged revision
-and required consumer checks still precede adoption.
-
-The follow-up investigation isolates a second native defect: stacked `onChange`
-modifiers can resolve through different graph aliases and claim the same
-observation slot. The correction carries their ordinal sequence on the resolved
-element. Existing graph identity, lifetime and baseline rules remain in place.
-No Chio form or scrolling workaround is required.
-
-The corrected native candidate passes the formerly failing create-form validation,
-conditional-error reveal and diff navigation workflows. The diff's End test follows
-the accepted native two-axis contract. Complete macOS and Linux arm64 consumer
-gates pass. The native gate passes 84 of 85 steps; its only failure passes a
-separate clean rerun of the performance subpackage.
-[Verification](Verification.md#stacked-observation-correction) records exact inputs
-and evidence. Canonical remote installation and focused interaction checks pass.
-Verify the merged upstream revision before adoption. Keep both PRs draft.
+Fresh complete macOS and Linux arm64 consumer gates pass against the merged tree.
+They retain form/error assertions, five-second waits, palette and focus recovery,
+native two-axis Home/End behavior, all terminal workflows and map process checks.
+A fresh canonical GitHub installation also passes its release build and five
+public API/raster probes. [Verification](Verification.md#merged-callback-qualification)
+records exact inputs and limits. Hosted checks and final independent review remain
+required before the draft is ready. Chio merge and release are separate decisions.
 
 EngineeringRules 0.1.8 adoption remains owned by
 [PR #22](https://github.com/echoz/Chio/pull/22). This dependency slice retains the

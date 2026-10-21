@@ -1,9 +1,9 @@
 # Native integration boundaries
 
 **Status:** The current adoption candidate tests SwiftTUI
-`0283902aa221e5d20bad2a08cc3fd2fce1e4ab6d`, containing merged #58/#59 and the
-unmerged #60 callback corrections. The former form and diff failures pass with
-this candidate; [Verification](../Verification.md#stacked-observation-correction)
+`877d7765febd08ffc2ed434a7ef231e4132c3b80`, containing merged #58/#59/#60.
+The former form and diff failures pass with
+this candidate; [Verification](../Verification.md#merged-callback-qualification)
 records the platform gates and remaining qualification boundaries.
 This is not an operational or released pin.
 The earlier 0.2.0 candidate uses merged #57 at
@@ -71,7 +71,7 @@ renderer, focus system or hidden dependency patch.
 | Boundary | Current limit and responsible follow-up |
 | --- | --- |
 | Native style hooks | Table border/background chrome, list focus gutter, palette shell, prompt headers and disabled-editor glyph paint are not fully controlled by Chio. Keep native behavior and resolve missing hooks upstream. |
-| Layout and lifecycle | Scroll focus reveal can move a viewport horizontally by one cell; nested tab strips can receive stale width proposals; expanded disclosure focus includes descendants. Keep the documented native contracts for [scrolling](Scrolling.md#scrolling), [tabs](Tabs.md#tabs) and [disclosure](DisclosureGroups.md#expandable-groups-and-trees). |
+| Layout and lifecycle | Nested tab strips can receive stale width proposals; expanded disclosure focus includes descendants. Keep the documented native contracts for [scrolling](Scrolling.md#scrolling), [tabs](Tabs.md#tabs) and [disclosure](DisclosureGroups.md#expandable-groups-and-trees). |
 | Choice composition | Changing choice fields inside `GeometryReader` triggered a native debug lifecycle-publication assertion. The full-window example uses `terminalSize`; arbitrary nesting remains unproved. |
 | List density and focus | The 0.2.0 candidate adds merged #57 to the previous #46/#47/#56 corrections. Chio qualification of composed-row padding, pointer and style changes passes on macOS/Linux. See [dynamic spacing](#dynamic-row-spacing-candidate) and [retained qualification](#current-row-qualification). |
 | Collection measurement | Native ideal-size probes can realize all rows before a bounded viewport commits and emit deferred `collection.unboundedRealization` warnings. Small fixtures do not prove virtualization or large-dataset performance; diagnostics are retained. |

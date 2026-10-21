@@ -439,6 +439,53 @@ These results do not establish hosted Linux x86_64, upstream merge, release
 readiness or downstream adoption. Requalify the merged native revision before
 completing adoption.
 
+### Merged callback qualification
+
+SwiftTUI #60 merged as `877d7765febd08ffc2ed434a7ef231e4132c3b80`. Its patch matches
+the final reviewed upstream head. The merge also includes native graph diagnostics
+and terminal-output routing changes, so the earlier `0283902a` results do not
+qualify this complete tree. SwiftTUI 0.18.3 remains the latest published release
+checked for this adoption and predates these corrections.
+
+Fresh qualification uses Chio `60ea960f5a116c280ce31114eec10bc7a448d385` with only
+its manifest and lockfile updated to the merged native revision. Commit
+`0d60a607678de999cc526f86440a2287269a683f` records those exact inputs. Resolution
+uses the canonical SwiftTUI remote, with no mirror, local substitution or source
+patch. All seven other dependency pins remain unchanged, including Collections
+1.7.2. All resolved checkouts are clean.
+
+The unchanged `Scripts/ci/verify.sh` passes with official Swift 6.4 on macOS arm64
+and in an isolated Ubuntu Noble Linux arm64 container:
+
+| Boundary | macOS reported tests | Linux reported tests |
+| --- | --- | --- |
+| HTTP / online preflight | 19 / 6 | 19 / 6 |
+| Debug library / maps / dashboard | 510 / 166 / 147 | 509 / 166 / 147 |
+| Release library / maps / dashboard | 510 / 166 / 177 | 509 / 166 / 177 |
+
+Each library configuration retains its existing filesystem skip. All executed
+tests pass. Both platforms pass standalone release products, snapshots, all
+sixteen dashboard terminal workflows, three appearance sessions, map terminal
+workflows, loopback HTTP, persistent cache and offline-pack process probes.
+The Linux snapshot's 559 source hashes and both platforms' dependency inputs remain
+unchanged. The disposable Linux container is removed after verification.
+No assertions, individual deadlines, workflow selection or skip conditions change.
+
+A fresh external consumer resolves exact Chio `0d60a607` and SwiftTUI `877d7765`
+from canonical GitHub remotes with empty package and build caches. Its release
+build and all five unchanged public API/raster probe sections pass: inherited
+styles, duration formatting, bounded list spacing, map values/raster and instrument
+construction. Fresh resolution selects compatible Collections 1.7.3; the producer
+retains 1.7.2. Every dependency checkout remains clean at its resolved revision.
+
+All fourteen upstream checks on `877d7765` pass. These support the native revision;
+they do not replace consumer checks. Final EngineeringRules integration, hosted
+Chio checks and independent review are tracked separately before readiness.
+Local Linux arm64 does not establish hosted Linux x86_64 or static-musl support.
+Live providers, SSH appearance, downstream adoption and release publication remain
+outside these results. Consumers with a direct SwiftTUI requirement must align
+that revision with the selected Chio revision.
+
 ## Merged layout corrections
 
 **Status:** Delivered in [PR #16](https://github.com/echoz/Chio/pull/16), merged
