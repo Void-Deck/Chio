@@ -48,7 +48,7 @@ SwiftTUI retains measurement, focus, selection navigation and scrolling.
 - [SearchableList.swift](Presentation/SearchableList.swift) owns the public view and binding transitions.
 - [SearchMatcher.swift](../Search/Domain/SearchMatcher.swift) supplies shared pure matching.
 - [SearchFilter.swift](../Search/Domain/SearchFilter.swift) defines supported filter choices.
-- [SearchableListTests](../../../Tests/ChioTests/SearchableList/Presentation/SearchableListTests.swift) covers authoritative bindings, batched input, filtering, activation, focus, theme and resize.
+- [SearchableListTests](../../../Tests/ChioTests/SearchableList/Presentation/SearchableListTests.swift) covers authoritative bindings, batched input, filtering, activation, focus, theme and resize. Simultaneous-list cases check independent editing and selection with overlapping IDs and different item and row types.
 - [ListRowSpacingTests](../../../Tests/ChioTests/List/Presentation/ListRowSpacingTests.swift) covers inherited row spacing.
 
 See [Usage](../../../Docs/Usage.md#search-and-keyboard-hints) and
