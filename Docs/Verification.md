@@ -589,6 +589,19 @@ No timeout occurs, so no failure history explains the earlier input delay.
 These observations can affect timing; this passing diagnostic run alone does not
 establish a correction.
 
+The final [run at `9b44284`](https://github.com/echoz/Chio/actions/runs/39662117842)
+passes the complete macOS gate but fails the same Linux file-picker barrier.
+Both jobs test merge `b8f0ef0b28463cfdf356e4e6e08d104d8edfa9eb`.
+On Linux, input is sent at about 2.03 seconds,
+after frame 3. Loading frames continue through frame 15 at 6.24 seconds, then
+Tab and Control-B dispatch. The five-second barrier deadline fires at 7.21 seconds
+without a later frame. This establishes a 4.21-second dispatch delay and matches
+the native startup acquisition cap. It does not explain the remaining interval
+after dispatch or prove that the native candidate repairs the complete hosted
+path. The Linux failure occurs before Parent navigation and stale-read rejection;
+its release and terminal checks are not reached. Default animated loading, assertions
+and interaction deadlines remain unchanged.
+
 [SwiftTUI #62](https://github.com/SwiftTUI/swift-tui/pull/62) reproduces startup
 starvation without elapsed-time assertions. Input queued at commit 1 or 3 executes
 at commit 17 on base `b23c7338`, then at the requested commit with the correction.
@@ -621,6 +634,26 @@ debug suites pass, then release linking fails at the same boundary. Only the
 SwiftTUI revision and lockfile origin hash differ; the other pins are unchanged.
 This experiment does not change the adoption PR's operational pin or qualify the
 newer dependency for adoption.
+
+The next isolated trial uses exact SwiftTUI `1a23ffc1`. Unchanged FilePicker and
+appearance debug tests pass locally with default animated loading and five-second
+waits. The original nested `SearchableList.Focus` still fails release linking.
+Moving that private enum to the same file's top level avoids the failure with
+the same Apple Swift 6.4 compiler and default SwiftBuild backend. The public API,
+enum cases, native focus ownership and seven other dependency pins stay unchanged.
+The final source links `chio-maps` in release mode and passes all thirteen focused
+list tests in release, including two new simultaneous-list cases. Those cases
+also pass in debug and against the original nested type. They exercise real
+Tab/Shift-Tab input, independent editing and selection, overlapping IDs, and both
+matching and different item/row specializations. Private reflected type identity
+changes; cross-version hot-reload compatibility is not established.
+
+The [complete hosted trial](https://github.com/echoz/Chio/actions/runs/39670576712)
+uses isolated Chio `0c786c5` with the canonical native revision and unchanged CI
+workflow. It remains pending. The local compiler-backed EngineeringRules 0.1.9,
+documentation, naming and whitespace checks pass. This trial covers a broader
+native dependency delta than the startup correction alone; focused results do
+not replace complete consumer qualification or approve adoption of an unmerged pin.
 
 ## Merged layout corrections
 

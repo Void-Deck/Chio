@@ -29,9 +29,12 @@ native two-axis Home/End behavior, all terminal workflows and map process checks
 A fresh canonical GitHub installation also passes its release build and five
 public API/raster probes. [Verification](Verification.md#merged-callback-qualification)
 records exact inputs and limits. The complete hosted macOS and Linux gates also
-pass at `d2aaeef`, with unchanged assertions and interaction deadlines. Final
-independent review remains required before the draft is ready. Chio merge and
-release are separate decisions.
+pass at `d2aaeef`, with unchanged assertions and interaction deadlines. Independent
+review finds no source issues. At `9b44284`, the complete macOS gate passes, but
+Linux again fails the file-picker input barrier. Its captured history shows
+sixteen startup frames before input dispatch. The draft remains blocked on that failure; the earlier
+passing run does not replace final qualification. Chio merge and release are
+separate decisions.
 
 Hosted qualification exposed early-input waits in the file picker and appearance
 example. Investigation reproduced native startup input starvation and produced
@@ -39,8 +42,10 @@ example. Investigation reproduced native startup input starvation and produced
 an unmerged candidate; Chio's dependency pin is unchanged. The
 [startup boundary](Decisions/NativeIntegration.md#startup-input-service) and
 [qualification record](Verification.md#startup-input-investigation) distinguish
-the deterministic reproducer from the passing diagnostic run. That run does not
-explain the earlier intermittent waits or prove the upstream correction.
+the deterministic reproducer from consumer qualification. An isolated branch
+also tests a private focus-type change that avoids a default macOS release-link
+failure. Its focused checks pass; complete hosted qualification remains pending.
+Neither trial changes the adoption candidate's dependency.
 
 ## Delivered maintenance: naming review
 
