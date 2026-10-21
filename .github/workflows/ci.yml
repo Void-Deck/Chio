@@ -20,18 +20,20 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
-          fetch-depth: 2
+          fetch-depth: 3
       - name: Compare unchanged test with instrumented btop workflow
         shell: bash
         run: |
           set -euo pipefail
+          cd "$GITHUB_WORKSPACE"
+          git -c safe.directory="$PWD" rev-parse --show-toplevel
           mkdir -p .build/ci-results
           swift --version > .build/ci-results/toolchain.txt
           uname -a >> .build/ci-results/toolchain.txt
           lscpu >> .build/ci-results/toolchain.txt
           files=(Package.swift Tests/ChioDashboardTests/Presentation/AppearanceExampleTests.swift Tests/ChioDashboardTests/TestSupport/HostedFrameRecorder.swift Examples/AgentDashboard/Presentation/AppearanceExampleView.swift)
-          git diff 0c786c5b12edc33edd262395f64ed2912ed32db9 "$GITHUB_SHA" -- "${files[@]}" > .build/ci-results/instrumentation.patch
-          git restore --source=0c786c5b12edc33edd262395f64ed2912ed32db9 -- "${files[@]}"
+          git -c safe.directory="$PWD" diff 0c786c5b12edc33edd262395f64ed2912ed32db9 "$GITHUB_SHA" -- "${files[@]}" > .build/ci-results/instrumentation.patch
+          git -c safe.directory="$PWD" restore --source=0c786c5b12edc33edd262395f64ed2912ed32db9 -- "${files[@]}"
           set +e
           swift test --jobs 2 --no-parallel --force-resolved-versions \
             --filter AppearanceExampleTests/narrowSections \
@@ -39,7 +41,7 @@ jobs:
           baseline_status=${PIPESTATUS[0]}
           set -e
           printf '%s\n' "$baseline_status" > .build/ci-results/baseline.exit
-          git restore --source="$GITHUB_SHA" -- "${files[@]}"
+          git -c safe.directory="$PWD" restore --source="$GITHUB_SHA" -- "${files[@]}"
           diagnostic_status=0
           build_flags=()
           for attempt in 1 2 3 4 5 6; do
@@ -56,7 +58,7 @@ jobs:
             build_flags=(--skip-build)
           done
           set +e
-          git diff --exit-code -- "${files[@]}" Package.resolved
+          git -c safe.directory="$PWD" diff --exit-code -- "${files[@]}" Package.resolved
           source_status=$?
           set -e
           printf '%s\n' "$source_status" > .build/ci-results/source.exit
