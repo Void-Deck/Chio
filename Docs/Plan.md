@@ -44,8 +44,15 @@ an unmerged candidate; Chio's dependency pin is unchanged. The
 [qualification record](Verification.md#startup-input-investigation) distinguish
 the deterministic reproducer from consumer qualification. An isolated branch
 also tests a private focus-type change that avoids a default macOS release-link
-failure. Its focused checks pass; complete hosted qualification remains pending.
-Neither trial changes the adoption candidate's dependency.
+failure. Its complete hosted macOS gate passes. Linux passes the file-picker
+cases, then times out revealing Workspace in the compact btop appearance case.
+An isolated Linux timing diagnostic passes, but takes 4.84–4.89 seconds to answer
+that input against the unchanged five-second wait. A complete appearance comparison
+passes all 22 cases in both modes; narrow responses take 4.20–4.84 seconds in debug
+and 0.71–0.79 seconds in release. Moving only the two appearance interaction
+workflows into the existing release-only selection is proposed, pending the user's
+verification-policy decision. Static appearance and focused component checks would
+remain in debug. Neither trial changes the adoption candidate's dependency.
 
 ## Delivered maintenance: naming review
 

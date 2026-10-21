@@ -650,10 +650,67 @@ changes; cross-version hot-reload compatibility is not established.
 
 The [complete hosted trial](https://github.com/echoz/Chio/actions/runs/39670576712)
 uses isolated Chio `0c786c5` with the canonical native revision and unchanged CI
-workflow. It remains pending. The local compiler-backed EngineeringRules 0.1.9,
+workflow. Its complete macOS gate passes, including release linking, interaction
+tests and terminal/map probes. Linux passes the file-picker cases, then fails
+`AppearanceExampleTests.narrowSections` for btop while revealing Workspace.
+The outer observer sees Control-E about 1.08 seconds after input was sent;
+no later hosted frame arrives before the five-second wait fails. That observer
+does not prove that the actual edit handler ran. Release and terminal/map stages
+are not reached on Linux. The local compiler-backed EngineeringRules 0.1.9,
 documentation, naming and whitespace checks pass. This trial covers a broader
 native dependency delta than the startup correction alone; focused results do
 not replace complete consumer qualification or approve adoption of an unmerged pin.
+
+### Appearance interaction timing
+
+The isolated `0c786c5` source passes six unchanged Linux ARM64 narrow-section
+runs: eighteen recipe cases in total, using Swift 6.4 and two CPUs. A separate
+profiled btop case answers Control-E in 2.11 seconds. These results do not
+establish hosted x86_64 timing or reproduce the failing full-suite run.
+
+The [hosted timing comparison](https://github.com/echoz/Chio/actions/runs/39693162630)
+at diagnostic commit `1f1780f` first restores the exact `0c786c5` source and passes
+all three narrow-section recipes. It then runs six separate btop processes with
+public SwiftTUI profiling and bounded observations. Each actual edit handler runs,
+sets Workspace focus and successfully scrolls to settings. Every matching frame
+arrives in 4.84–4.89 seconds; the slowest leaves approximately 107 milliseconds
+before the unchanged five-second deadline. No timeout occurs, so the diagnostic's
+post-failure observation path is not exercised. Instrumentation can affect timing.
+
+Each recorded transition includes a cancelled acquisition before presentation.
+The final-frame `pipeline_ms` omits earlier convergence and cancelled work, and
+cannot account for the full input-to-frame interval. These observations support
+a debug-rendering budget explanation but do not reproduce the original failure
+or establish its complete cause. No new upstream correction or verification-policy
+change follows from this diagnostic alone. The operational dependency remains
+unchanged; a passing diagnostic is not a passing complete consumer gate.
+
+A separate Chio-only experiment replaces the list's `onAppear` focus assignment
+with native `defaultFocus`. All thirteen focused list tests and three narrow
+appearance recipes pass on Linux ARM64. The first frame already focuses results,
+removing one startup presentation, but the measured Control-E response changes
+only from 2.11 to 2.04 seconds. This is not a demonstrated timeout correction.
+Native default-focus arbitration also differs from unconditional appearance-time
+focus assignment; remount and competing-focus equivalence remain unverified.
+The experiment is not adopted.
+
+The [complete appearance comparison](https://github.com/echoz/Chio/actions/runs/39694430747)
+at diagnostic commit `0fddf56` passes all 22 cases in both configurations
+using native `1a23ffc1`. Debug takes 109.713 seconds; release takes 16.405 seconds.
+The three narrow Control-E responses take 4.20–4.84 seconds in debug and
+0.71–0.79 seconds in release. Every narrow handler sets focus and scrolls
+successfully; every matching frame arrives within the original five-second wait.
+No timeout or late frame is captured. These instrumented results support a
+debug-rendering budget explanation, without proving the original failure's cause
+or replacing full consumer qualification.
+
+**Pending verification-policy decision:** run only `retainedWorkflow` and
+`narrowSections` in release, alongside the existing composition workflows. Keep
+all recipes, actions, assertions and deadlines. The eighteen appearance layout
+and row-spacing cases and focused component interactions would remain in debug.
+The complete appearance workflows would lose debug coverage, including native
+debug-only checks. Independent review supports presenting this tradeoff to the
+user. The proposal is not applied; the approved policy below remains unchanged.
 
 ## Merged layout corrections
 
