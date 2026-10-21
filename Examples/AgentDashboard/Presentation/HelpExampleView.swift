@@ -11,7 +11,7 @@ struct HelpExampleView {
     @State private var selection: Agent.ID? = Agent.examples.first?.id
     @State private var query = ""
     @State private var isSearching = false
-    @State private var help: Context?
+    @State private var help: ShortcutScope?
     @State private var runs = 0
     @FocusState private var actionFocus: Action?
 
@@ -19,7 +19,7 @@ struct HelpExampleView {
         _themeChoice = State(wrappedValue: theme)
     }
 
-    private enum Context {
+    private enum ShortcutScope {
         case browse, editing, actions, all
         var showsAllShortcuts: Bool {
             switch self {
@@ -47,13 +47,13 @@ struct HelpExampleView {
 
     private var theme: ChioStyle { themeChoice.theme }
     private var selectedAgent: Agent? { Agent.examples.first { $0.id == selection } }
-    private var context: Context {
+    private var activeShortcutScope: ShortcutScope {
         if actionFocus != nil { return .actions }
         return isSearching ? .editing : .browse
     }
 
     private var compactHints: [ShortcutHint] {
-        switch context {
+        switch activeShortcutScope {
         case .browse: [Self.navigate, Self.filter, Self.browseHelp, Self.theme, Self.quit]
         case .editing: [Self.finishSearch, Self.clear, Self.editingHelp, Self.theme, Self.quit]
         case .actions: [Self.tab, Self.activate, Self.browseHelp, Self.theme, Self.quit]
@@ -66,7 +66,7 @@ struct HelpExampleView {
         let editing = ShortcutGroup("Editing", shortcuts: [Self.type, Self.finishSearch, Self.clear, Self.editingHelp, Self.tab])
         let actions = ShortcutGroup("Actions", shortcuts: [Self.tab, Self.activate, Self.browseHelp])
         let contextual: [ShortcutGroup]
-        switch help ?? context {
+        switch help ?? activeShortcutScope {
         case .browse: contextual = [browse]
         case .editing: contextual = [editing]
         case .actions: contextual = [actions]
@@ -89,9 +89,9 @@ struct HelpExampleView {
         runs += 1
     }
 
-    private func openHelp(_ context: Context, for press: KeyPress) -> KeyPressResult {
+    private func openHelp(_ scope: ShortcutScope, for press: KeyPress) -> KeyPressResult {
         guard press.key == .character("?"), press.modifiers.subtracting(.shift).isEmpty else { return .ignored }
-        help = context
+        help = scope
         return .handled
     }
 

@@ -31,20 +31,25 @@ public API/raster probes. [Verification](Verification.md#merged-callback-qualifi
 records exact inputs and limits. Hosted checks and final independent review remain
 required before the draft is ready. Chio merge and release are separate decisions.
 
-EngineeringRules 0.1.8 adoption remains owned by
-[PR #22](https://github.com/echoz/Chio/pull/22). This dependency slice retains the
-operational 0.1.7 gate while that separate maintenance PR remains unmerged.
-It does not duplicate the rules upgrade or include unrelated checkout changes.
+## Current maintenance: naming review
 
-## Delivered maintenance: source-root documentation
+Advance [PR #22](https://github.com/echoz/Chio/pull/22) to published EngineeringRules
+0.1.9, preserving its explicit naming inventory and existing compiler, lint,
+documentation and project checks. The original private `HelpExampleView.Context`
+selects shortcut groups; the candidate names it `ShortcutScope` without changing
+behavior. Apply the released review workflow to all changed names, including
+identity and revision lifetimes where relevant. An empty inventory does not
+complete semantic review. [Verification](Verification.md#019-adoption) owns the
+disposition and verification scope. Default-branch adoption requires review and
+merge; the earlier Linux container-pull failure is not passing platform evidence.
 
-[PR #21](https://github.com/echoz/Chio/pull/21) adopts EngineeringRules 0.1.7 and
-schema 2 deliverable checking. The inventory covers the library, sixteen public
-views, two example applications and the showcase. Each gets a source-root guide;
-seven views move out of shared family roots without changing their source contents
-or public APIs. [Design](Design.md#source-ownership) owns the resulting source map;
-[Verification](Verification.md#017-adoption) owns checks and adoption limits.
-The candidate remains separate from the published 0.2.0 release.
+[PR #21](https://github.com/echoz/Chio/pull/21) delivered EngineeringRules 0.1.7,
+schema 2 and source-root guides. It and the test-constructor cleanup in
+[PR #20](https://github.com/echoz/Chio/pull/20) are included in published
+[Chio 0.2.1](https://github.com/echoz/Chio/releases/tag/v0.2.1).
+Consumer adoption is underway in the owning Marquee, Blackbox and Pitwall tasks;
+dispatch is not completed adoption. The later SwiftTUI dependency update is
+separate from this maintenance release.
 
 ## Current slice: Chio 0.2.0 release
 
