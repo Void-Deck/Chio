@@ -165,6 +165,7 @@ struct AppearanceExampleTests {
                 $0.appearanceListFocused && $0.appearanceContains("Build Agent")
                     && $0.appearanceContains("^G graphs")
             }
+            recorder.record("input sent: Ctrl-E")
             session.send(.key(.character("e"), modifiers: .ctrl))
             let settings = try await recorder.wait(after: ready.sequence, description: "native edit shortcut reveals workspace") {
                 $0.appearanceWorkspaceFocused && $0.appearanceContains("Field notes")
@@ -186,13 +187,23 @@ struct AppearanceExampleTests {
 
 private struct AppearanceTestApp {
     let recipe: AppearanceRecipe
-    nonisolated init() { recipe = .chio }
-    nonisolated init(recipe: AppearanceRecipe) { self.recipe = recipe }
+    let observeInput: @MainActor @Sendable (KeyPress) -> Void
+    nonisolated init() { recipe = .chio; observeInput = { _ in } }
+    nonisolated init(recipe: AppearanceRecipe, observeInput: @escaping @MainActor @Sendable (KeyPress) -> Void) {
+        self.recipe = recipe
+        self.observeInput = observeInput
+    }
 }
 
 extension AppearanceTestApp: App {
     var body: some Scene {
-        WindowGroup(id: "appearance-tests") { AppearanceExampleView(recipe: recipe) }.exitOnKeys([])
+        WindowGroup(id: "appearance-tests") {
+            AppearanceExampleView(recipe: recipe)
+                .onKeyPress { press in
+                    observeInput(press)
+                    return .ignored
+                }
+        }.exitOnKeys([])
     }
 }
 
@@ -203,7 +214,8 @@ private func withAppearance(
 ) async throws {
     let recorder = HostedFrameRecorder()
     let surface = HostedRasterSurface(surfaceSize: size, appearance: .fallback, onFrame: { recorder.receive($0) })
-    let session = try HostedSceneSession(for: AppearanceTestApp(recipe: recipe), sceneID: "appearance-tests", surface: surface)
+    let app = AppearanceTestApp(recipe: recipe, observeInput: { recorder.record("input dispatched: \($0)") })
+    let session = try HostedSceneSession(for: app, sceneID: "appearance-tests", surface: surface)
     let run = Task { try await session.start() }
     do {
         try await perform(session, surface, recorder)
