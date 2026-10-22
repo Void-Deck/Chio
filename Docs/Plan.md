@@ -5,14 +5,31 @@
 This document tracks active work, next steps and open questions. Current contracts
 live in [Design](Design.md) and its decision index; implementation and showcase
 checks live in [Verification](Verification.md). Completed release scope and results
-live in [0.2.0](Releases/0.2.0.md), with [0.1.0](Releases/0.1.0.md) retained as history.
+live in [0.2.2](Releases/0.2.2.md) and [0.2.0](Releases/0.2.0.md), with
+[0.1.0](Releases/0.1.0.md) retained as history.
 
-## Current slice: merged palette and scroll-focus fixes
+## Current slice: Chio 0.2.2 release and consumer adoption
+
+The user approved publishing 0.2.2 and coordinating consumer adoption on
+2026-10-22. Release preparation preserves the runtime tree from merged PR #23
+at `6df2e336f5a398d34a37e98e431250f8dcaeca02`. It updates release documentation
+and showcase navigation. [The release record](Releases/0.2.2.md) owns scope,
+migration and qualification; the published GitHub release owns the immutable tag
+and installation revision.
+
+Marquee, Blackbox and Pitwall are the confirmed application consumers. Their
+owning tasks update both Chio and any direct SwiftTUI requirement, resolve the
+lockfile and run their integration gates. Preserve concurrent work and existing
+publication permissions. Track candidate, merged and verified adoption separately.
+
+<a id="current-slice-merged-palette-and-scroll-focus-fixes"></a>
+
+## Delivered: merged palette and scroll-focus fixes
 
 The user approved adopting merged SwiftTUI #58 and #59 on 2026-10-19. Qualification
 exposed deferred callback-owner reads and stacked observation-slot collisions.
 [SwiftTUI #60](https://github.com/SwiftTUI/swift-tui/pull/60) corrects both and is
-merged as `877d7765febd08ffc2ed434a7ef231e4132c3b80`. This adoption candidate now
+merged as `877d7765febd08ffc2ed434a7ef231e4132c3b80`. Chio's operational pin now
 resolves that exact canonical upstream revision. SwiftTUI 0.18.3, the latest
 published release checked for this slice, predates these fixes.
 [Dependencies](Decisions/Dependencies.md#palette-and-scroll-focus-adoption)
@@ -35,8 +52,9 @@ EngineeringRules 0.1.10 adds support for native release compiler context. This
 PR advances the tool pin and immutable helpers together without changing the
 application, dependency, baseline or runtime verification inputs. The
 [adoption record](Verification.md#0110-adoption) owns its local checker evidence.
-PR #23 requires completed checks and separate review before readiness; Chio merge
-and release remain separate decisions.
+PR #23 merged as `6df2e336f5a398d34a37e98e431250f8dcaeca02` after checks and
+separate review passed. Its complete post-merge macOS/Linux gate also passes.
+Release publication and downstream adoption remain separate evidence.
 
 The earlier debug failures and isolated experiments remain in the
 [qualification record](Verification.md#startup-input-investigation). Neither

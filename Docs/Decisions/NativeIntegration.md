@@ -1,18 +1,18 @@
 # Native integration boundaries
 
-**Status:** The current adoption candidate tests SwiftTUI
+**Status:** Chio's operational pin uses SwiftTUI
 `877d7765febd08ffc2ed434a7ef231e4132c3b80`, containing merged #58/#59/#60.
 The former form and diff failures pass with
-this candidate; [Verification](../Verification.md#merged-callback-qualification)
+this pin; [Verification](../Verification.md#release-verification-qualification)
 records the platform gates and remaining qualification boundaries.
-This is not an operational or released pin.
+It merged in PR #23 and is included in the 0.2.2 release scope.
 The earlier 0.2.0 candidate uses merged #57 at
 `7e62e95c913508f4fef42db36fde6fd60acb541c`, with passing macOS/Linux qualification.
 The earlier [PR #17](https://github.com/echoz/Chio/pull/17) adopted published
 0.18.0 on `main` at `7d44bd6bd85290f2c6e3526cf19e6647d551797c`, including
 merged #47/#49/#50/#56.
 [Dependencies](Dependencies.md#palette-and-scroll-focus-adoption) owns the current pin decision;
-[0.2.0 release preparation](../Releases/0.2.0.md) records integrated scope and evidence.
+[0.2.2 release record](../Releases/0.2.2.md) records integrated scope and evidence.
 Chio qualification remains distinct from upstream checks and earlier local-patch evidence.
 
 Keep native ownership and visible limitations explicit when composing or extending Chio.

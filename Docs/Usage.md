@@ -9,9 +9,9 @@ rendering, layout, state, input, focus, and scrolling.
 The package exports one `Chio` library. Applications also depend on SwiftTUI
 for the native views and runtime. See [Package.swift](../Package.swift) for the
 current dependency pins and [the design](Design.md) for interaction contracts.
-The [0.2.0 release record](Releases/0.2.0.md) records dependency requirements,
+The [0.2.2 release record](Releases/0.2.2.md) records dependency requirements,
 migration and release evidence.
-SwiftPM version requirements such as `from: "0.2.0"` cannot consume this revision-pinned graph.
+SwiftPM version requirements such as `from: "0.2.2"` cannot consume this revision-pinned graph.
 See the [migration notes](Releases/0.2.0.md#migration-from-010) when upgrading from 0.1.0.
 
 ## Search and keyboard hints

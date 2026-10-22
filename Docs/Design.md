@@ -6,7 +6,8 @@ cross-cutting architecture and indexes the detailed decisions.
 
 [Plan](Plan.md) owns active work and open questions; [Verification](Verification.md)
 owns current checks; [Usage](Usage.md) and [Examples](Examples.md) own public recipes
-and launch workflows. Release records preserve [0.2.0](Releases/0.2.0.md) scope
+and launch workflows. Release records preserve [0.2.2](Releases/0.2.2.md) dependency
+qualification and [0.2.0](Releases/0.2.0.md) scope
 and evidence, with [0.1.0](Releases/0.1.0.md) retained as the earlier baseline.
 
 ## Ownership

@@ -1,7 +1,7 @@
 # Chio verification
 
 Current requirements for implementation, dependency and visible example changes.
-[Plan](Plan.md) tracks active work; [release records](Releases/0.2.0.md) preserve
+[Plan](Plan.md) tracks active work; [release records](Releases/0.2.2.md) preserve
 revision-specific results. For documentation-only changes, check links, anchors
 and preservation of current contracts.
 
@@ -125,7 +125,7 @@ its sixteen public views, both example applications and the static showcase.
 Each view has a distinct real source root and its own `README.md`; the library
 is its declared parent. The [library guide](../Sources/Chio/README.md) links those
 views, and [source ownership](Design.md#source-ownership) explains their boundaries.
-The gate checks 56 unique documents, eight modules and twenty deliverables.
+The gate checks 57 unique documents, eight modules and twenty deliverables.
 
 Schema 2 rejects duplicate roots, invalid parents, missing or blank READMEs,
 symlinks and invalid local Markdown file destinations. Module discovery still
