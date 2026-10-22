@@ -7,8 +7,8 @@ and preservation of current contracts.
 
 ## Shared engineering rules
 
-Chio pins [EngineeringRules v0.1.9](https://github.com/echoz/EngineeringRules/releases/tag/v0.1.9)
-(`f80213f14acf839b6d5ba9f131d4c113182e2592`) through
+Chio pins [EngineeringRules v0.1.10](https://github.com/echoz/EngineeringRules/releases/tag/v0.1.10)
+(`756987b0d0e4bf8245abe05611f43aab8ffc700e`) through
 [.swift-rules.json](../.swift-rules.json). This is a required local development
 gate alongside the compiler, tests and platform checks below. It is not a package
 dependency or a guarantee of purity, correct enum policy or API compatibility.
@@ -21,7 +21,7 @@ On this Mac, run:
 
 ```sh
 DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
-  bash Scripts/ci/check-rules.sh /path/to/immutable/EngineeringRules-0.1.9
+  bash Scripts/ci/check-rules.sh /path/to/immutable/EngineeringRules-0.1.10
 ```
 
 Full Xcode supplies the required Swift/SourceKit. On Linux, omit `DEVELOPER_DIR`
@@ -96,7 +96,7 @@ Retain its JSON output and logs for that exact candidate. The independent review
 records each name's meaning and a concrete rename, legitimate retain reason or
 explicit out-of-scope deferral. A successful inventory command does not complete
 semantic review; candidates are neither violations nor baseline entries.
-The pinned tool's [selection contract](https://github.com/echoz/EngineeringRules/tree/v0.1.9#naming-review-candidates)
+The pinned tool's [selection contract](https://github.com/echoz/EngineeringRules/tree/v0.1.10#naming-review-candidates)
 owns matching and output. Apply the global organization guidance to the names.
 
 Use the released engineering-review workflow for all introduced or changed names,
@@ -138,6 +138,31 @@ Heading fragments, HTML, external URLs, prose accuracy and browser behavior rema
 outside the gate. Check relevant anchors manually and keep site verification
 where visible output changes. The source README is excluded from assembled Pages
 output; SwiftPM excludes source guides from build inputs without excluding code.
+
+<a id="0110-adoption"></a>
+
+### 0.1.10 adoption
+
+[PR #23](https://github.com/echoz/Chio/pull/23) advances the checker and immutable
+helpers from 0.1.9 to published commit `756987b0d0e4bf8245abe05611f43aab8ffc700e`.
+Version 0.1.9 rejected `-whole-module-optimization` after Chio's release build
+succeeded. Version 0.1.10 accepts that release setting and validates native
+scheduling operands before omitting them from compiler analysis. It preserves
+optimization, conditional-compilation flags and complete source indexing.
+
+The wrapper still builds the actual release target before exporting fresh
+compiler context. Missing or invalid evidence still fails the gate. Source
+scopes, schemas, application dependencies and the single scratch-state baseline
+exception remain unchanged. The released documentation checker is unchanged.
+The shared engineering policy now uses release for normal verification, with
+additional debug runs only for a named debug-only contract.
+
+The local wrapper passes on macOS with Swift 6.4 and Xcode 27: 350 scanned
+files, no new violations and one retained baseline exception. Compiler witness
+analysis passes for all 125 Chio source files in the exported configuration.
+The context retains `-O` and `-whole-module-optimization`, uses the actual release
+dependency modules and omits no source files. The documentation gate checks
+56 documents, eight modules and twenty deliverables without findings.
 
 <a id="018-adoption"></a>
 
@@ -710,8 +735,31 @@ test, including layout, domain, component and composition cases, still runs in
 release with unchanged assertions and deadlines. The transport preflight and the
 engineering gate's compiler context also use release. Debug-only behavior and
 native debug assertions are no longer part of routine qualification. The
-[current gate](#running-checks) owns the accepted policy; full verification of this
-change remains pending.
+[current gate](#running-checks) owns the accepted policy.
+
+### Release verification qualification
+
+At `487a389d09b6bf1477161a0d6cd36f6122dc9eec`, the complete local release gate
+passes on macOS with Swift 6.4 and Xcode 27. It executes 852 tests and retains
+one existing case-insensitive-filesystem skip. All snapshots, sixteen example
+terminal probes, three appearance sessions, four map probes and both cache/pack
+process probes pass. Existing appearance realization warnings remain visible.
+
+Both jobs in [run 39699315848](https://github.com/echoz/Chio/actions/runs/39699315848)
+pass on their first attempt. They test merge commit
+`13bb0d46e3d2f8864a6dd0d69571af754d8e13f1`, combining that head with base
+`04896a6ceb4d44bb7ed88950eaceb4d2c0a5aea6`. macOS reports suite totals of
+510, 166 and 177; Linux reports 509, 166 and 177. macOS retains its filesystem
+skip; Linux retains its permission-enforcement skip. Both jobs pass the transport
+preflight, full release suites and all terminal and map process probes.
+
+These runs retain SwiftTUI `877d7765febd08ffc2ed434a7ef231e4132c3b80` and every
+assertion and five-second interaction deadline. The subsequent EngineeringRules
+0.1.10 adoption changes only checker configuration, its wrapper pin and owning
+documentation. Its application, test, dependency and runtime gate inputs match
+the passing candidate, so these runtime results remain applicable. The shared
+compiler gate needs its own fresh release-context check under the new tool.
+Neither these results nor the policy change prove a debug-only startup fix.
 
 ## Merged layout corrections
 

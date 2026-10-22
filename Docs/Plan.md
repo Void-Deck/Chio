@@ -23,38 +23,25 @@ Choices remain visible and cannot toggle; search remains editable when no enable
 result can receive focus. The checklist guard and its public interaction tests
 belong to this adoption slice. Chio adds no callback or scrolling workaround.
 
-Fresh complete macOS and Linux arm64 consumer gates pass against the merged tree.
-They retain form/error assertions, five-second waits, palette and focus recovery,
-native two-axis Home/End behavior, all terminal workflows and map process checks.
-A fresh canonical GitHub installation also passes its release build and five
-public API/raster probes. [Verification](Verification.md#merged-callback-qualification)
-records exact inputs and limits. The complete hosted macOS and Linux gates also
-pass at `d2aaeef`, with unchanged assertions and interaction deadlines. Independent
-review finds no source issues. At `9b44284`, the complete macOS gate passes, but
-Linux again fails the file-picker input barrier. Its captured history shows
-sixteen startup frames before input dispatch. The draft remains blocked on that failure; the earlier
-passing run does not replace final qualification. Chio merge and release are
-separate decisions.
+The user approved release-only routine verification after the debug timing
+investigation. At `487a389`, the complete local release gate and both hosted
+macOS/Linux gates pass. Every test remains included, with unchanged assertions
+and five-second waits. Terminal workflows, snapshots and map process probes pass.
+[Verification](Verification.md#release-verification-qualification) records the
+exact candidate and tested merge. Earlier canonical installation and public
+API/raster checks retain the same source and dependency inputs.
 
-Hosted qualification exposed early-input waits in the file picker and appearance
-example. Investigation reproduced native startup input starvation and produced
-[SwiftTUI #62](https://github.com/SwiftTUI/swift-tui/pull/62). Its correction remains
-an unmerged candidate; Chio's dependency pin is unchanged. The
-[startup boundary](Decisions/NativeIntegration.md#startup-input-service) and
-[qualification record](Verification.md#startup-input-investigation) distinguish
-the deterministic reproducer from consumer qualification. An isolated branch
-also tests a private focus-type change that avoids a default macOS release-link
-failure. Its complete hosted macOS gate passes. Linux passes the file-picker
-cases, then times out revealing Workspace in the compact btop appearance case.
-An isolated Linux timing diagnostic passes, but takes 4.84–4.89 seconds to answer
-that input against the unchanged five-second wait. A complete appearance comparison
-passes all 22 cases in both modes; narrow responses take 4.20–4.84 seconds in debug
-and 0.71–0.79 seconds in release. The user subsequently approved release-only
-routine verification for Chio. The gate now runs every test in release, including
-the transport preflight, and exports release compiler context for engineering
-checks. Assertions and five-second waits remain unchanged. Full qualification of
-this policy change is pending. Neither trial changes the adoption candidate's
-dependency.
+EngineeringRules 0.1.10 adds support for native release compiler context. This
+PR advances the tool pin and immutable helpers together without changing the
+application, dependency, baseline or runtime verification inputs. The
+[adoption record](Verification.md#0110-adoption) owns its local checker evidence.
+PR #23 requires completed checks and separate review before readiness; Chio merge
+and release remain separate decisions.
+
+The earlier debug failures and isolated experiments remain in the
+[qualification record](Verification.md#startup-input-investigation). Neither
+SwiftTUI #62 nor the private focus-type experiment is adopted. Release qualification
+does not establish that debug startup starvation is corrected.
 
 ## Delivered maintenance: naming review
 
