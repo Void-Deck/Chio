@@ -15,18 +15,11 @@ fi
 mkdir -p .build/ci-results
 # Check the real transport and online lifecycle before the longer composition
 # suites. A failed test executable does not stop SwiftPM running other targets.
-swift test --force-resolved-versions --jobs "${SWIFT_BUILD_JOBS:-2}" \
+swift test -c release --force-resolved-versions --jobs "${SWIFT_BUILD_JOBS:-2}" \
   --no-parallel --filter 'MapHTTPClientTests|OnlineMapInteractionTests' \
   --xunit-output .build/ci-results/online-preflight.xml ${testing_flags[@]+"${testing_flags[@]}"}
-# Keep debug checks for library controls, domain values, raster layouts, and the
-# focused examples. Run dashboard, inbox and diff compositions in release below:
-# their five-second waits are not benchmarks of unoptimized rendering.
-release_only_workflows='CreateAgentTests|DashboardPaletteTests|AgentReportInteractionTests'
-release_only_workflows+='|DiffExampleTests/(hunkWorkflow|longSourceAndFiles)'
-release_only_workflows+='|InboxExampleTests/(compactLaunchAndWideResize|filteringAndQueues|presentationAndReader|pendingReaderIsolation|pendingReaderCancellation)'
-swift test --force-resolved-versions --jobs "${SWIFT_BUILD_JOBS:-2}" \
-  --no-parallel --skip "$release_only_workflows" \
-  --xunit-output .build/ci-results/debug.xml ${testing_flags[@]+"${testing_flags[@]}"}
+# Verify every test in the configuration used by the shipped examples. Keep
+# interaction assertions and deadlines independent of debug rendering overhead.
 swift test -c release --force-resolved-versions --jobs "${SWIFT_BUILD_JOBS:-2}" \
   --no-parallel --xunit-output .build/ci-results/release-all.xml ${testing_flags[@]+"${testing_flags[@]}"}
 swift build --force-resolved-versions --jobs "${SWIFT_BUILD_JOBS:-2}" \

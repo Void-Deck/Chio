@@ -30,7 +30,7 @@ gate does not install tools or edit source, configuration or baselines; a missin
 pinned installation is a failed prerequisite. It verifies the release commit,
 exports the documentation checker and compiler-context helper from that immutable
 revision, runs the documentation gate with the prepared Python environment, builds
-the actual `Chio` target with SwiftPM's native backend, and supplies its real
+the actual `Chio` target in release with SwiftPM's native backend, and supplies its real
 compiler arguments to the checker. The shared checker implementations stay in
 EngineeringRules; Chio does not copy or maintain them. The documentation checker
 requires exactly `markdown-it-py` 3.0.0 and `mdurl` 0.1.2. Missing or different
@@ -704,13 +704,14 @@ No timeout or late frame is captured. These instrumented results support a
 debug-rendering budget explanation, without proving the original failure's cause
 or replacing full consumer qualification.
 
-**Pending verification-policy decision:** run only `retainedWorkflow` and
-`narrowSections` in release, alongside the existing composition workflows. Keep
-all recipes, actions, assertions and deadlines. The eighteen appearance layout
-and row-spacing cases and focused component interactions would remain in debug.
-The complete appearance workflows would lose debug coverage, including native
-debug-only checks. Independent review supports presenting this tradeoff to the
-user. The proposal is not applied; the approved policy below remains unchanged.
+The user approved release-only routine verification after reviewing these results.
+This replaces the narrower proposal to move only two appearance workflows. Every
+test, including layout, domain, component and composition cases, still runs in
+release with unchanged assertions and deadlines. The transport preflight and the
+engineering gate's compiler context also use release. Debug-only behavior and
+native debug assertions are no longer part of routine qualification. The
+[current gate](#running-checks) owns the accepted policy; full verification of this
+change remains pending.
 
 ## Merged layout corrections
 
@@ -1062,7 +1063,7 @@ tests and soundness checks. All upstream hosted checks subsequently pass; #56 is
 merged and included in 0.18.0. These native and local-candidate checks do not
 establish Chio adoption, a full consumer gate, or live terminal behavior.
 
-Run the focused reproducer with the platform/toolchain setup below:
+The historical debug reproducer used the platform/toolchain setup below:
 
 ```sh
 swift test --force-resolved-versions --jobs 2 --no-parallel --filter ChioListStyleTests
@@ -1139,28 +1140,26 @@ bash Scripts/ci/verify.sh
 ```
 
 The gate serializes builds and hosted tests. It runs all tests in release,
-selected tests in debug, a standalone release build, 24 plain-text snapshots and
+a standalone release build, 24 plain-text snapshots and
 19 dashboard pseudo-terminal workflows, plus the map example's fixture
 reproduction and PTY workflow. Snapshot files are inspection artifacts;
 Swift tests assert the rendering contracts.
 
-A focused debug preflight first checks real map HTTP transport and the online
+A focused release preflight first checks real map HTTP transport and the online
 view lifecycle. SwiftPM continues other test targets after one executable fails;
 this exposes acquisition regressions before the longer composition suites. The
-normal debug/release suites still include these checks.
+complete release suite still includes these checks.
 
-The approved debug/release split keeps library controls, domain values, raster
-layouts and focused examples in debug. `CreateAgentTests`, `DashboardPaletteTests`,
-`AgentReportInteractionTests` and the selected inbox/diff composition interactions
-listed in the script run only in release, because unoptimized rendering can
-exceed their frame deadlines. Their assertions and five-second waits are
-unchanged. This does not establish full debug composition performance or cover
-those workflows' debug-only native checks.
+Routine verification uses release builds for all tests, products and compiler
+context. No test is excluded because of its suite or execution cost. Assertions,
+five-second interaction waits and terminal/process checks remain unchanged.
+This policy does not qualify debug-only behavior, native debug assertions or
+debug rendering performance. Debug builds remain available for targeted
+investigation, but are not a required verification step.
 
-For a full debug investigation or a release-only suite, keep hosted tests serial:
+To run the complete test suite separately, keep hosted tests serial:
 
 ```sh
-swift test --no-parallel
 swift test -c release --no-parallel
 ```
 

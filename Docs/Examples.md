@@ -312,8 +312,8 @@ windows prioritize the list and essential hints. The compact layout fits 36 × 1
 Capture deterministic plain-text frames without a terminal:
 
 ```sh
-swift run chio-dashboard --snapshot --width 100 --height 30
-swift run chio-dashboard --snapshot --width 50 --height 30 --scenario failed
+swift run -c release chio-dashboard --snapshot --width 100 --height 30
+swift run -c release chio-dashboard --snapshot --width 50 --height 30 --scenario failed
 ```
 
 Other scenarios are `empty`, `no-matches`, and `completed`. Use `--light` for the

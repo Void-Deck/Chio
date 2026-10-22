@@ -68,7 +68,7 @@ own provider invocation policy, storage choices, validation and external workflo
 [Design](../../Docs/Design.md) owns the full architecture and effect contracts.
 
 [Verification](../../Docs/Verification.md) defines the pinned engineering gate,
-serial debug/release tests, public raster checks, hosted interactions and terminal
+serial release tests, public raster checks, hosted interactions and terminal
 probes. Tests under `Tests/ChioTests` generally mirror these component roots.
 Run the required repository checks from the checkout root; a snapshot alone does
 not prove interactive, platform or live-provider behavior. Preserve the documented

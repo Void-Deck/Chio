@@ -73,7 +73,7 @@ git -C "$rules_checkout" show "$rules_commit:Scripts/check-docs.py" > "$document
 
 # Refresh the native build before exporting; SwiftPM checks current inputs while
 # retaining already-built dependencies in this gate's dedicated scratch path.
-build_options=(--target Chio --build-system native --force-resolved-versions
+build_options=(-c release --target Chio --build-system native --force-resolved-versions
   --scratch-path "$scratch_path" --jobs "${SWIFT_BUILD_JOBS:-2}")
 swift build "${build_options[@]}"
 binary_directory="$(swift build "${build_options[@]}" --show-bin-path)"
