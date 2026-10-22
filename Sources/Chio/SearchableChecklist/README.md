@@ -29,10 +29,13 @@ disabled IDs remain bound; displayed counts distinguish hidden and unavailable
 checks. Only visible, enabled IDs can toggle in either direction. Applications
 own selection limits, validation, stale-ID removal, reset and submission.
 
-Arrows move native focus; Space or Return toggles a row. Focus is independent of
-membership and may change when rows reorder. Return from search requests results
-focus. Unmodified input during that handoff is consumed until focus arrives,
-preventing stale-row toggles. No-result Return keeps editing focus.
+Arrows move native focus, skipping disabled choices that remain visible with an
+Unavailable label. Space or Return toggles an enabled row. Focus is independent
+of membership and may change when rows reorder. Return from search requests
+results focus only when an enabled result exists. Escape clears the query and
+uses the same eligibility check. Without an enabled result, search keeps editing
+focus and accepts later input. Unmodified input during a valid handoff is consumed
+until focus arrives, preventing stale-row toggles.
 
 Rows are passive views; place editors and buttons outside the checklist.
 `.onResultKeyPress(perform:)` scopes application shortcuts to results. The binding

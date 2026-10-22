@@ -103,7 +103,7 @@ public struct SearchableChecklist<Item: Identifiable, RowContent: View> where It
     }
 
     private func requestResults(in scope: Namespace.ID, using reset: ResetFocusAction) {
-        guard !visibleItems.isEmpty else { return }
+        guard visibleItems.contains(where: isEnabled) else { return }
         hasRequestedResults = true
         reset(in: scope)
     }

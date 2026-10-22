@@ -7,7 +7,12 @@ final class HostedFrameRecorder {
     private var pending: PendingWait?
     private var deadline: Task<Void, Never>?
     private let started = ContinuousClock.now
-    private var recentFrames: [String] = []
+    private var recentObservations: [String] = []
+
+    func record(_ event: String) {
+        recentObservations.append("\(started.duration(to: .now)): \(event)")
+        if recentObservations.count > 64 { recentObservations.removeFirst() }
+    }
 
     func receive(_ frame: SemanticHostFrame) {
         let routes = frame.semantics.scrollRoutes.map {
@@ -15,8 +20,7 @@ final class HostedFrameRecorder {
         }.joined(separator: "; ")
         let focusedNode = frame.semantics.accessibilityNodes.first { $0.identity == frame.focusedIdentity }
         let focus = "focus=\(String(describing: focusedNode?.role))/\(focusedNode?.label ?? "unlabeled")"
-        recentFrames.append("#\(frame.sequence) at \(started.duration(to: .now)): \(focus); \(routes)")
-        if recentFrames.count > 8 { recentFrames.removeFirst() }
+        record("frame #\(frame.sequence): \(focus); \(routes)")
         latest = frame
         guard let pending, pending.matches(frame) else { return }
         self.pending = nil
@@ -27,6 +31,7 @@ final class HostedFrameRecorder {
 
     func wait(after sequence: UInt64? = nil, description: String,
               matching predicate: @escaping @MainActor (SemanticHostFrame) -> Bool) async throws -> SemanticHostFrame {
+        record("wait: \(description), after=\(String(describing: sequence))")
         let matches: @MainActor (SemanticHostFrame) -> Bool = { frame in
             (sequence == nil || frame.sequence > sequence!) && predicate(frame)
         }
@@ -44,7 +49,7 @@ final class HostedFrameRecorder {
                 let focusedNode = self.latest?.semantics.accessibilityNodes.first { $0.identity == focus }
                 pending.continuation.resume(throwing: FrameTimeout(
                     expectation: description,
-                    frames: recentFrames.joined(separator: "\n"),
+                    observations: recentObservations.joined(separator: "\n"),
                     focus: "\(String(describing: focusedNode?.role)) / \(focusedNode?.label ?? "unlabeled") / \(String(describing: focus))",
                     raster: self.latest?.raster.lines.joined(separator: "\n") ?? "No frame received"
                 ))
@@ -59,11 +64,11 @@ final class HostedFrameRecorder {
 
     private struct FrameTimeout: Error, CustomStringConvertible {
         let expectation: String
-        let frames: String
+        let observations: String
         let focus: String
         let raster: String
         var description: String {
-            "Timed out waiting for \(expectation). Focus: \(focus). Recent frames:\n\(frames)\nRaster:\n\(raster)"
+            "Timed out waiting for \(expectation). Focus: \(focus). Recent observations (up to 64):\n\(observations)\nRaster:\n\(raster)"
         }
     }
 }

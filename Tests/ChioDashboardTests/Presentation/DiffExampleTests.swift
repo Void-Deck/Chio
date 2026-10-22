@@ -245,10 +245,17 @@ struct DiffExampleTests {
                 $0.diffContains("Fixtures/Unicode.swift") && $0.diffContains("Unified · hunk 1/1") && $0.diffReaderFocused
             }
             session.send(.key(.end))
-            let bottom = try await recorder.wait(after: ready.sequence, description: "End reaches the final source rows") {
+            let end = try await recorder.wait(after: ready.sequence, description: "End reaches both native scroll limits") {
                 guard let route = $0.semantics.scrollRoutes.first else { return false }
                 return $0.diffReaderFocused && route.contentOffset.y == route.contentBounds.size.height - route.viewportRect.size.height
-                    && $0.diffContains("Trailing spaces")
+                    && route.contentOffset.x == route.contentBounds.size.width - route.viewportRect.size.width
+                    && $0.diffContains("END_OF_SOURCE")
+            }
+            session.send(Array(repeating: .key(.arrowLeft), count: 200))
+            let bottom = try await recorder.wait(after: end.sequence, description: "left arrows reveal the final source rows without moving vertically") {
+                guard let route = $0.semantics.scrollRoutes.first else { return false }
+                return $0.diffReaderFocused && route.contentOffset.y == route.contentBounds.size.height - route.viewportRect.size.height
+                    && route.contentOffset.x == 0 && $0.diffContains("Trailing spaces")
             }
             session.send(Array(repeating: .key(.arrowRight), count: 200))
             let right = try await recorder.wait(after: bottom.sequence, description: "native right arrows expose the long source suffix and clamp") {

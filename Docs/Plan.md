@@ -7,17 +7,56 @@ live in [Design](Design.md) and its decision index; implementation and showcase
 checks live in [Verification](Verification.md). Completed release scope and results
 live in [0.2.0](Releases/0.2.0.md), with [0.1.0](Releases/0.1.0.md) retained as history.
 
-## Current maintenance: naming review
+## Current slice: merged palette and scroll-focus fixes
 
-Advance [PR #22](https://github.com/echoz/Chio/pull/22) to published EngineeringRules
-0.1.9, preserving its explicit naming inventory and existing compiler, lint,
-documentation and project checks. The original private `HelpExampleView.Context`
-selects shortcut groups; the candidate names it `ShortcutScope` without changing
-behavior. Apply the released review workflow to all changed names, including
-identity and revision lifetimes where relevant. An empty inventory does not
-complete semantic review. [Verification](Verification.md#019-adoption) owns the
-disposition and verification scope. Default-branch adoption requires review and
-merge; the earlier Linux container-pull failure is not passing platform evidence.
+The user approved adopting merged SwiftTUI #58 and #59 on 2026-10-19. Qualification
+exposed deferred callback-owner reads and stacked observation-slot collisions.
+[SwiftTUI #60](https://github.com/SwiftTUI/swift-tui/pull/60) corrects both and is
+merged as `877d7765febd08ffc2ed434a7ef231e4132c3b80`. This adoption candidate now
+resolves that exact canonical upstream revision. SwiftTUI 0.18.3, the latest
+published release checked for this slice, predates these fixes.
+[Dependencies](Decisions/Dependencies.md#palette-and-scroll-focus-adoption)
+owns the revision and behavior contract.
+
+On 2026-10-20 the user approved native navigation that skips disabled rows.
+Choices remain visible and cannot toggle; search remains editable when no enabled
+result can receive focus. The checklist guard and its public interaction tests
+belong to this adoption slice. Chio adds no callback or scrolling workaround.
+
+The user approved release-only routine verification after the debug timing
+investigation. At `487a389`, the complete local release gate and both hosted
+macOS/Linux gates pass. Every test remains included, with unchanged assertions
+and five-second waits. Terminal workflows, snapshots and map process probes pass.
+[Verification](Verification.md#release-verification-qualification) records the
+exact candidate and tested merge. Earlier canonical installation and public
+API/raster checks retain the same source and dependency inputs.
+
+EngineeringRules 0.1.10 adds support for native release compiler context. This
+PR advances the tool pin and immutable helpers together without changing the
+application, dependency, baseline or runtime verification inputs. The
+[adoption record](Verification.md#0110-adoption) owns its local checker evidence.
+PR #23 requires completed checks and separate review before readiness; Chio merge
+and release remain separate decisions.
+
+The earlier debug failures and isolated experiments remain in the
+[qualification record](Verification.md#startup-input-investigation). Neither
+SwiftTUI #62 nor the private focus-type experiment is adopted. Release qualification
+does not establish that debug startup starvation is corrected.
+
+## Delivered maintenance: naming review
+
+[PR #22](https://github.com/echoz/Chio/pull/22) merged EngineeringRules 0.1.9 at
+`04896a6ceb4d44bb7ed88950eaceb4d2c0a5aea6`. Its unchanged full hosted macOS and
+Linux gates pass, together with compiler-backed rules, documentation, naming
+inventory, focused help tests and independent review. The first Linux attempt
+failed before checkout; the Linux-only retry supplies the passing evidence.
+
+The private `HelpExampleView.Context` is now `ShortcutScope`, without a behavior
+change. The released review workflow covers all changed names and relevant
+identity/revision lifetimes. An empty inventory does not complete semantic review.
+[Verification](Verification.md#019-adoption) owns the disposition and evidence.
+This SwiftTUI adoption branch includes that exact maintenance change; published
+Chio 0.2.1 retains its recorded EngineeringRules 0.1.7 pin.
 
 [PR #21](https://github.com/echoz/Chio/pull/21) delivered EngineeringRules 0.1.7,
 schema 2 and source-root guides. It and the test-constructor cleanup in
@@ -313,9 +352,8 @@ workflows. #57 merged on 2026-10-15 Pacific (2026-10-16 UTC) at
 checked for this slice is 0.18.0, which lacks #57. Final Chio qualification of the
 merged pin passes on macOS and Linux, with installation, terminal and review
 evidence recorded in [Verification](Verification.md#020-merged-pin-qualification).
-SwiftTUI [#58](https://github.com/SwiftTUI/swift-tui/pull/58) and
-[#59](https://github.com/SwiftTUI/swift-tui/pull/59) are separate ready upstream
-follow-ups and are outside 0.2.0 adoption.
+SwiftTUI #58 and #59 were separate upstream follow-ups outside 0.2.0 adoption.
+Their later merged adoption is tracked in the [current slice](#current-slice-merged-palette-and-scroll-focus-fixes).
 The historical external-consumer probe passes the canonical API on SwiftTUI
 0.18.0. Refreshed terminal recordings,
 preview inspection, site assembly and focused Safari checks pass. Capture-only

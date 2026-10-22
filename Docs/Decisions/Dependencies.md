@@ -12,7 +12,7 @@ All four direct dependencies are revision-pinned:
 
 | Dependency | Pin and reason |
 | --- | --- |
-| SwiftTUI merged #57 revision | `7e62e95c913508f4fef42db36fde6fd60acb541c`; qualified 0.2.0 candidate with row-geometry focus recovery, eager-table measurement and outline focus corrections |
+| SwiftTUI merged #60 | `877d7765febd08ffc2ed434a7ef231e4132c3b80`; includes #58/#59 and the callback-scope and observation-slot corrections; release publication remains separate |
 | Swift Markdown 0.9.0 | `25cb61d3482054b09ae76ca4f281b1bfe7fe5a43`; revision permits conditional Windows unsafe flags |
 | Tree-sitter 0.26.13 | `d97971e24500218865c05ed1febdee2acf41bae1`; last release with upstream SwiftPM manifest |
 | tree-sitter-swift 0.7.4 | `82bb3a533e0801fd2bbaa11dc49676e10bf41948`; generated C grammar |
@@ -34,6 +34,48 @@ neither a Swift wrapper nor grammar generation. The grammar copies unused querie
 Chio does no query-resource I/O and generates no Objective-C/Foundation accessor.
 Build evidence is recorded in [0.1.0](../Releases/0.1.0.md); the current static Linux
 blocker is below. Ordinary glibc support does not establish static-musl distribution.
+
+## Palette and scroll-focus adoption
+
+**Status:** Approved #58/#59 adoption; qualifying the merged #60 correction before moving the operational pin.
+
+[SwiftTUI #58](https://github.com/SwiftTUI/swift-tui/pull/58) and
+[#59](https://github.com/SwiftTUI/swift-tui/pull/59) merged on 2026-10-19.
+The latter merge, `13c07f3981e0bb9160f8dfc8939ffa085824b340`, contains both fixes.
+It also includes the intervening SwiftTUI 0.18.1–0.18.3 changes. This is an
+upstream revision, not a Chio patch or fork. The latest release checked for this
+adoption, 0.18.3, predates both contributions.
+
+That merged revision regresses authored focus reads inside deferred `onChange`
+callbacks. The first #60 correction restores those reads. A second correction
+keeps stacked observers from sharing an observation slot when graph aliases change.
+[SwiftTUI #60](https://github.com/SwiftTUI/swift-tui/pull/60) merged as
+`877d7765febd08ffc2ed434a7ef231e4132c3b80`. Its callback correction matches the
+reviewed patch. The merged tree also includes intervening native diagnostics and
+terminal-output routing changes. The earlier `0283902a` qualification therefore
+does not qualify the complete merged tree.
+
+Chio resolves this exact merged revision from the canonical SwiftTUI remote.
+There is no ignored source patch or package mirror. All seven other lockfile pins
+remain fixed. [Merged qualification](../Verification.md#merged-callback-qualification)
+records fresh platform, terminal and installation results. Upstream merge does not
+establish Chio adoption or release readiness.
+
+The palette keeps its active command visible when terminal height limits the
+result window. Scroll recovery preserves a previously visible focused control
+through viewport and content geometry changes. Authored scrolling retains priority;
+later content changes must not reveal a control deliberately scrolled out of view.
+Chio retains its native palette and scroll styles, without a second focus owner.
+
+Only the SwiftTUI requirement and corresponding lockfile entry advance. Other
+dependency revisions remain fixed. Consumers that also require SwiftTUI must align
+their exact revision. A published SwiftTUI release can replace this pin after its
+contents and Chio integration are verified; no automatic monitoring is requested.
+
+[Verification](../Verification.md#palette-and-scroll-focus-qualification) owns
+consumer evidence. Upstream checks and the earlier 0.2.0 qualification do not
+qualify this dependency combination. Publication and downstream adoption remain
+separate from this candidate.
 
 <a id="020-merged-native-correction"></a>
 
@@ -60,9 +102,9 @@ Chio adds no private native patch, second focus system or renderer.
 The user also approved a Chio 0.2.1 dependency patch after SwiftTUI publishes a
 release containing #57. Recheck the release contents, align the exact requirement
 and lockfile, and repeat consumer qualification and separate review before delivery.
-SwiftTUI [#58](https://github.com/SwiftTUI/swift-tui/pull/58) and
-[#59](https://github.com/SwiftTUI/swift-tui/pull/59) remain separate ready upstream
-follow-ups, outside the 0.2.0 pin. No automatic release monitoring is requested.
+SwiftTUI #58 and #59 were separate upstream follow-ups outside the 0.2.0 pin.
+Their later adoption is tracked [above](#palette-and-scroll-focus-adoption).
+No automatic release monitoring is requested.
 
 <a id="0180-adoption-candidate"></a>
 

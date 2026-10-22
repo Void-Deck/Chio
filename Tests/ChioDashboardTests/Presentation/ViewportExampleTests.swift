@@ -61,9 +61,7 @@ struct ViewportExampleTests {
         let session = try HostedSceneSession(for: ViewportTestApp(), sceneID: "viewport-tests", surface: surface)
         let run = Task { try await session.start() }
         do {
-            _ = try await recorder.wait(description: "log starts with native viewport focus on its first row") { $0.logFocused && $0.logContains("Row 1 · Col 2") }
-            session.send([.key(.home), .key(.arrowLeft)])
-            _ = try await recorder.wait(description: "native keys establish the log origin") { $0.logContains("Row 1 · Col 1") }
+            _ = try await recorder.wait(description: "log starts with native viewport focus at the origin") { $0.logFocused && $0.logContains("Row 1 · Col 1") }
             session.send([.key(.arrowDown), .key(.arrowDown), .key(.arrowRight)])
             let moved = try await recorder.wait(description: "native arrows scroll both axes") {
                 $0.logContains("Row 3 · Col 2") && $0.semantics.scrollRoutes.first?.contentOffset == CellPoint(x: 1, y: 2)
@@ -79,13 +77,18 @@ struct ViewportExampleTests {
                     && $0.logContains("^Q quit") && $0.logFocused
             }
             session.send(.key(.end))
-            _ = try await recorder.wait(description: "End reaches the last event") {
+            _ = try await recorder.wait(description: "End reaches the bottom-right corner and final run ID") {
                 guard let route = $0.semantics.scrollRoutes.first else { return false }
                 return route.contentOffset.y == route.contentBounds.size.height - route.viewportRect.size.height
-                    && $0.logContains("Docs agent")
+                    && route.contentOffset.x == route.contentBounds.size.width - route.viewportRect.size.width
+                    && $0.logContains("run 1040")
             }
             session.send(.key(.home))
-            var current = try await recorder.wait(description: "Home returns vertically without resetting horizontal position") {
+            let home = try await recorder.wait(description: "Home returns both axes to the origin") {
+                $0.logContains("Row 1 · Col 1")
+            }
+            session.send(.key(.arrowRight))
+            var current = try await recorder.wait(after: home.sequence, description: "horizontal movement gives the reset action a nonzero offset") {
                 $0.logContains("Row 1 · Col 2")
             }
             for _ in 0..<4 {
@@ -102,9 +105,9 @@ struct ViewportExampleTests {
                 $0.logResetFocused && $0.logContains("Row 1 · Col 1")
             }
             session.send(.key(.functionKey(6)))
-            _ = try await recorder.wait(description: "F6 restores log focus without skipping the first row") { $0.logFocused && $0.logContains("Row 1 · Col 2") }
+            _ = try await recorder.wait(description: "F6 restores log focus at the origin") { $0.logFocused && $0.logContains("Row 1 · Col 1") }
             session.send(.key(.arrowDown))
-            _ = try await recorder.wait(description: "native input still works after focus restoration") { $0.logContains("Row 2 · Col 2") }
+            _ = try await recorder.wait(description: "native input still works after focus restoration") { $0.logContains("Row 2 · Col 1") }
             session.stop()
             #expect(try await run.value == .inputEnded)
         } catch {

@@ -1,15 +1,26 @@
 # Native integration boundaries
 
-**Status:** The approved 0.2.0 candidate uses merged SwiftTUI #57 at
-`7e62e95c913508f4fef42db36fde6fd60acb541c`; final Chio macOS/Linux qualification passes.
+**Status:** The current adoption candidate tests SwiftTUI
+`877d7765febd08ffc2ed434a7ef231e4132c3b80`, containing merged #58/#59/#60.
+The former form and diff failures pass with
+this candidate; [Verification](../Verification.md#merged-callback-qualification)
+records the platform gates and remaining qualification boundaries.
+This is not an operational or released pin.
+The earlier 0.2.0 candidate uses merged #57 at
+`7e62e95c913508f4fef42db36fde6fd60acb541c`, with passing macOS/Linux qualification.
 The earlier [PR #17](https://github.com/echoz/Chio/pull/17) adopted published
 0.18.0 on `main` at `7d44bd6bd85290f2c6e3526cf19e6647d551797c`, including
 merged #47/#49/#50/#56.
-[Dependencies](Dependencies.md#020-merged-native-correction) owns the current pin decision;
+[Dependencies](Dependencies.md#palette-and-scroll-focus-adoption) owns the current pin decision;
 [0.2.0 release preparation](../Releases/0.2.0.md) records integrated scope and evidence.
 Chio qualification remains distinct from upstream checks and earlier local-patch evidence.
 
 Keep native ownership and visible limitations explicit when composing or extending Chio.
+
+The new native corrections keep active palette commands visible in short terminals
+and recover previously visible focused descendants through viewport geometry changes.
+Explicit scrolling remains authoritative, including after later content changes.
+Chio applies its existing styles and verifies those public native interactions.
 
 ## Upstream contributions
 
@@ -60,7 +71,7 @@ renderer, focus system or hidden dependency patch.
 | Boundary | Current limit and responsible follow-up |
 | --- | --- |
 | Native style hooks | Table border/background chrome, list focus gutter, palette shell, prompt headers and disabled-editor glyph paint are not fully controlled by Chio. Keep native behavior and resolve missing hooks upstream. |
-| Layout and lifecycle | Scroll focus reveal can move a viewport horizontally by one cell; nested tab strips can receive stale width proposals; expanded disclosure focus includes descendants. Keep the documented native contracts for [scrolling](Scrolling.md#scrolling), [tabs](Tabs.md#tabs) and [disclosure](DisclosureGroups.md#expandable-groups-and-trees). |
+| Layout and lifecycle | Nested tab strips can receive stale width proposals; expanded disclosure focus includes descendants. Keep the documented native contracts for [scrolling](Scrolling.md#scrolling), [tabs](Tabs.md#tabs) and [disclosure](DisclosureGroups.md#expandable-groups-and-trees). |
 | Choice composition | Changing choice fields inside `GeometryReader` triggered a native debug lifecycle-publication assertion. The full-window example uses `terminalSize`; arbitrary nesting remains unproved. |
 | List density and focus | The 0.2.0 candidate adds merged #57 to the previous #46/#47/#56 corrections. Chio qualification of composed-row padding, pointer and style changes passes on macOS/Linux. See [dynamic spacing](#dynamic-row-spacing-candidate) and [retained qualification](#current-row-qualification). |
 | Collection measurement | Native ideal-size probes can realize all rows before a bounded viewport commits and emit deferred `collection.unboundedRealization` warnings. Small fixtures do not prove virtualization or large-dataset performance; diagnostics are retained. |
@@ -68,6 +79,27 @@ renderer, focus system or hidden dependency patch.
 | Editor navigation | End at the end of a native text field is unhandled when it makes no change, so an enclosing ScrollView can scroll to the bottom. The appearance study reproduced this at 36 × 18; ordinary editing remains focused. Its capture moves Left before End to exercise a real caret movement. Repeated no-op End is unresolved at the native input owner. |
 | Cooperative shutdown | The current pin retains [merged #48](https://github.com/SwiftTUI/swift-tui/pull/48), superseding #45. Accepted quit/EOF retains final-input presentation and synchronous follow-ups without draining unrelated continuous writes. Arbitrarily expensive frames/callbacks and application producers retain their own bounds and ownership. |
 | Portability and accessibility | CI and pseudo-terminals cover specific workflows. Other distributions, architectures, assistive technologies and live SSH devices require separate evidence. Static Linux remains [blocked](Dependencies.md#static-linux-blocker). |
+
+## Startup input service
+
+**Status:** Reproduced in native SwiftTUI; correction proposed in
+[PR #62](https://github.com/SwiftTUI/swift-tui/pull/62), not adopted by Chio.
+
+A producer that continuously invalidates during startup can delay already queued
+input behind sixteen initial acquisitions and one follow-up frame. A deterministic
+native regression at `b23c7338` queues a key at commit 1 or 3; both cases handle it
+only at commit 17. The current `877d7765` dependency has the same startup drain.
+
+The candidate gives initial presentation its own drain policy. It preserves the
+first noncancellable acquisition and synchronous appearance/focus follow-ups, then
+services pending input before unrelated producer redraws. Schedulers without
+callback attribution retain the existing bounded fallback. This is native runtime
+work, not a Chio input owner or a longer interaction deadline.
+
+The regression proves ordering for a controlled pulling input source. It does not
+establish a wall-time limit for expensive frames or asynchronous input delivery.
+[Verification](../Verification.md#startup-input-investigation) owns consumer and
+platform results; an upstream candidate is not operational adoption.
 
 ## Tall list rows
 
@@ -141,8 +173,9 @@ The owning verification record preserves those candidate results. #57 merged on
 `7e62e95c913508f4fef42db36fde6fd60acb541c`. The user approved that exact revision
 for 0.2.0; final Chio qualification passes on macOS/Linux. The published SwiftTUI 0.18.0
 release lacks #57. A later 0.2.1 patch will qualify a published release containing
-it. Separate ready upstream follow-ups [#58](https://github.com/SwiftTUI/swift-tui/pull/58)
-and [#59](https://github.com/SwiftTUI/swift-tui/pull/59) are outside 0.2.0 adoption.
+it. The later merged #58/#59 adoption remains outside the immutable 0.2.0 pin;
+its [consumer qualification](../Verification.md#palette-and-scroll-focus-qualification)
+is recorded separately.
 
 <a id="current-row-qualification"></a>
 

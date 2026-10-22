@@ -40,6 +40,55 @@ struct ChioPaletteStyleTests {
         }
     }
 
+    @Test("A late command remains selected through short-height resizing without activating")
+    func shortHeightSelection() async throws {
+        let recorder = HostedFrameRecorder()
+        let surface = HostedRasterSurface(surfaceSize: CellSize(width: 36, height: 18), appearance: .fallback,
+                                          onFrame: { recorder.receive($0) })
+        let session = try HostedSceneSession(for: PaletteStyleTestApp(), sceneID: "palette-style", surface: surface)
+        let run = Task { try await session.start() }
+        defer { session.stop() }
+        do {
+            let initial = try await recorder.wait(description: "initial palette editor and selection") { frame in
+                frame.raster.lines.contains { $0.contains("› Alpha") }
+                    && frame.semantics.accessibilityNodes.contains {
+                        $0.identity == frame.focusedIdentity && $0.role == .textField
+                    }
+            }
+            for _ in 0..<11 { session.send(.key(.arrowDown)) }
+            var previous = try await recorder.wait(after: initial.sequence, description: "Mu selected without activation") {
+                $0.raster.lines.contains { $0.contains("› Mu") }
+            }
+            #expect(previous.focusedIdentity == initial.focusedIdentity)
+            for height in [12, 18] {
+                surface.updateSurfaceSize(CellSize(width: 36, height: height))
+                session.requestSurfaceRefresh()
+                previous = try await recorder.wait(after: previous.sequence, description: "selected Mu revealed at height \(height)") {
+                    $0.raster.size == CellSize(width: 36, height: height)
+                        && $0.raster.lines.contains { $0.contains("› Mu") }
+                        && $0.raster.lines.contains { $0.contains("esc close") }
+                }
+                #expect(previous.focusedIdentity == initial.focusedIdentity)
+                #expect(previous.semantics.accessibilityNodes.contains {
+                    $0.identity == previous.focusedIdentity && $0.role == .textField
+                })
+            }
+            // Running a command dismisses the palette; navigation and resize above keep it open.
+            session.sendInput(Array("\r\r".utf8))
+            let activated = try await recorder.wait(after: previous.sequence, description: "Return activates selected Mu once") {
+                $0.raster.lines.contains { $0.contains("Chosen Mu: 1") }
+            }
+            #expect(activated.raster.lines.contains { $0.contains("Chosen Alpha: 0") })
+            #expect(!activated.semantics.accessibilityNodes.contains { $0.role == .textField })
+            session.stop()
+            #expect(try await run.value == .inputEnded)
+        } catch {
+            session.stop()
+            _ = await run.result
+            throw error
+        }
+    }
+
     @Test("Native palettes inherit customized Chio tokens through the theme modifier",
           arguments: [false, true])
     func themedPalette(light: Bool) async throws {
@@ -105,11 +154,12 @@ private struct PaletteStyleTestView {
     let theme: ChioStyle
     @State private var isPresented = true
     @State private var activations = 0
+    @State private var muActivations = 0
 }
 
 extension PaletteStyleTestView: View {
     var body: some View {
-        Text("Chosen Alpha: \(activations)")
+        Text("Chosen Alpha: \(activations)\nChosen Mu: \(muActivations)")
             .panel(id: "palette-style")
             .paletteCommand(name: "Alpha") { activations += 1 }
             .paletteCommand(name: "Beta") {}
@@ -122,7 +172,7 @@ extension PaletteStyleTestView: View {
             .paletteCommand(name: "Iota") {}
             .paletteCommand(name: "Kappa") {}
             .paletteCommand(name: "Lambda") {}
-            .paletteCommand(name: "Mu") {}
+            .paletteCommand(name: "Mu") { muActivations += 1 }
             .paletteSheet("Commands", isPresented: $isPresented)
             .style(theme)
     }

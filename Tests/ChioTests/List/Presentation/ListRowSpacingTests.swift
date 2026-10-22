@@ -154,15 +154,26 @@ struct ListRowSpacingTests {
                 session.send([
                     .mouse(MouseEvent(kind: .down(.primary), location: .cellFallback(disabledPoint))),
                     .mouse(MouseEvent(kind: .up(.primary), location: .cellFallback(disabledPoint))),
-                    .key(.return),
                     .key(.character("b"), modifiers: .ctrl),
                 ])
-                let rejected = try await recorder.wait(after: previous.sequence, description: "disabled padded row rejects pointer and Return membership") {
+                let rejected = try await recorder.wait(after: previous.sequence, description: "disabled padded row rejects pointer membership and focus") {
                     $0.spacingContains("Barrier=2")
                 }
                 #expect(rejected.spacingContains("Checked=-"))
                 #expect(rejected.spacingContains("Unavailable"))
-                #expect(rejected.spacingRowFocused(1))
+                #expect(rejected.spacingRowFocused(0))
+                #expect(rejected.focusedIdentity == previous.focusedIdentity)
+                #expect(!rejected.semantics.focusRegions.contains {
+                    $0.focusInteractions == .activate
+                        && disabledLine >= $0.rect.origin.y && disabledLine < $0.rect.maxY
+                })
+                session.send([.key(.return), .key(.character("b"), modifiers: .ctrl)])
+                let activated = try await recorder.wait(after: rejected.sequence, description: "Return toggles the retained enabled row after a rejected click") {
+                    $0.spacingContains("Barrier=3")
+                }
+                #expect(activated.spacingContains("Checked=0 "))
+                #expect(activated.spacingRowFocused(0))
+                #expect(activated.focusedIdentity == rejected.focusedIdentity)
             } else {
                 #expect(previous.spacingContains("Selected=1"))
                 #expect(previous.spacingContains("Activated=1 Count=1"))

@@ -438,6 +438,7 @@ private struct FilePickerTestApp {
     let allowedExtensions: FileExtensionFilter
     let allowsSelection: Bool
     let light: Bool
+    let observeInput: @MainActor @Sendable (KeyPress) -> Void
 
     nonisolated init() {
         directory = pickerRoot
@@ -445,14 +446,16 @@ private struct FilePickerTestApp {
         allowedExtensions = .all
         allowsSelection = true
         light = false
+        observeInput = { _ in }
     }
 
-    nonisolated init(directory: URL, gate: FilePickerOperationGate?, allowedExtensions: FileExtensionFilter, allowsSelection: Bool, light: Bool) {
+    nonisolated init(directory: URL, gate: FilePickerOperationGate?, allowedExtensions: FileExtensionFilter, allowsSelection: Bool, light: Bool, observeInput: @escaping @MainActor @Sendable (KeyPress) -> Void) {
         self.directory = directory
         self.gate = gate
         self.allowedExtensions = allowedExtensions
         self.allowsSelection = allowsSelection
         self.light = light
+        self.observeInput = observeInput
     }
 }
 
@@ -461,6 +464,10 @@ extension FilePickerTestApp: App {
         WindowGroup(id: "file-picker-tests") {
             FilePickerTestView(directory: directory, gate: gate, allowedExtensions: allowedExtensions,
                                allowsSelection: allowsSelection, light: light)
+                .onKeyPress { press in
+                    observeInput(press)
+                    return .ignored
+                }
         }.exitOnKeys([])
     }
 }
@@ -559,7 +566,8 @@ private func withFilePickerScene(
     let surface = HostedRasterSurface(surfaceSize: CellSize(width: width, height: height), appearance: .fallback,
                                       onFrame: { recorder.receive($0) })
     let app = FilePickerTestApp(directory: directory, gate: gate, allowedExtensions: allowedExtensions,
-                                allowsSelection: allowsSelection, light: light)
+                                allowsSelection: allowsSelection, light: light,
+                                observeInput: { recorder.record(.inputDispatched($0)) })
     let session = try HostedSceneSession(for: app, sceneID: "file-picker-tests", surface: surface)
     let run = Task { try await session.start() }
     do {
@@ -579,6 +587,7 @@ private func withFilePickerScene(
 private func pickerBarrier(_ session: HostedSceneSession, _ recorder: HostedFrameRecorder) async throws -> SemanticHostFrame {
     let previous = recorder.latest?.sequence
     let next = (recorder.latest?.pickerBarrierValue ?? 0) + 1
+    recorder.record(.inputSent(KeyPress(.character("b"), modifiers: .ctrl)))
     session.send(.key(.character("b"), modifiers: .ctrl))
     return try await recorder.wait(after: previous, description: "picker input barrier \(next)") {
         $0.pickerContains("B=\(next)")
@@ -589,6 +598,7 @@ private func pickerBarrier(_ session: HostedSceneSession, _ recorder: HostedFram
 private func focusPickerButton(_ label: String, _ session: HostedSceneSession, _ recorder: HostedFrameRecorder) async throws {
     for _ in 0..<12 {
         if recorder.latest?.pickerFocusedButton(label) == true { return }
+        recorder.record(.inputSent(KeyPress(.tab)))
         session.send(.key(.tab))
         _ = try await pickerBarrier(session, recorder)
     }

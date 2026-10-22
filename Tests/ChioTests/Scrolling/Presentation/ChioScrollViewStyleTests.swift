@@ -91,17 +91,12 @@ struct ChioScrollViewStyleTests {
         let run = Task { try await session.start() }
         do {
             let initial = try await recorder.wait(description: "native viewport focus preserves its first row") {
-                $0.scrollTestBodyFocused && $0.scrollTestOffset(x: 1, y: 0)
+                $0.scrollTestBodyFocused && $0.scrollTestOffset(x: 0, y: 0)
             }
             expectIndicatorPaint(initial, vertical: suppressed ? scrollTestTheme.colors.mutedText : scrollTestTheme.colors.accent,
                                  horizontal: suppressed ? scrollTestTheme.colors.mutedText : scrollTestTheme.colors.accent)
-            // Native horizontal reveal still includes the reserved track column.
-            // An oversized vertical target keeps its first row visible instead.
-            // Establish the origin with native keys before exercising both axes.
-            session.send([.key(.home), .key(.arrowLeft)])
-            _ = try await recorder.wait(after: initial.sequence, description: "native keys establish the origin") {
-                $0.scrollTestOffset(x: 0, y: 0)
-            }
+            // Native reveal aligns oversized targets at the start on both axes.
+            #expect(initial.raster.lines[1].hasPrefix("00 ABC"))
             session.send([
                 .key(.arrowRight), .key(.arrowDown), .key(.arrowRight),
                 .key(.arrowDown), .key(.arrowDown),
@@ -112,25 +107,26 @@ struct ChioScrollViewStyleTests {
             #expect(stepped.focusedIdentity == initial.focusedIdentity)
 
             session.send(.key(.end))
-            let end = try await recorder.wait(after: stepped.sequence, description: "native both-axis End reaches the final row") {
+            let end = try await recorder.wait(after: stepped.sequence, description: "native both-axis End reaches the bottom-right corner") {
                 guard let route = $0.semantics.scrollRoutes.first else { return false }
-                return $0.scrollTestOffset(x: 2, y: route.contentBounds.size.height - route.viewportRect.size.height)
+                return $0.scrollTestOffset(x: route.contentBounds.size.width - route.viewportRect.size.width,
+                                           y: route.contentBounds.size.height - route.viewportRect.size.height)
             }
             session.send(.key(.home))
-            let home = try await recorder.wait(after: end.sequence, description: "native Home preserves the horizontal offset") {
-                $0.scrollTestOffset(x: 2, y: 0)
+            let home = try await recorder.wait(after: end.sequence, description: "native both-axis Home returns to the origin") {
+                $0.scrollTestOffset(x: 0, y: 0)
             }
             let viewport = try #require(home.semantics.scrollRoutes.first).viewportRect
             session.send(.mouse(MouseEvent(kind: .scrolled(deltaX: 3, deltaY: 4),
                                            location: .cellFallback(viewport.origin))))
             let wheeled = try await recorder.wait(after: home.sequence, description: "native wheel changes both declared axes") {
-                $0.scrollTestOffset(x: 5, y: 4)
+                $0.scrollTestOffset(x: 3, y: 4)
             }
             #expect(wheeled.focusedIdentity == initial.focusedIdentity)
 
             session.send(.key(.character("t"), modifiers: .ctrl))
             let themed = try await recorder.wait(after: wheeled.sequence, description: "light theme keeps native focus and position") {
-                $0.scrollTestBodyFocused && $0.scrollTestOffset(x: 5, y: 4)
+                $0.scrollTestBodyFocused && $0.scrollTestOffset(x: 3, y: 4)
                     && $0.raster.lines[0].contains("light")
             }
             #expect(themed.focusedIdentity == initial.focusedIdentity)
@@ -139,7 +135,7 @@ struct ChioScrollViewStyleTests {
             surface.updateSurfaceSize(CellSize(width: 18, height: 8))
             session.requestSurfaceRefresh()
             let resized = try await recorder.wait(after: themed.sequence, description: "compact viewport keeps the bound offset") {
-                $0.raster.size.width == 18 && $0.scrollTestBodyFocused && $0.scrollTestOffset(x: 5, y: 4)
+                $0.raster.size.width == 18 && $0.scrollTestBodyFocused && $0.scrollTestOffset(x: 3, y: 4)
             }
             #expect(resized.focusedIdentity == initial.focusedIdentity)
 
@@ -161,11 +157,11 @@ struct ChioScrollViewStyleTests {
             // A changed offset verifies release routing without waiting on a no-op.
             session.send(.mouse(MouseEvent(kind: .down(.primary), location: .cellFallback(top))))
             let trackPressed = try await recorder.wait(after: resized.sequence, description: "native track focus keeps the first row visible") {
-                $0.focusedIdentity == track.identity && $0.scrollTestOffset(x: 6, y: 0)
+                $0.focusedIdentity == track.identity && $0.scrollTestOffset(x: 4, y: 0)
             }
             session.send(.mouse(MouseEvent(kind: .up(.primary), location: .cellFallback(middle))))
             let trackFocused = try await recorder.wait(after: trackPressed.sequence, description: "release halfway along the track selects row seven") {
-                $0.focusedIdentity == track.identity && $0.scrollTestOffset(x: 6, y: 7)
+                $0.focusedIdentity == track.identity && $0.scrollTestOffset(x: 4, y: 7)
             }
             session.send([
                 .mouse(MouseEvent(kind: .down(.primary), location: .cellFallback(top))),
@@ -174,20 +170,68 @@ struct ChioScrollViewStyleTests {
             ])
             let dragged = try await recorder.wait(after: trackFocused.sequence, description: "native indicator capture reaches the last row") {
                 $0.focusedIdentity == track.identity
-                    && $0.scrollTestOffset(x: 6, y: route.contentBounds.size.height - route.viewportRect.size.height)
+                    && $0.scrollTestOffset(x: 4, y: route.contentBounds.size.height - route.viewportRect.size.height)
             }
             expectIndicatorPaint(dragged, vertical: suppressed ? ChioStyle.light.colors.mutedText : ChioStyle.light.colors.accent,
                                  horizontal: ChioStyle.light.colors.mutedText)
             session.send(.key(.home))
             let trackHome = try await recorder.wait(after: dragged.sequence, description: "focused native indicator Home affects only its axis") {
-                $0.focusedIdentity == track.identity && $0.scrollTestOffset(x: 6, y: 0)
+                $0.focusedIdentity == track.identity && $0.scrollTestOffset(x: 4, y: 0)
             }
             session.send(.key(.tab, modifiers: .shift))
             let body = try await recorder.wait(after: trackHome.sequence, description: "Shift-Tab returns to the viewport without skipping its first row") {
-                $0.scrollTestBodyFocused && $0.scrollTestOffset(x: 7, y: 0)
+                $0.scrollTestBodyFocused && $0.scrollTestOffset(x: 4, y: 0)
             }
             #expect(body.focusedIdentity == initial.focusedIdentity)
-            #expect(body.scrollTestOffset(x: 7, y: 0))
+            #expect(body.scrollTestOffset(x: 4, y: 0))
+            session.stop()
+            #expect(try await run.value == .inputEnded)
+        } catch {
+            session.stop()
+            _ = await run.result
+            throw error
+        }
+    }
+
+    @Test("A focused descendant survives height shrink without overriding later authored scrolling")
+    func descendantFocusRecovery() async throws {
+        let recorder = HostedFrameRecorder()
+        let surface = HostedRasterSurface(surfaceSize: CellSize(width: 32, height: 14), appearance: .fallback,
+                                          onFrame: { recorder.receive($0) })
+        let session = try HostedSceneSession(for: ScrollDescendantTestApp(), sceneID: "scroll-descendant", surface: surface)
+        let run = Task { try await session.start() }
+        defer { session.stop() }
+        do {
+            let initial = try await recorder.wait(description: "visible descendant button owns native focus") {
+                $0.scrollDescendantFocused && $0.raster.lines.contains { $0.contains("TARGET") }
+            }
+            surface.updateSurfaceSize(CellSize(width: 32, height: 6))
+            session.requestSurfaceRefresh()
+            let resized = try await recorder.wait(after: initial.sequence, description: "height shrink reveals the same focused descendant") {
+                $0.raster.size == CellSize(width: 32, height: 6)
+                    && $0.scrollDescendantFocused && $0.raster.lines.contains { $0.contains("TARGET") }
+            }
+            #expect(resized.focusedIdentity == initial.focusedIdentity)
+            #expect(resized.raster.lines.contains { $0.contains("Count=0") })
+            session.send(.key(.return))
+            let activated = try await recorder.wait(after: resized.sequence, description: "retained descendant activates once") {
+                $0.scrollDescendantFocused && $0.raster.lines.contains { $0.contains("Count=1") }
+            }
+            #expect(activated.focusedIdentity == initial.focusedIdentity)
+            session.send(.key(.character("w"), modifiers: .ctrl))
+            let hidden = try await recorder.wait(after: activated.sequence, description: "authored scroll deliberately hides the target") {
+                $0.semantics.scrollRoutes.first?.contentOffset == CellPoint(x: 0, y: 20)
+                    && !$0.raster.lines.contains { $0.contains("TARGET") }
+                    && $0.raster.lines.contains { $0.contains("Offset=20") }
+            }
+            session.send(.key(.character("g"), modifiers: .ctrl))
+            let changed = try await recorder.wait(after: hidden.sequence, description: "content growth preserves deliberate hidden-target scrolling") {
+                $0.raster.lines.contains { $0.contains("Grown=true") }
+            }
+            #expect(changed.semantics.scrollRoutes.first?.contentOffset == CellPoint(x: 0, y: 20))
+            #expect(changed.raster.lines.contains { $0.contains("Offset=20") })
+            #expect(!changed.raster.lines.contains { $0.contains("TARGET") })
+            #expect(changed.raster.lines.contains { $0.contains("Count=1") })
             session.stop()
             #expect(try await run.value == .inputEnded)
         } catch {
@@ -206,7 +250,7 @@ struct ChioScrollViewStyleTests {
         let run = Task { try await session.start() }
         do {
             _ = try await recorder.wait(description: "automatic native style preserves its first row") {
-                $0.scrollTestBodyFocused && $0.scrollTestOffset(x: 1, y: 0)
+                $0.scrollTestBodyFocused && $0.scrollTestOffset(x: 0, y: 0)
             }
             session.stop()
             #expect(try await run.value == .inputEnded)
@@ -292,7 +336,67 @@ extension ScrollStyleTestView: View {
     }
 }
 
+private struct ScrollDescendantTestApp {}
+
+extension ScrollDescendantTestApp: App {
+    var body: some Scene {
+        WindowGroup(id: "scroll-descendant") { ScrollDescendantTestView() }.exitOnKeys([])
+    }
+}
+
+@MainActor
+private struct ScrollDescendantTestView {
+    @State private var position = ScrollCellOffset.zero
+    @State private var isExpanded = false
+    @State private var activations = 0
+    @FocusState private var isTargetFocused: Bool
+}
+
+extension ScrollDescendantTestView: View {
+    var body: some View {
+        let precedingHeight: Int
+        if isExpanded {
+            precedingHeight = 12
+        } else {
+            precedingHeight = 8
+        }
+        return VStack(alignment: .leading, spacing: 0) {
+            ScrollView(.vertical, position: $position) {
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("Before").frame(height: precedingHeight)
+                    Button("TARGET") { activations += 1 }
+                        .focused($isTargetFocused)
+                    ForEach(0..<30, id: \.self) { row in Text("Tail \(row)") }
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            Text("Offset=\(position.y) Count=\(activations)")
+            Text("Grown=\(isExpanded)")
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .style(scrollTestTheme)
+        .onAppear { isTargetFocused = true }
+        .onKeyPress { press in
+            if press == KeyPress(.character("w"), modifiers: .ctrl) {
+                position = ScrollCellOffset(x: 0, y: 20)
+                return .handled
+            }
+            if press == KeyPress(.character("g"), modifiers: .ctrl) {
+                isExpanded = true
+                return .handled
+            }
+            return .ignored
+        }
+    }
+}
+
 private extension SemanticHostFrame {
+    var scrollDescendantFocused: Bool {
+        semantics.accessibilityNodes.contains {
+            $0.identity == focusedIdentity && $0.role == .button && $0.label == "TARGET"
+        }
+    }
+
     var scrollTestBodyFocused: Bool {
         semantics.accessibilityNodes.contains {
             $0.identity == focusedIdentity && $0.label == "Viewport"

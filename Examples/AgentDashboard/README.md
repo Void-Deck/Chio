@@ -54,7 +54,7 @@ These examples demonstrate compositions rather than additional public library AP
 
 `Tests/ChioDashboardTests` covers example values, raster output and hosted
 interactions. Follow [the repository checks](../../Docs/Verification.md#running-checks),
-including the documented debug/release split and terminal probes in
+including the release test suite and terminal probes in
 `Scripts/ci/verify.sh`. Visible example changes also require the
 [showcase workflow](../../Docs/Verification.md#demo-site). Passing a local fixture
 workflow does not establish real-agent integration, every terminal or SSH behavior.

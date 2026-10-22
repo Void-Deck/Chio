@@ -60,10 +60,12 @@ owns migration and qualification evidence.
 
 Requires **Swift 6.4+**, on **macOS 15+ or Linux**. From a repository checkout:
 
-This revision pins [the merged SwiftTUI correction](Docs/Decisions/Dependencies.md#020-merged-native-correction)
-at `7e62e95c913508f4fef42db36fde6fd60acb541c`. SwiftTUI 0.18.0 does not contain
-that correction. For use in another package, follow the compatible exact revisions
-in the [release record](Docs/Releases/0.2.0.md).
+This checkout tests the merged [SwiftTUI focus and callback corrections](Docs/Decisions/Dependencies.md#palette-and-scroll-focus-adoption)
+at `877d7765febd08ffc2ed434a7ef231e4132c3b80`.
+Qualification is recorded in [Verification](Docs/Verification.md#merged-callback-qualification).
+This is not a release pin.
+Consumers testing this branch with a direct SwiftTUI dependency must use the same
+revision. Published Chio releases retain their recorded pins.
 Version-based Chio requirements remain unsupported by the revision-pinned dependency graph.
 
 ```sh

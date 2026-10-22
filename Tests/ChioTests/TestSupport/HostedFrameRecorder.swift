@@ -78,6 +78,8 @@ final class HostedFrameRecorder {
         case matched(String, sequence: UInt64)
         case timedOut(String)
         case frame(SemanticHostFrame)
+        case inputSent(KeyPress)
+        case inputDispatched(KeyPress)
         case focus(FocusPresentation)
         case runtimeIssue(RuntimeIssue)
 
@@ -93,6 +95,10 @@ final class HostedFrameRecorder {
                 return "deadline fired: \(expectation)"
             case .frame(let frame):
                 return "frame \(frame.sequence), focus=\(String(describing: frame.focusedIdentity?.path))\n\(frame.raster.lines.joined(separator: "\n"))"
+            case .inputSent(let press):
+                return "input sent: \(press)"
+            case .inputDispatched(let press):
+                return "input dispatched: \(press)"
             case .focus(let presentation):
                 return "focus=\(String(describing: presentation.focusedIdentity?.path)), semantics=\(presentation.semantics)"
             case .runtimeIssue(let issue):

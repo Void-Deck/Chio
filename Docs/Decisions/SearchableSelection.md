@@ -35,14 +35,17 @@ feedback and must not gate ancestor input routing.
 
 ## Searchable multiple choice
 
+Skipping disabled focus stops was approved on 2026-10-20 for the pending SwiftTUI
+upgrade. Earlier Chio releases retain the previous native focus behavior.
+
 `SearchableChecklist` uses the matcher, native List set selection and explicit
 checkmarks. The binding contains checked stable IDs; native focus is an independent
 cursor. Filtering never changes membership. Fuzzy is default; substring filtering
 and external query bindings are supported. Counts include hidden/unavailable checks.
 
-Only visible, enabled IDs may toggle. Disabled choices stay visible native focus
-stops with an Unavailable label; both toggle directions are rejected. Removed
-checked IDs remain bound and count as unavailable. Source/query/theme/geometry
+Only visible, enabled IDs may toggle. Disabled choices stay visible with an
+Unavailable label; native focus skips them and both toggle directions are rejected.
+Removed checked IDs remain bound and count as unavailable. Source/query/theme/geometry
 changes never prune or auto-select IDs. Applications own membership validity,
 limits, removal and reset policy.
 
@@ -57,10 +60,11 @@ Search starts focused. Return requests a List-only native focus namespace; arrow
 move the cursor and Space/Return toggle through the same gate as native activation.
 Native scrolling owns reveal. Stable membership does not promise stable item focus
 through arbitrary reordering: native row indices can change. `/` enters search;
-Escape clears it and returns to rows when results exist. No-result Return keeps
-editing focus. Unmodified input during search-to-results handoff is consumed until
-focus arrives, preventing stale-row toggles. Results shortcuts use the same scoped
-callback as `SearchableList`.
+Escape clears it and returns to rows when an enabled result exists. Return or
+Escape keeps editing focus when the current query has no enabled results, including
+when every visible choice is disabled. Unmodified input during search-to-results
+handoff is consumed until focus arrives, preventing stale-row toggles. Results
+shortcuts use the same scoped callback as `SearchableList`.
 
 ## Implementation and verification
 
