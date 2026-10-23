@@ -38,6 +38,10 @@
     {
       "path": "Spikes/MapRouting",
       "document": "Spikes/MapRouting/README.md"
+    },
+    {
+      "path": "Spikes/DotMatrix",
+      "document": "Spikes/DotMatrix/README.md"
     }
   ],
   "excludedModules": [],

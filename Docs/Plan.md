@@ -8,7 +8,25 @@ checks live in [Verification](Verification.md). Completed release scope and resu
 live in [0.2.2](Releases/0.2.2.md) and [0.2.0](Releases/0.2.0.md), with
 [0.1.0](Releases/0.1.0.md) retained as history.
 
-## Current slice: Chio 0.2.2 release and consumer adoption
+## Current slice: dot matrix visual study
+
+The user approved an isolated prototype on 2026-10-23. Lettering and an animated
+icon will use the same immutable, bounded frame and native Canvas presentation.
+The [study](../Spikes/DotMatrix/README.md) owns its run commands and constraints.
+One terminal cell per LED preserves independent colors; fixed pitch preserves the
+grid on resize, with an authored text fallback when the complete grid cannot fit.
+The example owns timing and interaction. No public Chio API changes in this slice.
+
+The isolated implementation now renders lettering and a four-frame heart through
+the same view. Actual terminal captures qualify round/square dots, amber/green
+lettering, narrow/tiny text fallbacks, animation and paused-frame resize recovery.
+The study's [findings](../Spikes/DotMatrix/README.md#findings--2026-10-23) distinguish
+macOS terminal/player evidence from untested fonts, SSH and Linux appearance.
+Review the look before public promotion. Numeric lettering may extend
+`InstrumentReadout`; arbitrary imagery needs a separate view only if the shared
+presentation proves useful. The public showcase remains unchanged during this study.
+
+## Chio 0.2.2 release and consumer adoption
 
 [Chio 0.2.2](https://github.com/echoz/Chio/releases/tag/v0.2.2) was published on
 2026-10-23 at `4ded80f870fb2c92c92d7d402fd71d42213ecee8`, after

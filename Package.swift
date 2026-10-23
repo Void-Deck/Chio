@@ -34,6 +34,23 @@ let package = Package(
         ),
     ],
     targets: [
+        // Internal visual study; no public Chio component or library product.
+        .target(
+            name: "DotMatrixStudy",
+            dependencies: ["Chio", .product(name: "SwiftTUI", package: "swift-tui")],
+            path: "Spikes/DotMatrix",
+            exclude: ["README.md", "Launcher", "Tests", "Scripts"]
+        ),
+        .executableTarget(
+            name: "DotMatrixPreview",
+            dependencies: ["DotMatrixStudy"],
+            path: "Spikes/DotMatrix/Launcher"
+        ),
+        .testTarget(
+            name: "DotMatrixTests",
+            dependencies: ["DotMatrixStudy", .product(name: "SwiftTUIRuntime", package: "swift-tui")],
+            path: "Spikes/DotMatrix/Tests"
+        ),
         .executableTarget(
             name: "RouteReadability",
             dependencies: ["Chio", .product(name: "SwiftTUI", package: "swift-tui")],

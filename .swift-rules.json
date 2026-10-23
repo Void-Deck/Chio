@@ -31,6 +31,31 @@
   ],
   "importPolicies": [
     {
+      "path": "Spikes/DotMatrix/Tests",
+      "allowed": [
+        "DotMatrixStudy",
+        "Foundation",
+        "Swift",
+        "SwiftTUIRuntime",
+        "Testing"
+      ]
+    },
+    {
+      "path": "Spikes/DotMatrix/Launcher",
+      "allowed": [
+        "DotMatrixStudy",
+        "Swift"
+      ]
+    },
+    {
+      "path": "Spikes/DotMatrix",
+      "allowed": [
+        "Chio",
+        "Swift",
+        "SwiftTUI"
+      ]
+    },
+    {
       "path": "Spikes/MapRouting",
       "allowed": ["Chio", "Foundation", "Swift", "SwiftTUI"]
     },
