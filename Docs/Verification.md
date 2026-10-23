@@ -1,9 +1,64 @@
 # Chio verification
 
 Current requirements for implementation, dependency and visible example changes.
-[Plan](Plan.md) tracks active work; [release records](Releases/0.2.0.md) preserve
+[Plan](Plan.md) tracks active work; [release records](Releases/0.2.2.md) preserve
 revision-specific results. For documentation-only changes, check links, anchors
 and preservation of current contracts.
+
+## Borrowed-output adoption qualification
+
+The current candidate pins merged SwiftTUI
+`3999a9a57dde52fb00aa98952460b0819a0641bf`, which includes #62 and #63.
+Its delta from the earlier qualified head changes startup input scheduling and
+bounded Darwin socket writes. The private focus-type workaround and all seven
+other dependency pins remain unchanged. Repeat the complete release gate,
+compiler-backed rules, platform CI and canonical consumer probes for this input.
+[PR #24](https://github.com/echoz/Chio/pull/24) records the exact tested Chio head,
+current results and independent review. Earlier results below retain their
+original revision; they do not establish merged-pin qualification or adoption.
+
+### Earlier provisional qualification
+
+The initial exact #63 trial uses `c07d686e176f0116024545d6577f97f6d854a18d`
+with the runtime source from Chio `94e87d0`. Apple Swift 6.4 / SwiftBuild release
+linking fails on private `FocusStateLocation` metadata before tests can run.
+Moving only the private list focus enum to file scope fixes that link boundary.
+The same trial passes 511 library, 166 map and 177 dashboard tests, including both
+two-list isolation cases. Existing filesystem skips and interaction deadlines stay
+unchanged. Its full gate was intentionally stopped during terminal checks after
+upstream changed the PR head; this is not a complete gate pass.
+
+The earlier provisional input was upstream head
+`65043a7b411c1bdfbce5c469e496836e6da95445`, which merges `main` at `82d9ea69`.
+It retains the exact borrowed-output patch but also changes rendering and terminal
+behavior. All seven other lockfile pins remain fixed.
+
+The complete, unchanged release gate passes on macOS arm64 with Apple Swift 6.4
+and its default SwiftBuild backend. It reports 511 library, 166 map and 177
+dashboard tests, including both two-list cases. The case-insensitive filesystem
+skip remains explicit. All standalone examples, dashboard and appearance terminal
+workflows, four map workflows, loopback HTTP, cache and offline-pack process
+probes pass. Assertions and deadlines are unchanged.
+
+The same gate passes on Linux arm64 with the pinned Swift 6.4 Noble image
+`sha256:31d14d727f4451f25e29bac9c42563a098c39ac66415e8bad970f48038e38aca`.
+It reports 510 library, 166 map and 177 dashboard tests, with the existing
+permission-enforcement skip. All subsequent executable and process stages pass.
+The isolated source snapshot is unchanged before and after the run. This proves
+ordinary Linux arm64 execution, not static-musl distribution or hosted x86_64 CI.
+
+Compiler-backed EngineeringRules 0.1.10 passes on macOS: 350 files, one retained
+baseline exception and one release Chio compiler configuration. Documentation
+checks cover 57 documents, eight modules and twenty deliverables. The naming
+inventory has no candidates; semantic naming and compatibility still require
+independent review. Both macOS dependency checkout sets match all eight lockfile
+revisions without tracked changes.
+
+These checks qualify the provisional source, including the private focus-type
+workaround. Later documentation corrections preserve every runtime, test,
+dependency and verification-script input. Hosted CI, independent review and
+final downstream adoption remain separate evidence. The
+[release record](Releases/0.2.2.md) keeps publication held.
 
 ## Shared engineering rules
 
@@ -125,7 +180,7 @@ its sixteen public views, both example applications and the static showcase.
 Each view has a distinct real source root and its own `README.md`; the library
 is its declared parent. The [library guide](../Sources/Chio/README.md) links those
 views, and [source ownership](Design.md#source-ownership) explains their boundaries.
-The gate checks 56 unique documents, eight modules and twenty deliverables.
+The gate checks 57 unique documents, eight modules and twenty deliverables.
 
 Schema 2 rejects duplicate roots, invalid parents, missing or blank READMEs,
 symlinks and invalid local Markdown file destinations. Module discovery still

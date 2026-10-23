@@ -10,7 +10,7 @@ rendering, layout, input, and focus.
 
 [![Watch Chio's dashboard recording](Docs/Media/dashboard.png)](https://echoz.github.io/Chio/)
 
-[▶ Watch Chio in action](https://echoz.github.io/Chio/) · [Examples and controls](Docs/Examples.md) · [0.2.0 release record](Docs/Releases/0.2.0.md)
+[▶ Watch Chio in action](https://echoz.github.io/Chio/) · [Examples and controls](Docs/Examples.md) · [0.2.2 release record](Docs/Releases/0.2.2.md)
 
 ## Development and stability
 
@@ -60,12 +60,13 @@ owns migration and qualification evidence.
 
 Requires **Swift 6.4+**, on **macOS 15+ or Linux**. From a repository checkout:
 
-This checkout tests the merged [SwiftTUI focus and callback corrections](Docs/Decisions/Dependencies.md#palette-and-scroll-focus-adoption)
-at `877d7765febd08ffc2ed434a7ef231e4132c3b80`.
-Qualification is recorded in [Verification](Docs/Verification.md#merged-callback-qualification).
-This is not a release pin.
-Consumers testing this branch with a direct SwiftTUI dependency must use the same
-revision. Published Chio releases retain their recorded pins.
+Chio 0.2.2 is unpublished. This qualification branch uses the merged
+[SwiftTUI output-policy correction](https://github.com/SwiftTUI/swift-tui/pull/63)
+at `3999a9a57dde52fb00aa98952460b0819a0641bf`.
+Direct SwiftTUI dependencies must use that same revision when trying this branch.
+After publication, the [release notes](https://github.com/echoz/Chio/releases/tag/v0.2.2)
+will identify the immutable Chio revision to install.
+[Migration and verification](Docs/Releases/0.2.2.md) describe the candidate and its limits.
 Version-based Chio requirements remain unsupported by the revision-pinned dependency graph.
 
 ```sh
@@ -108,7 +109,7 @@ Chio adapts these ideas to native SwiftTUI composition and Swift APIs.
 - [API usage](Docs/Usage.md) — styles and component recipes
 - [Examples](Docs/Examples.md) — controls, screenshots, and SSH guidance
 - [Design](Docs/Design.md) — architecture and interaction contracts
-- [0.2.0 scope and migration](Docs/Releases/0.2.0.md) · [Plan](Docs/Plan.md) · [Development checks](Docs/Verification.md#running-checks)
+- [0.2.2 release and migration](Docs/Releases/0.2.2.md) · [Plan](Docs/Plan.md) · [Development checks](Docs/Verification.md#running-checks)
 
 Code: [MIT License](LICENSE). Bundled map data retains its
 [source licenses](Examples/Maps/Fixtures/Provenance.md).

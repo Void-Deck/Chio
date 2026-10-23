@@ -12,20 +12,19 @@ All four direct dependencies are revision-pinned:
 
 | Dependency | Pin and reason |
 | --- | --- |
-| SwiftTUI merged #60 | `877d7765febd08ffc2ed434a7ef231e4132c3b80`; includes #58/#59 and the callback-scope and observation-slot corrections; release publication remains separate |
+| SwiftTUI merged adoption candidate | `3999a9a57dde52fb00aa98952460b0819a0641bf`; retains #58–#60 and includes #62 startup input and #63 borrowed-output restoration; Chio release publication held for qualification |
 | Swift Markdown 0.9.0 | `25cb61d3482054b09ae76ca4f281b1bfe7fe5a43`; revision permits conditional Windows unsafe flags |
 | Tree-sitter 0.26.13 | `d97971e24500218865c05ed1febdee2acf41bae1`; last release with upstream SwiftPM manifest |
 | tree-sitter-swift 0.7.4 | `82bb3a533e0801fd2bbaa11dc49676e10bf41948`; generated C grammar |
 
 Version-based Chio requirements (`from:` or `exact:`) cannot resolve this
-revision-pinned graph. Consumers of the experimental v0.1.0 source release pin
-Chio's immutable revision `1bcc08ce23747c8c8b1121e3add3c37951f7b09e`.
+revision-pinned graph. Use the immutable Chio revision recorded in the selected
+GitHub release notes.
 The other direct revision requirements remain unchanged. Consumers with their own
 SwiftTUI requirement must use the same exact revision as the chosen Chio revision,
 then resolve their lockfile and verify their workflows.
-[Plan](../Plan.md#current-slice-list-row-spacing) records the approved row-density
-controls, merged native correction and remaining release qualification.
-The [0.2.0 release preparation](../Releases/0.2.0.md) records the current Chio release scope;
+[Chio 0.2.2](../Releases/0.2.2.md) records the current dependency update and migration.
+The [0.2.0 release record](../Releases/0.2.0.md) preserves the earlier feature scope;
 it does not change the immutable revision requirement.
 
 Swift Markdown brings swift-cmark 0.9.0 built from source, without a separately
@@ -35,9 +34,27 @@ Chio does no query-resource I/O and generates no Objective-C/Foundation accessor
 Build evidence is recorded in [0.1.0](../Releases/0.1.0.md); the current static Linux
 blocker is below. Ordinary glibc support does not establish static-musl distribution.
 
+## Borrowed-output adoption candidate
+
+The release branch pins merged #63 from the canonical remote at `3999a9a5`.
+It also contains merged #62 and the subsequent stream-input scheduling correction.
+The maintainer extended #63 to bound writes to saturated Darwin sockets.
+Earlier qualification of the unmerged `65043a7b` head does not qualify this revision.
+All seven other lockfile entries remain unchanged. `main` still uses `877d7765`;
+published Chio 0.2.1 and consumer release requirements remain unchanged.
+
+The same candidate moves Chio's private list focus enum out of its generic view
+to avoid an Apple SwiftBuild metadata-link failure. Public API and native focus
+ownership stay intact. [Native integration](NativeIntegration.md#private-focus-metadata)
+owns the compiler limitation; [verification](../Verification.md#borrowed-output-adoption-qualification)
+owns exact consumer and platform results. A passing earlier native revision does
+not qualify this combined candidate. Keep release publication held until required
+checks and review complete.
+
 ## Palette and scroll-focus adoption
 
-**Status:** Approved #58/#59 adoption; qualifying the merged #60 correction before moving the operational pin.
+**Status:** Adopted on `main` by [PR #23](https://github.com/echoz/Chio/pull/23)
+at `6df2e336f5a398d34a37e98e431250f8dcaeca02`, included in the 0.2.2 release scope.
 
 [SwiftTUI #58](https://github.com/SwiftTUI/swift-tui/pull/58) and
 [#59](https://github.com/SwiftTUI/swift-tui/pull/59) merged on 2026-10-19.
@@ -74,8 +91,8 @@ contents and Chio integration are verified; no automatic monitoring is requested
 
 [Verification](../Verification.md#palette-and-scroll-focus-qualification) owns
 consumer evidence. Upstream checks and the earlier 0.2.0 qualification do not
-qualify this dependency combination. Publication and downstream adoption remain
-separate from this candidate.
+qualify this dependency combination. The [0.2.2 release record](../Releases/0.2.2.md)
+separates verified source, publication and downstream adoption.
 
 <a id="020-merged-native-correction"></a>
 
