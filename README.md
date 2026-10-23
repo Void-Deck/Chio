@@ -58,16 +58,20 @@ owns migration and qualification evidence.
 
 ## Try it
 
-Requires **Swift 6.4+**, on **macOS 15+ or Linux**. From a repository checkout:
+Requires **Swift 6.4+**, on **macOS 15+ or Linux**.
+[Chio 0.2.2](https://github.com/echoz/Chio/releases/tag/v0.2.2) is published at
+`4ded80f870fb2c92c92d7d402fd71d42213ecee8`. Install that immutable revision:
 
-Chio 0.2.2 is unpublished. This qualification branch uses the merged
-[SwiftTUI output-policy correction](https://github.com/SwiftTUI/swift-tui/pull/63)
-at `3999a9a57dde52fb00aa98952460b0819a0641bf`.
-Direct SwiftTUI dependencies must use that same revision when trying this branch.
-After publication, the [release notes](https://github.com/echoz/Chio/releases/tag/v0.2.2)
-will identify the immutable Chio revision to install.
-[Migration and verification](Docs/Releases/0.2.2.md) describe the candidate and its limits.
-Version-based Chio requirements remain unsupported by the revision-pinned dependency graph.
+```swift
+.package(url: "https://github.com/echoz/Chio.git",
+         revision: "4ded80f870fb2c92c92d7d402fd71d42213ecee8")
+```
+
+Direct SwiftTUI dependencies must match `3999a9a57dde52fb00aa98952460b0819a0641bf`.
+Resolve the manifest and lockfile together. Version-based Chio requirements remain
+unsupported by the revision-pinned dependency graph.
+[Migration and verification](Docs/Releases/0.2.2.md) describe the release and its limits.
+From a checkout of `v0.2.2`:
 
 ```sh
 swift run -c release chio-dashboard

@@ -7,15 +7,44 @@ and preservation of current contracts.
 
 ## Borrowed-output adoption qualification
 
-The current candidate pins merged SwiftTUI
-`3999a9a57dde52fb00aa98952460b0819a0641bf`, which includes #62 and #63.
-Its delta from the earlier qualified head changes startup input scheduling and
-bounded Darwin socket writes. The private focus-type workaround and all seven
-other dependency pins remain unchanged. Repeat the complete release gate,
-compiler-backed rules, platform CI and canonical consumer probes for this input.
-[PR #24](https://github.com/echoz/Chio/pull/24) records the exact tested Chio head,
-current results and independent review. Earlier results below retain their
-original revision; they do not establish merged-pin qualification or adoption.
+Published [Chio 0.2.2](https://github.com/echoz/Chio/releases/tag/v0.2.2) is
+`4ded80f870fb2c92c92d7d402fd71d42213ecee8`. It pins merged SwiftTUI
+`3999a9a57dde52fb00aa98952460b0819a0641bf`, including #62 and #63.
+The released merge and reviewed head `5600d1da4a4e50cadb449754c311501a79747f92`
+share tree `11a562a781a0021d36bd19cf4e41835e28025d43`.
+[PR #24](https://github.com/echoz/Chio/pull/24) records the checks and independent review.
+
+The complete local macOS release gate passes: 511 library, 166 map and 177
+dashboard tests, including both two-list isolation cases. The
+[PR gates for the same source tree](https://github.com/echoz/Chio/actions/runs/39926861526) pass
+on macOS and Linux. Linux reports 510 library, 166 map and 177 dashboard tests.
+All standalone products, snapshots, sixteen dashboard terminal workflows, three
+appearance sessions, four map workflows, loopback HTTP, cache and offline-pack
+process probes pass. Existing platform-dependent skips, assertions and deadlines
+remain unchanged.
+
+Compiler-backed EngineeringRules 0.1.10 passes across 350 files with one retained
+baseline exception. Documentation checks pass for 57 documents, eight modules and
+twenty deliverables. The naming inventory is empty; independent semantic review
+has no remaining actionable findings. All runtime, test and verification inputs
+are unchanged between the original runtime qualification and the reviewed tree.
+
+A separate canonical GitHub consumer resolves the exact released Chio commit and
+matching SwiftTUI. Its default Apple SwiftBuild release build and all six public
+API/raster groups pass, including external `SearchableList` specialization.
+All nine checkouts match the lockfile and remain clean; the other eight pins and
+probe source are unchanged. The final installation refresh reuses the existing
+isolated build cache; it does not repeat complete application-consumer qualification.
+
+The [post-merge CI](https://github.com/echoz/Chio/actions/runs/39968810104) is still
+pending in the 2026-10-23 publication snapshot. The
+[demo workflow](https://github.com/echoz/Chio/actions/runs/39968810145) passed build
+and deployment; no fresh browser smoke result is inferred.
+
+Marquee, Blackbox and Pitwall passed isolated affected-path refreshes. Their owners
+have started adoption of the published commit; those earlier checks and delivered
+requests do not establish completed release adoption. Earlier results below retain
+their original revisions and remain separate from this merged-pin qualification.
 
 ### Earlier provisional qualification
 
@@ -57,8 +86,8 @@ revisions without tracked changes.
 These checks qualify the provisional source, including the private focus-type
 workaround. Later documentation corrections preserve every runtime, test,
 dependency and verification-script input. Hosted CI, independent review and
-final downstream adoption remain separate evidence. The
-[release record](Releases/0.2.2.md) keeps publication held.
+final downstream adoption remained separate evidence at that checkpoint. The
+[release record](Releases/0.2.2.md) records the later qualification and publication.
 
 ## Shared engineering rules
 
