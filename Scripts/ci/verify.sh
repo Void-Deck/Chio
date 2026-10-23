@@ -90,8 +90,10 @@ python3 -B Scripts/docs/capture-appearance.py "$binary" --verify-only \
 swift build --force-resolved-versions --jobs "${SWIFT_BUILD_JOBS:-2}" \
   -c release --product chio-matrix
 matrix_binary="$(swift build -c release --show-bin-path)/chio-matrix"
+mkdir -p .build/ci-results/dot-matrix
+matrix_capture_directory="$(mktemp -d .build/ci-results/dot-matrix/run.XXXXXX)"
 python3 -B Scripts/docs/capture-dot-matrix.py "$matrix_binary" \
-  --output .build/ci-results/dot-matrix
+  --output "$matrix_capture_directory"
 
 # Public map contracts run with the test targets above. Exercise the local map
 # example separately from the dashboard, including fixture provenance and raw input.
