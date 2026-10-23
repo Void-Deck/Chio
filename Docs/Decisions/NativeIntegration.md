@@ -1,25 +1,24 @@
 # Native integration boundaries
 
-**Status:** Chio's default branch uses SwiftTUI
-`877d7765febd08ffc2ed434a7ef231e4132c3b80`, containing merged #58/#59/#60.
-The former form and diff failures pass with
-this pin; [Verification](../Verification.md#release-verification-qualification)
-records the platform gates and remaining qualification boundaries.
-It merged in PR #23 and is included in the 0.2.2 release scope.
+**Status:** Chio's default branch and published 0.2.2 release use SwiftTUI
+`3999a9a57dde52fb00aa98952460b0819a0641bf`, containing merged #58/#59/#60/#62/#63.
+PR #24 merged the current pin; [Verification](../Verification.md#borrowed-output-adoption-qualification)
+records platform gates for the same source tree, installation and remaining limits.
+The earlier `877d7765febd08ffc2ed434a7ef231e4132c3b80` pin merged in PR #23
+and corrected the former form and diff failures. Its
+[release verification](../Verification.md#release-verification-qualification) remains historical evidence.
 The earlier 0.2.0 candidate uses merged #57 at
 `7e62e95c913508f4fef42db36fde6fd60acb541c`, with passing macOS/Linux qualification.
 The earlier [PR #17](https://github.com/echoz/Chio/pull/17) adopted published
 0.18.0 on `main` at `7d44bd6bd85290f2c6e3526cf19e6647d551797c`, including
 merged #47/#49/#50/#56.
-[Dependencies](Dependencies.md#palette-and-scroll-focus-adoption) owns the current pin decision;
+[Dependencies](Dependencies.md#borrowed-output-adoption) owns the current pin decision;
 [0.2.2 release record](../Releases/0.2.2.md) records integrated scope and evidence.
 Chio qualification remains distinct from upstream checks and earlier local-patch evidence.
 
-The release candidate instead pins merged #63 at `3999a9a5`, including #62 and
-stream-input scheduling changes. It retains the
-[private-focus compiler workaround](#private-focus-metadata). Earlier local gates
-passed with `65043a7b`; the merged input requires its own qualification.
-Neither the default branch nor a published release adopts it yet.
+The release retains the [private-focus compiler workaround](#private-focus-metadata).
+Earlier local gates passed with `65043a7b`; fresh qualification of the merged
+`3999a9a5` input preceded publication. Application adoption remains in progress.
 
 Keep native ownership and visible limitations explicit when composing or extending Chio.
 
@@ -84,7 +83,7 @@ renderer, focus system or hidden dependency patch.
 | Early input | Search, palette and form handoffs cover documented type-ahead/batched paths. Arbitrary multi-control input before presentation settles needs native support, not an application-built editor or focus graph. |
 | Editor navigation | End at the end of a native text field is unhandled when it makes no change, so an enclosing ScrollView can scroll to the bottom. The appearance study reproduced this at 36 × 18; ordinary editing remains focused. Its capture moves Left before End to exercise a real caret movement. Repeated no-op End is unresolved at the native input owner. |
 | Cooperative shutdown | The current pin retains [merged #48](https://github.com/SwiftTUI/swift-tui/pull/48), superseding #45. Accepted quit/EOF retains final-input presentation and synchronous follow-ups without draining unrelated continuous writes. Arbitrarily expensive frames/callbacks and application producers retain their own bounds and ownership. |
-| Borrowed output on macOS | The default-branch pin retains no-SIGPIPE suppression on caller-owned output. The release candidate adopts merged #63 to restore it and bound socket writes. [Investigation and qualification](#borrowed-output-policy-on-macos) distinguish those inputs. Callers must coordinate other I/O and flag changes on shared descriptors. |
+| Borrowed output on macOS | Chio 0.2.2 adopts merged #63 to restore caller-owned no-SIGPIPE policy and bound socket writes. [Investigation and qualification](#borrowed-output-policy-on-macos) distinguish those inputs. Callers must coordinate other I/O and flag changes on shared descriptors. |
 | Portability and accessibility | CI and pseudo-terminals cover specific workflows. Other distributions, architectures, assistive technologies and live SSH devices require separate evidence. Static Linux remains [blocked](Dependencies.md#static-linux-blocker). |
 
 ## Borrowed output policy on macOS
@@ -93,12 +92,12 @@ renderer, focus system or hidden dependency patch.
 qualification. The user approved a native correction, regression tests and
 upstream publication in [PR #63](https://github.com/SwiftTUI/swift-tui/pull/63).
 The correction merged as `3999a9a57dde52fb00aa98952460b0819a0641bf`.
-The Chio candidate pins that merged revision; release and default-branch adoption
-remain held for consumer qualification. Earlier results below apply to the named
-pre-merge revisions.
+Chio 0.2.2 includes that merged revision after Chio gates for the same source tree,
+canonical installation and independent review. Application adoption remains separate.
+Earlier results below apply to the named pre-merge revisions.
 
-Darwin `terminalPlatformWrite` enables `F_SETNOSIGPIPE` before writing and does
-not restore the prior value. This protection was introduced in
+On the earlier pin, Darwin `terminalPlatformWrite` enables `F_SETNOSIGPIPE` before
+writing and does not restore the prior value. This protection was introduced in
 [`b5553d3d`](https://github.com/SwiftTUI/swift-tui/commit/b5553d3dd7a5a373ba15b32f3e03aca06cd27127)
 to prevent process termination after output disconnects. Removing suppression
 would reintroduce that failure.
@@ -155,14 +154,14 @@ historical candidate results. The merged correction requires the current
 
 ## Private focus metadata
 
-The Apple Swift 6.4 default SwiftBuild release backend fails to link Chio's map
-executable against the newer native focus implementation. The missing symbol is
-the private `FocusStateLocation` metadata accessor, referenced by value witnesses
-for `SearchableList`. The native build backend links the same source. A separate
+Before the scoped workaround, the Apple Swift 6.4 default SwiftBuild release backend
+failed to link Chio's map executable against the newer native focus implementation.
+The missing symbol was the private `FocusStateLocation` metadata accessor, referenced by value witnesses
+for `SearchableList`. The native build backend linked the same source. A separate
 minimal generic fixture also produces a compiler metadata-verification failure;
 that evidence does not prove the two failures have one cause.
 
-The qualification candidate moves the private `Focus` enum from the generic view
+Chio 0.2.2 moves the private `Focus` enum from the generic view
 to the same file's private scope. It retains the cases, bindings, native storage
 and public API. This removes an unnecessary generic type context without widening
 access or patching SwiftTUI internals. Tests mount two lists with overlapping IDs
@@ -178,14 +177,14 @@ release-link and interaction results for each exact dependency input.
 
 **Status:** [PR #62](https://github.com/SwiftTUI/swift-tui/pull/62) merged as
 `d92d1b53d376e775c583615a3976d2e22c0d85e4`. It is included in the `3999a9a5`
-Chio candidate, but not in Chio's default branch or published release.
+pin in Chio's default branch and published 0.2.2 release.
 
 A producer that continuously invalidates during startup can delay already queued
 input behind sixteen initial acquisitions and one follow-up frame. A deterministic
 native regression at `b23c7338` queues a key at commit 1 or 3; both cases handle it
-only at commit 17. The current `877d7765` dependency has the same startup drain.
+only at commit 17. The earlier `877d7765` dependency has the same startup drain.
 
-The candidate gives initial presentation its own drain policy. It preserves the
+The correction gives initial presentation its own drain policy. It preserves the
 first noncancellable acquisition and synchronous appearance/focus follow-ups, then
 services pending input before unrelated producer redraws. Schedulers without
 callback attribution retain the existing bounded fallback. This is native runtime
@@ -200,7 +199,7 @@ main-actor-owned. These ordering tests do not establish a wall-time limit for
 arbitrarily expensive frames or application callbacks.
 [Verification](../Verification.md#startup-input-investigation) retains the original
 investigation; [current qualification](../Verification.md#borrowed-output-adoption-qualification)
-owns the merged candidate. Upstream merge is not operational Chio adoption.
+owns the merged-pin qualification. Application release adoption remains separate.
 
 ## Tall list rows
 

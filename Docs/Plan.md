@@ -10,39 +10,28 @@ live in [0.2.2](Releases/0.2.2.md) and [0.2.0](Releases/0.2.0.md), with
 
 ## Current slice: Chio 0.2.2 release and consumer adoption
 
-The user approved publishing 0.2.2 and coordinating consumer adoption on
-2026-10-22. Release preparation started from merged PR #23
-at `6df2e336f5a398d34a37e98e431250f8dcaeca02`. The adoption candidate now adds
-the borrowed-output correction and a scoped compiler workaround described below.
-[The release record](Releases/0.2.2.md) owns scope,
-migration and qualification; the published GitHub release owns the immutable tag
-and installation revision.
+[Chio 0.2.2](https://github.com/echoz/Chio/releases/tag/v0.2.2) was published on
+2026-10-23 at `4ded80f870fb2c92c92d7d402fd71d42213ecee8`, after
+[PR #24](https://github.com/echoz/Chio/pull/24) merged. It pins SwiftTUI
+`3999a9a57dde52fb00aa98952460b0819a0641bf`, including merged #62, #63 and the
+stream-input scheduling correction. The seven other dependency pins remain unchanged.
+The [release record](Releases/0.2.2.md) owns installation, scope and limits;
+[Verification](Verification.md#borrowed-output-adoption-qualification) records the
+passing PR gates for the same source tree, final installation and pending post-merge CI.
 
-Blackbox found the macOS
-[borrowed-output policy issue](Decisions/NativeIntegration.md#borrowed-output-policy-on-macos)
-during adoption. Its correction merged in
-[SwiftTUI PR #63](https://github.com/SwiftTUI/swift-tui/pull/63) as
-`3999a9a57dde52fb00aa98952460b0819a0641bf`. The qualification branch now pins
-that canonical revision, including merged #62 and the stream-input scheduling
-correction. The seven other dependency pins stay fixed.
+Blackbox found the [borrowed-output policy issue](Decisions/NativeIntegration.md#borrowed-output-policy-on-macos)
+during the earlier adoption trial. The published release includes its native
+correction and Chio's scoped [private-focus compiler workaround](Decisions/NativeIntegration.md#private-focus-metadata).
+Earlier `65043a7b` results remain historical; the merged `3999a9a5` input received
+fresh platform, terminal, consumer and independent-review qualification.
 
-The maintainer changed #63 after the earlier `65043a7b` qualification. That prior
-head passed Chio platform gates and consumer trials; those results do not qualify
-the merged revision. Repeat the applicable release, terminal and consumer checks
-before readiness. Keep publication and default-branch adoption separate from
-upstream merge and candidate verification.
-
-The newer dependency reproduces an Apple SwiftBuild release-link failure for
-`SearchableList`'s nested private focus enum. The candidate moves that enum to
-file scope and retains native focus storage. Two-list interaction coverage checks
-independent editing and selection with matching and different generic types.
-[Verification](Verification.md#borrowed-output-adoption-qualification) distinguishes
-the initial trial, the updated upstream head and remaining checks.
-
-Marquee, Blackbox and Pitwall are the confirmed application consumers. Their
-owning tasks update both Chio and any direct SwiftTUI requirement, resolve the
-lockfile and run their integration gates. Preserve concurrent work and existing
-publication permissions. Track candidate, merged and verified adoption separately.
+The user approved publication and coordinated consumer adoption on 2026-10-22.
+Release preparation started from merged PR #23. Requests reached
+the owning Marquee, Blackbox and Pitwall tasks, and all three tasks have started.
+Their earlier isolated affected-path refreshes passed; final adoption of the
+published commit remains in progress. Each owner must resolve both requirements,
+verify its integration and preserve its publication and merge-approval boundaries.
+Dispatch and candidate verification do not establish completed downstream adoption.
 
 <a id="current-slice-merged-palette-and-scroll-focus-fixes"></a>
 
@@ -51,8 +40,9 @@ publication permissions. Track candidate, merged and verified adoption separatel
 The user approved adopting merged SwiftTUI #58 and #59 on 2026-10-19. Qualification
 exposed deferred callback-owner reads and stacked observation-slot collisions.
 [SwiftTUI #60](https://github.com/SwiftTUI/swift-tui/pull/60) corrects both and is
-merged as `877d7765febd08ffc2ed434a7ef231e4132c3b80`. Chio's operational pin now
-resolves that exact canonical upstream revision. SwiftTUI 0.18.3, the latest
+merged as `877d7765febd08ffc2ed434a7ef231e4132c3b80`.
+That adoption resolved the exact canonical upstream revision;
+0.2.2 retains those corrections in its newer pin. SwiftTUI 0.18.3, the latest
 published release checked for this slice, predates these fixes.
 [Dependencies](Decisions/Dependencies.md#palette-and-scroll-focus-adoption)
 owns the revision and behavior contract.
@@ -80,8 +70,8 @@ Release publication and downstream adoption remain separate evidence.
 
 The earlier debug failures and isolated experiments remain in the
 [qualification record](Verification.md#startup-input-investigation). PR #23 adopted
-neither SwiftTUI #62 nor the private focus-type experiment. The current 0.2.2
-candidate includes the scoped focus-type workaround and merged #62 described
+neither SwiftTUI #62 nor the private focus-type experiment. The published 0.2.2
+release includes the scoped focus-type workaround and merged #62 described
 above. Release qualification does not establish debug-specific consumer behavior.
 
 ## Delivered maintenance: naming review

@@ -12,7 +12,7 @@ All four direct dependencies are revision-pinned:
 
 | Dependency | Pin and reason |
 | --- | --- |
-| SwiftTUI merged adoption candidate | `3999a9a57dde52fb00aa98952460b0819a0641bf`; retains #58–#60 and includes #62 startup input and #63 borrowed-output restoration; Chio release publication held for qualification |
+| SwiftTUI in Chio 0.2.2 | `3999a9a57dde52fb00aa98952460b0819a0641bf`; retains #58–#60 and includes #62 startup input and #63 borrowed-output restoration |
 | Swift Markdown 0.9.0 | `25cb61d3482054b09ae76ca4f281b1bfe7fe5a43`; revision permits conditional Windows unsafe flags |
 | Tree-sitter 0.26.13 | `d97971e24500218865c05ed1febdee2acf41bae1`; last release with upstream SwiftPM manifest |
 | tree-sitter-swift 0.7.4 | `82bb3a533e0801fd2bbaa11dc49676e10bf41948`; generated C grammar |
@@ -34,22 +34,25 @@ Chio does no query-resource I/O and generates no Objective-C/Foundation accessor
 Build evidence is recorded in [0.1.0](../Releases/0.1.0.md); the current static Linux
 blocker is below. Ordinary glibc support does not establish static-musl distribution.
 
-## Borrowed-output adoption candidate
+<a id="borrowed-output-adoption-candidate"></a>
 
-The release branch pins merged #63 from the canonical remote at `3999a9a5`.
+## Borrowed-output adoption
+
+Published Chio 0.2.2 at `4ded80f870fb2c92c92d7d402fd71d42213ecee8` pins
+merged #63 from the canonical remote at `3999a9a5`.
 It also contains merged #62 and the subsequent stream-input scheduling correction.
 The maintainer extended #63 to bound writes to saturated Darwin sockets.
 Earlier qualification of the unmerged `65043a7b` head does not qualify this revision.
-All seven other lockfile entries remain unchanged. `main` still uses `877d7765`;
-published Chio 0.2.1 and consumer release requirements remain unchanged.
+All seven other lockfile entries remain unchanged. PR #24 merged that pin into
+`main`; application adoption of the published release has started and remains separate.
 
-The same candidate moves Chio's private list focus enum out of its generic view
+The same release moves Chio's private list focus enum out of its generic view
 to avoid an Apple SwiftBuild metadata-link failure. Public API and native focus
 ownership stay intact. [Native integration](NativeIntegration.md#private-focus-metadata)
 owns the compiler limitation; [verification](../Verification.md#borrowed-output-adoption-qualification)
 owns exact consumer and platform results. A passing earlier native revision does
-not qualify this combined candidate. Keep release publication held until required
-checks and review complete.
+not qualify this combined input. The platform gates for the release tree, canonical
+installation and independent review pass. Applications retain their own adoption checks.
 
 ## Palette and scroll-focus adoption
 
@@ -72,7 +75,8 @@ reviewed patch. The merged tree also includes intervening native diagnostics and
 terminal-output routing changes. The earlier `0283902a` qualification therefore
 does not qualify the complete merged tree.
 
-Chio resolves this exact merged revision from the canonical SwiftTUI remote.
+That adoption resolved this exact merged revision from the canonical SwiftTUI remote;
+0.2.2 retains its corrections in the newer pin described above.
 There is no ignored source patch or package mirror. All seven other lockfile pins
 remain fixed. [Merged qualification](../Verification.md#merged-callback-qualification)
 records fresh platform, terminal and installation results. Upstream merge does not
