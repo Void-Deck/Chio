@@ -1580,8 +1580,11 @@ The [showcase](https://echoz.github.io/Chio/) assembles seventeen recordings and
 three-theme previews from `Docs/Media`, using the pinned local asciinema player
 in `Docs/Site`. Its upstream license remains with the vendored assets. The catalog
 opens on Maps and separates Chio views, styles for native SwiftTUI controls and
-example apps. Entries identify public APIs, native controls, application-owned
-behavior, source, launch command and keyboard guide. Minimal view fragments name
+example apps. Featured Maps and DotMatrix previews above the catalog link to
+their matching entries. With scripts, activation retains the selected theme,
+reveals the catalog and moves keyboard focus to its selected option. Native
+fragment links remain usable without scripts. Entries identify public APIs,
+native controls, application-owned behavior, source, launch command and keyboard guide. Minimal view fragments name
 their application-owned inputs; examples link back to the pieces they compose.
 Supporting APIs sit beside their owning view rather than implying a separate
 performance toolkit. Component options remain independent of themes.

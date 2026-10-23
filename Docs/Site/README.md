@@ -13,6 +13,13 @@ selection, shared preview themes, URL history and explicit recording playback;
 `site.css` styles that catalog. `appearance.html`, `appearance.js` and
 `appearance.css` provide the separate style/size comparison.
 
+Maps and DotMatrix lead the page as two featured views. Their wide terminal
+previews reuse the approved recording stills; native links open the existing
+catalog entries, where commands, playback and API details remain authoritative.
+The rows stack on narrow screens. These featured stills retain their captured
+appearance; the shared theme selector controls the catalog previews. DotMatrix's
+unreleased status stays visible beside its featured introduction.
+
 The catalog assembles 17 terminal recordings and 51 static previews across three themes from
 `Docs/Media`. The pinned local player
 and its upstream license stay in `vendor/asciinema-player`; its
@@ -58,8 +65,8 @@ the approved media. Capture tools live in `Scripts/docs`; their optional browser
 and rendering dependencies are documented in that contract.
 
 Check assembly plus playback, seeking, theme/command/snippet agreement, related
-navigation, URL history, focus, narrow layouts and script-free/missing-asset
-fallbacks. HTML and browser behavior need separate checks beyond the Markdown
-link gate. Recordings demonstrate specific fixture workflows and captured
+navigation, featured-entry links, URL history, focus, narrow layouts and
+script-free/missing-asset fallbacks. HTML and browser behavior need separate
+checks beyond the Markdown link gate. Recordings demonstrate specific fixture workflows and captured
 terminal sizes; they do not prove current live integrations, every platform,
 terminal emulator or SSH configuration.

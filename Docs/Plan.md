@@ -22,6 +22,10 @@ spike and exercises lettering, multicolor imagery, intensity, spacing and native
 scrolling. Its showcase entry belongs under Views. No Marquee integration or
 new release is implied by this slice.
 
+Maps and DotMatrix are the site's featured views. Large retained terminal
+previews introduce both above the catalog and link to their matching examples.
+The catalog continues to own theme selection, playback, commands and API details.
+
 The public slice passes 14 frame/style/raster tests and five example fixture
 tests in release. Real terminal sessions cover all three themes, every spacing
 and intensity setting, resize recovery, native scrolling and terminal restoration.
