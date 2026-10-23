@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Record the built dot-matrix preview in a bounded real POSIX terminal.
+"""Record the built dot-matrix example in a bounded real POSIX terminal.
 
 Only local synthetic content is exercised. Nothing is built, installed or
 published. Replay the resulting *-initial.cast files with the repository's
@@ -23,7 +23,7 @@ import termios
 import time
 
 
-ROOT = Path(__file__).resolve().parents[3]
+ROOT = Path(__file__).resolve().parents[2]
 
 
 def load_script(name, relative):
@@ -48,7 +48,8 @@ def dot_surface(raw):
                    for character in screen_reader.screen(raw))
 
 
-def capture(binary, output):
+def capture(binary, output, theme, viewport=False):
+    name = f"dot-matrix-{theme}" + ("-viewport" if viewport else "")
     width, height = 80, 32
     screen_reader.WIDTH, screen_reader.HEIGHT = width, height
     master, slave = pty.openpty()
@@ -79,6 +80,7 @@ def capture(binary, output):
         return True
 
     def phase(title, expected, keys=b"", hold=0.3, absent=()):
+        expected = [*expected, "q quit"]
         if keys:
             os.write(master, keys)
         deadline = time.monotonic() + 5
@@ -103,15 +105,15 @@ def capture(binary, output):
     def write_cast(path, captured, columns=80, rows=32):
         header = dict(version=2, width=columns, height=rows,
                       env=dict(TERM="xterm-256color", COLORTERM="truecolor", SWIFTTUI_COMPANION="off"),
-                      title="chio / dot matrix · synthetic prototype")
+                      title=f"Chio dot matrix · {theme} · synthetic content")
         path.write_text("\n".join(json.dumps(item, ensure_ascii=False)
                                   for item in [header] + captured) + "\n")
 
-    def still(name):
+    def still(capture_name):
         captured = appearance.terminal_events(list(events))
         captured.append([round(time.monotonic() - began, 4), "o", ""])
-        write_cast(output / f"{name}-initial.cast", captured, width, height)
-        (output / f"{name}.txt").write_text(screen_reader.screen(raw))
+        write_cast(output / f"{capture_name}-initial.cast", captured, width, height)
+        (output / f"{capture_name}.txt").write_text(screen_reader.screen(raw))
 
     def resize(columns, rows):
         nonlocal width, height
@@ -127,41 +129,59 @@ def capture(binary, output):
         assert len(raw) > previous_bytes, "Resize produced no terminal output"
 
     try:
-        process = subprocess.Popen([str(binary)], cwd=ROOT, stdin=slave, stdout=slave,
+        process = subprocess.Popen([str(binary), "--theme", theme] + (["--viewport"] if viewport else []), cwd=ROOT, stdin=slave, stdout=slave,
                                    stderr=slave, env=environment)
         decoder = codecs.getincrementaldecoder("utf-8")()
-        phase("initial amber", ["chio / dot matrix", "lettering", "frame 1 / 4", "amber", "paused", "q quit"])
-        still("wide-amber")
-        before = dot_surface(raw)
-        assert any(character in DOTS for character in screen_reader.screen(raw)), "No matrix glyphs painted"
-        phase("step", ["frame 2 / 4", "paused"], b"\x1b[C", absent=["frame 1 / 4"])
-        assert dot_surface(raw) != before, "Step changed only the caption, not matrix cells"
-        phase("green", ["green", "frame 2 / 4"], b"t", absent=["amber"])
-        still("wide-green")
-        phase("square", ["square", "green"], b"s", absent=["round"])
-        assert any(character in "■▪" for character in screen_reader.screen(raw)), "Square glyphs absent"
-        still("wide-square")
-        phase("playing", ["playing"], b" ", hold=0)
-        animated_before = dot_surface(raw)
-        deadline = time.monotonic() + 5
-        while time.monotonic() < deadline:
-            receive()
-            if dot_surface(raw) != animated_before:
-                break
+        if viewport:
+            phase("native viewport", ["chio / matrix viewport", "Row 1 · Col 1", "q quit"])
+            before = dot_surface(raw)
+            phase("native diagonal scroll", ["Row 2 · Col 2"], b"\x1b[C\x1b[B")
+            assert dot_surface(raw) != before, "Native scroll did not move matrix cells"
+            phase("native end", ["q quit"], b"\x1b[F", absent=["Row 2 · Col 2", "Row 1 · Col 1"])
+            phase("native home", ["Row 1 · Col 1"], b"\x1b[H")
+            assert dot_surface(raw) == before, "Native Home did not recover the original matrix"
+            still(name)
         else:
-            raise AssertionError("Playback did not update matrix cells within five seconds")
-        phase("paused", ["paused"], b" ", absent=["playing"])
-        before_resize = dot_surface(raw)
-        resize(36, 24)
-        phase("narrow", ["CHIO", "frame", "paused", "q quit"])
-        still("narrow")
-        resize(24, 14)
-        phase("tiny", ["CHIO", "Beating heart", "frame", "paused", "q quit"])
-        still("tiny")
-        resize(80, 32)
-        phase("wide recovery", ["chio / dot matrix", "lettering", "frame", "paused", "green", "square"])
-        assert dot_surface(raw) == before_resize, "Wide resize recovery changed matrix content"
-        still("wide-recovered")
+            phase("initial amber", ["chio / dot matrix", "lettering", "frame 1 / 4", "amber", "paused", "q quit"])
+            still(name)
+            before = dot_surface(raw)
+            assert any(character in DOTS for character in screen_reader.screen(raw)), "No matrix glyphs painted"
+            phase("step", ["frame 2 / 4", "paused"], b"\x1b[C", absent=["frame 1 / 4"])
+            assert dot_surface(raw) != before, "Step changed only the caption, not matrix cells"
+            phase("half intensity", ["intensity 0.5", "frame 2 / 4"], b"i")
+            still(f"{name}-half")
+            phase("dim intensity", ["intensity 0.2"], b"i")
+            still(f"{name}-dim")
+            phase("full intensity", ["intensity 1"], b"i", absent=["intensity 0."])
+            phase("open gaps", ["gaps 3,1", "CHIO"], b"g")
+            still(f"{name}-open")
+            phase("compact gaps", ["gaps 0,0"], b"g")
+            still(f"{name}-packed")
+            phase("regular gaps", ["gaps 1,0"], b"g")
+            phase("green", ["green", "frame 2 / 4"], b"t", absent=["amber"])
+            phase("square", ["square", "green"], b"s", absent=["round"])
+            still(f"{name}-square")
+            assert any(character in "■▪" for character in screen_reader.screen(raw)), "Square glyphs absent"
+            phase("playing", ["playing"], b" ", hold=0)
+            animated_before = dot_surface(raw)
+            deadline = time.monotonic() + 5
+            while time.monotonic() < deadline:
+                receive()
+                if dot_surface(raw) != animated_before:
+                    break
+            else:
+                raise AssertionError("Playback did not update matrix cells within five seconds")
+            phase("paused", ["paused"], b" ", absent=["playing"])
+            before_resize = dot_surface(raw)
+            resize(36, 24)
+            phase("narrow", ["CHIO", "frame", "paused", "q quit"])
+            still(f"{name}-narrow")
+            resize(24, 14)
+            phase("tiny", ["CHIO", "Beating heart", "frame", "paused", "q quit"])
+            still(f"{name}-tiny")
+            resize(80, 32)
+            phase("wide recovery", ["chio / dot matrix", "lettering", "frame", "paused", "green", "square"])
+            assert dot_surface(raw) == before_resize, "Wide resize recovery changed matrix content"
         published = appearance.terminal_events(list(events))
         published.append([round(time.monotonic() - began, 4), "o", ""])
         clip_text = "".join(event[2] for event in published if event[1] == "o")
@@ -180,11 +200,12 @@ def capture(binary, output):
         assert termios.tcgetattr(slave) == original, "Terminal settings were not restored"
         assert b"\x1b[?1049l" in raw and b"\x1b[?25h" in raw, "Screen/cursor restoration absent"
         assert b"error:" not in raw.lower(), "Error diagnostic in full terminal output"
-        write_cast(output / "dot-matrix.cast", published)
-        return dict(binary_sha256=hashlib.sha256(binary.read_bytes()).hexdigest(),
+        write_cast(output / f"{name}.cast", published)
+        return dict(name=name, cells=[80, 32], viewport=viewport, theme=theme, binary_sha256=hashlib.sha256(binary.read_bytes()).hexdigest(),
                     phases=phases, synthetic_only=True, exit=process.returncode,
                     termios_restored=True, cursor_restored=True, alternate_screen_restored=True,
-                    step_changes_matrix=True, playback_changes_matrix=True)
+                    step_changes_matrix=not viewport, playback_changes_matrix=not viewport,
+                    native_scroll_changes_matrix=viewport)
     finally:
         try:
             if process is not None and process.poll() is None:
@@ -192,8 +213,8 @@ def capture(binary, output):
                 process.wait(timeout=5)
                 while receive(0):
                     pass
-            (output / "dot-matrix-full.log").write_bytes(raw)
-            write_cast(output / "dot-matrix-full.cast", events)
+            (output / f"{name}-full.log").write_bytes(raw)
+            write_cast(output / f"{name}-full.cast", events)
         finally:
             os.close(master)
             os.close(slave)
@@ -212,9 +233,10 @@ def main():
     if output.exists() and (not output.is_dir() or any(output.iterdir())):
         parser.error("Choose a fresh output directory; existing captures are never replaced.")
     output.mkdir(parents=True, exist_ok=True)
-    evidence = capture(binary, output)
+    evidence = [capture(binary, output, theme) for theme in ("default", "light", "btop")]
+    evidence.append(capture(binary, output, "default", viewport=True))
     (output / "evidence.json").write_text(json.dumps(evidence, indent=2) + "\n")
-    print(f"PASS: matrix step/playback, palette, glyphs, resizing and terminal restoration; captures in {output}")
+    print(f"PASS: three themes, matrix playback, intensity, gaps, resizing, native viewport and terminal restoration; captures in {output}")
 
 
 if __name__ == "__main__":

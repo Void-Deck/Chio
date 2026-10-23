@@ -8,23 +8,26 @@ checks live in [Verification](Verification.md). Completed release scope and resu
 live in [0.2.2](Releases/0.2.2.md) and [0.2.0](Releases/0.2.0.md), with
 [0.1.0](Releases/0.1.0.md) retained as history.
 
-## Current slice: dot matrix visual study
+## Current slice: public dot matrix display
 
-The user approved an isolated prototype on 2026-10-23. Lettering and an animated
-icon will use the same immutable, bounded frame and native Canvas presentation.
-The [study](../Spikes/DotMatrix/README.md) owns its run commands and constraints.
-One terminal cell per LED preserves independent colors; fixed pitch preserves the
-grid on resize, with an authored text fallback when the complete grid cannot fit.
-The example owns timing and interaction. No public Chio API changes in this slice.
+The user approved promotion on 2026-10-23 after reviewing the isolated visual
+study. [PR #26](https://github.com/echoz/Chio/pull/26) now carries the public
+`DotMatrix`, checked RGB/intensity frames and inherited dot styling. Spacing means
+blank terminal cells between LEDs. Applications choose logical dimensions and own
+frame production, animation and viewport policy.
 
-The isolated implementation now renders lettering and a four-frame heart through
-the same view. Actual terminal captures qualify round/square dots, amber/green
-lettering, narrow/tiny text fallbacks, animation and paused-frame resize recovery.
-The study's [findings](../Spikes/DotMatrix/README.md#findings--2026-10-23) distinguish
-macOS terminal/player evidence from untested fonts, SSH and Linux appearance.
-Review the look before public promotion. Numeric lettering may extend
-`InstrumentReadout`; arbitrary imagery needs a separate view only if the shared
-presentation proves useful. The public showcase remains unchanged during this study.
+The [dot matrix decision](Decisions/DotMatrix.md) owns the accepted contract.
+The supported [chio-matrix example](../Examples/DotMatrix/README.md) replaces the
+spike and exercises lettering, multicolor imagery, intensity, spacing and native
+scrolling. Its showcase entry belongs under Views. No Marquee integration or
+new release is implied by this slice.
+
+The public slice passes 14 frame/style/raster tests and five example fixture
+tests in release. Real terminal sessions cover all three themes, every spacing
+and intensity setting, resize recovery, native scrolling and terminal restoration.
+The pinned engineering gate passes. The PR records independent review and full
+platform results; the earlier prototype CI does not qualify this changed API.
+Required review and checks must pass before readiness. Deployment follows merge.
 
 ## Chio 0.2.2 release and consumer adoption
 

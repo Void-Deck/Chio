@@ -5,7 +5,7 @@
 *Chio* means attractive or pretty in Singlish. Chio is an opinionated, declarative
 framework for polished terminal interfaces, built on [SwiftTUI](https://github.com/SwiftTUI/swift-tui).
 Charm-inspired themes, searchable lists and checklists, form fields, file
-selection, maps, and Markdown compose with native SwiftTUI views. SwiftTUI handles
+selection, maps, dot matrices, and Markdown compose with native SwiftTUI views. SwiftTUI handles
 rendering, layout, input, and focus.
 
 [![Watch Chio's dashboard recording](Docs/Media/dashboard.png)](https://echoz.github.io/Chio/)

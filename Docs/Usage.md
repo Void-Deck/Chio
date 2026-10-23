@@ -24,6 +24,45 @@ Resolve the manifest and `Package.resolved` together. The
 SwiftPM version requirements such as `from: "0.2.2"` cannot consume this revision-pinned graph.
 See the [migration notes](Releases/0.2.0.md#migration-from-010) when upgrading from 0.1.0.
 
+## Dot matrix
+
+`DotMatrix` is an unreleased addition after 0.2.2. Use the current source checkout
+for this API. The application supplies RGB and intensity data:
+
+```swift
+let frame = try DotMatrixFrame(rows: [
+    [SIMD4<Float>(1, 0, 0, 1), SIMD4<Float>(0, 1, 0, 0.5)],
+    [SIMD4<Float>(0, 0, 1, 1), SIMD4<Float>(0, 0, 0, 0)],
+])
+let dots = try DotMatrixStyle(shape: .round, horizontalGap: 1, verticalGap: 0)
+
+// In your view body:
+DotMatrix(frame: frame, label: "RGB indicator")
+    .dotMatrixStyle(dots)
+    .style(.default)
+```
+
+The four channels are red, green, blue and intensity, each finite and in `0...1`.
+Intensity multiplies RGB for terminal output; it is not transparency. Frames are
+nonempty rectangles with at most 65,536 LEDs. Each LED has its own terminal cell,
+so neighboring LEDs keep independent colors. Unlit dots inherit the Chio style's
+muted text color unless the dot style supplies an override.
+
+Gaps count blank terminal cells, independently in each direction, from zero to
+eight. The default one-column horizontal gap preserves the prototype's pitch.
+Applying `.dotMatrixStyle(...)` to a container styles all descendant matrices;
+the nearest complete value wins. Supplied RGB values remain unchanged by themes.
+
+The full grid keeps its pitch or falls back to the required text label. Drawings
+above 262,144 cells, including gaps, also use that fallback. To inspect a larger
+image through a viewport, compose a native `ScrollView` with the matrix's desired
+fixed frame; see the [example](../Examples/DotMatrix/README.md). The application
+owns animation, frame production and scrolling policy. The view creates no clock
+or playback controller.
+
+[Component API and bounds](../Sources/Chio/DotMatrix/README.md) ·
+[Runnable example](Examples.md#dot-matrix)
+
 ## Search and keyboard hints
 
 Applications compose SwiftTUI views and import `SwiftTUI` and `Chio`:

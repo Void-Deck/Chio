@@ -15,7 +15,7 @@ and evidence, with [0.1.0](Releases/0.1.0.md) retained as the earlier baseline.
 SwiftTUI owns rendering, terminal lifecycle, layout, state, input, focus,
 scrolling, scheduling and native presentation. Chio supplies immutable styles,
 native control styles and composed views. One SwiftPM package exports the `Chio`
-library and the `chio-dashboard` and `chio-maps` examples; applications compose
+library and the `chio-dashboard`, `chio-maps` and `chio-matrix` examples; applications compose
 SwiftTUI directly.
 Experimental proofs stay under `Spikes/`, with separate executable/test targets;
 their types are internal and do not expand the public Chio API.
@@ -182,6 +182,7 @@ application work. These examples do not establish product parity.
 | `Examples/Maps`, `Tests/ChioMapTests` | Maps consuming the public API, offline fixtures, opt-in online acquisition and integration checks |
 | `Tests/ChioTests/<Component>/<Responsibility>` | Focused library suites matching their source owner |
 | `Tests/ChioTests/Integration`, `Tests/ChioDashboardTests` | Cross-component rendering/terminal checks and example domain/hosted interactions |
+| `Examples/DotMatrix`, `Tests/ChioDotMatrixTests` | RGB/intensity display composition, fixture content, application-owned playback and native scrolling |
 | `Docs/Site`, `Docs/Media`, `Scripts/docs` | Static showcase, shared terminal assets and assembly without Swift build |
 
 Chio deliberately uses component-first organization inside its single library
@@ -197,11 +198,11 @@ owns its nested annotations. Instrumentation retains shared native control style
 Forms, Composition and Feedback retain related styles and presentation. Only
 populated responsibility groups exist. Examples keep their application structure.
 
-The [library guide](../Sources/Chio/README.md) links all sixteen public views.
+The [library guide](../Sources/Chio/README.md) links all seventeen public views.
 Each view has its own source-root README and a separate nested entry under Chio
 in [.documentation-rules.json](../.documentation-rules.json). Forms owns FormField;
 Composition owns StatusBar. Each is the sole public view at that source root, with
-its related styles. The library, both example applications and static showcase
+its related styles. The library, all three example applications and static showcase
 also have source-root guides. Private implementation targets, native SwiftTUI
 controls, supporting styles and internal spikes do not become public components.
 These documentation boundaries add no SwiftPM products or modules.
@@ -235,6 +236,7 @@ in Releases; avoid duplicating full contracts across documents.
 
 | Topic | Status and responsibility |
 | --- | --- |
+| [Dot matrix display](Decisions/DotMatrix.md) | Accepted public RGB/intensity frames, inherited dot style and passive presentation |
 | <a id="theme"></a>[Styles and native control styling](Decisions/Themes.md) | Accepted |
 | <a id="compact-instrumentation"></a><a id="duration-presentation-and-example-owned-timekeeping"></a>[Compact instrumentation and duration display](Decisions/Instrumentation.md) | Accepted instrumentation and high-contrast target dials; tile deferred |
 | <a id="searchable-selection"></a><a id="searchable-multiple-choice"></a>[Searchable selection and membership](Decisions/SearchableSelection.md) | Accepted |

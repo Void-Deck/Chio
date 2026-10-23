@@ -40,8 +40,12 @@
       "document": "Spikes/MapRouting/README.md"
     },
     {
-      "path": "Spikes/DotMatrix",
-      "document": "Spikes/DotMatrix/README.md"
+      "path": "Examples/DotMatrix",
+      "document": "Examples/DotMatrix/README.md"
+    },
+    {
+      "path": "Tests/ChioDotMatrixTests",
+      "document": "Docs/Verification.md"
     }
   ],
   "excludedModules": [],
@@ -78,7 +82,8 @@
     "Docs/Decisions/TerminalColors.md",
     "Docs/Decisions/Themes.md",
     "Examples/Maps/Fixtures/Provenance.md",
-    "Examples/Maps/Fixtures/OnlineTiles/Provenance.md"
+    "Examples/Maps/Fixtures/OnlineTiles/Provenance.md",
+    "Docs/Decisions/DotMatrix.md"
   ],
   "deliverables": [
     {
@@ -176,6 +181,15 @@
     {
       "id": "showcase",
       "root": "Docs/Site"
+    },
+    {
+      "id": "Chio.DotMatrix",
+      "root": "Sources/Chio/DotMatrix",
+      "parent": "Chio"
+    },
+    {
+      "id": "chio-matrix",
+      "root": "Examples/DotMatrix"
     }
   ]
 }

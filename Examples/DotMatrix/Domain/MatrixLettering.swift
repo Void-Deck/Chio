@@ -1,4 +1,4 @@
-import SwiftTUI
+import Chio
 
 /// A deliberately small fixture font, not a public typography or localization API.
 enum MatrixLettering {
@@ -7,7 +7,7 @@ enum MatrixLettering {
         case unsupportedCharacter(Character)
     }
 
-    static func frame(_ text: String, color: Color) throws -> DotMatrixFrame {
+    static func frame(_ text: String, color: SIMD4<Float>) throws -> DotMatrixFrame {
         let characters = Array(text.prefix(11))
         guard (1...10).contains(characters.count) else { throw LetteringError.lengthOutOfBounds }
         let glyphs = try characters.map { character in
@@ -15,9 +15,9 @@ enum MatrixLettering {
             return rows
         }
         return try DotMatrixFrame(rows: (0..<7).map { row in
-            glyphs.enumerated().flatMap { index, glyph -> [DotMatrixFrame.Dot] in
-                let gap: [DotMatrixFrame.Dot] = index == 0 ? [] : [.off]
-                return gap + glyph[row].map { $0 == "#" ? .on(color) : .off }
+            glyphs.enumerated().flatMap { index, glyph -> [SIMD4<Float>] in
+                let gap: [SIMD4<Float>] = index == 0 ? [] : [SIMD4<Float>.zero]
+                return gap + glyph[row].map { $0 == "#" ? color : SIMD4<Float>.zero }
             }
         })
     }

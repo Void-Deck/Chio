@@ -39,6 +39,7 @@ These directories remain part of the single `Chio` module.
 | `StatusBar` | [Composition](Composition/README.md) |
 | `FilePicker` | [FilePicker](FilePicker/README.md) |
 | `FormField` | [Forms](Forms/README.md) |
+| `DotMatrix` | [DotMatrix](DotMatrix/README.md) |
 | `DurationText` | [DurationText](DurationText/README.md) |
 | `HistoryChart` | [HistoryChart](HistoryChart/README.md) |
 | `InstrumentReadout` | [InstrumentReadout](InstrumentReadout/README.md) |

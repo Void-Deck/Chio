@@ -71,6 +71,29 @@ and application boundaries. [Verification](Verification.md#demo-site) owns captu
 and browser checks. The main catalog retains three captured themes,
 so its selector does not yet offer opencode for every example.
 
+## Dot matrix
+
+From the current source checkout (this addition is not in 0.2.2):
+
+```sh
+swift run -c release chio-matrix --theme btop
+swift run -c release chio-matrix --viewport
+```
+
+Start at **80 × 32**. The first example draws lettering and a multicolor heart
+through the public `DotMatrix`. Space plays or pauses, Right steps, `t` changes
+lettering color, `s` changes shape, `g` cycles spacing, `i` cycles intensity and
+`q` quits. The three startup themes use `--theme default`, `light` or `btop`.
+
+The viewport shows a larger RGB grid through native two-axis scrolling. Arrows
+scroll and Home/End jump. The example owns focus, scroll position and input.
+The matrix component remains passive. Its lettering fixture and animation are
+application code, not font or timer APIs supplied by Chio.
+
+See the [example source guide](../Examples/DotMatrix/README.md) and
+[public API](Usage.md#dot-matrix). Actual captures appear under **Views → Dot matrix**
+in the showcase after this slice is merged and deployed.
+
 ## Maps
 
 The map example composes Chio’s public `MapView` with offline world and street

@@ -1,4 +1,4 @@
-import DotMatrixStudy
+import DotMatrixExample
 
 @main
 enum DotMatrixLauncher {

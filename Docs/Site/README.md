@@ -13,13 +13,23 @@ selection, shared preview themes, URL history and explicit recording playback;
 `site.css` styles that catalog. `appearance.html`, `appearance.js` and
 `appearance.css` provide the separate style/size comparison.
 
-Terminal recordings and previews come from `Docs/Media`. The pinned local player
+The catalog assembles 17 terminal recordings and 51 static previews across three themes from
+`Docs/Media`. The pinned local player
 and its upstream license stay in `vendor/asciinema-player`; its
 [guide](vendor/asciinema-player/README.md) records player-specific limits.
 The catalog distinguishes Chio views, styles for native SwiftTUI controls and
 application-owned examples. Its browser state does not control a live terminal
 application. Original recordings retain their captured theme changes even when
 a different static-preview theme is selected.
+
+The Views catalog includes public `DotMatrix` with its standalone `chio-matrix`
+example. `recordings/dot-matrix.cast` and `recordings/dot-matrix.png` provide the
+recording and fallback still; `recordings/themes/dot-matrix-{default,light,btop}.png`
+provide static theme previews. Its command uses the same shared theme handling as
+the other entries. Frame production, lettering, animation timing and interaction
+belong to the example; the public view presents checked frames with inherited
+dot styling. See the [component guide](../../Sources/Chio/DotMatrix/README.md) and
+[example guide](../../Examples/DotMatrix/README.md).
 
 ## Assemble and preview
 
