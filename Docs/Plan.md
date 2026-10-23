@@ -17,6 +17,14 @@ and showcase navigation. [The release record](Releases/0.2.2.md) owns scope,
 migration and qualification; the published GitHub release owns the immutable tag
 and installation revision.
 
+Publication and consumer adoption are held after Blackbox found the macOS
+[borrowed-output policy issue](Decisions/NativeIntegration.md#borrowed-output-policy-on-macos).
+Existing macOS/Linux gates pass, but do not check this property. The user requested
+local investigation, then approved a native correction and regression tests. The
+local correction passes focused macOS regression tests, full macOS/Linux gates and
+WASI compilation. Review the local patch and results before any SwiftTUI PR. No corrected native pin,
+release exception or upstream contribution is approved yet.
+
 Marquee, Blackbox and Pitwall are the confirmed application consumers. Their
 owning tasks update both Chio and any direct SwiftTUI requirement, resolve the
 lockfile and run their integration gates. Preserve concurrent work and existing

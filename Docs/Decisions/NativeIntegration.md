@@ -78,7 +78,62 @@ renderer, focus system or hidden dependency patch.
 | Early input | Search, palette and form handoffs cover documented type-ahead/batched paths. Arbitrary multi-control input before presentation settles needs native support, not an application-built editor or focus graph. |
 | Editor navigation | End at the end of a native text field is unhandled when it makes no change, so an enclosing ScrollView can scroll to the bottom. The appearance study reproduced this at 36 × 18; ordinary editing remains focused. Its capture moves Left before End to exercise a real caret movement. Repeated no-op End is unresolved at the native input owner. |
 | Cooperative shutdown | The current pin retains [merged #48](https://github.com/SwiftTUI/swift-tui/pull/48), superseding #45. Accepted quit/EOF retains final-input presentation and synchronous follow-ups without draining unrelated continuous writes. Arbitrarily expensive frames/callbacks and application producers retain their own bounds and ownership. |
+| Borrowed output on macOS | Native writes leave no-SIGPIPE suppression enabled on a caller-owned descriptor. [Local investigation](#borrowed-output-policy-on-macos) confirms changed behavior for subsequent writers sharing a pipe or socket; ordinary PTY malfunction is not established. |
 | Portability and accessibility | CI and pseudo-terminals cover specific workflows. Other distributions, architectures, assistive technologies and live SSH devices require separate evidence. Static Linux remains [blocked](Dependencies.md#static-linux-blocker). |
+
+## Borrowed output policy on macOS
+
+**Status:** Verified on the `877d7765` pin during Blackbox's 0.2.2 adoption
+qualification. The user approved a local native correction and regression tests.
+Local regression and full platform gates pass. Review the patch and results before
+any upstream contribution; no corrected dependency pin or release exception is approved.
+
+Darwin `terminalPlatformWrite` enables `F_SETNOSIGPIPE` before writing and does
+not restore the prior value. This protection was introduced in
+[`b5553d3d`](https://github.com/SwiftTUI/swift-tui/commit/b5553d3dd7a5a373ba15b32f3e03aca06cd27127)
+to prevent process termination after output disconnects. Removing suppression
+would reintroduce that failure.
+
+Blackbox's retained parent PTY descriptor changes from `F_GETNOSIGPIPE == 0`
+to `1` after clean child exit. Its old native pin preserves `0`. Both sessions
+restore the checked terminal mode and ordinary file-status flags. This observation
+does not establish broken rendering, input or ordinary shell behavior.
+
+A separate optimized Swift 6.4 probe compiles the unchanged native platform-write
+source on macOS 27. Inherited and duplicated descriptors retain the changed
+policy; an independently opened PTY descriptor does not. After a native write,
+a subsequent plain writer sharing that pipe or socket receives `EPIPE` without
+the `SIGPIPE` observed in the control. Thus the effect is tied to shared output
+ownership, not all later processes or newly opened pipes. The native write also
+returns `EINVAL` when enabling the socket option after peer shutdown, before
+reaching its ordinary `EPIPE` handling.
+
+The responsible boundary is the borrowed native write operation. Raw-mode teardown
+alone misses write-only hosts and process-exit output. The local correction uses
+per-send `MSG_NOSIGNAL` for sockets and leaves terminal signal policy unchanged.
+For pipes, a shared native-output lock protects one nonblocking write and restoration
+of the original policy and status flags. Blocking hosts wait for readiness outside
+that lock. Runtime, diagnostic and exit-reset writers share this mechanism through
+the existing `SwiftTUIPlatformIO` target. Owned PTY and socket configuration remains
+unchanged.
+
+On base `963bfb9250dbbcd821b9cda8a21137d6f4307e28`, the new regression suite
+reproduces policy leakage, changed subsequent signal behavior and the socket error.
+Local native commit `c07d686e176f0116024545d6577f97f6d854a18d` passes 32 focused
+release tests on macOS, including all 12 new tests. Coverage includes initial policy values `0` and `1`, duplicated
+references, real concurrent native/diagnostic writers, disconnected peers, later
+plain writes, backpressure, normal shutdown and process-exit restoration. Test
+setup accounts for Darwin's ordinary written-file and pending-input bookkeeping;
+the policy, byte and error assertions remain unchanged.
+
+The unchanged full upstream macOS and Linux gates pass with 86 and 85 successful
+steps respectively and no skipped steps. WASI cross-compilation passes with warnings
+treated as errors. The full macOS gate also executes the new regression suite.
+The concurrency tests exercise real schedules rather than every possible interleaving; the
+backpressure handshake does not prove that the stalled writer runs first. No
+restoration-failure injection is covered. Applications must keep borrowed descriptors
+open and coordinate external writers or flag changes on a shared pipe. This local
+candidate is not a published SwiftTUI fix or an adopted Chio dependency.
 
 ## Startup input service
 
