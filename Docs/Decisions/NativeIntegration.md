@@ -511,6 +511,8 @@ not the full consumer gate for this upgrade candidate, Linux consumer proof or
 private live-telemetry qualification. [Verification](../Verification.md) owns the
 required adoption checks.
 
-Separate startup and task-cancellation delays reproduced on the earlier upstream
-baseline remain unresolved; incremental rendering needs separate measurement.
-No internal lifecycle workaround or second focus/scroll controller is adopted.
+Separate startup and task-cancellation delays were reproduced on that earlier
+baseline. The [startup input correction](#startup-input-service) is now part of
+the release candidate. Application task-cancellation latency and incremental
+rendering still require separate measurement. No internal lifecycle workaround
+or second focus/scroll controller is adopted.
