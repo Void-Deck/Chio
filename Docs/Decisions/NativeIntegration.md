@@ -84,9 +84,10 @@ renderer, focus system or hidden dependency patch.
 ## Borrowed output policy on macOS
 
 **Status:** Verified on the `877d7765` pin during Blackbox's 0.2.2 adoption
-qualification. The user approved a local native correction and regression tests.
-Local regression and full platform gates pass. Review the patch and results before
-any upstream contribution; no corrected dependency pin or release exception is approved.
+qualification. The user approved a native correction, regression tests and
+upstream publication in [PR #63](https://github.com/SwiftTUI/swift-tui/pull/63).
+Local regression and full platform gates pass. The PR remains draft pending hosted
+integration checks; no corrected dependency pin or release exception is approved.
 
 Darwin `terminalPlatformWrite` enables `F_SETNOSIGPIPE` before writing and does
 not restore the prior value. This protection was introduced in
@@ -132,8 +133,8 @@ treated as errors. The full macOS gate also executes the new regression suite.
 The concurrency tests exercise real schedules rather than every possible interleaving; the
 backpressure handshake does not prove that the stalled writer runs first. No
 restoration-failure injection is covered. Applications must keep borrowed descriptors
-open and coordinate external writers or flag changes on a shared pipe. This local
-candidate is not a published SwiftTUI fix or an adopted Chio dependency.
+open and coordinate external writers or flag changes on a shared pipe. This
+candidate is proposed upstream, but has not been merged, released or adopted by Chio.
 
 ## Startup input service
 
