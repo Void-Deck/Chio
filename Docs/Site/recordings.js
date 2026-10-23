@@ -152,8 +152,8 @@
     revealSelectedLink();
   }
 
-  // Keep the chooser in view; ordinary links still work without JavaScript and
-  // modified clicks retain the browser's open-in-new-tab behavior.
+  // Catalog links preserve page position; feature links reveal the catalog.
+  // Ordinary links work without JavaScript; modified clicks keep native behavior.
   const relatedLinks = [...document.querySelectorAll("[data-catalog-link]")];
   for (const link of [...categories, ...links, ...relatedLinks]) {
     link.addEventListener("click", event => {
@@ -162,6 +162,10 @@
       const hash = link.getAttribute("href");
       if (location.hash !== hash) history.pushState(null, "", hash);
       selectRecording();
+      if (link.hasAttribute("data-feature-link")) {
+        document.querySelector("#demos").scrollIntoView({ block: "start" });
+        links.find(option => option.dataset.demo === hash.slice(1))?.focus({ preventScroll: true });
+      }
     });
   }
 

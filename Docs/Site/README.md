@@ -13,13 +13,30 @@ selection, shared preview themes, URL history and explicit recording playback;
 `site.css` styles that catalog. `appearance.html`, `appearance.js` and
 `appearance.css` provide the separate style/size comparison.
 
-Terminal recordings and previews come from `Docs/Media`. The pinned local player
+Maps and DotMatrix lead the page as two featured views. Their wide terminal
+previews reuse the approved recording stills; native links open the existing
+catalog entries, where commands, playback and API details remain authoritative.
+The rows stack on narrow screens. These featured stills retain their captured
+appearance; the shared theme selector controls the catalog previews. DotMatrix's
+unreleased status stays visible beside its featured introduction.
+
+The catalog assembles 17 terminal recordings and 51 static previews across three themes from
+`Docs/Media`. The pinned local player
 and its upstream license stay in `vendor/asciinema-player`; its
 [guide](vendor/asciinema-player/README.md) records player-specific limits.
 The catalog distinguishes Chio views, styles for native SwiftTUI controls and
 application-owned examples. Its browser state does not control a live terminal
 application. Original recordings retain their captured theme changes even when
 a different static-preview theme is selected.
+
+The Views catalog includes public `DotMatrix` with its standalone `chio-matrix`
+example. `recordings/dot-matrix.cast` and `recordings/dot-matrix.png` provide the
+recording and fallback still; `recordings/themes/dot-matrix-{default,light,btop}.png`
+provide static theme previews. Its command uses the same shared theme handling as
+the other entries. Frame production, lettering, animation timing and interaction
+belong to the example; the public view presents checked frames with inherited
+dot styling. See the [component guide](../../Sources/Chio/DotMatrix/README.md) and
+[example guide](../../Examples/DotMatrix/README.md).
 
 ## Assemble and preview
 
@@ -48,8 +65,8 @@ the approved media. Capture tools live in `Scripts/docs`; their optional browser
 and rendering dependencies are documented in that contract.
 
 Check assembly plus playback, seeking, theme/command/snippet agreement, related
-navigation, URL history, focus, narrow layouts and script-free/missing-asset
-fallbacks. HTML and browser behavior need separate checks beyond the Markdown
-link gate. Recordings demonstrate specific fixture workflows and captured
+navigation, featured-entry links, URL history, focus, narrow layouts and
+script-free/missing-asset fallbacks. HTML and browser behavior need separate
+checks beyond the Markdown link gate. Recordings demonstrate specific fixture workflows and captured
 terminal sizes; they do not prove current live integrations, every platform,
 terminal emulator or SSH configuration.

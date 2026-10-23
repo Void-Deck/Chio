@@ -85,6 +85,16 @@ python3 Scripts/ci/terminal-smoke.py "$binary" --diff
 python3 -B Scripts/docs/capture-appearance.py "$binary" --verify-only \
   --output .build/ci-results/appearance
 
+# Public dot frames are covered by the release tests; verify the composed example
+# and its native viewport through real terminal input and cleanup as well.
+swift build --force-resolved-versions --jobs "${SWIFT_BUILD_JOBS:-2}" \
+  -c release --product chio-matrix
+matrix_binary="$(swift build -c release --show-bin-path)/chio-matrix"
+mkdir -p .build/ci-results/dot-matrix
+matrix_capture_directory="$(mktemp -d .build/ci-results/dot-matrix/run.XXXXXX)"
+python3 -B Scripts/docs/capture-dot-matrix.py "$matrix_binary" \
+  --output "$matrix_capture_directory"
+
 # Public map contracts run with the test targets above. Exercise the local map
 # example separately from the dashboard, including fixture provenance and raw input.
 python3 Scripts/maps/prepare-fixtures.py --verify

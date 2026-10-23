@@ -8,7 +8,36 @@ checks live in [Verification](Verification.md). Completed release scope and resu
 live in [0.2.2](Releases/0.2.2.md) and [0.2.0](Releases/0.2.0.md), with
 [0.1.0](Releases/0.1.0.md) retained as history.
 
-## Current slice: Chio 0.2.2 release and consumer adoption
+## Current slice: public dot matrix display
+
+The user approved promotion on 2026-10-23 after reviewing the isolated visual
+study. [PR #26](https://github.com/echoz/Chio/pull/26) now carries the public
+`DotMatrix`, checked RGB/intensity frames and inherited dot styling. Spacing means
+blank terminal cells between LEDs. Applications choose logical dimensions and own
+input admission, frame memory and runtime budgets, frame production, animation
+and viewport policy. The subsequent user decision removes the frame's 65,536-LED
+cap and names its public data and initializer argument `matrix`. The renderer
+retains its 262,144-terminal-cell guard and authored-label fallback.
+
+The [dot matrix decision](Decisions/DotMatrix.md) owns the accepted contract.
+The supported [chio-matrix example](../Examples/DotMatrix/README.md) replaces the
+spike and exercises lettering, multicolor imagery, intensity, spacing and native
+scrolling. Its showcase entry belongs under Views. No Marquee integration or
+new release is implied by this slice.
+
+Maps and DotMatrix are the site's featured views. Large retained terminal
+previews introduce both above the catalog and link to their matching examples.
+The catalog continues to own theme selection, playback, commands and API details.
+
+The revised frame API passes 16 frame/style/raster tests and five example fixture
+tests in release. The earlier candidate's terminal sessions covered all three
+themes, every spacing and intensity setting, resize recovery, native scrolling
+and terminal restoration. Retained media remains applicable because this API
+revision changes no appearance. The PR records fresh complete platform checks
+and independent review for each candidate. Required review and checks must pass
+before readiness. Deployment follows merge.
+
+## Chio 0.2.2 release and consumer adoption
 
 [Chio 0.2.2](https://github.com/echoz/Chio/releases/tag/v0.2.2) was published on
 2026-10-23 at `4ded80f870fb2c92c92d7d402fd71d42213ecee8`, after

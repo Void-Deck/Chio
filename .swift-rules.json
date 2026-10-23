@@ -31,16 +31,58 @@
   ],
   "importPolicies": [
     {
+      "path": "Tests/ChioDotMatrixTests",
+      "allowed": [
+        "Chio",
+        "DotMatrixExample",
+        "Foundation",
+        "Swift",
+        "SwiftTUIRuntime",
+        "Testing"
+      ]
+    },
+    {
+      "path": "Examples/DotMatrix/Launcher",
+      "allowed": [
+        "DotMatrixExample",
+        "Swift"
+      ]
+    },
+    {
+      "path": "Examples/DotMatrix",
+      "allowed": [
+        "Chio",
+        "Swift",
+        "SwiftTUI"
+      ]
+    },
+    {
       "path": "Spikes/MapRouting",
-      "allowed": ["Chio", "Foundation", "Swift", "SwiftTUI"]
+      "allowed": [
+        "Chio",
+        "Foundation",
+        "Swift",
+        "SwiftTUI"
+      ]
     },
     {
       "path": "Sources/Chio/Maps/Execution/MapTilePack.swift",
-      "allowed": ["Foundation", "Swift", "Darwin", "Glibc"]
+      "allowed": [
+        "Foundation",
+        "Swift",
+        "Darwin",
+        "Glibc"
+      ]
     },
     {
       "path": "Sources/Chio/Maps/Execution/MapTileCache.swift",
-      "allowed": ["Foundation", "Swift", "ChioFileSystem", "Darwin", "Glibc"]
+      "allowed": [
+        "Foundation",
+        "Swift",
+        "ChioFileSystem",
+        "Darwin",
+        "Glibc"
+      ]
     },
     {
       "path": "Sources/Chio",

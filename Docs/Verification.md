@@ -1273,7 +1273,7 @@ bash Scripts/ci/verify.sh
 
 The gate serializes builds and hosted tests. It runs all tests in release,
 a standalone release build, 24 plain-text snapshots and
-19 dashboard pseudo-terminal workflows, plus the map example's fixture
+19 dashboard pseudo-terminal workflows, four dot-matrix sessions, plus the map example's fixture
 reproduction and PTY workflow. Snapshot files are inspection artifacts;
 Swift tests assert the rendering contracts.
 
@@ -1546,14 +1546,49 @@ compact recovery and terminal restoration. The example owns its playback task;
 this is not live telemetry or SSH latency evidence. Inspect all three theme
 previews and an uncolored capture before accepting changes to marker presentation.
 
+### Dot matrix
+
+Frame verification must cover RGB/intensity ranges, every nonfinite channel,
+nonempty rectangles, checked decoding, preserved matrix data and frames above the
+former 65,536-LED cap. Verify the `matrix` source API and retained `rows` coding
+key. Public raster checks cover independent colors, intensity scaling, inactive
+glyphs, spacing, inherited style overrides, fitting, accessibility and surface
+rejection. Verify the unchanged 262,144-terminal-cell guard, including gaps,
+and dimension rejection before spaced arithmetic. These renderer checks do not
+establish application input, frame memory or runtime budgets.
+Example tests retain independently expected lettering and changing icon frames.
+
+Run the focused suite in release and require actual Swift Testing output:
+
+```sh
+swift test -c release --no-parallel --filter 'DotMatrix|MatrixScene'
+python3 -B Scripts/docs/capture-dot-matrix.py .build/release/chio-matrix \
+  --output .build/dot-matrix-review
+```
+
+The real PTY probe exercises frame replacement, application-owned animation,
+shape, spacing, intensity, narrow/tiny recovery and native two-axis scrolling.
+Each session must restore the original terminal state and exit cleanly. Retain
+raw session diagnostics separately from the trimmed publication recording.
+Generate PNGs from the retained initial casts with the existing terminal preview
+renderer, and inspect all three theme previews. Supplied image colors remain
+fixed across themes; surfaces and unlit dots consume theme presentation.
+
+The complete CI gate builds `chio-matrix` and runs this probe on macOS and Linux.
+These checks do not establish hardware simulation, LED calibration, SSH latency
+or every terminal font. The [decision](Decisions/DotMatrix.md) owns public bounds.
+
 ### Demo site
 
-The [showcase](https://echoz.github.io/Chio/) assembles sixteen recordings and 48
+The [showcase](https://echoz.github.io/Chio/) assembles seventeen recordings and 51
 three-theme previews from `Docs/Media`, using the pinned local asciinema player
 in `Docs/Site`. Its upstream license remains with the vendored assets. The catalog
 opens on Maps and separates Chio views, styles for native SwiftTUI controls and
-example apps. Entries identify public APIs, native controls, application-owned
-behavior, source, launch command and keyboard guide. Minimal view fragments name
+example apps. Featured Maps and DotMatrix previews above the catalog link to
+their matching entries. With scripts, activation retains the selected theme,
+reveals the catalog and moves keyboard focus to its selected option. Native
+fragment links remain usable without scripts. Entries identify public APIs,
+native controls, application-owned behavior, source, launch command and keyboard guide. Minimal view fragments name
 their application-owned inputs; examples link back to the pieces they compose.
 Supporting APIs sit beside their owning view rather than implying a separate
 performance toolkit. Component options remain independent of themes.

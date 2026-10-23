@@ -9,6 +9,7 @@ let package = Package(
         .library(name: "Chio", targets: ["Chio"]),
         .executable(name: "chio-dashboard", targets: ["ChioDashboard"]),
         .executable(name: "chio-maps", targets: ["ChioMaps"]),
+        .executable(name: "chio-matrix", targets: ["ChioDotMatrix"]),
     ],
     dependencies: [
         // Merged startup-input and borrowed-output corrections (SwiftTUI #62/#63).
@@ -34,6 +35,22 @@ let package = Package(
         ),
     ],
     targets: [
+        // Keep the executable entry point out of the testable example module.
+        .target(
+            name: "DotMatrixExample",
+            dependencies: ["Chio", .product(name: "SwiftTUI", package: "swift-tui")],
+            path: "Examples/DotMatrix",
+            exclude: ["README.md", "Launcher"]
+        ),
+        .executableTarget(
+            name: "ChioDotMatrix",
+            dependencies: ["DotMatrixExample"],
+            path: "Examples/DotMatrix/Launcher"
+        ),
+        .testTarget(
+            name: "ChioDotMatrixTests",
+            dependencies: ["Chio", "DotMatrixExample", .product(name: "SwiftTUIRuntime", package: "swift-tui")]
+        ),
         .executableTarget(
             name: "RouteReadability",
             dependencies: ["Chio", .product(name: "SwiftTUI", package: "swift-tui")],
@@ -55,6 +72,7 @@ let package = Package(
             exclude: [
                 "README.md",
                 "Composition/README.md",
+                "DotMatrix/README.md",
                 "DurationText/README.md",
                 "FilePicker/README.md",
                 "Forms/README.md",
