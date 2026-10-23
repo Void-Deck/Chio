@@ -14,7 +14,7 @@ enum MatrixLettering {
             guard let rows = font[character] else { throw LetteringError.unsupportedCharacter(character) }
             return rows
         }
-        return try DotMatrixFrame(rows: (0..<7).map { row in
+        return try DotMatrixFrame(matrix: (0..<7).map { row in
             glyphs.enumerated().flatMap { index, glyph -> [SIMD4<Float>] in
                 let gap: [SIMD4<Float>] = index == 0 ? [] : [SIMD4<Float>.zero]
                 return gap + glyph[row].map { $0 == "#" ? color : SIMD4<Float>.zero }

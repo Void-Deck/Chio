@@ -30,7 +30,7 @@ See the [migration notes](Releases/0.2.0.md#migration-from-010) when upgrading f
 for this API. The application supplies RGB and intensity data:
 
 ```swift
-let frame = try DotMatrixFrame(rows: [
+let frame = try DotMatrixFrame(matrix: [
     [SIMD4<Float>(1, 0, 0, 1), SIMD4<Float>(0, 1, 0, 0.5)],
     [SIMD4<Float>(0, 0, 1, 1), SIMD4<Float>(0, 0, 0, 0)],
 ])
@@ -44,7 +44,7 @@ DotMatrix(frame: frame, label: "RGB indicator")
 
 The four channels are red, green, blue and intensity, each finite and in `0...1`.
 Intensity multiplies RGB for terminal output; it is not transparency. Frames are
-nonempty rectangles with at most 65,536 LEDs. Each LED has its own terminal cell,
+nonempty rectangles with no LED-count cap. Each LED has its own terminal cell,
 so neighboring LEDs keep independent colors. Unlit dots inherit the Chio style's
 muted text color unless the dot style supplies an override.
 
@@ -57,8 +57,8 @@ The full grid keeps its pitch or falls back to the required text label. Drawings
 above 262,144 cells, including gaps, also use that fallback. To inspect a larger
 image through a viewport, compose a native `ScrollView` with the matrix's desired
 fixed frame; see the [example](../Examples/DotMatrix/README.md). The application
-owns animation, frame production and scrolling policy. The view creates no clock
-or playback controller.
+owns input admission, frame memory and runtime budgets, animation, frame
+production and scrolling policy. The view creates no clock or playback controller.
 
 [Component API and bounds](../Sources/Chio/DotMatrix/README.md) ·
 [Runnable example](Examples.md#dot-matrix)

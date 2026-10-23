@@ -197,8 +197,8 @@
           <div class="api-example">
             <h4>Use in your view</h4>
             <a class="api-doc-link" href="https://github.com/echoz/Chio/blob/main/Docs/Usage.md#dot-matrix">API guide ↗</a>
-            <p>rows: [[SIMD4&lt;Float&gt;]] is application-owned RGB and intensity data. Each channel must be finite and within 0...1.</p>
-            <pre><code data-theme-code>let frame = try DotMatrixFrame(rows: rows)
+            <p>matrix: [[SIMD4&lt;Float&gt;]] is application-owned RGB and intensity data. Each channel must be finite and within 0...1.</p>
+            <pre><code data-theme-code>let frame = try DotMatrixFrame(matrix: matrix)
 let style = try DotMatrixStyle(
     shape: .round, horizontalGap: 1,
     verticalGap: 0, unlitColor: nil)
@@ -208,7 +208,7 @@ DotMatrix(frame: frame, label: "LED display")
     .style(.default)</code></pre>
           </div>
           <p class="component-options"><strong>Presentation options.</strong> Round or square glyphs, independent horizontal and vertical gaps of 0...8 blank terminal cells, and an optional unlit color. The complete style inherits through <code>.dotMatrixStyle(...)</code>; gaps do not change frame data.</p>
-          <p class="component-options">Frames must be nonempty rectangles with at most 65,536 LEDs. Rendering is bounded to 262,144 terminal cells. The application owns frame production, timing, animation and any scrolling.</p>
+          <p class="component-options">Choose the matrix dimensions for your application. Frames must be nonempty rectangles. Drawings above 262,144 terminal cells, including gaps, use the authored text label. The application supplies frames and owns timing, animation and any scrolling.</p>
           <div class="recording-details">
             <dl class="recording-ingredients">
               <div><dt>Chio</dt><dd><code>DotMatrixFrame</code>, <code>DotMatrix</code> and inherited <code>DotMatrixStyle</code>. <a href="https://github.com/echoz/Chio/blob/main/Sources/Chio/DotMatrix/README.md">Component guide ↗</a></dd></div>

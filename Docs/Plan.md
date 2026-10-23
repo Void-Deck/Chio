@@ -14,7 +14,10 @@ The user approved promotion on 2026-10-23 after reviewing the isolated visual
 study. [PR #26](https://github.com/echoz/Chio/pull/26) now carries the public
 `DotMatrix`, checked RGB/intensity frames and inherited dot styling. Spacing means
 blank terminal cells between LEDs. Applications choose logical dimensions and own
-frame production, animation and viewport policy.
+input admission, frame memory and runtime budgets, frame production, animation
+and viewport policy. The subsequent user decision removes the frame's 65,536-LED
+cap and names its public data and initializer argument `matrix`. The renderer
+retains its 262,144-terminal-cell guard and authored-label fallback.
 
 The [dot matrix decision](Decisions/DotMatrix.md) owns the accepted contract.
 The supported [chio-matrix example](../Examples/DotMatrix/README.md) replaces the
@@ -26,12 +29,13 @@ Maps and DotMatrix are the site's featured views. Large retained terminal
 previews introduce both above the catalog and link to their matching examples.
 The catalog continues to own theme selection, playback, commands and API details.
 
-The public slice passes 14 frame/style/raster tests and five example fixture
-tests in release. Real terminal sessions cover all three themes, every spacing
-and intensity setting, resize recovery, native scrolling and terminal restoration.
-The pinned engineering gate passes. The PR records independent review and full
-platform results; the earlier prototype CI does not qualify this changed API.
-Required review and checks must pass before readiness. Deployment follows merge.
+The revised frame API passes 16 frame/style/raster tests and five example fixture
+tests in release. The earlier candidate's terminal sessions covered all three
+themes, every spacing and intensity setting, resize recovery, native scrolling
+and terminal restoration. Retained media remains applicable because this API
+revision changes no appearance. The PR records fresh complete platform checks
+and independent review for each candidate. Required review and checks must pass
+before readiness. Deployment follows merge.
 
 ## Chio 0.2.2 release and consumer adoption
 

@@ -7,11 +7,14 @@ entry points and examples; [Plan](../Plan.md) records delivery status.
 
 ## Frame and presentation
 
-`DotMatrixFrame` retains a rectangular `[[SIMD4<Float>]]`. Each vector contains
-red, green, blue and intensity, in that order. Every channel must be finite and
-within `0...1`. Construction and decoding reject empty, ragged, oversized or
-invalid-channel input. The frame is immutable, hashable, sendable and codable.
-There is no per-pixel enum or parallel color representation in the public model.
+`DotMatrixFrame(matrix:)` retains a nonempty rectangular `[[SIMD4<Float>]]` as
+`matrix`. Access an LED with `frame.matrix[y][x]`; `columns` and `height` expose
+its dimensions. Each vector contains red, green, blue and intensity, in that
+order. Every channel must be finite and within `0...1`. Construction and decoding
+reject empty, ragged or invalid-channel input. The frame is immutable, hashable,
+sendable and codable. Explicit coding maps `matrix` to the existing `rows` key,
+preserving the encoded representation. There is no per-pixel enum or parallel
+color representation in the public model.
 
 Intensity scales the supplied RGB channels for terminal output. It is not alpha,
 physical luminance or hardware calibration. Zero intensity and black RGB both
@@ -32,18 +35,20 @@ intensity, logical dimensions, the label or animation ownership.
 
 ## Sizing and bounded work
 
-The application chooses the number of rows and columns. A frame permits up to
-65,536 LEDs; this replaces the study's 64 × 32 cap. Spacing changes the required
-terminal extent:
+The application chooses the number of rows and columns. The user's subsequent
+2026-10-23 decision removes the frame's 65,536-LED cap, superseding the initial
+public-promotion limit and the study's 64 × 32 cap. The frame has no arbitrary
+LED-count cap. Spacing changes the required terminal extent:
 
 - width = columns + (columns − 1) × horizontalGap
 - height = rows + (rows − 1) × verticalGap
 
 The view admits at most 262,144 terminal cells, including gaps, before creating
-its canvas. Over-budget layouts show the authored text label. These are explicit
-resource limits, not claims about terminal resolution or refresh performance.
-They bound retained frame work and the component's surface; they do not bound
-caller allocations or an arbitrarily large parent surface.
+its canvas. It checks logical dimensions before calculating spaced extents.
+Over-budget layouts show the authored text label. This renderer guard bounds the
+component's drawing surface; it does not bound retained frame memory, caller
+allocations or an arbitrarily large parent surface. It makes no claim about
+terminal resolution or refresh performance.
 
 The matrix retains fixed pitch. If the complete grid does not fit the layout
 proposal, native `ViewThatFits` presents the required authored label. The view
@@ -54,10 +59,11 @@ scroll offsets, focus and input. Accessibility exposes the authored label once.
 ## Ownership
 
 The component is passive: it owns no timer, task, changing state, focus or resource.
-Applications own frame production, animation cadence, content meaning and viewport
-policy. The example's tiny lettering fixture, playback and controls remain under
-`Examples/DotMatrix`. A font API, marquee engine, hardware simulator integration
-and InstrumentReadout presentation are separate work.
+Applications own input admission, frame memory and runtime budgets, frame
+production, animation cadence, content meaning and viewport policy. The example's
+tiny lettering fixture, playback and controls remain under `Examples/DotMatrix`.
+A font API, marquee engine, hardware simulator integration and InstrumentReadout
+presentation are separate work.
 
 The study established readable round/square lettering and multicolor icon frames
 in actual macOS terminal output replayed by the vendored player. The public slice

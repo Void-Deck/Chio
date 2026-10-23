@@ -19,10 +19,13 @@ public struct DotMatrix {
     }
 
     private var drawingSize: CellSize? {
-        // Frame and gap construction bound each operand before arithmetic.
+        let maximumCellCount = 262_144
+        // Bound dimensions before spacing arithmetic; a frame has no size cap.
+        guard frame.columns <= maximumCellCount else { return nil }
+        guard frame.height <= maximumCellCount else { return nil }
         let width = frame.columns + (frame.columns - 1) * style.horizontalGap
         let height = frame.height + (frame.height - 1) * style.verticalGap
-        guard width <= 262_144 / height else { return nil }
+        guard width <= maximumCellCount / height else { return nil }
         return CellSize(width: width, height: height)
     }
 }
@@ -55,7 +58,7 @@ private struct DotMatrixDrawing {
 
 extension DotMatrixDrawing: CanvasDrawing {
     func draw(into context: inout CanvasContext) {
-        for (rowIndex, row) in frame.rows.enumerated() {
+        for (rowIndex, row) in frame.matrix.enumerated() {
             for (columnIndex, dot) in row.enumerated() {
                 let point = CellPoint(x: columnIndex * (style.horizontalGap + 1),
                                       y: rowIndex * (style.verticalGap + 1))

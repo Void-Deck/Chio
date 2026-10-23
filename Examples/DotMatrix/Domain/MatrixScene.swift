@@ -90,7 +90,7 @@ struct MatrixScene {
         ]
         icons = try Intensity.allCases.map { intensity in
             try masks.map { mask in
-                try DotMatrixFrame(rows: mask.enumerated().map { y, line in
+                try DotMatrixFrame(matrix: mask.enumerated().map { y, line in
                     line.enumerated().map { x, value in
                         guard value == "#" else { return SIMD4<Float>.zero }
                         let isHighlight = y < 3 && x < 4
@@ -101,7 +101,7 @@ struct MatrixScene {
                 })
             }
         }
-        gradient = try DotMatrixFrame(rows: (0..<40).map { y in
+        gradient = try DotMatrixFrame(matrix: (0..<40).map { y in
             (0..<64).map { x in SIMD4<Float>(Float(x) / 63, Float(y) / 39, 1 - Float(x) / 63, 1) }
         })
     }

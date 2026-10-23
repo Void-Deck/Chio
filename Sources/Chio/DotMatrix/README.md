@@ -9,7 +9,7 @@ animated frames use the same image contract; applications supply their content.
 With `Chio` and `SwiftTUIViews` imported:
 
 ```swift
-let frame = try DotMatrixFrame(rows: [
+let frame = try DotMatrixFrame(matrix: [
     [SIMD4<Float>(1, 0.25, 0, 1), SIMD4<Float>(1, 0.25, 0, 0.5)],
     [SIMD4<Float>(0, 0, 0, 0), SIMD4<Float>(0, 0.5, 1, 1)],
 ])
@@ -20,11 +20,13 @@ DotMatrix(frame: frame, label: "Two amber lights above one blue light")
     .style(.btop)
 ```
 
-`DotMatrixFrame(rows:)` checks a nonempty rectangle with at most 65,536 LEDs.
+`DotMatrixFrame(matrix:)` checks a nonempty rectangle without an LED-count cap.
 Every `SIMD4<Float>` stores red, green, blue, then intensity. All four channels
-must be finite and in `0...1`. The immutable value exposes `rows`, `columns`,
-`height` and `maximumDotCount`. It supports hashing, coding and sending across
-concurrency boundaries. Decoding passes through the same validation as creation.
+must be finite and in `0...1`. The immutable value exposes `matrix`, `columns`
+and `height`; access an LED with `frame.matrix[y][x]`. It supports hashing, coding
+and sending across concurrency boundaries. Decoding passes through the same
+validation as creation. Coding preserves the existing `rows` key through an
+explicit mapping; the source API uses `matrix`.
 
 RGB and intensity remain independent facts in the frame. Painting multiplies each
 encoded sRGB channel by intensity before creating a native opaque color. This is
@@ -53,17 +55,19 @@ affect the apparent shape; Chio provides no font or font-file API.
 Native `ViewThatFits` selects the complete fixed-pitch image or the authored
 `Text` label when either dimension cannot fit. A drawing above 262,144 terminal
 cells, including gaps, uses the same text fallback before constructing a Canvas.
-Admission uses bounded arithmetic and performs no image-sized intermediate
-allocation. The label is required and also supplies accessibility text. Use a
-meaningful authored description, since arbitrary pixels cannot describe their
-own application meaning. Native text may wrap or truncate in very small space.
+Admission checks logical dimensions before calculating spaced extents and
+performs no image-sized intermediate allocation. The label is required and also
+supplies accessibility text. Use a meaningful authored description, since arbitrary
+pixels cannot describe their own application meaning. Native text may wrap or
+truncate in very small space.
 
 ## Ownership and verification
 
-Applications own frame generation, fonts used to compose lettering, animation,
-clocks, state, focus and interaction. The component reads only its immutable
-configuration and inherited environment. SwiftTUI owns layout, rendering and
-accessibility. The component installs no timers, tasks or focus stops.
+Applications own input admission, frame memory and runtime budgets, frame
+generation, fonts used to compose lettering, animation, clocks, state, focus and
+interaction. The component reads only its immutable configuration and inherited
+environment. SwiftTUI owns layout, rendering and accessibility. The component
+installs no timers, tasks or focus stops.
 
 [DotMatrixFrame.swift](Domain/DotMatrixFrame.swift) owns checked image values.
 [DotMatrix.swift](Presentation/DotMatrix.swift) owns bounded native painting and
@@ -71,7 +75,7 @@ fallback selection. [DotMatrixStyle.swift](Presentation/DotMatrixStyle.swift)
 and its environment integration own inherited presentation.
 
 [Frame tests](../../../Tests/ChioTests/DotMatrix/Domain/DotMatrixFrameTests.swift)
-exercise construction, malformed decoding, all channel ranges and image bounds.
+exercise construction, malformed decoding, all channel ranges and frame preservation.
 [Style tests](../../../Tests/ChioTests/DotMatrix/Presentation/DotMatrixStyleTests.swift)
 exercise defaults, coding and gap validation.
 [Rendering tests](../../../Tests/ChioTests/DotMatrix/Presentation/DotMatrixRenderingTests.swift)

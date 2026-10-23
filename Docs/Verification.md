@@ -1548,10 +1548,14 @@ previews and an uncolored capture before accepting changes to marker presentatio
 
 ### Dot matrix
 
-Public frame tests cover RGB/intensity ranges, every nonfinite channel, rectangle
-and work bounds, checked decoding, preserved data and larger logical displays.
-Public raster tests check independent colors, intensity scaling, inactive glyphs,
-spacing, inherited style overrides, fitting, accessibility and surface rejection.
+Frame verification must cover RGB/intensity ranges, every nonfinite channel,
+nonempty rectangles, checked decoding, preserved matrix data and frames above the
+former 65,536-LED cap. Verify the `matrix` source API and retained `rows` coding
+key. Public raster checks cover independent colors, intensity scaling, inactive
+glyphs, spacing, inherited style overrides, fitting, accessibility and surface
+rejection. Verify the unchanged 262,144-terminal-cell guard, including gaps,
+and dimension rejection before spaced arithmetic. These renderer checks do not
+establish application input, frame memory or runtime budgets.
 Example tests retain independently expected lettering and changing icon frames.
 
 Run the focused suite in release and require actual Swift Testing output:

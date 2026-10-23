@@ -3,41 +3,34 @@ import Foundation
 import Testing
 
 struct DotMatrixFrameTests {
-    @Test("Public frame dimensions and maximum admit larger images than the study")
-    func dimensionsAndBounds() throws {
+    @Test("Frame dimensions follow the supplied matrix beyond the former dot limit")
+    func dimensions() throws {
         let pixel = SIMD4<Float>(1, 0.5, 0.25, 0.75)
-        let rows = Array(repeating: Array(repeating: pixel, count: 65), count: 33)
-        let frame = try DotMatrixFrame(rows: rows)
-        #expect(frame.rows == rows)
-        #expect(frame.columns == 65)
-        #expect(frame.height == 33)
-        #expect(DotMatrixFrame.maximumDotCount == 65_536)
-        let maximum = try DotMatrixFrame(rows: [Array(repeating: pixel, count: 65_536)])
-        #expect(maximum.columns == 65_536)
-        let tall = try DotMatrixFrame(rows: Array(repeating: [pixel], count: 65_536))
-        #expect(tall.height == 65_536)
+        let matrix = Array(repeating: Array(repeating: pixel, count: 257), count: 256)
+        let frame = try DotMatrixFrame(matrix: matrix)
+        #expect(frame.matrix == matrix)
+        #expect(frame.columns == 257)
+        #expect(frame.height == 256)
+        let wide = try DotMatrixFrame(matrix: [Array(repeating: pixel, count: 65_537)])
+        #expect(wide.columns == 65_537)
+        let tall = try DotMatrixFrame(matrix: Array(repeating: [pixel], count: 65_537))
+        #expect(tall.height == 65_537)
     }
 
-    @Test("Empty, ragged and excessive images are rejected at construction")
+    @Test("Empty and ragged images are rejected at construction")
     func invalidDimensions() {
         let pixel = SIMD4<Float>(repeating: 1)
         #expect(throws: DotMatrixFrame.ValidationError.emptyRows) {
-            try DotMatrixFrame(rows: [])
+            try DotMatrixFrame(matrix: [])
         }
         #expect(throws: DotMatrixFrame.ValidationError.emptyColumns) {
-            try DotMatrixFrame(rows: [[]])
+            try DotMatrixFrame(matrix: [[]])
         }
         #expect(throws: DotMatrixFrame.ValidationError.unevenRows(rowIndex: 1)) {
-            try DotMatrixFrame(rows: [[pixel], []])
+            try DotMatrixFrame(matrix: [[pixel], []])
         }
         #expect(throws: DotMatrixFrame.ValidationError.unevenRows(rowIndex: 1)) {
-            try DotMatrixFrame(rows: [[pixel], [pixel, pixel]])
-        }
-        #expect(throws: DotMatrixFrame.ValidationError.dotLimitExceeded(limit: 65_536)) {
-            try DotMatrixFrame(rows: [Array(repeating: pixel, count: 65_537)])
-        }
-        #expect(throws: DotMatrixFrame.ValidationError.dotLimitExceeded(limit: 65_536)) {
-            try DotMatrixFrame(rows: Array(repeating: [pixel], count: 65_537))
+            try DotMatrixFrame(matrix: [[pixel], [pixel, pixel]])
         }
     }
 
@@ -50,7 +43,7 @@ struct DotMatrixFrameTests {
                 #expect(throws: DotMatrixFrame.ValidationError.channelOutOfRange(
                     rowIndex: 0, columnIndex: 1, channelIndex: channelIndex
                 )) {
-                    try DotMatrixFrame(rows: [[SIMD4<Float>(repeating: 0), pixel]])
+                    try DotMatrixFrame(matrix: [[SIMD4<Float>(repeating: 0), pixel]])
                 }
             }
         }
@@ -58,18 +51,31 @@ struct DotMatrixFrameTests {
 
     @Test("Coding preserves channels, hashing and value semantics")
     func codingAndValues() throws {
-        let rows = [[SIMD4<Float>(0, 1, 0.25, 0), SIMD4<Float>(1, 0, 0.5, 1)]]
-        let frame = try DotMatrixFrame(rows: rows)
+        let matrix = [[SIMD4<Float>(0, 1, 0.25, 0), SIMD4<Float>(1, 0, 0.5, 1)]]
+        let frame = try DotMatrixFrame(matrix: matrix)
         let encoded = try JSONEncoder().encode(frame)
+        let payload = try JSONDecoder().decode([String: [[SIMD4<Float>]]].self, from: encoded)
+        #expect(payload == ["rows": matrix])
         let decoded = try JSONDecoder().decode(DotMatrixFrame.self, from: encoded)
         #expect(decoded == frame)
         #expect(Set([frame, decoded]).count == 1)
-        #expect(decoded.rows == rows)
-        let replacement = try DotMatrixFrame(rows: [[SIMD4<Float>(repeating: 1)]])
+        #expect(decoded.matrix == matrix)
+        let replacement = try DotMatrixFrame(matrix: [[SIMD4<Float>(repeating: 1)]])
         #expect(replacement != frame)
-        #expect(frame.rows == rows)
+        #expect(frame.matrix == matrix)
         func requiresSendable<Value: Sendable>(_: Value) {}
         requiresSendable(frame)
+    }
+
+    @Test("Decoding admits a matrix above the former dot limit with the existing coding key")
+    func largeMatrixDecoding() throws {
+        let pixel = SIMD4<Float>(0.25, 0.5, 1, 0.75)
+        let matrix = Array(repeating: Array(repeating: pixel, count: 257), count: 256)
+        let encoded = try JSONEncoder().encode(["rows": matrix])
+        let frame = try JSONDecoder().decode(DotMatrixFrame.self, from: encoded)
+        #expect(frame.columns == 257)
+        #expect(frame.height == 256)
+        #expect(frame.matrix == matrix)
     }
 
     @Test("Decoding rejects invalid dimensions and all invalid channels through checked construction")
@@ -83,8 +89,7 @@ struct DotMatrixFrameTests {
             positiveInfinity: "infinity", negativeInfinity: "-infinity", nan: "nan"
         )
         let pixel = SIMD4<Float>(repeating: 1)
-        var malformed: [[[SIMD4<Float>]]] = [[], [[]], [[pixel], []],
-                                            [Array(repeating: pixel, count: 65_537)]]
+        var malformed: [[[SIMD4<Float>]]] = [[], [[]], [[pixel], []]]
         for channelIndex in 0..<4 {
             for invalid in [Float(-0.001), 1.001, .nan, .infinity, -.infinity] {
                 var dot = pixel
@@ -92,8 +97,8 @@ struct DotMatrixFrameTests {
                 malformed.append([[dot]])
             }
         }
-        for rows in malformed {
-            let encoded = try encoder.encode(["rows": rows])
+        for matrix in malformed {
+            let encoded = try encoder.encode(["rows": matrix])
             #expect(throws: DecodingError.self) {
                 try decoder.decode(DotMatrixFrame.self, from: encoded)
             }

@@ -5,28 +5,21 @@
 /// brightness convention does not represent physical luminance or alpha.
 /// Zero intensity and black RGB both paint as an inactive LED.
 public struct DotMatrixFrame {
-    public static let maximumDotCount = 65_536
-
-    public let rows: [[SIMD4<Float>]]
-    public var columns: Int { rows[0].count }
-    public var height: Int { rows.count }
+    public let matrix: [[SIMD4<Float>]]
+    public var columns: Int { matrix[0].count }
+    public var height: Int { matrix.count }
 
     public enum ValidationError {
         case emptyRows
         case emptyColumns
         case unevenRows(rowIndex: Int)
-        case dotLimitExceeded(limit: Int)
         case channelOutOfRange(rowIndex: Int, columnIndex: Int, channelIndex: Int)
     }
 
-    public init(rows: [[SIMD4<Float>]]) throws(ValidationError) {
-        guard let first = rows.first else { throw .emptyRows }
+    public init(matrix: [[SIMD4<Float>]]) throws(ValidationError) {
+        guard let first = matrix.first else { throw .emptyRows }
         guard !first.isEmpty else { throw .emptyColumns }
-        // Division avoids overflowing a product supplied by arbitrary input.
-        guard rows.count <= Self.maximumDotCount / first.count else {
-            throw .dotLimitExceeded(limit: Self.maximumDotCount)
-        }
-        for (rowIndex, row) in rows.enumerated() {
+        for (rowIndex, row) in matrix.enumerated() {
             guard row.count == first.count else { throw .unevenRows(rowIndex: rowIndex) }
             for (columnIndex, dot) in row.enumerated() {
                 for channelIndex in 0..<4 {
@@ -40,20 +33,20 @@ public struct DotMatrixFrame {
                 }
             }
         }
-        self.rows = rows
+        self.matrix = matrix
     }
 
-    private enum CodingKeys: String, CodingKey { case rows }
+    private enum CodingKeys: String, CodingKey { case matrix = "rows" }
 }
 
 extension DotMatrixFrame: Decodable {
     public init(from decoder: any Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        let rows = try values.decode([[SIMD4<Float>]].self, forKey: .rows)
-        do { try self.init(rows: rows) }
+        let matrix = try values.decode([[SIMD4<Float>]].self, forKey: .matrix)
+        do { try self.init(matrix: matrix) }
         catch {
             throw DecodingError.dataCorruptedError(
-                forKey: .rows, in: values, debugDescription: "Invalid dot matrix frame: \(error)"
+                forKey: .matrix, in: values, debugDescription: "Invalid dot matrix frame: \(error)"
             )
         }
     }

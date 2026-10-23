@@ -37,14 +37,16 @@ gaps can also trigger fallback. These are application layout choices.
 native clipping reveals parts of a complete fixed-pitch image. Arrows scroll;
 Home and End jump to the bounds. Native focus, clipping, offsets and input remain
 SwiftTUI's responsibility. This demonstrates composition with the same public
-view; it adds no scrolling implementation to Chio.
+view; it adds no scrolling implementation to Chio. Frames have no LED-count cap;
+applications own input admission and frame memory/runtime budgets. The renderer
+retains its 262,144-terminal-cell guard, including gaps, with label fallback.
 
 `MatrixLettering` admits 1–10 fixture characters from CHIO, digits and colon. It
 rejects unsupported text. It is not a public font or localization API. The
 separate launcher keeps `@main` out of the module imported by tests. See the
 [public component guide](../../Sources/Chio/DotMatrix/README.md) for checked frame,
-style, intensity and rendering limits, and [Design](../../Docs/Design.md) for
-ownership contracts.
+style, intensity and the renderer's terminal-cell guard. See
+[Design](../../Docs/Design.md) for ownership contracts.
 
 ## Verification
 
