@@ -5,6 +5,44 @@ import Testing
 @MainActor
 @Suite(.serialized)
 struct SearchableListTests {
+    @Test("Simultaneous searchable lists retain independent editing, selection and focus",
+          arguments: [false, true])
+    func simultaneousListIsolation(usesDifferentListTypes: Bool) async throws {
+        try await withIndependentSearchLists(usesDifferentListTypes: usesDifferentListTypes) { session, recorder in
+            _ = try await recorder.wait(description: "both independent lists are mounted") {
+                $0.hasResultsFocus && $0.contains("LQ= LS=a") && $0.contains("RQ= RS=b")
+            }
+            let leftEditor = try await focusIndependentSearch("Left filter", isBackward: true,
+                                                             session: session, recorder: recorder)
+            session.sendInput(Array("bet".utf8))
+            _ = try await recorder.wait(description: "left editor changes only the left list") {
+                $0.independentEditorIsFocused("Left filter") && $0.independentQuery("Left filter", equals: "bet")
+                    && $0.independentQuery("Right filter", equals: "")
+                    && $0.contains("LQ=bet LS=b LF=s") && $0.contains("RQ= RS=b RF=r")
+            }
+
+            let rightEditor = try await focusIndependentSearch("Right filter", isBackward: false,
+                                                              session: session, recorder: recorder)
+            #expect(rightEditor.focusedIdentity != leftEditor.focusedIdentity)
+            session.sendInput(Array("gar".utf8))
+            _ = try await recorder.wait(description: "right editor preserves the left query and selection") {
+                $0.independentEditorIsFocused("Right filter") && $0.independentQuery("Right filter", equals: "gar")
+                    && $0.independentQuery("Left filter", equals: "bet")
+                    && $0.contains("LQ=bet LS=b LF=r") && $0.contains("RQ=gar RS=g RF=s")
+            }
+
+            let restoredLeft = try await focusIndependentSearch("Left filter", isBackward: true,
+                                                               session: session, recorder: recorder)
+            #expect(restoredLeft.focusedIdentity == leftEditor.focusedIdentity)
+            session.sendInput([0x7f, 0x7f, 0x7f] + Array("alp".utf8))
+            _ = try await recorder.wait(description: "returning to left edits its retained query only") {
+                $0.independentEditorIsFocused("Left filter") && $0.independentQuery("Left filter", equals: "alp")
+                    && $0.independentQuery("Right filter", equals: "gar")
+                    && $0.contains("LQ=alp LS=a LF=s") && $0.contains("RQ=gar RS=g RF=r")
+            }
+        }
+    }
+
     @Test("A rejected query write preserves selection for the authoritative query")
     func rejectedQueryWrite() async throws {
         try await withSearchScene(rejectsQueryWrites: true) { session, _, recorder in
@@ -573,5 +611,133 @@ private extension SemanticHostFrame {
         guard let firstCharacter = name.first,
               let row = raster.lines.firstIndex(where: { $0.contains(name) }) else { return nil }
         return raster.cells[row].firstIndex { $0.character == firstCharacter }
+    }
+}
+
+private struct IndependentSearchItem {
+    let id: String
+    let title: String
+
+    static let fixtures = [
+        IndependentSearchItem(id: "a", title: "Atlas"),
+        IndependentSearchItem(id: "b", title: "Beryl"),
+        IndependentSearchItem(id: "g", title: "Garnet"),
+    ]
+}
+
+extension IndependentSearchItem: Identifiable {}
+extension IndependentSearchItem: Sendable {}
+
+private struct IndependentSearchApp {
+    let usesDifferentListTypes: Bool
+
+    nonisolated init() { usesDifferentListTypes = false }
+    nonisolated init(usesDifferentListTypes: Bool) { self.usesDifferentListTypes = usesDifferentListTypes }
+}
+
+extension IndependentSearchApp: App {
+    var body: some Scene {
+        WindowGroup(id: "independent-search") {
+            IndependentSearchView(usesDifferentListTypes: usesDifferentListTypes)
+        }.exitOnKeys([])
+    }
+}
+
+@MainActor
+private struct IndependentSearchView {
+    let usesDifferentListTypes: Bool
+    @State private var leftQuery = ""
+    @State private var rightQuery = ""
+    @State private var leftSelection: String? = "a"
+    @State private var rightSelection: String? = "b"
+    @State private var isLeftSearchFocused = false
+    @State private var isRightSearchFocused = false
+
+    private var rightItems: [SearchItem] {
+        IndependentSearchItem.fixtures.map { SearchItem(id: $0.id, name: $0.title) }
+    }
+}
+
+extension IndependentSearchView: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(alignment: .top, spacing: 2) {
+                SearchableList(SearchItem.fixtures, selection: $leftSelection, query: $leftQuery,
+                               prompt: "Left filter", searchText: \.name) { Text($0.name) }
+                    .onSearchFocusChange { isLeftSearchFocused = $0 }
+                    .frame(width: 32)
+                if usesDifferentListTypes {
+                    SearchableList(IndependentSearchItem.fixtures, selection: $rightSelection, query: $rightQuery,
+                                   prompt: "Right filter", searchText: \.title) { item in
+                        HStack {
+                            Text(item.title)
+                            Text("detail")
+                        }
+                    }
+                    .onSearchFocusChange { isRightSearchFocused = $0 }
+                    .frame(width: 32)
+                } else {
+                    SearchableList(rightItems, selection: $rightSelection, query: $rightQuery,
+                                   prompt: "Right filter", searchText: \.name) { Text($0.name) }
+                        .onSearchFocusChange { isRightSearchFocused = $0 }
+                        .frame(width: 32)
+                }
+            }.frame(height: 10)
+            Text("LQ=\(leftQuery) LS=\(leftSelection ?? "-") LF=\(isLeftSearchFocused ? "s" : "r")")
+            Text("RQ=\(rightQuery) RS=\(rightSelection ?? "-") RF=\(isRightSearchFocused ? "s" : "r")")
+        }.style(.default)
+    }
+}
+
+@MainActor
+private func withIndependentSearchLists(
+    usesDifferentListTypes: Bool,
+    perform: @MainActor (HostedSceneSession, HostedFrameRecorder) async throws -> Void
+) async throws {
+    let recorder = HostedFrameRecorder()
+    let surface = HostedRasterSurface(surfaceSize: CellSize(width: 72, height: 16), appearance: .fallback,
+                                      onFrame: { recorder.receive($0) })
+    let session = try HostedSceneSession(for: IndependentSearchApp(usesDifferentListTypes: usesDifferentListTypes),
+                                        sceneID: "independent-search", surface: surface)
+    let run = Task { try await session.start() }
+    do {
+        try await perform(session, recorder)
+        session.stop()
+        #expect(try await run.value == .inputEnded)
+    } catch {
+        session.stop()
+        _ = await run.result
+        throw error
+    }
+}
+
+@MainActor
+private func focusIndependentSearch(
+    _ label: String, isBackward: Bool, session: HostedSceneSession, recorder: HostedFrameRecorder
+) async throws -> SemanticHostFrame {
+    for _ in 0..<12 {
+        if let frame = recorder.latest, frame.independentEditorIsFocused(label) { return frame }
+        let previous = recorder.latest
+        session.send(.key(.tab, modifiers: isBackward ? .shift : []))
+        _ = try await recorder.wait(after: previous?.sequence, description: "native Tab advances toward \(label)") {
+            $0.focusedIdentity != previous?.focusedIdentity
+        }
+    }
+    let frame = try #require(recorder.latest)
+    try #require(frame.independentEditorIsFocused(label), "Native Tab did not reach \(label)")
+    return frame
+}
+
+private extension SemanticHostFrame {
+    func independentEditorIsFocused(_ label: String) -> Bool {
+        semantics.accessibilityNodes.contains {
+            $0.identity == focusedIdentity && $0.role == .textField && $0.label == label
+        }
+    }
+
+    func independentQuery(_ label: String, equals value: String) -> Bool {
+        semantics.accessibilityNodes.contains {
+            $0.role == .textField && $0.label == label && $0.control?.value == .text(value)
+        }
     }
 }

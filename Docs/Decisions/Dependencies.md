@@ -12,7 +12,7 @@ All four direct dependencies are revision-pinned:
 
 | Dependency | Pin and reason |
 | --- | --- |
-| SwiftTUI merged #60 | `877d7765febd08ffc2ed434a7ef231e4132c3b80`; includes #58/#59 and the callback-scope and observation-slot corrections; release publication remains separate |
+| SwiftTUI #63 qualification candidate | `65043a7b411c1bdfbce5c469e496836e6da95445`; retains #58–#60 and adds borrowed-output restoration; unmerged, with release publication held |
 | Swift Markdown 0.9.0 | `25cb61d3482054b09ae76ca4f281b1bfe7fe5a43`; revision permits conditional Windows unsafe flags |
 | Tree-sitter 0.26.13 | `d97971e24500218865c05ed1febdee2acf41bae1`; last release with upstream SwiftPM manifest |
 | tree-sitter-swift 0.7.4 | `82bb3a533e0801fd2bbaa11dc49676e10bf41948`; generated C grammar |
@@ -33,6 +33,21 @@ neither a Swift wrapper nor grammar generation. The grammar copies unused querie
 Chio does no query-resource I/O and generates no Objective-C/Foundation accessor.
 Build evidence is recorded in [0.1.0](../Releases/0.1.0.md); the current static Linux
 blocker is below. Ordinary glibc support does not establish static-musl distribution.
+
+## Borrowed-output adoption candidate
+
+The provisional release branch pins the current #63 head from the canonical remote.
+It contains the borrowed-output correction and upstream `main` at `82d9ea69`.
+All seven other lockfile entries remain unchanged. `main` still uses `877d7765`;
+published Chio 0.2.1 and consumer release requirements remain unchanged.
+
+The same candidate moves Chio's private list focus enum out of its generic view
+to avoid an Apple SwiftBuild metadata-link failure. Public API and native focus
+ownership stay intact. [Native integration](NativeIntegration.md#private-focus-metadata)
+owns the compiler limitation; [verification](../Verification.md#borrowed-output-adoption-qualification)
+owns exact consumer and platform results. A passing earlier native revision does
+not qualify this combined candidate. Keep release publication held until required
+checks and review complete.
 
 ## Palette and scroll-focus adoption
 

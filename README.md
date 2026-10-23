@@ -60,12 +60,13 @@ owns migration and qualification evidence.
 
 Requires **Swift 6.4+**, on **macOS 15+ or Linux**. From a repository checkout:
 
-Chio 0.2.2 uses the merged [SwiftTUI focus and callback corrections](Docs/Decisions/Dependencies.md#palette-and-scroll-focus-adoption)
-at `877d7765febd08ffc2ed434a7ef231e4132c3b80`.
-The [release notes](https://github.com/echoz/Chio/releases/tag/v0.2.2) identify the
-immutable Chio revision to install. Direct SwiftTUI dependencies must use the
-same SwiftTUI revision. [Migration and verification](Docs/Releases/0.2.2.md)
-describe the update from 0.2.1.
+Chio 0.2.2 is unpublished. This qualification branch uses the proposed
+[SwiftTUI output-policy correction](https://github.com/SwiftTUI/swift-tui/pull/63)
+at `65043a7b411c1bdfbce5c469e496836e6da95445`.
+Direct SwiftTUI dependencies must use that same revision when trying this branch.
+After publication, the [release notes](https://github.com/echoz/Chio/releases/tag/v0.2.2)
+will identify the immutable Chio revision to install.
+[Migration and verification](Docs/Releases/0.2.2.md) describe the candidate and its limits.
 Version-based Chio requirements remain unsupported by the revision-pinned dependency graph.
 
 ```sh

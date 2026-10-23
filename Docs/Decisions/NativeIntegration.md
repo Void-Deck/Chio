@@ -1,6 +1,6 @@
 # Native integration boundaries
 
-**Status:** Chio's operational pin uses SwiftTUI
+**Status:** Chio's default branch uses SwiftTUI
 `877d7765febd08ffc2ed434a7ef231e4132c3b80`, containing merged #58/#59/#60.
 The former form and diff failures pass with
 this pin; [Verification](../Verification.md#release-verification-qualification)
@@ -14,6 +14,11 @@ merged #47/#49/#50/#56.
 [Dependencies](Dependencies.md#palette-and-scroll-focus-adoption) owns the current pin decision;
 [0.2.2 release record](../Releases/0.2.2.md) records integrated scope and evidence.
 Chio qualification remains distinct from upstream checks and earlier local-patch evidence.
+
+The provisional release candidate instead pins #63 at `65043a7b` and applies the
+[private-focus compiler workaround](#private-focus-metadata). Complete local
+macOS and Linux release gates pass; neither the default branch nor a published
+release adopts it yet.
 
 Keep native ownership and visible limitations explicit when composing or extending Chio.
 
@@ -87,7 +92,8 @@ renderer, focus system or hidden dependency patch.
 qualification. The user approved a native correction, regression tests and
 upstream publication in [PR #63](https://github.com/SwiftTUI/swift-tui/pull/63).
 Local regression and full platform gates pass. The PR remains draft pending hosted
-integration checks; no corrected dependency pin or release exception is approved.
+integration checks. The provisional Chio branch pins current head `65043a7b`;
+release and default-branch adoption remain held.
 
 Darwin `terminalPlatformWrite` enables `F_SETNOSIGPIPE` before writing and does
 not restore the prior value. This protection was introduced in
@@ -135,6 +141,27 @@ backpressure handshake does not prove that the stalled writer runs first. No
 restoration-failure injection is covered. Applications must keep borrowed descriptors
 open and coordinate external writers or flag changes on a shared pipe. This
 candidate is proposed upstream, but has not been merged, released or adopted by Chio.
+
+## Private focus metadata
+
+The Apple Swift 6.4 default SwiftBuild release backend fails to link Chio's map
+executable against the newer native focus implementation. The missing symbol is
+the private `FocusStateLocation` metadata accessor, referenced by value witnesses
+for `SearchableList`. The native build backend links the same source. A separate
+minimal generic fixture also produces a compiler metadata-verification failure;
+that evidence does not prove the two failures have one cause.
+
+The qualification candidate moves the private `Focus` enum from the generic view
+to the same file's private scope. It retains the cases, bindings, native storage
+and public API. This removes an unnecessary generic type context without widening
+access or patching SwiftTUI internals. Tests mount two lists with overlapping IDs
+and matching or different item/row types, then verify separate native focus,
+queries and selections through Tab, Shift-Tab and editing.
+
+This is a scoped compiler workaround, not a new focus owner. It changes the
+private reflected type identity; cross-version hot reload is not qualified.
+[Verification](../Verification.md#borrowed-output-adoption-qualification) records
+release-link and interaction results for each exact dependency input.
 
 ## Startup input service
 

@@ -1,5 +1,21 @@
 import SwiftTUIViews
 
+// File scope avoids the observed Apple SwiftBuild release-link failure when
+// this private focus value is nested in the generic view.
+private enum Focus {
+    case search
+    case results
+
+    var isSearch: Bool {
+        switch self {
+        case .search: true
+        case .results: false
+        }
+    }
+}
+
+extension Focus: Hashable {}
+
 /// An always-visible search field and a native selectable, scrollable list.
 ///
 /// Items must have stable, unique IDs. Filtering preserves a visible selection,
@@ -9,18 +25,6 @@ import SwiftTUIViews
 /// Enter activates the selected item, even when Tab has focused another row.
 @MainActor
 public struct SearchableList<Item: Identifiable, RowContent: View> where Item.ID: Sendable {
-    private enum Focus: Hashable {
-        case search
-        case results
-
-        var isSearch: Bool {
-            switch self {
-            case .search: true
-            case .results: false
-            }
-        }
-    }
-
     private let items: [Item]
     private let selection: Binding<Item.ID?>
     private let externalQuery: Binding<String>?

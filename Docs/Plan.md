@@ -11,9 +11,10 @@ live in [0.2.2](Releases/0.2.2.md) and [0.2.0](Releases/0.2.0.md), with
 ## Current slice: Chio 0.2.2 release and consumer adoption
 
 The user approved publishing 0.2.2 and coordinating consumer adoption on
-2026-10-22. Release preparation preserves the runtime tree from merged PR #23
-at `6df2e336f5a398d34a37e98e431250f8dcaeca02`. It updates release documentation
-and showcase navigation. [The release record](Releases/0.2.2.md) owns scope,
+2026-10-22. Release preparation started from merged PR #23
+at `6df2e336f5a398d34a37e98e431250f8dcaeca02`. The adoption candidate now adds
+the borrowed-output correction and a scoped compiler workaround described below.
+[The release record](Releases/0.2.2.md) owns scope,
 migration and qualification; the published GitHub release owns the immutable tag
 and installation revision.
 
@@ -24,8 +25,17 @@ local investigation, then approved a native correction and regression tests. The
 correction passes focused macOS regression tests, full macOS/Linux gates and
 WASI compilation. The user approved upstream publication in
 [SwiftTUI PR #63](https://github.com/SwiftTUI/swift-tui/pull/63). It remains draft
-pending hosted integration checks. No corrected native pin or release exception
-is approved yet.
+pending hosted integration checks. The qualification branch pins its current head,
+`65043a7b411c1bdfbce5c469e496836e6da95445`, after the upstream merge from `main`.
+The seven other dependency pins stay fixed. This is a provisional qualification
+input, not merged adoption or permission to publish the release.
+
+The newer dependency reproduces an Apple SwiftBuild release-link failure for
+`SearchableList`'s nested private focus enum. The candidate moves that enum to
+file scope and retains native focus storage. Two-list interaction coverage checks
+independent editing and selection with matching and different generic types.
+[Verification](Verification.md#borrowed-output-adoption-qualification) distinguishes
+the initial trial, the updated upstream head and remaining checks.
 
 Marquee, Blackbox and Pitwall are the confirmed application consumers. Their
 owning tasks update both Chio and any direct SwiftTUI requirement, resolve the
@@ -67,9 +77,11 @@ separate review passed. Its complete post-merge macOS/Linux gate also passes.
 Release publication and downstream adoption remain separate evidence.
 
 The earlier debug failures and isolated experiments remain in the
-[qualification record](Verification.md#startup-input-investigation). Neither
-SwiftTUI #62 nor the private focus-type experiment is adopted. Release qualification
-does not establish that debug startup starvation is corrected.
+[qualification record](Verification.md#startup-input-investigation). PR #23 adopted
+neither SwiftTUI #62 nor the private focus-type experiment. The current 0.2.2
+candidate includes the scoped focus-type workaround described above; #62 remains
+excluded. Release qualification does not establish that debug startup starvation
+is corrected.
 
 ## Delivered maintenance: naming review
 
