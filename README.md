@@ -60,9 +60,9 @@ owns migration and qualification evidence.
 
 Requires **Swift 6.4+**, on **macOS 15+ or Linux**. From a repository checkout:
 
-Chio 0.2.2 is unpublished. This qualification branch uses the proposed
+Chio 0.2.2 is unpublished. This qualification branch uses the merged
 [SwiftTUI output-policy correction](https://github.com/SwiftTUI/swift-tui/pull/63)
-at `65043a7b411c1bdfbce5c469e496836e6da95445`.
+at `3999a9a57dde52fb00aa98952460b0819a0641bf`.
 Direct SwiftTUI dependencies must use that same revision when trying this branch.
 After publication, the [release notes](https://github.com/echoz/Chio/releases/tag/v0.2.2)
 will identify the immutable Chio revision to install.

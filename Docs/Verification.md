@@ -7,6 +7,18 @@ and preservation of current contracts.
 
 ## Borrowed-output adoption qualification
 
+The current candidate pins merged SwiftTUI
+`3999a9a57dde52fb00aa98952460b0819a0641bf`, which includes #62 and #63.
+Its delta from the earlier qualified head changes startup input scheduling and
+bounded Darwin socket writes. The private focus-type workaround and all seven
+other dependency pins remain unchanged. Repeat the complete release gate,
+compiler-backed rules, platform CI and canonical consumer probes for this input.
+[PR #24](https://github.com/echoz/Chio/pull/24) records the exact tested Chio head,
+current results and independent review. Earlier results below retain their
+original revision; they do not establish merged-pin qualification or adoption.
+
+### Earlier provisional qualification
+
 The initial exact #63 trial uses `c07d686e176f0116024545d6577f97f6d854a18d`
 with the runtime source from Chio `94e87d0`. Apple Swift 6.4 / SwiftBuild release
 linking fails on private `FocusStateLocation` metadata before tests can run.
@@ -16,7 +28,7 @@ two-list isolation cases. Existing filesystem skips and interaction deadlines st
 unchanged. Its full gate was intentionally stopped during terminal checks after
 upstream changed the PR head; this is not a complete gate pass.
 
-The final provisional input is upstream head
+The earlier provisional input was upstream head
 `65043a7b411c1bdfbce5c469e496836e6da95445`, which merges `main` at `82d9ea69`.
 It retains the exact borrowed-output patch but also changes rendering and terminal
 behavior. All seven other lockfile pins remain fixed.

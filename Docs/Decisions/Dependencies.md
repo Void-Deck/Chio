@@ -12,7 +12,7 @@ All four direct dependencies are revision-pinned:
 
 | Dependency | Pin and reason |
 | --- | --- |
-| SwiftTUI #63 qualification candidate | `65043a7b411c1bdfbce5c469e496836e6da95445`; retains #58–#60 and adds borrowed-output restoration; unmerged, with release publication held |
+| SwiftTUI merged adoption candidate | `3999a9a57dde52fb00aa98952460b0819a0641bf`; retains #58–#60 and includes #62 startup input and #63 borrowed-output restoration; Chio release publication held for qualification |
 | Swift Markdown 0.9.0 | `25cb61d3482054b09ae76ca4f281b1bfe7fe5a43`; revision permits conditional Windows unsafe flags |
 | Tree-sitter 0.26.13 | `d97971e24500218865c05ed1febdee2acf41bae1`; last release with upstream SwiftPM manifest |
 | tree-sitter-swift 0.7.4 | `82bb3a533e0801fd2bbaa11dc49676e10bf41948`; generated C grammar |
@@ -36,8 +36,10 @@ blocker is below. Ordinary glibc support does not establish static-musl distribu
 
 ## Borrowed-output adoption candidate
 
-The provisional release branch pins the current #63 head from the canonical remote.
-It contains the borrowed-output correction and upstream `main` at `82d9ea69`.
+The release branch pins merged #63 from the canonical remote at `3999a9a5`.
+It also contains merged #62 and the subsequent stream-input scheduling correction.
+The maintainer extended #63 to bound writes to saturated Darwin sockets.
+Earlier qualification of the unmerged `65043a7b` head does not qualify this revision.
 All seven other lockfile entries remain unchanged. `main` still uses `877d7765`;
 published Chio 0.2.1 and consumer release requirements remain unchanged.
 

@@ -18,17 +18,19 @@ the borrowed-output correction and a scoped compiler workaround described below.
 migration and qualification; the published GitHub release owns the immutable tag
 and installation revision.
 
-Publication and consumer adoption are held after Blackbox found the macOS
-[borrowed-output policy issue](Decisions/NativeIntegration.md#borrowed-output-policy-on-macos).
-Existing macOS/Linux gates pass, but do not check this property. The user requested
-local investigation, then approved a native correction and regression tests. The
-correction passes focused macOS regression tests, full macOS/Linux gates and
-WASI compilation. The user approved upstream publication in
-[SwiftTUI PR #63](https://github.com/SwiftTUI/swift-tui/pull/63). It remains draft
-pending hosted integration checks. The qualification branch pins its current head,
-`65043a7b411c1bdfbce5c469e496836e6da95445`, after the upstream merge from `main`.
-The seven other dependency pins stay fixed. This is a provisional qualification
-input, not merged adoption or permission to publish the release.
+Blackbox found the macOS
+[borrowed-output policy issue](Decisions/NativeIntegration.md#borrowed-output-policy-on-macos)
+during adoption. Its correction merged in
+[SwiftTUI PR #63](https://github.com/SwiftTUI/swift-tui/pull/63) as
+`3999a9a57dde52fb00aa98952460b0819a0641bf`. The qualification branch now pins
+that canonical revision, including merged #62 and the stream-input scheduling
+correction. The seven other dependency pins stay fixed.
+
+The maintainer changed #63 after the earlier `65043a7b` qualification. That prior
+head passed Chio platform gates and consumer trials; those results do not qualify
+the merged revision. Repeat the applicable release, terminal and consumer checks
+before readiness. Keep publication and default-branch adoption separate from
+upstream merge and candidate verification.
 
 The newer dependency reproduces an Apple SwiftBuild release-link failure for
 `SearchableList`'s nested private focus enum. The candidate moves that enum to
@@ -79,9 +81,8 @@ Release publication and downstream adoption remain separate evidence.
 The earlier debug failures and isolated experiments remain in the
 [qualification record](Verification.md#startup-input-investigation). PR #23 adopted
 neither SwiftTUI #62 nor the private focus-type experiment. The current 0.2.2
-candidate includes the scoped focus-type workaround described above; #62 remains
-excluded. Release qualification does not establish that debug startup starvation
-is corrected.
+candidate includes the scoped focus-type workaround and merged #62 described
+above. Release qualification does not establish debug-specific consumer behavior.
 
 ## Delivered maintenance: naming review
 
