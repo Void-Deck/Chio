@@ -2,7 +2,8 @@
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 
-swift --version
+bash Scripts/check-swift-version.sh
+python3 Scripts/test-swift-version.py
 testing_flags=()
 if [[ "$(uname -s)" == Darwin ]]; then
   # Some Apple 6.4 toolchains do not discover their installed Testing macros.
