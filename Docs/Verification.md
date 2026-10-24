@@ -107,8 +107,8 @@ separate from this compiler-selection check.
 
 ## Shared engineering rules
 
-Chio pins [EngineeringRules v0.1.10](https://github.com/echoz/EngineeringRules/releases/tag/v0.1.10)
-(`756987b0d0e4bf8245abe05611f43aab8ffc700e`) through
+Chio pins [EngineeringRules v0.1.11](https://github.com/echoz/EngineeringRules/releases/tag/v0.1.11)
+(`3e42da0e724fe54585cc3cdd9009c749f7ba24d9`) through
 [.swift-rules.json](../.swift-rules.json). This is a required local development
 gate alongside the compiler, tests and platform checks below. It is not a package
 dependency or a guarantee of purity, correct enum policy or API compatibility.
@@ -121,7 +121,7 @@ On this Mac, run:
 
 ```sh
 DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
-  bash Scripts/ci/check-rules.sh /path/to/immutable/EngineeringRules-0.1.10
+  bash Scripts/ci/check-rules.sh /path/to/immutable/EngineeringRules-0.1.11
 ```
 
 Full Xcode supplies the required Swift/SourceKit. On Linux, omit `DEVELOPER_DIR`
@@ -196,7 +196,7 @@ Retain its JSON output and logs for that exact candidate. The independent review
 records each name's meaning and a concrete rename, legitimate retain reason or
 explicit out-of-scope deferral. A successful inventory command does not complete
 semantic review; candidates are neither violations nor baseline entries.
-The pinned tool's [selection contract](https://github.com/echoz/EngineeringRules/tree/v0.1.10#naming-review-candidates)
+The pinned tool's [selection contract](https://github.com/echoz/EngineeringRules/tree/v0.1.11#naming-review-candidates)
 owns matching and output. Apply the global organization guidance to the names.
 
 Use the released engineering-review workflow for all introduced or changed names,
@@ -238,6 +238,28 @@ Heading fragments, HTML, external URLs, prose accuracy and browser behavior rema
 outside the gate. Check relevant anchors manually and keep site verification
 where visible output changes. The source README is excluded from assembled Pages
 output; SwiftPM excludes source guides from build inputs without excluding code.
+
+<a id="0111-adoption"></a>
+
+### 0.1.11 adoption
+
+This maintenance change advances the checker and immutable helper revision to
+published commit `3e42da0e724fe54585cc3cdd9009c749f7ba24d9`. The documentation
+checker and review skill payloads are unchanged from 0.1.10. Rule scopes,
+the existing baseline exception, dependency pins and application behavior remain
+unchanged.
+
+Chio retains its single native release `compilerContext`. All Swift layout sources
+belong to the `Chio` module; no platform-specific source sets or conditional
+type/conformance declarations require the optional `compilerProfiles` workflow.
+Platform-dependent imports and function bodies remain. The local witness result
+covers only the supplied platform and configuration, not Linux analysis or
+example/test witnesses. Hosted macOS/Linux builds, tests and terminal workflows
+remain separate runtime evidence; public CI does not fetch the private checker.
+
+The adoption PR records the candidate, fresh wrapper and naming-inventory results,
+applicable release checks, separate review and hosted status. A passing local
+candidate does not establish default-branch adoption or a new Chio release.
 
 <a id="0110-adoption"></a>
 

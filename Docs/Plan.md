@@ -8,6 +8,18 @@ checks live in [Verification](Verification.md). Completed release scope and resu
 live in [0.2.2](Releases/0.2.2.md) and [0.2.0](Releases/0.2.0.md), with
 [0.1.0](Releases/0.1.0.md) retained as history.
 
+## Current maintenance: EngineeringRules 0.1.11
+
+The coordinated adoption uses published EngineeringRules 0.1.11 at
+`3e42da0e724fe54585cc3cdd9009c749f7ba24d9`. It updates the local checker pin and
+immutable helper revision together. Chio retains its existing single native
+release compiler context, source scopes, baseline and application dependencies.
+
+[Verification](Verification.md#0111-adoption) owns the coverage decision and
+required evidence. The focused adoption PR records exact checks and separate
+review before readiness. Default-branch adoption requires its approved merge;
+this maintenance change does not publish a new Chio release.
+
 ## Current slice: public dot matrix display
 
 The user approved promotion on 2026-10-23 after reviewing the isolated visual

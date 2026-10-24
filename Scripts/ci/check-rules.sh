@@ -18,8 +18,8 @@ gate_directory="$repository_root/.build/swift-rules"
 scratch_path="$gate_directory/native"
 compiler_context="$gate_directory/compiler-context.json"
 helper_directory=""
-rules_version=0.1.10
-rules_commit=756987b0d0e4bf8245abe05611f43aab8ffc700e
+rules_version=0.1.11
+rules_commit=3e42da0e724fe54585cc3cdd9009c749f7ba24d9
 launcher="$HOME/.local/bin/swift-rules"
 documentation_python="$rules_checkout/.build/docs-venv/bin/python"
 
