@@ -54,6 +54,8 @@ if [[ "$(uname -s)" == Darwin ]]; then
   [[ -d "$DEVELOPER_DIR" ]] || fail "Full Xcode is unavailable at DEVELOPER_DIR=$DEVELOPER_DIR"
 fi
 
+bash Scripts/check-swift-version.sh
+
 release_commit="$(git -C "$rules_checkout" rev-parse "v$rules_version^{commit}")"
 [[ "$release_commit" == "$rules_commit" ]] || fail "EngineeringRules v$rules_version must resolve to $rules_commit"
 installed_version="$("$launcher" --version)"

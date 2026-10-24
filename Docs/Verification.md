@@ -89,6 +89,22 @@ dependency and verification-script input. Hosted CI, independent review and
 final downstream adoption remained separate evidence at that checkpoint. The
 [release record](Releases/0.2.2.md) records the later qualification and publication.
 
+## Repository compiler selection
+
+Repository development and verification use the Swift **6.4 release line** in
+[`.swift-version`](../.swift-version). Select it through your existing `PATH`,
+`DEVELOPER_DIR` or toolchain manager. The pin does not install tools or change
+system selection. `bash Scripts/check-swift-version.sh` checks the selected
+`swift --version`; supported verification scripts reject other compiler lines
+and development snapshots before building. Stable 6.4 patch releases are accepted.
+`Scripts/ci/verify.sh` also runs `python3 Scripts/test-swift-version.py`, whose
+disposable compilers exercise accepted versions and prerequisite failures.
+
+This contributor and CI pin does not impose a package maximum compiler version.
+The public library retains its Swift 6.4+ consumer requirement, Swift 6 language
+mode, existing OS support and dependency pins. Static Linux qualification remains
+separate from this compiler-selection check.
+
 ## Shared engineering rules
 
 Chio pins [EngineeringRules v0.1.10](https://github.com/echoz/EngineeringRules/releases/tag/v0.1.10)
