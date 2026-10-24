@@ -50,8 +50,25 @@ personal account.
 
 Prepare a focused branch from the current remote default branch. Preserve
 unrelated changes and unpublished history in other branches or worktrees.
-Run the applicable [verification](Docs/Verification.md), commit the candidate,
-and confirm that the checkout is clean. Its single `origin` URL must identify
+Run the applicable [verification](Docs/Verification.md). Explicitly stage only
+the focused changes on the feature branch. Create new Codex-authored commits
+with installed `q commit` and the full lowercase parent SHA from `git rev-parse HEAD`:
+
+```sh
+q commit --message-file /absolute/path/to/commit-message.txt \
+  --expected-head FULL_PARENT_SHA --json
+```
+
+Include `Co-authored-by: Codex <codex@openai.com>` in the message file. Q supplies
+both author and committer identity; never fall back to personal attribution.
+Preserve existing history, signatures and other authors' commits. New Q commits
+are unsigned and skip hooks; verification and separate review remain required.
+Read the private Q Branch
+[commit contract](https://github.com/Void-Deck/q-branch/blob/main/docs/github-publishing.md#create-a-commit-as-q)
+for captured staging and failure handling. After `uncertain_commit` (exit 4),
+inspect the local branch and created commit before retrying.
+
+Confirm that the checkout is clean. Its single `origin` URL must identify
 `Void-Deck/Chio`. From that checkout, publish the exact full lowercase commit ID:
 
 ```sh
