@@ -38,5 +38,64 @@ Update each owning document instead of duplicating contracts or history here.
 - Parse Markdown when content changes, then compose native views from the immutable
   document. Keep parser types internal; native scroll views own document navigation.
 
+## Q GitHub publication
+
+For Q-owned work in `Void-Deck/Chio`, use the installed `q pr` CLI as
+**Q Branch Bot** (`q-branch-bot[bot]`). Use `q pr help` for command details.
+The local repository allowlist and GitHub App installation must both permit
+`Void-Deck/Chio`; repository discovery alone does not enroll a checkout.
+Keep credentials and local App configuration outside this public repository.
+If Q access is unavailable, report the blocker instead of publishing through a
+personal account.
+
+Prepare a focused branch from the current remote default branch. Preserve
+unrelated changes and unpublished history in other branches or worktrees.
+Run the applicable [verification](Docs/Verification.md). Explicitly stage only
+the focused changes on the feature branch. Create new Codex-authored commits
+with installed `q commit` and the full lowercase parent SHA from `git rev-parse HEAD`:
+
+```sh
+q commit --message-file /absolute/path/to/commit-message.txt \
+  --expected-head FULL_PARENT_SHA --json
+```
+
+Include `Co-authored-by: Codex <codex@openai.com>` in the message file. Q supplies
+both author and committer identity; never fall back to personal attribution.
+Preserve existing history, signatures and other authors' commits. New Q commits
+are unsigned and skip hooks; verification and separate review remain required.
+Read the private Q Branch
+[commit contract](https://github.com/Void-Deck/q-branch/blob/main/docs/github-publishing.md#create-a-commit-as-q)
+for captured staging and failure handling. After `uncertain_commit` (exit 4),
+inspect the local branch and created commit before retrying.
+
+Confirm that the checkout is clean. Its single `origin` URL must identify
+`Void-Deck/Chio`. From that checkout, publish the exact full lowercase commit ID:
+
+```sh
+q pr check --repo Void-Deck/Chio --json
+q pr publish --repo Void-Deck/Chio \
+  --base main --head codex/example-change --commit FULL_COMMIT_SHA \
+  --title 'Describe the resulting behavior' --body-file /path/to/pr-body.md
+```
+
+Replace the example branch, commit, title and body path with the reviewed
+candidate's values. Publication pushes that commit and creates a draft PR.
+Verify the returned repository, bot author, branch, commit and draft state.
+For an existing Q-owned PR, sync from its clean head checkout:
+
+```sh
+q pr sync --repo Void-Deck/Chio --pr PR_NUMBER \
+  --expected-commit FULL_COMMIT_SHA --json
+```
+For workflow-file publication or sync, add `--allow-workflows` only when that
+change and the required installation permission are authorized.
+
+Keep the PR draft until applicable checks and separate engineering review pass.
+Then use `q pr ready --pr PR_NUMBER --expected-head FULL_COMMIT_SHA --json`.
+Readiness does not approve or merge the PR. A human retains merge authority;
+merge requires explicit approval covering that PR and revision or defined scope.
+Do not enable automatic merging or bypass repository protections.
+After an uncertain write, inspect remote state before any further mutation.
+
 Global engineering, organization, and worker-routing policies belong in
 `~/.codex/AGENTS.md` and its companion instructions, not in this file.
