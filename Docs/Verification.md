@@ -239,7 +239,7 @@ outside the gate. Check relevant anchors manually and keep site verification
 where visible output changes. The source README is excluded from assembled Pages
 output; SwiftPM excludes source guides from build inputs without excluding code.
 
-<a id="0110-adoption"></a>
+<a id="0111-adoption"></a>
 
 ### 0.1.11 adoption
 
@@ -260,6 +260,8 @@ remain separate runtime evidence; public CI does not fetch the private checker.
 The adoption PR records the candidate, fresh wrapper and naming-inventory results,
 applicable release checks, separate review and hosted status. A passing local
 candidate does not establish default-branch adoption or a new Chio release.
+
+<a id="0110-adoption"></a>
 
 ### 0.1.10 adoption
 
