@@ -1705,6 +1705,19 @@ Test owners await child shutdown even after cancellation or a thrown operation.
 Cleanup retains a five-second bound and reports signal results and observed process
 state when it fails.
 
+The HTTP test fixture avoids `FileHandle.readabilityHandler`. Hosted Linux run
+[40213524172](https://github.com/Void-Deck/Chio/actions/runs/40213524172) crashed in
+`_dispatch_event_loop_drain` during its first HTTP case. The stack matches the
+upstream [epoll read-source lifetime defect](https://github.com/swiftlang/swift-corelibs-libdispatch/issues/949),
+but the retained log does not establish this crash's precise cause. The fixture
+now polls nonblocking stdout for readiness and owns one asynchronous nonblocking
+stderr drain. Cleanup terminates the child, cancels and awaits that reader, then
+closes its handle. Retained stderr remains capped at eight KiB while excess bytes
+are drained. Startup, transfer and cleanup deadlines and assertions are unchanged.
+The focused regression rejects invalid readiness and stdout EOF after substantial
+stderr output and checks bounded diagnostics. Fresh platform verification remains
+required. A successful repetition alone does not prove the original race is repaired.
+
 Persistent-cache changes additionally exercise source/format isolation, checked
 file framing, original expiry, clock movement, encoded byte and entry bounds,
 FIFO eviction, corrupt entries, interrupted temporary cleanup and explicit closed

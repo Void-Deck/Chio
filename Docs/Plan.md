@@ -14,9 +14,16 @@ The bounded CI candidate imports a reviewed generic action copy at upstream
 commit `2e28c360db1d6a8a2f88a6fa12b5e105e042da9e`. Both ordinary platform jobs
 record their event checkout after Python is available. The
 [source receipt contract](Verification.md#ci-source-receipt) owns provenance,
-checkout requirements and verification limits. Local copy validation and bounded
-contract checks precede independent review and publication; hosted composite-action
-execution remains unverified until this candidate runs on GitHub.
+checkout requirements and verification limits. Local copy validation, bounded
+contract checks and separate source review pass.
+
+[Hosted run 40213524172](https://github.com/Void-Deck/Chio/actions/runs/40213524172)
+at head `6498f1e2cb0a18656d706a335aa4daa31574ae08` executed both receipt steps
+successfully. Its macOS product gate passed; Linux crashed in the HTTP preflight.
+The private fixture now avoids the matching upstream pipe-read-source failure
+pattern, as described in [verification](Verification.md).
+Fresh platform qualification of that mitigation remains required. Passing source
+receipts do not establish passing product checks.
 
 ## Current maintenance: exact-input CI build cache
 

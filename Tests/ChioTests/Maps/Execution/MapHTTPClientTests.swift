@@ -631,6 +631,39 @@ struct MapHTTPClientTests {
         #expect(fixture.withLock { $0?.isRunning } == false)
     }
 
+    @Test("HTTP fixture startup rejects invalid readiness and EOF with capped stderr diagnostics", arguments: [false, true])
+    func invalidFixtureReadiness(closesOutput: Bool) async {
+        let readiness: String
+        let expectedOutput: String
+        if closesOutput {
+            readiness = "os.close(1)"
+            expectedOutput = "stdout=\"\""
+        } else {
+            readiness = "print('invalid-readiness', flush=True)"
+            expectedOutput = "stdout=\"invalid-readiness\\n\""
+        }
+        let script = """
+import os, sys, time
+sys.stderr.write('fixture-marker\\n' + 'z' * 100000)
+sys.stderr.flush()
+\(readiness)
+time.sleep(60)
+"""
+        do {
+            _ = try await Server(script: script)
+            Issue.record("Invalid fixture readiness was accepted")
+        } catch WaitError.fixtureStartup(let diagnostic) {
+            // Foundation may reject empty input during URL construction or
+            // return a relative URL which the numeric-loopback guard rejects.
+            let hasInvalidURL = diagnostic.contains("Invalid readiness URL")
+            let hasNonlocalURL = diagnostic.contains("Readiness URL is not the localhost fixture")
+            #expect(hasInvalidURL || hasNonlocalURL)
+            #expect(diagnostic.contains("stderr=\"fixture-marker\\n"))
+            #expect(diagnostic.contains(expectedOutput))
+            #expect(diagnostic.utf8.count < 9_000)
+        } catch { Issue.record("Unexpected fixture startup error: \(error)") }
+    }
+
     @Test("Same-origin redirects normalize implicit HTTP and HTTPS ports")
     func originComparison() {
         #expect(MapHTTPClient.sameOrigin(URL(string: "https://example.test/a")!, URL(string: "https://example.test:443/b")!))
@@ -706,13 +739,14 @@ struct MapHTTPClientTests {
         private let process: Process
         private let base: URL
         private let errorHandle: FileHandle
+        private let errorDrain: Task<Void, Never>
         private let stopped = Mutex(false)
-        init() async throws {
+        init(script: String = Server.script) async throws {
             try Task.checkCancellation()
             let process = Process(), pipe = Pipe(), errorPipe = Pipe()
             let errors = Mutex(Data())
             process.executableURL = URL(fileURLWithPath: "/usr/bin/env")
-            process.arguments = ["python3", "-u", "-c", Self.script]
+            process.arguments = ["python3", "-u", "-c", script]
             process.standardOutput = pipe
             process.standardError = errorPipe
             let command = "executable=/usr/bin/env; arguments=\(process.arguments!.debugDescription)"
@@ -726,56 +760,55 @@ struct MapHTTPClientTests {
             }
             do { try process.run() }
             catch { throw WaitError.fixtureStartup("Could not launch fixed Python HTTP fixture: \(error); \(command)") }
-            errorHandle.readabilityHandler = { handle in
-                guard let chunk = Self.readAvailable(from: handle, limit: 1_024) else { return }
-                guard !chunk.isEmpty else {
-                    handle.readabilityHandler = nil
-                    return
+            // Avoid Foundation's dispatch read sources: their asynchronous
+            // teardown can leave dangling epoll state on Linux (libdispatch #949).
+            // This sole reader never blocks and is joined before closing its FD.
+            let errorDrain = Task.detached {
+                while !Task.isCancelled {
+                    if let chunk = Self.readAvailable(from: errorHandle, limit: 1_024) {
+                        guard !chunk.isEmpty else { return }
+                        errors.withLock { bytes in bytes.append(chunk.prefix(max(0, 8_192 - bytes.count))) }
+                    }
+                    do { try await Task.sleep(for: .milliseconds(10)) }
+                    catch { return }
                 }
-                errors.withLock { bytes in bytes.append(chunk.prefix(max(0, 8_192 - bytes.count))) }
             }
-            let output = Mutex((bytes: Data(), isComplete: false))
-            handle.readabilityHandler = { handle in
-                guard let chunk = Self.readAvailable(from: handle, limit: 256) else { return }
-                let isComplete = output.withLock { state in
-                    state.bytes.append(chunk.prefix(max(0, 256 - state.bytes.count)))
-                    let hasNewline = state.bytes.contains(10)
-                    let hasReachedLimit = state.bytes.count == 256
-                    state.isComplete = chunk.isEmpty || hasNewline || hasReachedLimit
-                    return state.isComplete
-                }
-                if isComplete { handle.readabilityHandler = nil }
-            }
-            defer { handle.readabilityHandler = nil; try? handle.close() }
+            var output = Data()
+            defer { try? handle.close() }
             do {
-                // Yield the cooperative executor while Foundation dispatches pipe
-                // readiness. No reader thread blocks waiting for the child output.
                 let clock = ContinuousClock()
                 let deadline = clock.now.advanced(by: .seconds(5))
-                while !output.withLock({ $0.isComplete }) {
+                while true {
                     try Task.checkCancellation()
+                    if let chunk = Self.readAvailable(from: handle, limit: 256) {
+                        output.append(chunk.prefix(max(0, 256 - output.count)))
+                        let hasNewline = output.contains(10)
+                        let hasReachedLimit = output.count == 256
+                        if chunk.isEmpty || hasNewline || hasReachedLimit { break }
+                    }
                     guard clock.now < deadline else { throw WaitError.timeout("Python HTTP fixture readiness after five seconds") }
                     try await Task.sleep(for: .milliseconds(10))
                 }
                 try Task.checkCancellation()
-                let data = output.withLock { $0.bytes }
-                let text = String(decoding: data, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines)
+                let text = String(decoding: output, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines)
                 guard let url = URL(string: text) else { throw WaitError.fixtureStartup("Invalid readiness URL") }
                 let isLocalhost = url.host == "127.0.0.1"
                 guard isLocalhost else { throw WaitError.fixtureStartup("Readiness URL is not the localhost fixture") }
                 self.process = process
                 self.base = url
                 self.errorHandle = errorHandle
+                self.errorDrain = errorDrain
             } catch {
                 let status: String
                 if process.isRunning { status = "still running" }
                 else { status = "exited \(process.terminationStatus)" }
                 let cleanupFailure = await Self.terminate(process)
-                errorHandle.readabilityHandler = nil
+                errorDrain.cancel()
+                await errorDrain.value
                 try? errorHandle.close()
                 if let cleanupFailure { Issue.record("\(cleanupFailure)") }
                 if error is CancellationError { throw error }
-                let stdout = output.withLock { String(decoding: $0.bytes, as: UTF8.self) }
+                let stdout = String(decoding: output, as: UTF8.self)
                 let stderr = errors.withLock { String(decoding: $0, as: UTF8.self) }
                 throw WaitError.fixtureStartup("Python HTTP fixture startup failed: \(error); child \(status); \(command); stdout=\(stdout.debugDescription); stderr=\(stderr.debugDescription)")
             }
@@ -786,7 +819,8 @@ struct MapHTTPClientTests {
             let shouldStop = stopped.withLock { value in if value { return false }; value = true; return true }
             if shouldStop {
                 let cleanupFailure = await Self.terminate(process)
-                errorHandle.readabilityHandler = nil
+                errorDrain.cancel()
+                await errorDrain.value
                 try? errorHandle.close()
                 if let cleanupFailure { Issue.record("\(cleanupFailure)") }
             }
@@ -794,12 +828,13 @@ struct MapHTTPClientTests {
         deinit {
             guard !stopped.withLock({ $0 }) else { return }
             Issue.record("HTTP fixture owner omitted awaited cleanup")
-            let process = process, errorHandle = errorHandle
+            let process = process, errorHandle = errorHandle, errorDrain = errorDrain
             // The normal owner awaits stop(). This fallback retains only the
             // resources until bounded cleanup finishes, never the dying owner.
             Task.detached {
                 _ = await Server.terminate(process)
-                errorHandle.readabilityHandler = nil
+                errorDrain.cancel()
+                await errorDrain.value
                 try? errorHandle.close()
             }
         }
