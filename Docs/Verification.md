@@ -1340,7 +1340,7 @@ fetching their full histories.
 
 Chio's public copy contains exactly four generic component files and their
 [manifest](../.github/actions/source-receipt/reviewed-copy.json), exported from
-upstream commit `2e28c360db1d6a8a2f88a6fa12b5e105e042da9e`. The entrypoint checks
+upstream commit `9b2fd87286faac68e79982521ef290e6207fda33`. The entrypoint checks
 the manifest and allowlisted hashes before loading the receipt implementation.
 An update requires another explicit export and review. No private action access
 or private controller code is required.
@@ -1351,6 +1351,14 @@ PR base/head, tested checkout and component provenance. It writes no source
 files. The receipt observes the runner's supplied identity; it does not establish
 freshness, successful verification, independent review or merge approval.
 The existing cache and verification gates retain their own contracts.
+
+Expected identity failures report only a fixed validation category, including
+`event-merge-commit`, `merge-parents`, `checkout-commit` or `git-read`. Observed
+values and raw event, exception or subprocess text are not included. Unexpected
+errors retain the generic diagnostic. All identity checks remain required,
+including populated event merge SHA equality and ordered commit-parent checks.
+A category identifies a rejected check; it does not establish the underlying
+cause or authorize a retry.
 
 Validate the imported copy from the repository root:
 
@@ -1364,6 +1372,17 @@ gate. No Swift source, package, cache script or platform assertion changes in th
 slice. These bounded checks do not establish hosted action evaluation, the
 runner's actual event payloads or complete Linux/macOS product verification.
 The existing full CI gate remains required when the candidate runs on GitHub.
+
+The canonical component at this pin passes 35 process/Git contract tests and
+separate source review. The earlier 31-test receipt suite qualifies the preceding
+copy only. [Run 40219704304](https://github.com/Void-Deck/Chio/actions/runs/40219704304)
+at head `c1b52ca5e881a06507698bcfd97ba9c96b55e0ef` failed both receipt steps
+before cache helpers or product tests began. No receipt was emitted. Visible
+checkout and runner identities agree, but the rejected observation remains
+unknown because the generic diagnostic did not identify its validation check.
+Fresh Linux and macOS execution of the updated copy and complete product gate
+remains pending; prior fixture, native and cache evidence is retained only for
+unchanged inputs.
 
 ### Exact-input CI build cache
 

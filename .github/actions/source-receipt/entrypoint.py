@@ -93,7 +93,12 @@ def main():
     spec = importlib.util.spec_from_file_location("source_receipt", directory / "receipt.py")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    module.record(os.environ, provenance)
+    try:
+        module.record(os.environ, provenance)
+    except module.IdentityError as error:
+        if not isinstance(error.stage, module.ValidationStage):
+            raise
+        raise ReceiptError("source identity validation failed (" + error.stage.value + ")") from None
 
 
 if __name__ == "__main__":

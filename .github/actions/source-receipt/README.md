@@ -36,6 +36,12 @@ payload or subprocess diagnostic is printed. `GITHUB_OUTPUT` is a runner-owned
 append channel; its availability is required. Only consume outputs from a
 successful step.
 
+An expected identity rejection reports only a fixed validation stage, such as
+`event-merge-commit`, `merge-parents`, `checkout-commit` or `git-read`. These
+categories identify the rejected check without printing observed values.
+Unexpected errors retain the generic failure diagnostic. A category does not
+prove why the rejected observation differed or authorize a retry.
+
 ## Receipt contract
 
 Schema version 1 preserves separate target repository name/id, workflow ref and

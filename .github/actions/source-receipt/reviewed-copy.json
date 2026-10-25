@@ -1,12 +1,12 @@
 {
   "files": {
-    "README.md": "b356567b43b55ddcfe1f0f7935c86360c56aa8e8dee6a339fbadbd7833a16c95",
+    "README.md": "9bc05de9837bd469b5dedc2a261340ce965e916fc0f75f610dd7a83222a04806",
     "action.yml": "96757152d3bb0a240e8b86cfced1f80c996dcc351d6d840ebdd96550c3e2ad9f",
-    "entrypoint.py": "f14c293385552cb2aba763ae8ddbfa61319c3c1c0ae36c9d8f6ae220a7546c80",
-    "receipt.py": "df94ad5c01475832a8d6dc2819a6c3dd31f6ed8e077d718ffa0b02709ee4ffa7"
+    "entrypoint.py": "73cfd22f6027b1af894bc341336407adf644809e55ca3ac7ccab07e75695dd2b",
+    "receipt.py": "dd957abacef16970a3189f0efcd0b9799d9e827554baa52de0c429c9d338a882"
   },
   "schemaVersion": 1,
-  "upstreamCommit": "2e28c360db1d6a8a2f88a6fa12b5e105e042da9e",
+  "upstreamCommit": "9b2fd87286faac68e79982521ef290e6207fda33",
   "upstreamPath": "ci/source-receipt",
   "upstreamRepository": "Void-Deck/q-branch"
 }
