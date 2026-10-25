@@ -147,8 +147,8 @@ def observe(environment, provenance):
         require(ref == "refs/pull/" + number + "/merge", ValidationStage.PR_REF)
         event_merge = pull.get("merge_commit_sha")
         if event_merge is not None:
-            require(sha(event_merge, ValidationStage.PR_EVENT_MERGE) == checked_out,
-                    ValidationStage.PR_EVENT_MERGE)
+            # PR merge metadata and the Actions-selected commit are separate observations.
+            sha(event_merge, ValidationStage.PR_EVENT_MERGE)
         base, head = pull.get("base"), pull.get("head")
         require(isinstance(base, dict) and isinstance(head, dict), ValidationStage.PR)
         base_identity = {"repository": repository(base.get("repo"), ValidationStage.PR_BASE),

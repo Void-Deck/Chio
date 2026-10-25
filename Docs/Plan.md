@@ -11,12 +11,12 @@ live in [0.2.2](Releases/0.2.2.md) and [0.2.0](Releases/0.2.0.md), with
 ## Current maintenance: shared source receipt
 
 The bounded CI candidate imports a reviewed generic action copy at upstream
-commit `9b2fd87286faac68e79982521ef290e6207fda33`. Both ordinary platform jobs
+commit `d4914f19327beece5180549ec19b416bb346dae0`. Both ordinary platform jobs
 record their event checkout after Python is available. The
 [source receipt contract](Verification.md#ci-source-receipt) owns provenance,
 checkout requirements and verification limits. The upstream component passes
-35 process/Git contract tests and separate source review. Readiness requires
-separate review of the public copy and fresh platform execution.
+37 process/Git contract tests. Readiness requires separate review of the source
+and public copy, plus fresh platform execution.
 
 [Hosted run 40213524172](https://github.com/Void-Deck/Chio/actions/runs/40213524172)
 at head `6498f1e2cb0a18656d706a335aa4daa31574ae08` executed both receipt steps
@@ -26,11 +26,16 @@ pattern, as described in [verification](Verification.md).
 [Hosted run 40219704304](https://github.com/Void-Deck/Chio/actions/runs/40219704304)
 at head `c1b52ca5e881a06507698bcfd97ba9c96b55e0ef` then failed both receipt steps
 before cache or product verification. Neither step emitted a receipt. The rejected
-observation remains unknown. The updated copy reports a fixed validation category
-for expected identity failures and keeps unexpected errors generic; all identity
-assertions remain in force. Fresh Linux and macOS qualification of this copy and
-the fixture mitigation remains required. Passing source receipts do not establish
-passing product checks.
+observation remains unknown.
+[Hosted run 40221305068](https://github.com/Void-Deck/Chio/actions/runs/40221305068)
+at head `5a2acb85fe99df2af9bd28b1c76504b3f074f8a1` then failed both receipt steps
+with `event-merge-commit`, again before cache or product verification. The raw
+field is unavailable, so malformed data and a different valid SHA remain distinct
+possible causes. The current copy format-checks this supplemental event field as
+a separate merge observation. Actual checkout equality and ordered event parents
+bind the tested merge, as described in the source receipt contract. Fresh Linux
+and macOS qualification of this copy and the fixture mitigation remains required.
+Passing source receipts do not establish passing product checks.
 
 ## Current maintenance: exact-input CI build cache
 

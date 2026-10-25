@@ -1340,7 +1340,7 @@ fetching their full histories.
 
 Chio's public copy contains exactly four generic component files and their
 [manifest](../.github/actions/source-receipt/reviewed-copy.json), exported from
-upstream commit `9b2fd87286faac68e79982521ef290e6207fda33`. The entrypoint checks
+upstream commit `d4914f19327beece5180549ec19b416bb346dae0`. The entrypoint checks
 the manifest and allowlisted hashes before loading the receipt implementation.
 An update requires another explicit export and review. No private action access
 or private controller code is required.
@@ -1355,10 +1355,15 @@ The existing cache and verification gates retain their own contracts.
 Expected identity failures report only a fixed validation category, including
 `event-merge-commit`, `merge-parents`, `checkout-commit` or `git-read`. Observed
 values and raw event, exception or subprocess text are not included. Unexpected
-errors retain the generic diagnostic. All identity checks remain required,
-including populated event merge SHA equality and ordered commit-parent checks.
-A category identifies a rejected check; it does not establish the underlying
-cause or authorize a retry.
+errors retain the generic diagnostic. A populated event `merge_commit_sha` still
+requires full SHA format, but it is separate metadata and does not constrain the
+tested source. [GitHub Actions selects its merge-branch commit](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#pull_request),
+while [PR merge candidates are computed asynchronously](https://docs.github.com/en/rest/guides/using-the-rest-api-to-interact-with-your-git-database#checking-mergeability-of-pull-requests).
+Those observations have no documented atomic equality guarantee. Actual
+`HEAD == github.sha` and exact ordered event base/head parents remain required.
+The supplemental field is not emitted; successful schema version 1 remains
+unchanged. A category identifies a rejected check; it does not establish the
+underlying cause or authorize a retry.
 
 Validate the imported copy from the repository root:
 
@@ -1373,16 +1378,24 @@ slice. These bounded checks do not establish hosted action evaluation, the
 runner's actual event payloads or complete Linux/macOS product verification.
 The existing full CI gate remains required when the candidate runs on GitHub.
 
-The canonical component at this pin passes 35 process/Git contract tests and
-separate source review. The earlier 31-test receipt suite qualifies the preceding
-copy only. [Run 40219704304](https://github.com/Void-Deck/Chio/actions/runs/40219704304)
+The canonical component at this pin passes 37 process/Git contract tests; separate
+source and public-copy review remain required. Earlier 31- and 35-test receipt
+suites qualify their preceding copies only.
+[Run 40219704304](https://github.com/Void-Deck/Chio/actions/runs/40219704304)
 at head `c1b52ca5e881a06507698bcfd97ba9c96b55e0ef` failed both receipt steps
 before cache helpers or product tests began. No receipt was emitted. Visible
 checkout and runner identities agree, but the rejected observation remains
 unknown because the generic diagnostic did not identify its validation check.
-Fresh Linux and macOS execution of the updated copy and complete product gate
-remains pending; prior fixture, native and cache evidence is retained only for
-unchanged inputs.
+[Run 40221305068](https://github.com/Void-Deck/Chio/actions/runs/40221305068) at head
+`5a2acb85fe99df2af9bd28b1c76504b3f074f8a1` failed both receipt steps with
+`event-merge-commit`. Its actual checkout and runner SHA agree; its real ordered
+parents match the observed PR base/head. No receipt, cache or product qualification
+result was produced. The raw field is unavailable, so this identifies the stage
+without proving malformed data versus a different valid observation. The corrected
+model retains malformed-field rejection and binds tested source through actual
+checkout and parent checks. Fresh Linux and macOS execution of the updated copy
+and complete product gate remains pending; prior fixture, native and cache
+evidence is retained only for unchanged inputs.
 
 ### Exact-input CI build cache
 

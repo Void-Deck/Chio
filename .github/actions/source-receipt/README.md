@@ -53,10 +53,19 @@ Component provenance identifies either a canonical remote full commit pin or a
 reviewed copy with that upstream commit and allowlisted file SHA-256 hashes.
 
 The receipt checks `HEAD == github.sha`. For PRs it checks the synthetic commit's
-ordered parents against the distinct event base and head, and checks the event's
-supplemental merge commit when that field is populated. A missing or null event
-merge field does not replace or weaken the parent checks. Commit object headers
-work with shallow checkouts. Push events
+ordered parents against the distinct event base and head. These checks bind the
+tested merge; commit object headers work with shallow checkouts.
+
+A populated event `merge_commit_sha` must have valid SHA format, but does not
+select or constrain the tested commit. [GitHub Actions identifies its source](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#pull_request)
+through the merge branch and `github.sha`.
+[PR merge metadata is computed asynchronously](https://docs.github.com/en/rest/guides/using-the-rest-api-to-interact-with-your-git-database#checking-mergeability-of-pull-requests);
+the webhook observation has no documented atomic equality guarantee with that
+Actions source. A different valid observation, or a missing/null field, does not
+replace or weaken actual checkout or parent checks. The supplemental value is
+not emitted; schema version 1 retains the actual tested merge identity.
+
+Push events
 must identify the same ref and non-deleted `after` commit. Target repository
 name/id must agree with the event. Malformed, inconsistent and duplicate JSON
 keys fail. Event and commit object reads are limited to 2 MiB. Workflow context and event payload
