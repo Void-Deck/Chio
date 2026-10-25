@@ -22,10 +22,11 @@ attempts, reused Swift evidence and the host-assisted Linux extraction limit.
 Thirteen helper regressions include generated-bytecode prevention and checkout
 ownership rejection before and after command-scoped Git trust.
 
-The focused draft may be published after independent review. Hosted Actions
-cache save/restore and net timing remain required before readiness; local archive
-measurements do not establish them. This slice does not authorize manual CI
-dispatches, reruns, runner changes or a merge.
+The published draft now passes the complete hosted macOS and Linux gates, and
+both jobs saved their exact-input caches. Actual Python 3.15.0 helper qualification
+also passes. A documentation-only update will exercise hosted restoration with
+unchanged build inputs. Cache-hit acceptance, full-gate results and net timing
+remain required before readiness; the verification record owns the evidence.
 
 ## Current maintenance: EngineeringRules 0.1.11
 

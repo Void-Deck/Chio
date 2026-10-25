@@ -1431,13 +1431,42 @@ which Python 3.15 no longer populates. It now reads `__spec__.cached` and preser
 the parser subprocess's error output. The regression removes the legacy attribute
 after a real import on older interpreters, verifies suppressed and enabled bytecode
 writes, and checks that import errors remain visible. Local red/green checks cover
-Python 3.9.6 and 3.12.14; actual Python 3.15 execution remains a hosted requirement.
+Python 3.9.6 and 3.12.14. A separate isolated CPython 3.15.0 arm64 runtime on macOS
+also reproduces the missing attribute naturally and passes all thirteen corrected
+regressions. This establishes actual interpreter compatibility independently of
+the hosted runner, whose successful log does not print its Python version.
 Only the test and documentation change in this correction. Prior Swift evidence
 remains applicable; cache acceptance and source-integrity checks are unchanged.
 
-Hosted cache save/restore and net timing remain pending. The PR stays draft until
-those requirements and independent review pass; no manual dispatch or rerun is
-part of this qualification.
+#### Hosted qualification
+
+[Run 40171238926, attempt 1](https://github.com/Void-Deck/Chio/actions/runs/40171238926/attempts/1)
+passes both complete gates for head `7a0f1d3569e1fb4a1cc144302fb37576c919ce0c`,
+through tested merge `6108c5216ab58fe0114850301a0df2516440f779` and base
+`796b1b9527d72ef7eb5365fa956d3d780b0c9961`. Both jobs pass thirteen helper tests,
+seven compiler-pin tests, the complete release suite, standalone product builds
+and terminal/process verification. macOS records 900 Swift tests and Linux 899,
+including repeated preflight cases and the existing platform-specific skips.
+The three documented appearance warnings remain visible on each platform.
+
+| Hosted cold measurement | macOS arm64 | Linux x86_64 |
+| --- | ---: | ---: |
+| Full gate | 1,744 s | 1,759 s |
+| Complete job | 1,792 s | 1,941 s |
+| Saved archive | 1,206,580,248 bytes | 1,073,330,261 bytes |
+| Cache save step | 21 s | 116 s |
+| Compression | zstd | gzip |
+
+Both cache lookups miss and both saves succeed. macOS uses image
+`xcode-27-arm64/20261023.0307.1`; Linux uses `ubuntu-24.04/20261012.334.1`
+with the workflow's digest-pinned Swift container. These cold results establish
+hosted saving and full verification, but not a successful restore or a speedup.
+
+The GitHub integration denies a manual rerun with `Resource not accessible by
+integration`. The documentation-only evidence update triggers normal PR checks;
+the guarded build inputs remain identical. The next run must establish exact-hit
+acceptance, archive restoration, another complete passing gate and net timing.
+The PR stays draft until that qualification and independent review pass.
 
 To run the complete test suite separately, keep hosted tests serial:
 
