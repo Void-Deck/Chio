@@ -257,7 +257,10 @@ while arguments and arguments[0].startswith("-"):
 script = arguments.pop(0)
 if script == "Scripts/maps/terminal-probe.py":
     imported = subprocess.run([sys.executable, "-E", *flags, "-c", IMPORT_PARSER,
-                               script, *flags], check=True, capture_output=True, text=True)
+                               script, *flags], capture_output=True, text=True)
+    if imported.returncode:
+        sys.stderr.write(imported.stderr)
+        raise SystemExit(imported.returncode)
     with open(".build/parser-imports.jsonl", "a") as log:
         log.write(imported.stdout)
 elif script == "Scripts/maps/online-fixture-server.py" and "--ready-file" in arguments:
@@ -274,7 +277,10 @@ if "-B" not in sys.argv[2:]:
 sys.pycache_prefix = None
 parser = runpy.run_path(sys.argv[1])["shared_parser"]()
 assert parser.screen(b"Ready").startswith("Ready")
-bytecode = pathlib.Path(parser.__cached__)
+# Python 3.15 no longer sets this legacy attribute. Exercise that boundary
+# on older interpreters too, while retaining the real import and cache file.
+parser.__dict__.pop("__cached__", None)
+bytecode = pathlib.Path(parser.__spec__.cached)
 print(json.dumps({"bytecode": str(bytecode), "generated": bytecode.is_file()}))
 ''')))
         python.chmod(0o755)
@@ -319,6 +325,19 @@ print(json.dumps({"bytecode": str(bytecode), "generated": bytecode.is_file()}))
             self.assertIn("--no-parallel", command)
         self.assertEqual(tests[0][tests[0].index("--filter") + 1], "MapHTTPClientTests|OnlineMapInteractionTests")
         self.assertNotIn("--filter", tests[1])
+
+        unflagged_import = subprocess.run([sys.executable, str(python), "Scripts/maps/terminal-probe.py"],
+                                          cwd=self.root, capture_output=True, text=True)
+        self.assertEqual(unflagged_import.returncode, 0, unflagged_import.stderr)
+        imported = json.loads((self.root / ".build/parser-imports.jsonl").read_text().splitlines()[-1])
+        self.assertTrue(imported["generated"])
+        self.assertTrue(Path(imported["bytecode"]).is_file())
+
+        parser_source.write_text('raise RuntimeError("parser import failure fixture")\n')
+        failed_import = subprocess.run([sys.executable, str(python), "-B", "Scripts/maps/terminal-probe.py"],
+                                       cwd=self.root, capture_output=True, text=True)
+        self.assertNotEqual(failed_import.returncode, 0)
+        self.assertIn("RuntimeError: parser import failure fixture", failed_import.stderr)
 
 
 class CompilerIdentityTests(unittest.TestCase):

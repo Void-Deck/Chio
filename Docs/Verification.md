@@ -1420,9 +1420,20 @@ preserving the wrapper's failed result. No failed attempt is relabeled as passed
 macOS full-gate evidence predates the Python invocation correction. All full-gate
 evidence predates the command-scoped Git ownership correction. These changes affect
 verification scripts only; unchanged Swift/compiler evidence is reused explicitly.
-Thirteen helper regressions pass on both platforms, including real Git rejection
-before and after scoped inventory access. Earlier archives retain their original
+Before the Python compatibility correction, thirteen helper regressions passed
+on both platforms, including real Git rejection before and after scoped inventory
+access. Earlier archives retain their original
 identities; they do not establish a restore under the final helper's new key.
+
+The first [hosted macOS cache-helper run](https://github.com/Void-Deck/Chio/actions/runs/40170149677/job/121099164783)
+fails before Swift verification on Python 3.15. The test reads module `__cached__`,
+which Python 3.15 no longer populates. It now reads `__spec__.cached` and preserves
+the parser subprocess's error output. The regression removes the legacy attribute
+after a real import on older interpreters, verifies suppressed and enabled bytecode
+writes, and checks that import errors remain visible. Local red/green checks cover
+Python 3.9.6 and 3.12.14; actual Python 3.15 execution remains a hosted requirement.
+Only the test and documentation change in this correction. Prior Swift evidence
+remains applicable; cache acceptance and source-integrity checks are unchanged.
 
 Hosted cache save/restore and net timing remain pending. The PR stays draft until
 those requirements and independent review pass; no manual dispatch or rerun is
