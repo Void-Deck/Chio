@@ -1306,6 +1306,7 @@ After the shared local check, with Swift 6.4 and Python 3 installed, run from th
 repository root:
 
 ```sh
+python3 -B Scripts/ci/test-swift-build-cache.py
 bash Scripts/ci/verify.sh
 ```
 
@@ -1327,6 +1328,146 @@ This policy does not qualify debug-only behavior, native debug assertions or
 debug rendering performance. Debug builds remain available for targeted
 investigation, but are not a required verification step.
 
+### Exact-input CI build cache
+
+`verify.sh` uses separate release scratch paths: `.build/ci-cache/tests` for both
+test passes and `.build/ci-cache/products` for standalone product qualification.
+SwiftPM retains its default backend. The existing Testing macro flags, resolved
+dependency requirement, serial tests, production builds, snapshots and terminal
+checks remain in force. Testable modules do not replace production qualification.
+Results and captures stay in `.build/ci-results`; rules evidence stays in
+`.build/swift-rules`. Neither belongs to the cache payload.
+
+The CI workflow caches only `.build/ci-cache`. `Scripts/ci/swift-build-cache.py`
+keys it by repository, absolute checkout path, architecture, compiler binaries,
+Swift version/target, SDK identity and build environment. Linux also includes
+the existing digest-pinned container and installed package versions. The input
+inventory hashes file contents and modes, including the manifest, lockfile,
+workflow, scripts, resources and tests. Ignored files within source roots and
+`.swiftpm/configuration` are included. Unknown paths remain inputs. Only `Docs/`,
+root `README.md`, `AGENTS.md`, `LICENSE` and the PR template are excluded because
+the current build does not consume them. Changing that boundary requires a key
+policy update. External path dependencies and mutable external toolchain/header
+contents are outside this clean hosted-job contract.
+
+The Git inventory command trusts only its canonical checkout through a
+command-scoped `safe.directory` value. Container root can differ from the checkout
+owner; this exception changes neither global Git configuration nor other commands.
+Map probes disable generated Python bytecode so imports cannot change the input
+inventory. Script source remains an input.
+
+There are no broad restore keys. An exact hit must also have a matching input
+record and complete, valid source timestamps before the helper restores mtimes.
+It never restores source bytes. A miss or invalid record discards only the owned
+cache directory, then runs the complete gate. Symlinked cache ancestors are
+rejected. A successful gate records timestamps before saving. A corrupt exact
+entry cannot be replaced under Actions' immutable key; it falls back to a cold
+build until that entry expires or is removed.
+
+Actions retains repository/ref trust isolation. This optimizes eligible reruns
+and documentation-only changes; it does not promise reuse after source changes
+or transfer of a pull-request cache to `main`. It never treats restored products
+as passing test evidence. Caches save only after successful verification.
+
+The helper regressions use temporary Git repositories and controlled compiler
+identity fixtures. They establish input invalidation, metadata validation,
+cleanup boundaries and gate failure propagation. They do not establish Swift
+incremental behavior or cache transport performance. Qualification must measure
+cold and warm full gates, including production builds, on macOS and Linux, plus
+archive size, save/restore time and a restored archive run. Local archive success
+does not establish hosted Actions transport or a net speed improvement.
+
+#### Local qualification and remaining transport gap
+
+Swift 6.4 release qualification retains the full gate and recreates all 446 input
+files at the same paths before archive restoration. Hashes, modes and Git state
+remain unchanged; restored mtimes permit reuse without restoring source bytes.
+The cold runs start with empty build stores, not empty global download caches.
+
+| Local measurement | macOS arm64 | Linux arm64 guest |
+| --- | ---: | ---: |
+| Cold full gate | 995.03 s | 1,265.57 s |
+| PAX/gzip archive | 1,324,871,100 bytes | 1,089,375,405 bytes |
+| Archive save | 82.80 s | 73.81 s |
+| Archive extraction | 12.24 s | 5.59 s |
+| Metadata restore | 0.50 s | 0.42 s |
+| Restored full gate | 547.98 s | 631.49 s |
+| Extraction, metadata and restored gate | 560.72 s | 637.50 s |
+
+These single-pair measurements reduce local restore-plus-gate time by about 44%
+and 50%, respectively. Save cost is separate. Linux uses the pinned image's arm64
+variant with two CPUs, 8 GiB and Apple Container virtiofs. Its GNU-created archive
+was restored with host BSD tar. GNU extraction on that mount failed at eight
+relative symlinks; that failed attempt remains recorded. This does not qualify
+GNU extraction on Linux local disk, hosted amd64 or Actions' archive transport.
+
+Both platforms' cold and restored phases retain matching 24 snapshots, standalone
+production builds, 19 dashboard terminal workflows, four dot-matrix sessions,
+four map workflows and cache/pack process probes. Each macOS phase records 900
+cases and each Linux phase 899, including repeated preflight cases, with zero
+failures/errors. macOS skips one case-ordering test on its case-insensitive
+filesystem; Linux skips one permission test under root. Three documented
+`collection.unboundedRealization` appearance warnings remain visible per phase.
+The pinned rules gate checks 368 files with one retained baseline item and the
+supplied native release compiler context.
+
+The first Linux cold gate passed, but its cache record rejected generated Python
+bytecode. The four map imports now disable those writes. The later restored guest
+gate and final record pass; its host recording wrapper then failed in an exit
+trap. Independent inspection confirms the successful guest outcomes while
+preserving the wrapper's failed result. No failed attempt is relabeled as passed.
+
+macOS full-gate evidence predates the Python invocation correction. All full-gate
+evidence predates the command-scoped Git ownership correction. These changes affect
+verification scripts only; unchanged Swift/compiler evidence is reused explicitly.
+Before the Python compatibility correction, thirteen helper regressions passed
+on both platforms, including real Git rejection before and after scoped inventory
+access. Earlier archives retain their original
+identities; they do not establish a restore under the final helper's new key.
+
+The first [hosted macOS cache-helper run](https://github.com/Void-Deck/Chio/actions/runs/40170149677/job/121099164783)
+fails before Swift verification on Python 3.15. The test reads module `__cached__`,
+which Python 3.15 no longer populates. It now reads `__spec__.cached` and preserves
+the parser subprocess's error output. The regression removes the legacy attribute
+after a real import on older interpreters, verifies suppressed and enabled bytecode
+writes, and checks that import errors remain visible. Local red/green checks cover
+Python 3.9.6 and 3.12.14. A separate isolated CPython 3.15.0 arm64 runtime on macOS
+also reproduces the missing attribute naturally and passes all thirteen corrected
+regressions. This establishes actual interpreter compatibility independently of
+the hosted runner, whose successful log does not print its Python version.
+Only the test and documentation change in this correction. Prior Swift evidence
+remains applicable; cache acceptance and source-integrity checks are unchanged.
+
+#### Hosted qualification
+
+[Run 40171238926, attempt 1](https://github.com/Void-Deck/Chio/actions/runs/40171238926/attempts/1)
+passes both complete gates for head `7a0f1d3569e1fb4a1cc144302fb37576c919ce0c`,
+through tested merge `6108c5216ab58fe0114850301a0df2516440f779` and base
+`796b1b9527d72ef7eb5365fa956d3d780b0c9961`. Both jobs pass thirteen helper tests,
+seven compiler-pin tests, the complete release suite, standalone product builds
+and terminal/process verification. macOS records 900 Swift tests and Linux 899,
+including repeated preflight cases and the existing platform-specific skips.
+The three documented appearance warnings remain visible on each platform.
+
+| Hosted cold measurement | macOS arm64 | Linux x86_64 |
+| --- | ---: | ---: |
+| Full gate | 1,744 s | 1,759 s |
+| Complete job | 1,792 s | 1,941 s |
+| Saved archive | 1,206,580,248 bytes | 1,073,330,261 bytes |
+| Cache save step | 21 s | 116 s |
+| Compression | zstd | gzip |
+
+Both cache lookups miss and both saves succeed. macOS uses image
+`xcode-27-arm64/20261023.0307.1`; Linux uses `ubuntu-24.04/20261012.334.1`
+with the workflow's digest-pinned Swift container. These cold results establish
+hosted saving and full verification, but not a successful restore or a speedup.
+
+The GitHub integration denies a manual rerun with `Resource not accessible by
+integration`. The documentation-only evidence update triggers normal PR checks;
+the guarded build inputs remain identical. The next run must establish exact-hit
+acceptance, archive restoration, another complete passing gate and net timing.
+The PR stays draft until that qualification and independent review pass.
+
 To run the complete test suite separately, keep hosted tests serial:
 
 ```sh
@@ -1336,7 +1477,8 @@ swift test -c release --no-parallel
 To exercise an already-built binary:
 
 ```sh
-python3 Scripts/ci/terminal-smoke.py .build/release/chio-dashboard
+dashboard_binary="$(swift build --scratch-path .build/ci-cache/products -c release --show-bin-path)/chio-dashboard"
+python3 Scripts/ci/terminal-smoke.py "$dashboard_binary"
 ```
 
 The map example additionally runs `Scripts/maps/prepare-fixtures.py --verify`

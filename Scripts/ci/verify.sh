@@ -14,18 +14,22 @@ if [[ "$(uname -s)" == Darwin ]]; then
 fi
 
 mkdir -p .build/ci-results
+# Keep testable modules and standalone production products in distinct stores.
+# Results, captures and the rules gate remain outside this cache-owned subtree.
+test_build=(--scratch-path .build/ci-cache/tests)
+product_build=(--scratch-path .build/ci-cache/products)
 # Check the real transport and online lifecycle before the longer composition
 # suites. A failed test executable does not stop SwiftPM running other targets.
-swift test -c release --force-resolved-versions --jobs "${SWIFT_BUILD_JOBS:-2}" \
+swift test "${test_build[@]}" -c release --force-resolved-versions --jobs "${SWIFT_BUILD_JOBS:-2}" \
   --no-parallel --filter 'MapHTTPClientTests|OnlineMapInteractionTests' \
   --xunit-output .build/ci-results/online-preflight.xml ${testing_flags[@]+"${testing_flags[@]}"}
 # Verify every test in the configuration used by the shipped examples. Keep
 # interaction assertions and deadlines independent of debug rendering overhead.
-swift test -c release --force-resolved-versions --jobs "${SWIFT_BUILD_JOBS:-2}" \
+swift test "${test_build[@]}" -c release --force-resolved-versions --jobs "${SWIFT_BUILD_JOBS:-2}" \
   --no-parallel --xunit-output .build/ci-results/release-all.xml ${testing_flags[@]+"${testing_flags[@]}"}
-swift build --force-resolved-versions --jobs "${SWIFT_BUILD_JOBS:-2}" \
+swift build "${product_build[@]}" --force-resolved-versions --jobs "${SWIFT_BUILD_JOBS:-2}" \
   -c release --product chio-dashboard
-binary="$(swift build -c release --show-bin-path)/chio-dashboard"
+binary="$(swift build "${product_build[@]}" -c release --show-bin-path)/chio-dashboard"
 
 for scenario in normal empty no-matches failed completed; do
   "$binary" --snapshot --width 100 --height 30 --scenario "$scenario" \
@@ -88,9 +92,9 @@ python3 -B Scripts/docs/capture-appearance.py "$binary" --verify-only \
 
 # Public dot frames are covered by the release tests; verify the composed example
 # and its native viewport through real terminal input and cleanup as well.
-swift build --force-resolved-versions --jobs "${SWIFT_BUILD_JOBS:-2}" \
+swift build "${product_build[@]}" --force-resolved-versions --jobs "${SWIFT_BUILD_JOBS:-2}" \
   -c release --product chio-matrix
-matrix_binary="$(swift build -c release --show-bin-path)/chio-matrix"
+matrix_binary="$(swift build "${product_build[@]}" -c release --show-bin-path)/chio-matrix"
 mkdir -p .build/ci-results/dot-matrix
 matrix_capture_directory="$(mktemp -d .build/ci-results/dot-matrix/run.XXXXXX)"
 python3 -B Scripts/docs/capture-dot-matrix.py "$matrix_binary" \
@@ -99,12 +103,13 @@ python3 -B Scripts/docs/capture-dot-matrix.py "$matrix_binary" \
 # Public map contracts run with the test targets above. Exercise the local map
 # example separately from the dashboard, including fixture provenance and raw input.
 python3 Scripts/maps/prepare-fixtures.py --verify
-swift build --force-resolved-versions --jobs "${SWIFT_BUILD_JOBS:-2}" \
+swift build "${product_build[@]}" --force-resolved-versions --jobs "${SWIFT_BUILD_JOBS:-2}" \
   -c release --product chio-maps
-map_binary="$(swift build -c release --show-bin-path)/chio-maps"
-python3 Scripts/maps/terminal-probe.py "$map_binary" --output-dir .build/ci-results/maps
-python3 Scripts/maps/terminal-probe.py "$map_binary" --place-search --output-dir .build/ci-results/maps/search
-python3 Scripts/maps/terminal-probe.py "$map_binary" --routing --output-dir .build/ci-results/maps/routing
+map_binary="$(swift build "${product_build[@]}" -c release --show-bin-path)/chio-maps"
+# Shared parser imports must not add bytecode to the exact build-input inventory.
+python3 -B Scripts/maps/terminal-probe.py "$map_binary" --output-dir .build/ci-results/maps
+python3 -B Scripts/maps/terminal-probe.py "$map_binary" --place-search --output-dir .build/ci-results/maps/search
+python3 -B Scripts/maps/terminal-probe.py "$map_binary" --routing --output-dir .build/ci-results/maps/routing
 
 # Real HTTP acquisition against retained bytes, never a live provider in CI.
 python3 Scripts/maps/online-fixture-server.py --verify
@@ -126,7 +131,7 @@ for attempt in {1..50}; do
   sleep 0.1
 done
 [[ -s "$online_directory/ready.json" ]] || { echo "Online fixture did not start within five seconds"; exit 1; }
-python3 Scripts/maps/terminal-probe.py "$map_binary" \
+python3 -B Scripts/maps/terminal-probe.py "$map_binary" \
   --online-source "$online_directory/source.json" --output-dir "$online_directory"
 stop_online_server
 trap - EXIT
