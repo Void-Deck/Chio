@@ -1328,6 +1328,43 @@ This policy does not qualify debug-only behavior, native debug assertions or
 debug rendering performance. Debug builds remain available for targeted
 investigation, but are not a required verification step.
 
+### CI source receipt
+
+Both ordinary [CI](../.github/workflows/ci.yml) jobs invoke the local
+[source receipt action](../.github/actions/source-receipt/README.md) after the
+event checkout. Linux first installs its existing Python prerequisite. The default
+checkout remains at the workspace root with its default shallow history and event
+ref: pull requests test the synthetic merge; pushes and manual runs test
+`github.sha`. Ordered commit headers establish the PR parent identities without
+fetching their full histories.
+
+Chio's public copy contains exactly four generic component files and their
+[manifest](../.github/actions/source-receipt/reviewed-copy.json), exported from
+upstream commit `2e28c360db1d6a8a2f88a6fa12b5e105e042da9e`. The entrypoint checks
+the manifest and allowlisted hashes before loading the receipt implementation.
+An update requires another explicit export and review. No private action access
+or private controller code is required.
+
+The successful step emits compact JSON to its log and
+`steps.source.outputs.receipt`. It separates repository, workflow, run, event,
+PR base/head, tested checkout and component provenance. It writes no source
+files. The receipt observes the runner's supplied identity; it does not establish
+freshness, successful verification, independent review or merge approval.
+The existing cache and verification gates retain their own contracts.
+
+Validate the imported copy from the repository root:
+
+```sh
+python3 -I -c 'import runpy; from pathlib import Path; m = runpy.run_path(".github/actions/source-receipt/entrypoint.py"); m["reviewed_copy"](Path(".github/actions/source-receipt"))'
+```
+
+Run the upstream receipt contract fixtures at that immutable source revision.
+Review the public export allowlist and CI wiring, then run the pinned documentation
+gate. No Swift source, package, cache script or platform assertion changes in this
+slice. These bounded checks do not establish hosted action evaluation, the
+runner's actual event payloads or complete Linux/macOS product verification.
+The existing full CI gate remains required when the candidate runs on GitHub.
+
 ### Exact-input CI build cache
 
 `verify.sh` uses separate release scratch paths: `.build/ci-cache/tests` for both

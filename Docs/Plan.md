@@ -8,6 +8,16 @@ checks live in [Verification](Verification.md). Completed release scope and resu
 live in [0.2.2](Releases/0.2.2.md) and [0.2.0](Releases/0.2.0.md), with
 [0.1.0](Releases/0.1.0.md) retained as history.
 
+## Current maintenance: shared source receipt
+
+The bounded CI candidate imports a reviewed generic action copy at upstream
+commit `2e28c360db1d6a8a2f88a6fa12b5e105e042da9e`. Both ordinary platform jobs
+record their event checkout after Python is available. The
+[source receipt contract](Verification.md#ci-source-receipt) owns provenance,
+checkout requirements and verification limits. Local copy validation and bounded
+contract checks precede independent review and publication; hosted composite-action
+execution remains unverified until this candidate runs on GitHub.
+
 ## Current maintenance: exact-input CI build cache
 
 The bounded candidate keeps the full verification gate and adds exact-input

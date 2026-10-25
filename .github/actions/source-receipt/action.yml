@@ -1,0 +1,27 @@
+name: Source receipt
+description: Record checked-out source and workflow identities without granting CI eligibility.
+outputs:
+  receipt:
+    description: Compact JSON source receipt; not an admission or freshness verdict.
+    value: ${{ steps.record.outputs.receipt }}
+runs:
+  using: composite
+  steps:
+    - id: record
+      shell: bash
+      env:
+        SOURCE_RECEIPT_ACTION_PATH: ${{ github.action_path }}
+        SOURCE_RECEIPT_ACTION_REPOSITORY: ${{ github.action_repository }}
+        SOURCE_RECEIPT_ACTION_REF: ${{ github.action_ref }}
+        SOURCE_RECEIPT_REPOSITORY: ${{ github.repository }}
+        SOURCE_RECEIPT_REPOSITORY_ID: ${{ github.repository_id }}
+        SOURCE_RECEIPT_WORKFLOW_REF: ${{ github.workflow_ref }}
+        SOURCE_RECEIPT_WORKFLOW_SHA: ${{ github.workflow_sha }}
+        SOURCE_RECEIPT_RUN_ID: ${{ github.run_id }}
+        SOURCE_RECEIPT_RUN_ATTEMPT: ${{ github.run_attempt }}
+        SOURCE_RECEIPT_EVENT_NAME: ${{ github.event_name }}
+        SOURCE_RECEIPT_EVENT_PATH: ${{ github.event_path }}
+        SOURCE_RECEIPT_REF: ${{ github.ref }}
+        SOURCE_RECEIPT_SHA: ${{ github.sha }}
+        SOURCE_RECEIPT_WORKSPACE: ${{ github.workspace }}
+      run: python3 -I "$SOURCE_RECEIPT_ACTION_PATH/entrypoint.py"
