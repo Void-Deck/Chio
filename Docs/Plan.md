@@ -8,6 +8,25 @@ checks live in [Verification](Verification.md). Completed release scope and resu
 live in [0.2.2](Releases/0.2.2.md) and [0.2.0](Releases/0.2.0.md), with
 [0.1.0](Releases/0.1.0.md) retained as history.
 
+## Current maintenance: exact-input CI build cache
+
+The bounded candidate keeps the full verification gate and adds exact-input
+build caching with separate test and production scratch directories. The
+[cache contract](Verification.md#exact-input-ci-build-cache) owns key inputs,
+cleanup boundaries, trust isolation and required qualification. No application
+source, package dependency, existing test assertion or interaction deadline changes.
+
+Local cold and archive-restored full gates now have macOS and Linux evidence.
+The verification record distinguishes passing guest checks, failed local recording
+attempts, reused Swift evidence and the host-assisted Linux extraction limit.
+Thirteen helper regressions include generated-bytecode prevention and checkout
+ownership rejection before and after command-scoped Git trust.
+
+The focused draft may be published after independent review. Hosted Actions
+cache save/restore and net timing remain required before readiness; local archive
+measurements do not establish them. This slice does not authorize manual CI
+dispatches, reruns, runner changes or a merge.
+
 ## Current maintenance: EngineeringRules 0.1.11
 
 The coordinated adoption uses published EngineeringRules 0.1.11 at
