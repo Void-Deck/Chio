@@ -1340,8 +1340,9 @@ fetching their full histories.
 
 Chio's public copy contains exactly four generic component files and their
 [manifest](../.github/actions/source-receipt/reviewed-copy.json), exported from
-upstream commit `d4914f19327beece5180549ec19b416bb346dae0`. The entrypoint checks
-the manifest and allowlisted hashes before loading the receipt implementation.
+`Void-Deck/ci-helpers` commit `ba95ede8d39f70369d817db8f1b1c2f8e5938086`.
+The entrypoint checks the manifest and allowlisted hashes before loading the
+receipt implementation.
 An update requires another explicit export and review. No private action access
 or private controller code is required.
 
@@ -1378,9 +1379,10 @@ slice. These bounded checks do not establish hosted action evaluation, the
 runner's actual event payloads or complete Linux/macOS product verification.
 The existing full CI gate remains required when the candidate runs on GitHub.
 
-The canonical component at this pin passes 37 process/Git contract tests; separate
-source and public-copy review remain required. Earlier 31- and 35-test receipt
-suites qualify their preceding copies only.
+The canonical component at this pin passes 38 process/Git and export-boundary
+tests. Independent source integration review preceded the merged helper pin;
+separate public-copy review and hosted adoption qualification remain required.
+Earlier 31-, 35- and 37-test receipt suites qualify their preceding copies only.
 [Run 40219704304](https://github.com/Void-Deck/Chio/actions/runs/40219704304)
 at head `c1b52ca5e881a06507698bcfd97ba9c96b55e0ef` failed both receipt steps
 before cache helpers or product tests began. No receipt was emitted. Visible
@@ -1393,9 +1395,24 @@ parents match the observed PR base/head. No receipt, cache or product qualificat
 result was produced. The raw field is unavailable, so this identifies the stage
 without proving malformed data versus a different valid observation. The corrected
 model retains malformed-field rejection and binds tested source through actual
-checkout and parent checks. Fresh Linux and macOS execution of the updated copy
-and complete product gate remains pending; prior fixture, native and cache
-evidence is retained only for unchanged inputs.
+checkout and parent checks.
+
+[Run 40222465950](https://github.com/Void-Deck/Chio/actions/runs/40222465950)
+at head `f3015d525cc94070750219560a2adca1c3ceaa89` passed complete macOS and
+Linux gates. Both raw job logs emit matching schema-1 receipts for tested merge
+`14f679eda37fc4b9b5a33f8d8dbb92a418859e41`, base
+`9ff6e8e0c866ba2879eff33b2edc059dcc1ae884` and that head. Those receipts identify
+the preceding Q-sourced component at `d4914f19327beece5180549ec19b416bb346dae0`.
+Both platforms pass the 20 HTTP and six online interaction preflight tests,
+13 cache-helper cases, standalone products and subsequent terminal/process gates.
+macOS reports 528 library, 166 map, five matrix and 177 dashboard tests;
+Linux reports 527 library, 166 map, five matrix and 177 dashboard tests.
+Existing platform skips remain explicit. The fixture correction, production
+source, dependency pins, workflow and verification scripts are unchanged by this
+source-owner adoption, so that product evidence remains applicable to those
+inputs. It does not qualify the new component provenance or its hosted loading.
+Fresh Linux/macOS receipt and full product execution remain required for the
+new exported copy. The original Linux crash's precise cause remains unproved.
 
 ### Exact-input CI build cache
 
@@ -1747,8 +1764,10 @@ stderr drain. Cleanup terminates the child, cancels and awaits that reader, then
 closes its handle. Retained stderr remains capped at eight KiB while excess bytes
 are drained. Startup, transfer and cleanup deadlines and assertions are unchanged.
 The focused regression rejects invalid readiness and stdout EOF after substantial
-stderr output and checks bounded diagnostics. Fresh platform verification remains
-required. A successful repetition alone does not prove the original race is repaired.
+stderr output and checks bounded diagnostics. The unchanged fixture passes both
+platform preflights and full gates in [run 40222465950](https://github.com/Void-Deck/Chio/actions/runs/40222465950),
+as detailed in the [source receipt evidence](#ci-source-receipt). A successful
+repetition alone does not prove the original race is repaired.
 
 Persistent-cache changes additionally exercise source/format isolation, checked
 file framing, original expiry, clock movement, encoded byte and entry bounds,

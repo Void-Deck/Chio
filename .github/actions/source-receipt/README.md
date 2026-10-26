@@ -13,7 +13,7 @@ Use the canonical private action with a reviewed full 40-character commit SHA:
 ```yaml
 - uses: actions/checkout@<reviewed-full-commit-SHA>
 - id: source
-  uses: Void-Deck/q-branch/ci/source-receipt@<reviewed-full-commit-SHA>
+  uses: Void-Deck/ci-helpers/ci/source-receipt@<reviewed-full-commit-SHA>
 ```
 
 Place this step after checkout, before consuming its receipt. The job needs Python
@@ -88,19 +88,19 @@ From a clean source checkout at the reviewed full commit, run:
 
 ```sh
 python3 -I ci/source-receipt/export-copy.py \
-  --source-checkout /path/to/q-branch \
+  --source-checkout /path/to/ci-helpers \
   --commit FULL_40_CHARACTER_COMMIT_SHA \
   --destination /path/to/Chio/.github/actions/source-receipt
 ```
 
 The destination must not exist and its parent must exist. The exporter requires
-one literal standard GitHub HTTPS or SSH `origin` for `Void-Deck/q-branch`.
+one literal standard GitHub HTTPS or SSH `origin` for `Void-Deck/ci-helpers`.
 That local configuration check prevents accidental repository mislabeling; it
 does not authenticate the remote or establish review approval. The exporter
 rejects dirty source checkouts, a different HEAD, non-regular source files and
 abbreviated SHAs. Review the public diff and publication scope before committing it.
 Use `uses: ./.github/actions/source-receipt` after checkout in Chio. Its adjacent
-`reviewed-copy.json` records `Void-Deck/q-branch`, the full source commit,
+`reviewed-copy.json` records `Void-Deck/ci-helpers`, the full source commit,
 `ci/source-receipt` and exactly `action.yml`, `entrypoint.py`, `receipt.py`, and
 `README.md` hashes. Local invocation requires and checks this manifest before
 loading the main implementation. Missing metadata and changed files fail.

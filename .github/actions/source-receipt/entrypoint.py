@@ -11,7 +11,7 @@ import stat
 import sys
 
 COMPONENT_FILES = ("action.yml", "entrypoint.py", "receipt.py", "README.md")
-UPSTREAM_REPOSITORY = "Void-Deck/q-branch"
+UPSTREAM_REPOSITORY = "Void-Deck/ci-helpers"
 UPSTREAM_PATH = "ci/source-receipt"
 
 

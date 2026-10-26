@@ -10,31 +10,22 @@ live in [0.2.2](Releases/0.2.2.md) and [0.2.0](Releases/0.2.0.md), with
 
 ## Current maintenance: shared source receipt
 
-The bounded CI candidate imports a reviewed generic action copy at upstream
-commit `d4914f19327beece5180549ec19b416bb346dae0`. Both ordinary platform jobs
-record their event checkout after Python is available. The
+The bounded CI candidate imports the four reviewed generic action files from
+`Void-Deck/ci-helpers` commit `ba95ede8d39f70369d817db8f1b1c2f8e5938086`.
+The manifest records that source and the exact file hashes. Both ordinary platform
+jobs record their event checkout after Python is available. The
 [source receipt contract](Verification.md#ci-source-receipt) owns provenance,
-checkout requirements and verification limits. The upstream component passes
-37 process/Git contract tests. Readiness requires separate review of the source
-and public copy, plus fresh platform execution.
+checkout requirements and verification limits. The canonical component passes
+38 process/Git and export-boundary tests. Separate review of this public copy
+and fresh Linux/macOS execution remain required for the new source pin.
 
-[Hosted run 40213524172](https://github.com/Void-Deck/Chio/actions/runs/40213524172)
-at head `6498f1e2cb0a18656d706a335aa4daa31574ae08` executed both receipt steps
-successfully. Its macOS product gate passed; Linux crashed in the HTTP preflight.
-The private fixture now avoids the matching upstream pipe-read-source failure
-pattern, as described in [verification](Verification.md).
-[Hosted run 40219704304](https://github.com/Void-Deck/Chio/actions/runs/40219704304)
-at head `c1b52ca5e881a06507698bcfd97ba9c96b55e0ef` then failed both receipt steps
-before cache or product verification. Neither step emitted a receipt. The rejected
-observation remains unknown.
-[Hosted run 40221305068](https://github.com/Void-Deck/Chio/actions/runs/40221305068)
-at head `5a2acb85fe99df2af9bd28b1c76504b3f074f8a1` then failed both receipt steps
-with `event-merge-commit`, again before cache or product verification. The raw
-field is unavailable, so malformed data and a different valid SHA remain distinct
-possible causes. The current copy format-checks this supplemental event field as
-a separate merge observation. Actual checkout equality and ordered event parents
-bind the tested merge, as described in the source receipt contract. Fresh Linux
-and macOS qualification of this copy and the fixture mitigation remains required.
+[Hosted run 40222465950](https://github.com/Void-Deck/Chio/actions/runs/40222465950)
+at head `f3015d525cc94070750219560a2adca1c3ceaa89` passed both receipt steps
+and complete macOS and Linux product gates using the preceding Q-sourced copy.
+The unchanged HTTP fixture mitigation passed its 20 HTTP and six online
+interaction preflight tests on both platforms. This retains product and fixture
+evidence for identical inputs; it does not qualify the new helper provenance.
+Earlier failed runs and their limits remain in [verification](Verification.md).
 Passing source receipts do not establish passing product checks.
 
 ## Current maintenance: exact-input CI build cache
