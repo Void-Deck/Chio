@@ -24,6 +24,9 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
+      - name: Record source identity
+        id: source
+        uses: ./.github/actions/source-receipt
       - name: Check cache helper
         run: python3 -B Scripts/ci/test-swift-build-cache.py
       - name: Identify exact build inputs
@@ -72,6 +75,9 @@ jobs:
           persist-credentials: false
       - name: Install terminal smoke prerequisite
         run: apt-get update && apt-get install -y --no-install-recommends python3
+      - name: Record source identity
+        id: source
+        uses: ./.github/actions/source-receipt
       - name: Check cache helper
         run: python3 -B Scripts/ci/test-swift-build-cache.py
       - name: Identify exact build inputs

@@ -1328,6 +1328,92 @@ This policy does not qualify debug-only behavior, native debug assertions or
 debug rendering performance. Debug builds remain available for targeted
 investigation, but are not a required verification step.
 
+### CI source receipt
+
+Both ordinary [CI](../.github/workflows/ci.yml) jobs invoke the local
+[source receipt action](../.github/actions/source-receipt/README.md) after the
+event checkout. Linux first installs its existing Python prerequisite. The default
+checkout remains at the workspace root with its default shallow history and event
+ref: pull requests test the synthetic merge; pushes and manual runs test
+`github.sha`. Ordered commit headers establish the PR parent identities without
+fetching their full histories.
+
+Chio's public copy contains exactly four generic component files and their
+[manifest](../.github/actions/source-receipt/reviewed-copy.json), exported from
+`Void-Deck/ci-helpers` commit `ba95ede8d39f70369d817db8f1b1c2f8e5938086`.
+The entrypoint checks the manifest and allowlisted hashes before loading the
+receipt implementation.
+An update requires another explicit export and review. No private action access
+or private controller code is required.
+
+The successful step emits compact JSON to its log and
+`steps.source.outputs.receipt`. It separates repository, workflow, run, event,
+PR base/head, tested checkout and component provenance. It writes no source
+files. The receipt observes the runner's supplied identity; it does not establish
+freshness, successful verification, independent review or merge approval.
+The existing cache and verification gates retain their own contracts.
+
+Expected identity failures report only a fixed validation category, including
+`event-merge-commit`, `merge-parents`, `checkout-commit` or `git-read`. Observed
+values and raw event, exception or subprocess text are not included. Unexpected
+errors retain the generic diagnostic. A populated event `merge_commit_sha` still
+requires full SHA format, but it is separate metadata and does not constrain the
+tested source. [GitHub Actions selects its merge-branch commit](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#pull_request),
+while [PR merge candidates are computed asynchronously](https://docs.github.com/en/rest/guides/using-the-rest-api-to-interact-with-your-git-database#checking-mergeability-of-pull-requests).
+Those observations have no documented atomic equality guarantee. Actual
+`HEAD == github.sha` and exact ordered event base/head parents remain required.
+The supplemental field is not emitted; successful schema version 1 remains
+unchanged. A category identifies a rejected check; it does not establish the
+underlying cause or authorize a retry.
+
+Validate the imported copy from the repository root:
+
+```sh
+python3 -I -c 'import runpy; from pathlib import Path; m = runpy.run_path(".github/actions/source-receipt/entrypoint.py"); m["reviewed_copy"](Path(".github/actions/source-receipt"))'
+```
+
+Run the upstream receipt contract fixtures at that immutable source revision.
+Review the public export allowlist and CI wiring, then run the pinned documentation
+gate. No Swift source, package, cache script or platform assertion changes in this
+slice. These bounded checks do not establish hosted action evaluation, the
+runner's actual event payloads or complete Linux/macOS product verification.
+The existing full CI gate remains required when the candidate runs on GitHub.
+
+The canonical component at this pin passes 38 process/Git and export-boundary
+tests. Independent source integration review preceded the merged helper pin;
+separate public-copy review and hosted adoption qualification remain required.
+Earlier 31-, 35- and 37-test receipt suites qualify their preceding copies only.
+[Run 40219704304](https://github.com/Void-Deck/Chio/actions/runs/40219704304)
+at head `c1b52ca5e881a06507698bcfd97ba9c96b55e0ef` failed both receipt steps
+before cache helpers or product tests began. No receipt was emitted. Visible
+checkout and runner identities agree, but the rejected observation remains
+unknown because the generic diagnostic did not identify its validation check.
+[Run 40221305068](https://github.com/Void-Deck/Chio/actions/runs/40221305068) at head
+`5a2acb85fe99df2af9bd28b1c76504b3f074f8a1` failed both receipt steps with
+`event-merge-commit`. Its actual checkout and runner SHA agree; its real ordered
+parents match the observed PR base/head. No receipt, cache or product qualification
+result was produced. The raw field is unavailable, so this identifies the stage
+without proving malformed data versus a different valid observation. The corrected
+model retains malformed-field rejection and binds tested source through actual
+checkout and parent checks.
+
+[Run 40222465950](https://github.com/Void-Deck/Chio/actions/runs/40222465950)
+at head `f3015d525cc94070750219560a2adca1c3ceaa89` passed complete macOS and
+Linux gates. Both raw job logs emit matching schema-1 receipts for tested merge
+`14f679eda37fc4b9b5a33f8d8dbb92a418859e41`, base
+`9ff6e8e0c866ba2879eff33b2edc059dcc1ae884` and that head. Those receipts identify
+the preceding Q-sourced component at `d4914f19327beece5180549ec19b416bb346dae0`.
+Both platforms pass the 20 HTTP and six online interaction preflight tests,
+13 cache-helper cases, standalone products and subsequent terminal/process gates.
+macOS reports 528 library, 166 map, five matrix and 177 dashboard tests;
+Linux reports 527 library, 166 map, five matrix and 177 dashboard tests.
+Existing platform skips remain explicit. The fixture correction, production
+source, dependency pins, workflow and verification scripts are unchanged by this
+source-owner adoption, so that product evidence remains applicable to those
+inputs. It does not qualify the new component provenance or its hosted loading.
+Fresh Linux/macOS receipt and full product execution remain required for the
+new exported copy. The original Linux crash's precise cause remains unproved.
+
 ### Exact-input CI build cache
 
 `verify.sh` uses separate release scratch paths: `.build/ci-cache/tests` for both
@@ -1667,6 +1753,21 @@ retain bounded child output and identify progress through imports and binding.
 Test owners await child shutdown even after cancellation or a thrown operation.
 Cleanup retains a five-second bound and reports signal results and observed process
 state when it fails.
+
+The HTTP test fixture avoids `FileHandle.readabilityHandler`. Hosted Linux run
+[40213524172](https://github.com/Void-Deck/Chio/actions/runs/40213524172) crashed in
+`_dispatch_event_loop_drain` during its first HTTP case. The stack matches the
+upstream [epoll read-source lifetime defect](https://github.com/swiftlang/swift-corelibs-libdispatch/issues/949),
+but the retained log does not establish this crash's precise cause. The fixture
+now polls nonblocking stdout for readiness and owns one asynchronous nonblocking
+stderr drain. Cleanup terminates the child, cancels and awaits that reader, then
+closes its handle. Retained stderr remains capped at eight KiB while excess bytes
+are drained. Startup, transfer and cleanup deadlines and assertions are unchanged.
+The focused regression rejects invalid readiness and stdout EOF after substantial
+stderr output and checks bounded diagnostics. The unchanged fixture passes both
+platform preflights and full gates in [run 40222465950](https://github.com/Void-Deck/Chio/actions/runs/40222465950),
+as detailed in the [source receipt evidence](#ci-source-receipt). A successful
+repetition alone does not prove the original race is repaired.
 
 Persistent-cache changes additionally exercise source/format isolation, checked
 file framing, original expiry, clock movement, encoded byte and entry bounds,

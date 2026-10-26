@@ -8,6 +8,26 @@ checks live in [Verification](Verification.md). Completed release scope and resu
 live in [0.2.2](Releases/0.2.2.md) and [0.2.0](Releases/0.2.0.md), with
 [0.1.0](Releases/0.1.0.md) retained as history.
 
+## Current maintenance: shared source receipt
+
+The bounded CI candidate imports the four reviewed generic action files from
+`Void-Deck/ci-helpers` commit `ba95ede8d39f70369d817db8f1b1c2f8e5938086`.
+The manifest records that source and the exact file hashes. Both ordinary platform
+jobs record their event checkout after Python is available. The
+[source receipt contract](Verification.md#ci-source-receipt) owns provenance,
+checkout requirements and verification limits. The canonical component passes
+38 process/Git and export-boundary tests. Separate review of this public copy
+and fresh Linux/macOS execution remain required for the new source pin.
+
+[Hosted run 40222465950](https://github.com/Void-Deck/Chio/actions/runs/40222465950)
+at head `f3015d525cc94070750219560a2adca1c3ceaa89` passed both receipt steps
+and complete macOS and Linux product gates using the preceding Q-sourced copy.
+The unchanged HTTP fixture mitigation passed its 20 HTTP and six online
+interaction preflight tests on both platforms. This retains product and fixture
+evidence for identical inputs; it does not qualify the new helper provenance.
+Earlier failed runs and their limits remain in [verification](Verification.md).
+Passing source receipts do not establish passing product checks.
+
 ## Current maintenance: exact-input CI build cache
 
 The bounded candidate keeps the full verification gate and adds exact-input
