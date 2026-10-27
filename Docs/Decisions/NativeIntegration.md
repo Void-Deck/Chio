@@ -1,8 +1,14 @@
 # Native integration boundaries
 
-**Status:** Chio's default branch and published 0.2.2 release use SwiftTUI
+**Status:** The current candidate adopts exact SwiftTUI 0.19.1 at
+`a67d15046ebd8b1cc83d781f50149a3e3ff0da80`. It retains the native corrections
+below and fixes disabled transition-removal cleanup. The
+[adoption decision](Dependencies.md#swifttui-0191-adoption) and
+[qualification](../Verification.md#swifttui-0191-qualification) own this change.
+
+Published Chio 0.2.2 uses SwiftTUI
 `3999a9a57dde52fb00aa98952460b0819a0641bf`, containing merged #58/#59/#60/#62/#63.
-PR #24 merged the current pin; [Verification](../Verification.md#borrowed-output-adoption-qualification)
+PR #24 merged that pin; [Verification](../Verification.md#borrowed-output-adoption-qualification)
 records platform gates for the same source tree, installation and remaining limits.
 The earlier `877d7765febd08ffc2ed434a7ef231e4132c3b80` pin merged in PR #23
 and corrected the former form and diff failures. Its
@@ -12,7 +18,7 @@ The earlier 0.2.0 candidate uses merged #57 at
 The earlier [PR #17](https://github.com/echoz/Chio/pull/17) adopted published
 0.18.0 on `main` at `7d44bd6bd85290f2c6e3526cf19e6647d551797c`, including
 merged #47/#49/#50/#56.
-[Dependencies](Dependencies.md#borrowed-output-adoption) owns the current pin decision;
+[Dependencies](Dependencies.md#borrowed-output-adoption) owns the 0.2.2 pin decision;
 [0.2.2 release record](../Releases/0.2.2.md) records integrated scope and evidence.
 Chio qualification remains distinct from upstream checks and earlier local-patch evidence.
 

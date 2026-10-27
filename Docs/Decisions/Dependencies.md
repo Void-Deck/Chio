@@ -8,22 +8,24 @@ Keep dependency choices reproducible and distinguish supported execution from un
 
 The library uses `SwiftTUIViews`; the executable uses `SwiftTUI` and tests
 use public `SwiftTUIRuntime` raster/hosted APIs, without testing SPI or private APIs.
-All four direct dependencies are revision-pinned:
+SwiftTUI uses an exact release requirement. The other three direct dependencies
+retain their revision requirements:
 
 | Dependency | Pin and reason |
 | --- | --- |
-| SwiftTUI in Chio 0.2.2 | `3999a9a57dde52fb00aa98952460b0819a0641bf`; retains #58–#60 and includes #62 startup input and #63 borrowed-output restoration |
+| SwiftTUI 0.19.1 | Exact release at `a67d15046ebd8b1cc83d781f50149a3e3ff0da80`; retains the previous native corrections and fixes disabled transition cleanup |
 | Swift Markdown 0.9.0 | `25cb61d3482054b09ae76ca4f281b1bfe7fe5a43`; revision permits conditional Windows unsafe flags |
 | Tree-sitter 0.26.13 | `d97971e24500218865c05ed1febdee2acf41bae1`; last release with upstream SwiftPM manifest |
 | tree-sitter-swift 0.7.4 | `82bb3a533e0801fd2bbaa11dc49676e10bf41948`; generated C grammar |
 
 Version-based Chio requirements (`from:` or `exact:`) cannot resolve this
-revision-pinned graph. Use the immutable Chio revision recorded in the selected
+mixed version/revision graph. Use the immutable Chio revision recorded in the selected
 GitHub release notes.
 The other direct revision requirements remain unchanged. Consumers with their own
-SwiftTUI requirement must use the same exact revision as the chosen Chio revision,
-then resolve their lockfile and verify their workflows.
-[Chio 0.2.2](../Releases/0.2.2.md) records the current dependency update and migration.
+SwiftTUI requirement must align it with the chosen Chio revision, then resolve
+their lockfile and verify their workflows. This candidate uses `exact: "0.19.1"`.
+[Chio 0.2.2](../Releases/0.2.2.md) retains its recorded SwiftTUI revision requirement;
+this change does not alter that published release.
 The [0.2.0 release record](../Releases/0.2.0.md) preserves the earlier feature scope;
 it does not change the immutable revision requirement.
 
@@ -33,6 +35,23 @@ neither a Swift wrapper nor grammar generation. The grammar copies unused querie
 Chio does no query-resource I/O and generates no Objective-C/Foundation accessor.
 Build evidence is recorded in [0.1.0](../Releases/0.1.0.md); the current static Linux
 blocker is below. Ordinary glibc support does not establish static-musl distribution.
+
+## SwiftTUI 0.19.1 adoption
+
+The user approved release adoption on 2026-10-26. Published
+[SwiftTUI 0.19.1](https://github.com/SwiftTUI/swift-tui/releases/tag/0.19.1)
+resolves to `a67d15046ebd8b1cc83d781f50149a3e3ff0da80`. It contains the previous
+`3999a9a5` pin and two subsequent commits: disabled transition-removal cleanup
+and release documentation. It changes no public API or package dependencies.
+SwiftTUI's exported products introduce no unsafe build settings that prevent
+an exact version requirement.
+
+The requirement and SwiftTUI lockfile entry advance together. All seven other
+lockfile entries stay fixed. The other direct revision requirements still prevent
+version-based consumption of Chio itself. This adoption neither publishes a new
+Chio release nor establishes downstream application adoption.
+[Verification](../Verification.md#swifttui-0191-qualification) owns the required
+integration evidence. Native input, focus, rendering and lifecycle remain upstream.
 
 <a id="borrowed-output-adoption-candidate"></a>
 

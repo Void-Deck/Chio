@@ -5,6 +5,20 @@ Current requirements for implementation, dependency and visible example changes.
 revision-specific results. For documentation-only changes, check links, anchors
 and preservation of current contracts.
 
+## SwiftTUI 0.19.1 qualification
+
+The candidate replaces SwiftTUI revision `3999a9a5` with exact release `0.19.1`
+at `a67d15046ebd8b1cc83d781f50149a3e3ff0da80`. All seven other lockfile entries
+must remain unchanged. Earlier release and CI results do not qualify this input.
+
+Required evidence includes the fresh compiler-backed rules/documentation gate,
+the complete release gate on macOS and Linux, and independent engineering review.
+An external canonical consumer must resolve, build and exercise public API/raster
+checks with the matching SwiftTUI version. Paused indexed/true-color dashboard
+captures must preserve the documented presentation contract. The adoption PR
+records exact revisions, commands, results and remaining limits before readiness.
+No new Chio release, downstream adoption or static Linux qualification is implied.
+
 ## Borrowed-output adoption qualification
 
 Published [Chio 0.2.2](https://github.com/echoz/Chio/releases/tag/v0.2.2) is
