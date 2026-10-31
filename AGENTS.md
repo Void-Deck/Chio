@@ -38,6 +38,23 @@ Update each owning document instead of duplicating contracts or history here.
 - Parse Markdown when content changes, then compose native views from the immutable
   document. Keep parser types internal; native scroll views own document navigation.
 
+## Reviewed engineering checks
+
+This public repository uses the complete reviewed EngineeringRules v0.2.1 source
+copy in [Vendor/EngineeringRules](Vendor/EngineeringRules/PUBLIC-COPY-README.md),
+exported from commit `b1ec7a16cdbce96b17a77eccc6384db3ec8708f7` by upstream
+`Scripts/export-public-copy.py`. The copy manifest records source paths and
+SHA-256 hashes. Do not hand-edit copied files. Refresh the complete copy through
+a focused rollout PR: rerun the upstream exporter at the new release tag and
+review its exact commit, file inventory and hashes before adoption.
+
+Use the repository-owned setup and gate in
+[Verification](Docs/Verification.md#shared-engineering-rules). Normal checking
+verifies the copy and checks Chio's configuration and existing baseline without
+rewriting them. Chio has no private EngineeringRules fetch or global installation
+requirement. Native macOS and Linux qualification remain separate evidence;
+there is no NUC fallback for missing platform checks.
+
 ## Q GitHub publication
 
 For Q-owned work in `Void-Deck/Chio`, use the installed `q pr` CLI as
