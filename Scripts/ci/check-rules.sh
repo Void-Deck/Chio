@@ -1,27 +1,20 @@
 #!/usr/bin/env bash
-# Local gate only: EngineeringRules is private and must already be available.
+# Check with the reviewed public copy; prepare external tools separately.
 set -euo pipefail
 
-if [[ $# -ne 1 ]]; then
-  echo "Usage: bash Scripts/ci/check-rules.sh /path/to/EngineeringRules" >&2
+if [[ $# -ne 0 ]]; then
+  echo "Usage: bash Scripts/ci/check-rules.sh" >&2
   exit 2
 fi
 
-# Resolve relative input against the caller's directory before entering Chio.
-case "$1" in
-  /*) rules_checkout="$1" ;;
-  *) rules_checkout="$PWD/$1" ;;
-esac
 cd "$(dirname "$0")/../.."
 repository_root="$(pwd -P)"
+rules_copy="$repository_root/Vendor/EngineeringRules"
 gate_directory="$repository_root/.build/swift-rules"
+tool_scratch="$gate_directory/tool"
 scratch_path="$gate_directory/native"
 compiler_context="$gate_directory/compiler-context.json"
-helper_directory=""
-rules_version=0.1.11
-rules_commit=3e42da0e724fe54585cc3cdd9009c749f7ba24d9
-launcher="$HOME/.local/bin/swift-rules"
-documentation_python="$rules_checkout/.build/docs-venv/bin/python"
+documentation_python="$gate_directory/docs-venv/bin/python"
 
 fail() {
   echo "check-rules: $*" >&2
@@ -30,9 +23,6 @@ fail() {
 
 cleanup() {
   status=$?
-  if [[ -n "$helper_directory" ]]; then
-    rm -rf "$helper_directory"
-  fi
   if [[ "$status" -ne 0 ]]; then
     rm -f "$compiler_context"
   fi
@@ -42,39 +32,34 @@ trap cleanup EXIT
 
 # A failed prerequisite, build, export or check must not leave previous evidence.
 rm -f "$compiler_context"
-for command in git python3 swift; do
+for command in python3 swift; do
   command -v "$command" >/dev/null || fail "Required command is unavailable: $command"
 done
-[[ -x "$launcher" ]] || fail "Install SwiftRules $rules_version at $launcher first"
-[[ -x "$documentation_python" ]] || fail "Prepare the pinned documentation environment at $documentation_python first"
+python3 -B Scripts/ci/verify-rules-copy.py
+[[ -x "$documentation_python" ]] || fail "Run bash Scripts/ci/prepare-rules.sh to prepare the pinned tools first"
 
 if [[ "$(uname -s)" == Darwin ]]; then
   # Respect the caller's selection; never change the system developer directory.
   export DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer}"
   [[ -d "$DEVELOPER_DIR" ]] || fail "Full Xcode is unavailable at DEVELOPER_DIR=$DEVELOPER_DIR"
 fi
-
 bash Scripts/check-swift-version.sh
 
-release_commit="$(git -C "$rules_checkout" rev-parse "v$rules_version^{commit}")"
-[[ "$release_commit" == "$rules_commit" ]] || fail "EngineeringRules v$rules_version must resolve to $rules_commit"
-installed_version="$("$launcher" --version)"
-[[ "$installed_version" == "$rules_version" ]] || fail "Chio must pin the installed SwiftRules $rules_version"
+# Artifacts stay outside the exact copy. Force the reviewed public lockfile.
+tool_options=(--package-path "$rules_copy" --scratch-path "$tool_scratch"
+  -c release --product swift-rules --build-system native --force-resolved-versions
+  --jobs "${SWIFT_BUILD_JOBS:-2}")
+swift build "${tool_options[@]}"
+tool_binary_directory="$(swift build "${tool_options[@]}" --show-bin-path)"
+checker="$tool_binary_directory/swift-rules"
+installed_version="$("$checker" --version)"
+[[ "$installed_version" == 0.2.1 ]] || fail "Require copied SwiftRules 0.2.1"
+# Check both the archive pin and the extracted sibling bytes, without downloads.
+python3 -B Scripts/ci/prepare-swiftlint.py --verify-only --bin-directory "$tool_binary_directory"
 
-mkdir -p "$gate_directory"
-helper_directory="$(mktemp -d "$gate_directory/helper.XXXXXX")"
-helper="$helper_directory/compiler-context.py"
-# Read immutable Git objects, never a possibly modified working-tree helper.
-git -C "$rules_checkout" show "$rules_commit:Scripts/compiler-context.py" > "$helper"
-documentation_checker="$helper_directory/check-docs.py"
-git -C "$rules_checkout" show "$rules_commit:Scripts/check-docs.py" > "$documentation_checker"
+"$documentation_python" -B "$rules_copy/Scripts/check-docs.py" --root "$repository_root"
 
-# The released checker validates exact parser versions before scanning.
-# Checking never installs dependencies or fetches the private tool repository.
-"$documentation_python" -B "$documentation_checker" --root "$repository_root"
-
-# Refresh the native build before exporting; SwiftPM checks current inputs while
-# retaining already-built dependencies in this gate's dedicated scratch path.
+# Refresh Chio's native release build before exporting real compiler arguments.
 build_options=(-c release --target Chio --build-system native --force-resolved-versions
   --scratch-path "$scratch_path" --jobs "${SWIFT_BUILD_JOBS:-2}")
 swift build "${build_options[@]}"
@@ -82,8 +67,9 @@ binary_directory="$(swift build "${build_options[@]}" --show-bin-path)"
 build_description="$binary_directory/description.json"
 [[ -f "$build_description" ]] || fail "Native build description is missing at $build_description"
 
-python3 -B "$helper" --root "$repository_root" \
+python3 -B "$rules_copy/Scripts/compiler-context.py" --root "$repository_root" \
   --build-description "$build_description" --module Chio \
   --output "$compiler_context"
 [[ -s "$compiler_context" ]] || fail "Compiler-context export did not produce $compiler_context"
-"$launcher" check --root "$repository_root" --compiler-context "$compiler_context"
+"$checker" check --root "$repository_root" --compiler-context "$compiler_context"
+python3 -B Scripts/ci/verify-rules-copy.py

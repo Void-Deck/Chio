@@ -58,17 +58,21 @@ also passes. A documentation-only update will exercise hosted restoration with
 unchanged build inputs. Cache-hit acceptance, full-gate results and net timing
 remain required before readiness; the verification record owns the evidence.
 
-## Current maintenance: EngineeringRules 0.1.11
+## Current maintenance: reviewed EngineeringRules public copy
 
-The coordinated adoption uses published EngineeringRules 0.1.11 at
-`3e42da0e724fe54585cc3cdd9009c749f7ba24d9`. It updates the local checker pin and
-immutable helper revision together. Chio retains its existing single native
-release compiler context, source scopes, baseline and application dependencies.
+The bounded rollout uses EngineeringRules v0.2.1 at
+`b1ec7a16cdbce96b17a77eccc6384db3ec8708f7`. Upstream
+`Scripts/export-public-copy.py` exports the complete reviewed public surface into
+`Vendor/EngineeringRules`; Chio verifies the exact inventory and hashes.
+The repository owns explicit tool preparation and its compiler-backed gate.
+Public CI uses the reviewed copy without private upstream access or credentials.
 
-[Verification](Verification.md#0111-adoption) owns the coverage decision and
-required evidence. The focused adoption PR records exact checks and separate
-review before readiness. Default-branch adoption requires its approved merge;
-this maintenance change does not publish a new Chio release.
+[Verification](Verification.md#shared-engineering-rules) owns setup, checking,
+whole-copy refresh and platform requirements. Source scopes, the existing baseline,
+application behavior and package dependencies remain unchanged. Static and offline
+checks do not qualify native macOS or Linux execution. Fresh applicable gates and
+separate review remain required before PR readiness; this rollout does not imply
+merge, default-branch adoption or a Chio release.
 
 ## Current slice: public dot matrix display
 

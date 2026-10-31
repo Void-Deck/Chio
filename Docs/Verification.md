@@ -121,39 +121,120 @@ separate from this compiler-selection check.
 
 ## Shared engineering rules
 
-Chio pins [EngineeringRules v0.1.11](https://github.com/echoz/EngineeringRules/releases/tag/v0.1.11)
-(`3e42da0e724fe54585cc3cdd9009c749f7ba24d9`) through
-[.swift-rules.json](../.swift-rules.json). This is a required local development
-gate alongside the compiler, tests and platform checks below. It is not a package
-dependency or a guarantee of purity, correct enum policy or API compatibility.
+Chio uses the reviewed public EngineeringRules **v0.2.1** source copy at
+`b1ec7a16cdbce96b17a77eccc6384db3ec8708f7` in
+[Vendor/EngineeringRules](../Vendor/EngineeringRules/PUBLIC-COPY-README.md).
+[reviewed-copy.json](../Vendor/EngineeringRules/reviewed-copy.json) records each
+release source path and SHA-256. Upstream `Scripts/export-public-copy.py` exports
+the complete public surface, including its explicit public package manifest.
+The consumer pin in [.swift-rules.json](../.swift-rules.json) must match the copied
+executable. This gate complements compiler, test and platform checks; it does not
+prove purity, correct enum policy or API compatibility.
 
-Install the pinned tool from its repository using its README. Prepare the released
-documentation checker's hash-pinned Python dependencies in a clean release
-checkout's `.build/docs-venv`. Several projects can share that immutable checkout
-and environment; do not change a shared development checkout for this purpose.
-On this Mac, run:
+Refresh the whole copy through a focused rollout PR. Rerun the upstream exporter
+at the new published release tag; review its exact commit, complete inventory and
+file hashes. Never hand-edit copied files or add private upstream material.
+Normal checking verifies byte identity; hashes do not establish review approval
+or platform qualification. Chio owns its wrapper, configuration, import scopes
+and reviewed baseline. Upstream owns copied checker implementations.
+
+Prepare tools explicitly before the normal gate. The public package requires
+Swift 6.4 and its pinned public SwiftSyntax dependency. Preparation builds the
+checker under `.build/swift-rules/tool`, places verified official SwiftLint
+**0.65.1** beside its executable, and prepares the documentation Python environment
+outside the copy. Its hash-pinned requirements specify `markdown-it-py` 3.0.0
+and `mdurl` 0.1.2. Missing or different tool/parser versions fail prerequisites.
+
+Explicit setup uses the repository-owned helper. On macOS select full Xcode
+before both preparation and checking:
+
+```sh
+# macOS only; omit on Linux.
+export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
+bash Scripts/ci/prepare-rules.sh
+```
+
+It downloads and verifies the official SwiftLint archive, retains that archive
+under `.build/swift-rules`, builds SwiftRules, and installs the documentation
+requirements with `pip --require-hashes` in `.build/swift-rules/docs-venv`.
+On macOS it also places the archive's required dynamic libraries beside SwiftLint.
+Build artifacts and environments stay outside the reviewed copy.
+
+For a separate build and SwiftLint download, run these steps instead of the
+preparation helper from the repository root:
+
+```sh
+python3 -B Scripts/ci/verify-rules-copy.py
+bash Scripts/check-swift-version.sh
+swift build --package-path Vendor/EngineeringRules \
+  --scratch-path .build/swift-rules/tool -c release --product swift-rules \
+  --build-system native --force-resolved-versions --jobs 2
+python3 -B Scripts/ci/prepare-swiftlint.py \
+  --bin-directory "$PWD/.build/swift-rules/tool/release"
+python3 -m venv .build/swift-rules/docs-venv
+.build/swift-rules/docs-venv/bin/python -m pip --disable-pip-version-check install \
+  --require-hashes -r Vendor/EngineeringRules/Configuration/documentation-requirements.txt
+bash Scripts/ci/check-rules.sh
+```
+
+Offline copy-integrity verification needs only Python's standard library:
+
+```sh
+python3 -B Scripts/ci/verify-rules-copy.py
+```
+
+This verifies inventory and file hashes without executing SwiftPM or the checker.
+It does not establish lint, compiler, runtime or platform qualification.
+
+On this Mac, select full Xcode for the required Swift/SourceKit and run the gate
+without an external checkout argument:
 
 ```sh
 DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
-  bash Scripts/ci/check-rules.sh /path/to/immutable/EngineeringRules-0.1.11
+  bash Scripts/ci/check-rules.sh
 ```
 
-Full Xcode supplies the required Swift/SourceKit. On Linux, omit `DEVELOPER_DIR`
-and follow the pinned tool's Swift 6.4 and Ubuntu Noble requirements. The normal
-gate does not install tools or edit source, configuration or baselines; a missing
-pinned installation is a failed prerequisite. It verifies the release commit,
-exports the documentation checker and compiler-context helper from that immutable
-revision, runs the documentation gate with the prepared Python environment, builds
-the actual `Chio` target in release with SwiftPM's native backend, and supplies its real
-compiler arguments to the checker. The shared checker implementations stay in
-EngineeringRules; Chio does not copy or maintain them. The documentation checker
-requires exactly `markdown-it-py` 3.0.0 and `mdurl` 0.1.2. Missing or different
-parser dependencies fail before the native build; normal checking never installs
-packages or fetches the tool.
+On Linux, omit `DEVELOPER_DIR` and use Swift 6.4 with Ubuntu Noble or compatible
+SwiftLint libraries. Normal checking never downloads SwiftLint, installs Python
+dependencies, fetches a private repository, upgrades the copy or edits source,
+configuration or baselines. It verifies the reviewed copy, incrementally builds
+the copied checker, and
+hash-checks the retained SwiftLint archive. It compares the installed executable
+and required libraries against that archive without extracting or downloading
+files. It verifies the copied checker version, runs the copied
+documentation checker with the prepared Python environment, builds the actual
+`Chio` target in release with SwiftPM's native backend, then supplies real compiler
+arguments to the copied checker. That checker also validates its sibling SwiftLint
+version. SwiftPM builds may acquire missing pinned public dependencies; neither
+setup nor checking needs private upstream access.
+
+The hosted `rules` job runs preparation and checking on `ubuntu-24.04`, using the
+same digest-pinned Swift 6.4.0 Noble container as the Linux product job. It runs on
+pull requests and pushes to `main`, uses SHA-pinned actions, and caches only the
+copied checker's scratch directory. Ubuntu Noble supplies the GLIBC 2.38 and
+GLIBCXX 3.4.32 required by the official Linux SwiftLint binary.
+
+Offline helper verification is separate from the compiler-backed gate:
+
+```sh
+python3 -B Scripts/ci/test-rules-tools.py
+python3 -B Scripts/ci/verify-rules-copy.py
+bash -n Scripts/ci/check-rules.sh
+bash -n Scripts/ci/prepare-rules.sh
+git diff --check
+```
+
+These fixture and static checks do not qualify SwiftRules builds, downloaded
+SwiftLint execution, the documentation environment or hosted CI. Run the full
+prepared gate and naming inventory before readiness, with applicable macOS/Linux
+product checks and independent review.
 
 Generated build settings and compiler context stay under ignored
-`.build/swift-rules`. The gate removes the old context before rebuilding; a build,
-export or compiler-analysis failure cannot fall back to syntax-only success.
+`.build/swift-rules`: the consumer native scratch path is
+`.build/swift-rules/native` and context is
+`.build/swift-rules/compiler-context.json`. The gate removes old context before
+rebuilding; a build, export or compiler-analysis failure cannot fall back to
+syntax-only success.
 The repository configuration also requires that context for a direct checker
 invocation. Run the script after source, dependency or toolchain changes instead
 of reusing a prior build description. Witness evidence covers the supplied
@@ -162,7 +243,7 @@ Swift 6.4 warns that the native backend is deprecated. This pinned exporter
 requires its build description; support for a different backend belongs in the
 shared tool rather than a guessed set of compiler flags in Chio.
 
-The gate scans all retained Swift files in `Sources`, `Examples` and `Tests`,
+The gate scans all retained Swift files in `Sources`, `Examples`, `Tests` and `Spikes`,
 with no path exclusions and explicit target import allowlists. Its production
 layout and file-scope checks apply to `Sources`. The explicit
 `componentFirstTargets: ["Chio"]` setting checks component/responsibility order
@@ -193,9 +274,11 @@ exclusions and tool upgrades require review; do not regenerate the baseline to
 silence failures. Inspect rule categories for checker limitations before changing
 application behavior. The shared tool owns rule implementations.
 
-EngineeringRules is private. This local gate does not add credentials or a private
-fetch to Chio's public CI or package build. Hosted lint requires a separate tool
-distribution/access decision; the public platform gate below remains required.
+The public repository has no private EngineeringRules fetch or global SwiftRules
+installation requirement. The reviewed copy supports public CI without private
+credentials. Native macOS and Linux gates remain required and prove separate
+platforms. There is no NUC fallback for missing platform qualification; record
+unavailable coverage explicitly.
 
 ### Naming review
 
@@ -203,15 +286,15 @@ Include the pinned inventory command as a separate planned check alongside the
 wrapper and applicable tests in the engineering-review evidence packet:
 
 ```sh
-~/.local/bin/swift-rules review-candidates --root "$PWD" --format json
+.build/swift-rules/tool/release/swift-rules review-candidates --root "$PWD" --format json
 ```
 
 Retain its JSON output and logs for that exact candidate. The independent reviewer
 records each name's meaning and a concrete rename, legitimate retain reason or
 explicit out-of-scope deferral. A successful inventory command does not complete
 semantic review; candidates are neither violations nor baseline entries.
-The pinned tool's [selection contract](https://github.com/echoz/EngineeringRules/tree/v0.1.11#naming-review-candidates)
-owns matching and output. Apply the global organization guidance to the names.
+The copied tool's naming inventory contract owns matching and output. Apply the
+global organization guidance to the names.
 
 Use the released engineering-review workflow for all introduced or changed names,
 including unchanged names whose meaning changes. For identities and revisions,
@@ -229,17 +312,22 @@ Review relevant names there manually; older tools require manual review too.
 ### Documentation coverage
 
 [.documentation-rules.json](../.documentation-rules.json) uses schema 2. Its
-existing eight module mappings under `Sources`, `Examples`, `Tests` and `Spikes`
-remain unchanged, with no exclusions. They link Design, Examples, Verification
-and the routing spike guide. Current decisions, release guidance and map fixture
-provenance remain enrolled.
+ten module mappings under `Sources`, `Examples`, `Tests` and `Spikes` remain
+unchanged, with no exclusions. They link Design, Examples, Verification, the
+routing spike guide and the DotMatrix example guide. Current decisions, release
+guidance and map fixture provenance remain enrolled.
 
-The deliverable inventory adds twenty source-root guides: the Chio library,
-its sixteen public views, both example applications and the static showcase.
+The copied checker discovers immediate children only under these explicit
+`moduleRoots`; it does not search outside them. `Vendor` is absent from those
+roots, so the upstream-owned checker modules are outside Chio's documentation
+inventory. No exclusion or scope change is needed for the reviewed copy.
+
+The deliverable inventory declares twenty-two source-root guides: the Chio library,
+its seventeen public views, three example applications and the static showcase.
 Each view has a distinct real source root and its own `README.md`; the library
 is its declared parent. The [library guide](../Sources/Chio/README.md) links those
 views, and [source ownership](Design.md#source-ownership) explains their boundaries.
-The gate checks 57 unique documents, eight modules and twenty deliverables.
+The gate checks 61 unique documents, ten modules and twenty-two deliverables.
 
 Schema 2 rejects duplicate roots, invalid parents, missing or blank READMEs,
 symlinks and invalid local Markdown file destinations. Module discovery still
@@ -255,9 +343,9 @@ output; SwiftPM excludes source guides from build inputs without excluding code.
 
 <a id="0111-adoption"></a>
 
-### 0.1.11 adoption
+### Earlier 0.1.11 adoption
 
-This maintenance change advances the checker and immutable helper revision to
+The preceding maintenance change targeted the checker and immutable helper revision at
 published commit `3e42da0e724fe54585cc3cdd9009c749f7ba24d9`. The documentation
 checker and review skill payloads are unchanged from 0.1.10. Rule scopes,
 the existing baseline exception, dependency pins and application behavior remain
