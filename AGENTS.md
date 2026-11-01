@@ -111,6 +111,9 @@ Keep the PR draft until applicable checks and separate engineering review pass.
 Then use `q pr ready --pr PR_NUMBER --expected-head FULL_COMMIT_SHA --json`.
 Readiness does not approve or merge the PR. A human retains merge authority;
 merge requires explicit approval covering that PR and revision or defined scope.
+The owner's defined standing scope (2026-10-31): the coordinator merges refreshes of
+the reviewed `Vendor/EngineeringRules` copy (re-export at a new release tag, reviewed
+by hash) and other shared-tooling rollout PRs after separate review and green checks.
 Do not enable automatic merging or bypass repository protections.
 After an uncertain write, inspect remote state before any further mutation.
 
