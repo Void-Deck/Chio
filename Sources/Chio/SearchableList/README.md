@@ -29,9 +29,10 @@ or nil. Filtering never activates an item. Activation reads the current retained
 query and reconciles selection, including rapid input and rejected query writes.
 Empty source data and unmatched queries have distinct messages.
 
-Selection and native focus are separate. Tab can move row focus independently;
-Return activates the selected ID. Slash enters search, and Escape clears the
-query. See the [searchable selection contract](../../../Docs/Decisions/SearchableSelection.md)
+Selection is the application's binding; native focus owns the keyboard. Native
+row focus enters and follows the selected row, and focus in the search field
+leaves selection unchanged. Return activates the selected ID. Slash enters
+search, and Escape clears the query. See the [searchable selection contract](../../../Docs/Decisions/SearchableSelection.md)
 for the complete input table and search-to-results handoff behavior.
 
 Rows are passive presentation; place buttons and editors outside the list.

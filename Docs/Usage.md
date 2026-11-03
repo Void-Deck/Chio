@@ -766,8 +766,10 @@ colors control idle and focused indicators. Content backgrounds remain authored.
 Focus-effect suppression keeps the indicators muted without disabling scrolling.
 
 The native runtime retains keyboard, wheel, drag and position ownership.
-For a two-axis viewport, Home/End move both axes to the start/end. A focused
-individual track moves only its own axis. The [viewport example](Examples.md#scrolling)
+For a two-axis viewport, Home moves both axes to the start; End moves to the
+bottom edge and keeps the horizontal offset (native since SwiftTUI 0.19.3).
+A focused individual track moves only its own axis, so End on a focused horizontal
+track reaches the right edge. The [viewport example](Examples.md#scrolling)
 demonstrates this directly. Native Lists and Tables use their own styles.
 Oversized focus targets retain their leading edge on both axes, so initial
 viewport focus preserves the first row and column. The automatic style behaves

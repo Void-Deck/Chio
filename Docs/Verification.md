@@ -5,11 +5,19 @@ Current requirements for implementation, dependency and visible example changes.
 revision-specific results. For documentation-only changes, check links, anchors
 and preservation of current contracts.
 
-## SwiftTUI 0.19.1 qualification
+## SwiftTUI 0.20.1 qualification
 
-The candidate replaces SwiftTUI revision `3999a9a5` with exact release `0.19.1`
-at `a67d15046ebd8b1cc83d781f50149a3e3ff0da80`. All seven other lockfile entries
+The candidate advances exact SwiftTUI release `0.19.1` to `0.20.1`
+at `482e6b42f5ff381a89d2df237077d0d6fb3f75bf`. All seven other lockfile entries
 must remain unchanged. Earlier release and CI results do not qualify this input.
+
+Required interaction coverage includes `ChioScrollViewStyleTests.nativeInteraction`,
+`ViewportExampleTests.viewportWorkflow` and `DiffExampleTests.longSourceAndFiles`
+for native two-axis End, plus
+`SearchableListTests.tabActivationMatchesVisibleSelection` for selected-row Tab
+focus and activation. These four tests migrate to the adopted native behavior.
+`SearchableListTests.applicationSelectionActivation` also covers activation after
+an application selection change.
 
 Required evidence includes the fresh compiler-backed rules/documentation gate,
 the complete release gate on macOS and Linux, and independent engineering review.

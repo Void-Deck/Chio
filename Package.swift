@@ -15,7 +15,7 @@ let package = Package(
         // Includes the merged startup-input and borrowed-output corrections.
         .package(
             url: "https://github.com/SwiftTUI/swift-tui.git",
-            exact: "0.19.1"
+            exact: "0.20.1"
         ),
         // Swift Markdown 0.9.0. A revision pin also permits its conditional
         // Windows build flags without modifying the upstream package.

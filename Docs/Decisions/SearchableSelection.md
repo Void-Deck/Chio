@@ -21,12 +21,15 @@ transformed. External query/data changes also reconcile during rendering.
 | Search | Escape | Clear query and focus results |
 | Either | Tab | Native focus navigation |
 
-Selection and focus differ: persistent `›` marks selection; native `▌`/row chrome
-marks keyboard focus, which Tab may move independently. Enter activates the
-reconciled selection; arrows navigate from the focused row. Empty source data and
-no matches have distinct messages. When Return has requested results focus, a
-second Return activates the current filtered selection even during the native
-handoff; no matches remain inert. Slash-to-search carries simple type-ahead.
+Selection is the application's binding and native focus owns the keyboard:
+persistent `›` marks selection; native `▌`/row chrome marks keyboard focus.
+Native row focus enters and follows the selected row, including after application
+selection changes (SwiftTUI 0.19.5). Focus in the search editor leaves selection
+unchanged. Enter activates the reconciled selection; arrows navigate from the
+focused row. Empty source data and no matches have distinct messages. When Return
+has requested results focus, a second Return activates the current filtered
+selection even during the native handoff; no matches remain inert. Slash-to-search
+carries simple type-ahead.
 
 Rows contain passive presentation; place editors/buttons outside them. Scope
 application shortcuts through `.onResultKeyPress(perform:)` so ordinary search

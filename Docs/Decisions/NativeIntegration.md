@@ -1,10 +1,10 @@
 # Native integration boundaries
 
-**Status:** The current candidate adopts exact SwiftTUI 0.19.1 at
-`a67d15046ebd8b1cc83d781f50149a3e3ff0da80`. It retains the native corrections
-below and fixes disabled transition-removal cleanup. The
-[adoption decision](Dependencies.md#swifttui-0191-adoption) and
-[qualification](../Verification.md#swifttui-0191-qualification) own this change.
+**Status:** The current candidate adopts exact SwiftTUI 0.20.1 at
+`482e6b42f5ff381a89d2df237077d0d6fb3f75bf`. It retains the native corrections
+below and adopts native two-axis End and selected-row List focus behavior. The
+[adoption decision](Dependencies.md#swifttui-0201-adoption) and
+[qualification](../Verification.md#swifttui-0201-qualification) own this change.
 
 Published Chio 0.2.2 uses SwiftTUI
 `3999a9a57dde52fb00aa98952460b0819a0641bf`, containing merged #58/#59/#60/#62/#63.
@@ -87,7 +87,7 @@ renderer, focus system or hidden dependency patch.
 | List density and focus | The 0.2.0 candidate adds merged #57 to the previous #46/#47/#56 corrections. Chio qualification of composed-row padding, pointer and style changes passes on macOS/Linux. See [dynamic spacing](#dynamic-row-spacing-candidate) and [retained qualification](#current-row-qualification). |
 | Collection measurement | Native ideal-size probes can realize all rows before a bounded viewport commits and emit deferred `collection.unboundedRealization` warnings. Small fixtures do not prove virtualization or large-dataset performance; diagnostics are retained. |
 | Early input | Search, palette and form handoffs cover documented type-ahead/batched paths. Arbitrary multi-control input before presentation settles needs native support, not an application-built editor or focus graph. |
-| Editor navigation | End at the end of a native text field is unhandled when it makes no change, so an enclosing ScrollView can scroll to the bottom. The appearance study reproduced this at 36 × 18; ordinary editing remains focused. Its capture moves Left before End to exercise a real caret movement. Repeated no-op End is unresolved at the native input owner. |
+| Editor navigation | SwiftTUI 0.19.3 records STUI-1180 as fixed upstream: focused text inputs consume Home and End at their edges. Chio has not requalified the appearance capture without its Left-before-End step. On the earlier pin, the appearance study at 36 × 18 reproduced unhandled End at the end of a native text field scrolling the enclosing ScrollView to the bottom; ordinary editing remained focused. |
 | Cooperative shutdown | The current pin retains [merged #48](https://github.com/SwiftTUI/swift-tui/pull/48), superseding #45. Accepted quit/EOF retains final-input presentation and synchronous follow-ups without draining unrelated continuous writes. Arbitrarily expensive frames/callbacks and application producers retain their own bounds and ownership. |
 | Borrowed output on macOS | Chio 0.2.2 adopts merged #63 to restore caller-owned no-SIGPIPE policy and bound socket writes. [Investigation and qualification](#borrowed-output-policy-on-macos) distinguish those inputs. Callers must coordinate other I/O and flag changes on shared descriptors. |
 | Portability and accessibility | CI and pseudo-terminals cover specific workflows. Other distributions, architectures, assistive technologies and live SSH devices require separate evidence. Static Linux remains [blocked](Dependencies.md#static-linux-blocker). |

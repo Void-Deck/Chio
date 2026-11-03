@@ -13,7 +13,7 @@ retain their revision requirements:
 
 | Dependency | Pin and reason |
 | --- | --- |
-| SwiftTUI 0.19.1 | Exact release at `a67d15046ebd8b1cc83d781f50149a3e3ff0da80`; retains the previous native corrections and fixes disabled transition cleanup |
+| SwiftTUI 0.20.1 | Exact release at `482e6b42f5ff381a89d2df237077d0d6fb3f75bf`; retains previous native corrections and adopts native End and selected-row focus behavior |
 | Swift Markdown 0.9.0 | `25cb61d3482054b09ae76ca4f281b1bfe7fe5a43`; revision permits conditional Windows unsafe flags |
 | Tree-sitter 0.26.13 | `d97971e24500218865c05ed1febdee2acf41bae1`; last release with upstream SwiftPM manifest |
 | tree-sitter-swift 0.7.4 | `82bb3a533e0801fd2bbaa11dc49676e10bf41948`; generated C grammar |
@@ -23,7 +23,7 @@ mixed version/revision graph. Use the immutable Chio revision recorded in the se
 GitHub release notes.
 The other direct revision requirements remain unchanged. Consumers with their own
 SwiftTUI requirement must align it with the chosen Chio revision, then resolve
-their lockfile and verify their workflows. This candidate uses `exact: "0.19.1"`.
+their lockfile and verify their workflows. This candidate uses `exact: "0.20.1"`.
 [Chio 0.2.2](../Releases/0.2.2.md) retains its recorded SwiftTUI revision requirement;
 this change does not alter that published release.
 The [0.2.0 release record](../Releases/0.2.0.md) preserves the earlier feature scope;
@@ -36,21 +36,26 @@ Chio does no query-resource I/O and generates no Objective-C/Foundation accessor
 Build evidence is recorded in [0.1.0](../Releases/0.1.0.md); the current static Linux
 blocker is below. Ordinary glibc support does not establish static-musl distribution.
 
-## SwiftTUI 0.19.1 adoption
+## SwiftTUI 0.20.1 adoption
 
-The user approved release adoption on 2026-10-26. Published
-[SwiftTUI 0.19.1](https://github.com/SwiftTUI/swift-tui/releases/tag/0.19.1)
-resolves to `a67d15046ebd8b1cc83d781f50149a3e3ff0da80`. It contains the previous
-`3999a9a5` pin and two subsequent commits: disabled transition-removal cleanup
-and release documentation. It changes no public API or package dependencies.
-SwiftTUI's exported products introduce no unsafe build settings that prevent
-an exact version requirement.
+The user approved release adoption on 2026-11-03. Published
+[SwiftTUI 0.20.1](https://github.com/SwiftTUI/swift-tui/releases/tag/0.20.1)
+resolves to `482e6b42f5ff381a89d2df237077d0d6fb3f75bf`. The upgrade covers
+releases 0.19.2–0.20.1, with no public API removals affecting Chio and no package
+dependency changes.
+
+SwiftTUI 0.19.3 (`STUI-1170`) makes End in a two-axis viewport reach the bottom
+edge while keeping the horizontal offset. Home still resets every authored axis;
+horizontal-only views and focused horizontal indicators retain trailing-edge End.
+Chio follows upstream and adds no key handling of its own.
+SwiftTUI 0.19.5 (`STUI-1290`) gives a List with a selection initial and Tab focus
+at its selected row. Selection and focus remain distinct.
 
 The requirement and SwiftTUI lockfile entry advance together. All seven other
 lockfile entries stay fixed. The other direct revision requirements still prevent
 version-based consumption of Chio itself. This adoption neither publishes a new
 Chio release nor establishes downstream application adoption.
-[Verification](../Verification.md#swifttui-0191-qualification) owns the required
+[Verification](../Verification.md#swifttui-0201-qualification) owns the required
 integration evidence. Native input, focus, rendering and lifecycle remain upstream.
 
 <a id="borrowed-output-adoption-candidate"></a>

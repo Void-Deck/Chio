@@ -17,9 +17,11 @@ scroll views, but editor focus is not viewport focus. Lists/Tables have separate
 scrolling styles. Native focus reveal aligns oversized targets at their start on
 both axes, preserving the first row and column. Focusing an individual track can
 still reveal its reserved column. Chio preserves that native geometry; the earlier
-one-cell horizontal shift on initial viewport focus is superseded. Home and End
-move both enabled axes when the viewport owns focus. A focused individual track
-moves only its own axis.
+one-cell horizontal shift on initial viewport focus is superseded. When a two-axis
+viewport owns focus, Home moves both enabled axes to their start; End moves to the
+bottom edge and keeps the horizontal offset (native since SwiftTUI 0.19.3).
+A focused individual track moves only its own axis, so a focused horizontal
+track's End reaches the trailing edge.
 
 Interaction tests retain exact keyboard, wheel, focus, theme, resize and drag
 assertions. Mouse release is exercised at the track midpoint, where it changes
