@@ -255,6 +255,40 @@ struct SearchableListTests {
         }
     }
 
+    @Test("An application selection change moves native row focus, and Enter activates it once")
+    func applicationSelectionActivation() async throws {
+        try await withSearchScene { session, _, recorder in
+            let initial = try await recorder.wait(description: "initial Beta selection and native row focus") {
+                $0.contains("Q= S=b F=r A=0") && $0.hasResultsFocus
+                    && $0.rowText("Beta")?.contains("▌") == true
+                    && $0.rowText("Beta")?.contains("> Beta") == true
+            }
+            session.send(.key(.character("e"), modifiers: .ctrl))
+            session.send(.key(.character("b"), modifiers: .ctrl))
+            let changed = try await recorder.wait(after: initial.sequence, description: "application selection change is processed") {
+                $0.contains("Barrier=1") && $0.contains("S=a")
+            }
+            let alphaRow = changed.rowText("Alpha")
+            let betaRow = changed.rowText("Beta")
+            let markerCount = changed.selectedMarkerCount
+            let retainsResultsFocus = changed.hasResultsFocus
+            #expect(alphaRow?.contains("▌") == true)
+            #expect(alphaRow?.contains("> Alpha") == true)
+            #expect(betaRow?.contains("▌") == false)
+            #expect(betaRow?.contains("> Beta") == false)
+            #expect(markerCount == 1)
+            #expect(retainsResultsFocus)
+            session.send(.key(.return))
+            let activated = try await recorder.wait(description: "Enter after application selection change activates once") {
+                $0.contains("A=1")
+            }
+            let activatesSelectedAlpha = activated.contains("Last=a")
+            let retainsAlphaSelection = activated.contains("S=a")
+            #expect(activatesSelectedAlpha)
+            #expect(retainsAlphaSelection)
+        }
+    }
+
     @Test("Omitting query binding retains internal search through theme and resize")
     func internalQueryLifecycle() async throws {
         try await withSearchScene(usesInternalQuery: true) { session, surface, recorder in
@@ -533,6 +567,11 @@ extension SearchTestView: View {
         .onKeyPress { press in
             if press == KeyPress(.character("t"), modifiers: .ctrl) {
                 lightTheme.toggle()
+                return .handled
+            }
+            // Stand in for an application-owned selection change.
+            if press == KeyPress(.character("e"), modifiers: .ctrl) {
+                selection = "a"
                 return .handled
             }
             if press == KeyPress(.character("b"), modifiers: .ctrl) {

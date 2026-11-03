@@ -21,8 +21,9 @@ extension Focus: Hashable {}
 /// Items must have stable, unique IDs. Filtering preserves a visible selection,
 /// otherwise selects the first result, and never calls the activation action.
 /// Rows are passive presentation; put buttons and editors outside the list.
-/// Tab retains native row focus navigation, which is distinct from selection.
-/// Enter activates the selected item, even when Tab has focused another row.
+/// Tab and arrows use native focus navigation. Native row focus enters and follows
+/// the selected row. Enter activates the selected item. Focus in the search field
+/// never changes the selection.
 @MainActor
 public struct SearchableList<Item: Identifiable, RowContent: View> where Item.ID: Sendable {
     private let items: [Item]

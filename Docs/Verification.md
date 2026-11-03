@@ -16,6 +16,8 @@ Required interaction coverage includes `ChioScrollViewStyleTests.nativeInteracti
 for native two-axis End, plus
 `SearchableListTests.tabActivationMatchesVisibleSelection` for selected-row Tab
 focus and activation. These four tests migrate to the adopted native behavior.
+`SearchableListTests.applicationSelectionActivation` also covers activation after
+an application selection change.
 
 Required evidence includes the fresh compiler-backed rules/documentation gate,
 the complete release gate on macOS and Linux, and independent engineering review.
