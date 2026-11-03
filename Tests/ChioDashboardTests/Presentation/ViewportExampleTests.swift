@@ -72,16 +72,18 @@ struct ViewportExampleTests {
             }
             surface.updateSurfaceSize(CellSize(width: 36, height: 18))
             session.requestSurfaceRefresh()
-            _ = try await recorder.wait(after: themed.sequence, description: "compact viewport retains position and shortcuts") {
+            let resized = try await recorder.wait(after: themed.sequence, description: "compact viewport retains position and shortcuts") {
                 $0.raster.size == CellSize(width: 36, height: 18) && $0.logContains("Row 3 · Col 2")
                     && $0.logContains("^Q quit") && $0.logFocused
             }
             session.send(.key(.end))
-            _ = try await recorder.wait(description: "End reaches the bottom-right corner and final run ID") {
-                guard let route = $0.semantics.scrollRoutes.first else { return false }
-                return route.contentOffset.y == route.contentBounds.size.height - route.viewportRect.size.height
-                    && route.contentOffset.x == route.contentBounds.size.width - route.viewportRect.size.width
-                    && $0.logContains("run 1040")
+            _ = try await recorder.wait(description: "End reaches the bottom edge and keeps the column") {
+                guard let route = $0.semantics.scrollRoutes.first,
+                      let previousRoute = resized.semantics.scrollRoutes.first else { return false }
+                let maxY = route.contentBounds.size.height - route.viewportRect.size.height
+                return route.contentOffset.y == maxY
+                    && route.contentOffset.x == previousRoute.contentOffset.x
+                    && $0.logContains("Row \(maxY + 1) · Col \(previousRoute.contentOffset.x + 1)")
             }
             session.send(.key(.home))
             let home = try await recorder.wait(description: "Home returns both axes to the origin") {

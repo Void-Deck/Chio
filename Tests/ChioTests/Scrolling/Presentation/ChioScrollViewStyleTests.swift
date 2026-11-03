@@ -107,9 +107,10 @@ struct ChioScrollViewStyleTests {
             #expect(stepped.focusedIdentity == initial.focusedIdentity)
 
             session.send(.key(.end))
-            let end = try await recorder.wait(after: stepped.sequence, description: "native both-axis End reaches the bottom-right corner") {
-                guard let route = $0.semantics.scrollRoutes.first else { return false }
-                return $0.scrollTestOffset(x: route.contentBounds.size.width - route.viewportRect.size.width,
+            let end = try await recorder.wait(after: stepped.sequence, description: "native two-axis End reaches the bottom edge and keeps the column") {
+                guard let route = $0.semantics.scrollRoutes.first,
+                      let steppedRoute = stepped.semantics.scrollRoutes.first else { return false }
+                return $0.scrollTestOffset(x: steppedRoute.contentOffset.x,
                                            y: route.contentBounds.size.height - route.viewportRect.size.height)
             }
             session.send(.key(.home))

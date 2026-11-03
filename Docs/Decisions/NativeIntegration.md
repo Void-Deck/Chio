@@ -1,10 +1,10 @@
 # Native integration boundaries
 
-**Status:** The current candidate adopts exact SwiftTUI 0.19.1 at
-`a67d15046ebd8b1cc83d781f50149a3e3ff0da80`. It retains the native corrections
-below and fixes disabled transition-removal cleanup. The
-[adoption decision](Dependencies.md#swifttui-0191-adoption) and
-[qualification](../Verification.md#swifttui-0191-qualification) own this change.
+**Status:** The current candidate adopts exact SwiftTUI 0.20.1 at
+`482e6b42f5ff381a89d2df237077d0d6fb3f75bf`. It retains the native corrections
+below and adopts native two-axis End and selected-row List focus behavior. The
+[adoption decision](Dependencies.md#swifttui-0201-adoption) and
+[qualification](../Verification.md#swifttui-0201-qualification) own this change.
 
 Published Chio 0.2.2 uses SwiftTUI
 `3999a9a57dde52fb00aa98952460b0819a0641bf`, containing merged #58/#59/#60/#62/#63.

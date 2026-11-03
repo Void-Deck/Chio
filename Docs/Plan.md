@@ -8,13 +8,13 @@ checks live in [Verification](Verification.md). Completed release scope and resu
 live in [0.2.2](Releases/0.2.2.md) and [0.2.0](Releases/0.2.0.md), with
 [0.1.0](Releases/0.1.0.md) retained as history.
 
-## Current maintenance: SwiftTUI 0.19.1
+## Current maintenance: SwiftTUI 0.20.1
 
-The approved adoption replaces the merged SwiftTUI revision requirement with
-exact release `0.19.1`. Its two subsequent commits retain the previous fixes and
-correct disabled transition cleanup. Other dependencies stay fixed.
-[Dependencies](Decisions/Dependencies.md#swifttui-0191-adoption) owns the contract;
-[Verification](Verification.md#swifttui-0191-qualification) owns the checks.
+The approved adoption advances exact SwiftTUI release `0.19.1` to `0.20.1`.
+It follows native two-axis End behavior and selected-row List focus.
+Other dependencies stay fixed.
+[Dependencies](Decisions/Dependencies.md#swifttui-0201-adoption) owns the contract;
+[Verification](Verification.md#swifttui-0201-qualification) owns the checks.
 Required gates and independent review precede PR readiness. Merge, a new Chio
 release and downstream application adoption remain separate steps.
 

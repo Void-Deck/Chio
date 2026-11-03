@@ -302,7 +302,8 @@ def run(binary, choices=False, text_entry=False, feedback=False, files=False, ke
             assert "Running" not in screen(output), "Reset left a clock running"
         elif forms:
             send(b"\x1b[FAB\x13", "Saved: ChioAB · manual")
-            send(b"\t ", "Interval (minutes)")
+            # The following Tab step checks the revealed field because native focus reveal leaves visible targets in place.
+            send(b"\t ", "[✓] On")
             send(b"\t\x1b[F\x7f\x7f3\x13", "Timeout must be shorter")
             until("Saved: ChioAB · manual")
             send(b"\x1b[F\x7f1\x13", "Saved: ChioAB · every 3m, timeout 1m")
@@ -343,7 +344,7 @@ def run(binary, choices=False, text_entry=False, feedback=False, files=False, ke
             until("Row 3 · Col 2")
             until("^Q quit")
             send(b"\x1b[H", "Row 1 · Col 1")
-            send(b"\x1b[F", "run 1040")
+            send(b"\x1b[F", "40  ✓  Docs agent")
             send(b"\x1b[H", "Row 1 · Col 1")
             send(b"\x1b[C", "Row 1 · Col 2")
             send(b"\t\t\t\r", "Row 1 · Col 1")

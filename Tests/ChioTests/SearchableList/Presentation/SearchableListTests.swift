@@ -225,13 +225,12 @@ struct SearchableListTests {
             }
             #expect(tabbed.focusedIdentity != initial.focusedIdentity)
             let tabKeepsSelection = tabbed.contains("Q= S=b F=r A=0")
-            let tabbedAlphaRow = tabbed.rowText("Alpha")
             let tabbedBetaRow = tabbed.rowText("Beta")
             let tabbedMarkerCount = tabbed.selectedMarkerCount
             let tabbedAlphaColumn = tabbed.rowColumn("Alpha")
             let tabbedBetaColumn = tabbed.rowColumn("Beta")
             #expect(tabKeepsSelection)
-            #expect(tabbedAlphaRow?.contains("▌") == true)
+            #expect(tabbedBetaRow?.contains("▌") == true)
             #expect(tabbedBetaRow?.contains("> Beta") == true)
             #expect(tabbedMarkerCount == 1)
             #expect(tabbedAlphaColumn == initialAlphaColumn)
@@ -246,13 +245,7 @@ struct SearchableListTests {
             #expect(retainsBetaSelection)
 
             session.send(.key(.arrowDown))
-            let focusedBeta = try await recorder.wait(after: activated.sequence, description: "native arrow moves Alpha focus to Beta") {
-                $0.contains("Q= S=b F=r A=1") && $0.rowText("Beta")?.contains("▌") == true
-            }
-            let betaHasSelectionMarker = focusedBeta.rowText("Beta")?.contains("> Beta") == true
-            #expect(betaHasSelectionMarker)
-            session.send(.key(.arrowDown))
-            let focusedQuill = try await recorder.wait(after: focusedBeta.sequence, description: "native arrow moves Beta focus and selection to Quill") {
+            let focusedQuill = try await recorder.wait(after: activated.sequence, description: "native arrow moves Beta focus and selection to Quill") {
                 $0.contains("Q= S=q F=r A=1") && $0.rowText("Quill")?.contains("▌") == true
             }
             let quillHasSelectionMarker = focusedQuill.rowText("Quill")?.contains("> Quill") == true

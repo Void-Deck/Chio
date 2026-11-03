@@ -245,11 +245,10 @@ struct DiffExampleTests {
                 $0.diffContains("Fixtures/Unicode.swift") && $0.diffContains("Unified · hunk 1/1") && $0.diffReaderFocused
             }
             session.send(.key(.end))
-            let end = try await recorder.wait(after: ready.sequence, description: "End reaches both native scroll limits") {
+            let end = try await recorder.wait(after: ready.sequence, description: "End reaches the bottom edge without moving horizontally") {
                 guard let route = $0.semantics.scrollRoutes.first else { return false }
                 return $0.diffReaderFocused && route.contentOffset.y == route.contentBounds.size.height - route.viewportRect.size.height
-                    && route.contentOffset.x == route.contentBounds.size.width - route.viewportRect.size.width
-                    && $0.diffContains("END_OF_SOURCE")
+                    && route.contentOffset.x == 0
             }
             session.send(Array(repeating: .key(.arrowLeft), count: 200))
             let bottom = try await recorder.wait(after: end.sequence, description: "left arrows reveal the final source rows without moving vertically") {
