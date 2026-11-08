@@ -13,7 +13,7 @@ import zipfile
 
 
 VERSION = "0.65.1"
-# Official release asset pins also used by EngineeringRules v0.2.1's installer.
+# Official release asset pins also used by EngineeringRules v0.2.2's installer.
 ASSETS = {
     "Darwin": ("portable_swiftlint.zip", "c1e429b0599cf1b516f369a2d9ec04eaf0e436f3c12b637df8851fa52ff694d0"),
     "Linux-arm64": ("swiftlint_linux_arm64.zip", "9ffa52f478e6d8eb485d37d14715ffac90abc81c58f3370d598bf75be05605f8"),

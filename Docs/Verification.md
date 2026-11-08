@@ -129,8 +129,8 @@ separate from this compiler-selection check.
 
 ## Shared engineering rules
 
-Chio uses the reviewed public EngineeringRules **v0.2.1** source copy at
-`b1ec7a16cdbce96b17a77eccc6384db3ec8708f7` in
+Chio uses the reviewed public EngineeringRules **v0.2.2** source copy at
+`9fc56fa3c0fda6b26f148ad4ae10d75d9cf782af` in
 [Vendor/EngineeringRules](../Vendor/EngineeringRules/PUBLIC-COPY-README.md).
 [reviewed-copy.json](../Vendor/EngineeringRules/reviewed-copy.json) records each
 release source path and SHA-256. Upstream `Scripts/export-public-copy.py` exports

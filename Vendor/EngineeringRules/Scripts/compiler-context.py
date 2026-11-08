@@ -66,11 +66,66 @@ def frontend_arguments(command):
     return result
 
 
+def build_role_label(command):
+    # SwiftPM separates host tools even when their triple equals the destination.
+    directory = Path(command['importPath']).name
+    if directory == 'Modules-tool':
+        role = 'host-tool'
+    elif directory == 'Modules':
+        role = 'target'
+    else:
+        raise ValueError(f"Unknown SwiftPM module directory: {command['importPath']}")
+    arguments = frontend_arguments(command)
+    targets = []
+    index = 0
+    while index < len(arguments):
+        argument = arguments[index]
+        if argument == '-Xcc':
+            index += 2
+            continue
+        if argument == '-target':
+            if index + 1 >= len(arguments):
+                raise ValueError('Missing compiler target')
+            targets.append(arguments[index + 1])
+            index += 2
+            continue
+        if argument.startswith('-target='):
+            targets.append(argument[8:])
+        index += 1
+    if not targets or len(set(targets)) != 1 or not targets[0]:
+        raise ValueError(f'Expected one explicit compiler target, found {targets!r}')
+    return role + '-' + targets[0]
+
+
+def label_configurations(entries):
+    counts = {}
+    for _, _, module in entries:
+        counts[module['name']] = counts.get(module['name'], 0) + 1
+    labelled = {}
+    for identifier, command, module in entries:
+        if counts[module['name']] > 1:
+            try:
+                module['configuration'] += '-' + build_role_label(command)
+            except ValueError as error:
+                configurations = [(key, value) for key, value, item in entries
+                                  if item['name'] == module['name']]
+                raise ValueError(f"Ambiguous configurations for module {module['name']}: "
+                                 f"{configurations!r}: {error}") from error
+        label = module['configuration']
+        if label in labelled:
+            previous_id, previous_command = labelled[label]
+            raise ValueError(f"Conflicting configurations for module {module['name']} ({label}): "
+                             f"{previous_id}: {previous_command!r}; {identifier}: {command!r}")
+        labelled[label] = (identifier, command)
+
+
 def export(root, description, selected):
-    commands = description['swiftCommands'].values()
+    commands = description['swiftCommands'].items()
+    entries = []
+    seen_commands = set()
     modules = []
     compilers = set()
-    for command in commands:
+    for identifier, command in commands:
         if selected and command['moduleName'] not in selected:
             continue
         try:
@@ -84,15 +139,24 @@ def export(root, description, selected):
         for path in sources:
             if not (root / path).is_file():
                 raise ValueError(f'Missing build input {path}; refresh the build description')
+        # Only byte-equivalent command values (including unfiltered arguments,
+        # compiler, source order and all metadata) prove duplicate observations.
+        identity = json.dumps(command, sort_keys=True)
+        if identity in seen_commands:
+            continue
+        seen_commands.add(identity)
         compilers.add(command['executable'])
-        modules.append({'name': command['moduleName'], 'configuration': command['moduleName'] + '-swiftpm',
-                        'sources': sources, 'arguments': frontend_arguments(command)})
+        module = {'name': command['moduleName'], 'configuration': command['moduleName'] + '-swiftpm',
+                        'sources': sources, 'arguments': frontend_arguments(command)}
+        entries.append((identifier, command, module))
+        modules.append(module)
+    label_configurations(entries)
     if not modules or len(compilers) != 1:
         raise ValueError('Expected local modules using one compiler; rebuild or select explicit --module names')
     missing = set(selected) - {module['name'] for module in modules}
     if missing:
         raise ValueError('Modules absent from build description: ' + ', '.join(sorted(missing)))
-    return {'schemaVersion': 1, 'compiler': compilers.pop(), 'modules': sorted(modules, key=lambda module: module['name'])}
+    return {'schemaVersion': 1, 'compiler': compilers.pop(), 'modules': sorted(modules, key=lambda module: (module['name'], module['configuration']))}
 
 
 def main():

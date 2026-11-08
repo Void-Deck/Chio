@@ -44,7 +44,7 @@ class ReviewedCopyTests(unittest.TestCase):
             "schemaVersion": 1,
             "upstreamRepository": "Void-Deck/EngineeringRules",
             "upstreamPath": ".",
-            "upstreamCommit": "b1ec7a16cdbce96b17a77eccc6384db3ec8708f7",
+            "upstreamCommit": "9fc56fa3c0fda6b26f148ad4ae10d75d9cf782af",
             "files": {"Sources/Example.swift": {
                 "source": "Sources/Example.swift",
                 "sha256": hashlib.sha256(b"reviewed source\n").hexdigest(),
@@ -223,7 +223,7 @@ class GateEvidenceTests(unittest.TestCase):
             binaries = gate / "tool/release"
             binaries.mkdir(parents=True)
             checker = binaries / "swift-rules"
-            checker.write_text("#!/bin/sh\nprintf '%s\\n' '0.2.1'\nexit 7\n", encoding="utf-8")
+            checker.write_text("#!/bin/sh\nprintf '%s\\n' '0.2.2'\nexit 7\n", encoding="utf-8")
             checker.chmod(0o755)
             commands = root / "bin"
             commands.mkdir()
