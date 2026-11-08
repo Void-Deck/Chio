@@ -53,7 +53,7 @@ swift build "${tool_options[@]}"
 tool_binary_directory="$(swift build "${tool_options[@]}" --show-bin-path)"
 checker="$tool_binary_directory/swift-rules"
 installed_version="$("$checker" --version)"
-[[ "$installed_version" == 0.2.1 ]] || fail "Require copied SwiftRules 0.2.1"
+[[ "$installed_version" == 0.2.2 ]] || fail "Require copied SwiftRules 0.2.2"
 # Check both the archive pin and the extracted sibling bytes, without downloads.
 python3 -B Scripts/ci/prepare-swiftlint.py --verify-only --bin-directory "$tool_binary_directory"
 

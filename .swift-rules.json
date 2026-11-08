@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "toolVersion": "0.2.1",
+  "toolVersion": "0.2.2",
   "compilerContext": ".build/swift-rules/compiler-context.json",
   "sourceRoots": [
     "Sources",
