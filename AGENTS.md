@@ -65,6 +65,12 @@ Keep credentials and local App configuration outside this public repository.
 If Q access is unavailable, report the blocker instead of publishing through a
 personal account.
 
+Create versioned releases with installed `q release create --repo Void-Deck/Chio --tag
+vX.Y.Z --target FULL_MAIN_SHA --title TITLE --notes-file PATH` as Q Branch Bot. The
+local policy allows only `vX.Y.Z` tags without assets or prereleases, and the title
+must be `Chio {version}`. q refuses an existing tag and never edits or deletes
+releases; never create releases through a personal `gh` login.
+
 Prepare a focused branch from the current remote default branch. Preserve
 unrelated changes and unpublished history in other branches or worktrees.
 Run the applicable [verification](Docs/Verification.md). Explicitly stage only
