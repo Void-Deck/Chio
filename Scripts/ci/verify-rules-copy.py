@@ -10,7 +10,7 @@ import stat
 import sys
 
 
-UPSTREAM_COMMIT = "9fc56fa3c0fda6b26f148ad4ae10d75d9cf782af"
+UPSTREAM_COMMIT = "63e024af42fd6dc1002ae78ad71f3d64ece60261"
 DEFAULT_COPY = Path(__file__).resolve().parents[2] / "Vendor/EngineeringRules"
 
 
@@ -46,7 +46,7 @@ def verify_copy(directory):
     if (type(receipt["schemaVersion"]) is not int or receipt["schemaVersion"] != 1
             or receipt["upstreamRepository"] != "Void-Deck/EngineeringRules"
             or receipt["upstreamPath"] != "." or receipt["upstreamCommit"] != UPSTREAM_COMMIT):
-        raise ValueError("Receipt must identify the reviewed EngineeringRules v0.2.2 commit")
+        raise ValueError("Receipt must identify the reviewed EngineeringRules v0.3.0 commit")
     files = receipt["files"]
     if not isinstance(files, dict) or not files or "reviewed-copy.json" in files:
         raise ValueError("Invalid receipt inventory")
@@ -97,7 +97,7 @@ def main():
     except (OSError, ValueError) as error:
         print(f"verify-rules-copy: {error}", file=sys.stderr)
         return 1
-    print(f"EngineeringRules v0.2.2: {count} reviewed file hashes and exact inventory verified")
+    print(f"EngineeringRules v0.3.0: {count} reviewed file hashes and exact inventory verified")
     return 0
 
 
