@@ -93,9 +93,9 @@ struct FileDirectoryReaderTests {
         #expect(try await reader.validateFile(at: tree.url("chained-link")) == tree.url("chained-link"))
         let children = try await reader.readDirectory(at: directoryLink.url, showsHiddenFiles: false)
         #expect(children.map(\.url) == [tree.url("directory-link/inside.txt")])
-        await expectFailure(.notRegularFile) { _ = try await reader.validateFile(at: directoryLink.url) }
-        await expectFailure(.missing) { _ = try await reader.validateFile(at: brokenLink.url) }
-        await expectFailure(.missing) {
+        try await expectFailure(.notRegularFile) { _ = try await reader.validateFile(at: directoryLink.url) }
+        try await expectFailure(.missing) { _ = try await reader.validateFile(at: brokenLink.url) }
+        try await expectFailure(.missing) {
             _ = try await reader.readDirectory(at: brokenLink.url, showsHiddenFiles: false)
         }
     }
@@ -142,17 +142,17 @@ struct FileDirectoryReaderTests {
     @Test("Locations must be absolute local file URLs")
     func invalidLocations() async throws {
         let reader = FileDirectoryReader()
-        let locations = [URL(string: "https://example.com/file")!,
-                         URL(string: "file:relative.txt")!,
-                         URL(string: "file://remote.example/file")!,
-                         URL(string: "file:///tmp/file?query")!,
-                         URL(string: "file:///tmp/file%00suffix")!,
-                         URL(string: "child", relativeTo: URL(fileURLWithPath: "/tmp/"))!]
+        let locations = [(try #require(URL(string: "https://example.com/file"))),
+                         (try #require(URL(string: "file:relative.txt"))),
+                         (try #require(URL(string: "file://remote.example/file"))),
+                         (try #require(URL(string: "file:///tmp/file?query"))),
+                         (try #require(URL(string: "file:///tmp/file%00suffix"))),
+                         (try #require(URL(string: "child", relativeTo: URL(fileURLWithPath: "/tmp/"))))]
         for location in locations {
-            await expectFailure(.invalidLocation, context: location.absoluteString) {
+            try await expectFailure(.invalidLocation, context: location.absoluteString) {
                 _ = try await reader.readDirectory(at: location, showsHiddenFiles: false)
             }
-            await expectFailure(.invalidLocation, context: location.absoluteString) {
+            try await expectFailure(.invalidLocation, context: location.absoluteString) {
                 _ = try await reader.validateFile(at: location)
             }
         }
@@ -163,10 +163,10 @@ struct FileDirectoryReaderTests {
         let tree = try TemporaryTree()
         defer { tree.remove() }
         try tree.file("candidate")
-        let malformed = URL(string: tree.url("candidate").absoluteString + "%00suffix")!
+        let malformed = (try #require(URL(string: tree.url("candidate").absoluteString + "%00suffix")))
         let reader = FileDirectoryReader()
-        await expectFailure(.invalidLocation) { _ = try await reader.validateFile(at: malformed) }
-        await expectFailure(.invalidLocation) {
+        try await expectFailure(.invalidLocation) { _ = try await reader.validateFile(at: malformed) }
+        try await expectFailure(.invalidLocation) {
             _ = try await reader.readDirectory(at: malformed, showsHiddenFiles: false)
         }
         // A percent sequence in a real filename remains a literal filename.
@@ -182,9 +182,9 @@ struct FileDirectoryReaderTests {
         try tree.file("actual.txt")
         try tree.link("file-link", destination: "actual.txt")
         let reader = FileDirectoryReader()
-        let unnormalized = URL(string: tree.root.absoluteString + "/./unused/../file-link")!
+        let unnormalized = (try #require(URL(string: tree.root.absoluteString + "/./unused/../file-link")))
         #expect(try await reader.validateFile(at: unnormalized) == tree.url("file-link"))
-        let unnormalizedDirectory = URL(string: tree.root.absoluteString + "/./unused/..")!
+        let unnormalizedDirectory = (try #require(URL(string: tree.root.absoluteString + "/./unused/..")))
         let entries = try await reader.readDirectory(at: unnormalizedDirectory, showsHiddenFiles: false)
         #expect(entries.map(\.url) == [tree.url("actual.txt"), tree.url("file-link")])
     }
@@ -197,16 +197,16 @@ struct FileDirectoryReaderTests {
         let reader = FileDirectoryReader()
         let candidate = tree.url("candidate.txt")
         #expect(try await reader.validateFile(at: candidate) == candidate)
-        await expectFailure(.notDirectory) {
+        try await expectFailure(.notDirectory) {
             _ = try await reader.readDirectory(at: candidate, showsHiddenFiles: false)
         }
         try FileManager.default.removeItem(at: candidate)
-        await expectFailure(.missing) { _ = try await reader.validateFile(at: candidate) }
-        await expectFailure(.missing) {
+        try await expectFailure(.missing) { _ = try await reader.validateFile(at: candidate) }
+        try await expectFailure(.missing) {
             _ = try await reader.readDirectory(at: candidate, showsHiddenFiles: false)
         }
         try tree.directory("candidate.txt")
-        await expectFailure(.notRegularFile) { _ = try await reader.validateFile(at: candidate) }
+        try await expectFailure(.notRegularFile) { _ = try await reader.validateFile(at: candidate) }
     }
 
     @Test("Confirmation rechecks a link whose target changed")
@@ -219,7 +219,7 @@ struct FileDirectoryReaderTests {
         #expect(try await reader.validateFile(at: tree.url("file-link")) == tree.url("file-link"))
         try FileManager.default.removeItem(at: tree.url("actual.txt"))
         try tree.directory("actual.txt")
-        await expectFailure(.notRegularFile) { _ = try await reader.validateFile(at: tree.url("file-link")) }
+        try await expectFailure(.notRegularFile) { _ = try await reader.validateFile(at: tree.url("file-link")) }
     }
 
     #if canImport(Darwin) || canImport(Glibc)
@@ -235,7 +235,7 @@ struct FileDirectoryReaderTests {
         #expect(entries.map(\.kind) == [.other, .other])
         #expect(entries.map(\.isSymbolicLink) == [false, true])
         for entry in entries {
-            await expectFailure(.notRegularFile) { _ = try await reader.validateFile(at: entry.url) }
+            try await expectFailure(.notRegularFile) { _ = try await reader.validateFile(at: entry.url) }
         }
     }
     #endif
@@ -257,8 +257,8 @@ struct FileDirectoryReaderTests {
         let entries = try await reader.readDirectory(at: tree.root, showsHiddenFiles: false)
         #expect(entries.map(\.name) == ["locked-directory", "locked-file"])
         #expect(entries.map(\.kind) == [.unavailable, .unavailable])
-        await expectFailure(.unreadable) { _ = try await reader.validateFile(at: tree.url("locked-file")) }
-        await expectFailure(.unreadable) {
+        try await expectFailure(.unreadable) { _ = try await reader.validateFile(at: tree.url("locked-file")) }
+        try await expectFailure(.unreadable) {
             _ = try await reader.readDirectory(at: tree.url("locked-directory"), showsHiddenFiles: false)
         }
     }
@@ -282,7 +282,7 @@ struct FileDirectoryReaderTests {
     @Test("Cancelled callers stop before attempting filesystem work")
     func cancellation() async throws {
         let reader = FileDirectoryReader()
-        let invalid = URL(string: "https://example.com/file")!
+        let invalid = (try #require(URL(string: "https://example.com/file")))
         let task = Task {
             withUnsafeCurrentTask { $0?.cancel() }
             do {
@@ -347,7 +347,7 @@ struct FileDirectoryReaderTests {
         context: String = "",
         sourceLocation: SourceLocation = #_sourceLocation,
         operation: () async throws -> Void
-    ) async {
+    ) async throws {
         do {
             try await operation()
             Issue.record("Expected a filesystem failure for \(context)", sourceLocation: sourceLocation)

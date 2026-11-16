@@ -84,7 +84,7 @@ struct MapPackExampleTests {
                                           onFrame: { frames.latest = $0 })
         let session: HostedSceneSession
         do {
-            session = try HostedSceneSession(for: PackTestApp(loader: loader), sceneID: "pack-example-tests", surface: surface)
+            session = try HostedSceneSession(for: try PackTestApp(loader: loader), sceneID: "pack-example-tests", surface: surface)
         } catch {
             await pack.close()
             throw error
@@ -132,14 +132,22 @@ struct MapPackExampleTests {
 
 private struct PackTestApp {
     let loader: MapTileLoader?
-    nonisolated init() { loader = nil }
-    nonisolated init(loader: MapTileLoader) { self.loader = loader }
+    let initialCamera: MapCamera?
+    let worldCamera: MapCamera?
+    nonisolated init() { loader = nil; initialCamera = nil; worldCamera = nil }
+    nonisolated init(loader: MapTileLoader) throws {
+        self.loader = loader
+        initialCamera = try MapCamera(center: MapCoordinate(latitude: 45, longitude: -90), longitudeSpan: 30)
+        worldCamera = try MapFixtures.Scene.world.camera
+    }
 }
 
 extension PackTestApp: App {
     var body: some Scene {
         WindowGroup(id: "pack-example-tests") {
-            if let loader { PackTestView(loader: loader) }
+            if let loader, let initialCamera, let worldCamera {
+                PackTestView(loader: loader, initialCamera: initialCamera, worldCamera: worldCamera)
+            }
         }.exitOnKeys([])
     }
 }
@@ -147,7 +155,16 @@ extension PackTestApp: App {
 @MainActor
 private struct PackTestView {
     let loader: MapTileLoader
-    @State private var camera = try! MapCamera(center: MapCoordinate(latitude: 45, longitude: -90), longitudeSpan: 30)
+    private let initialCamera: MapCamera
+    private let worldCamera: MapCamera
+    @State private var camera: MapCamera
+
+    init(loader: MapTileLoader, initialCamera: MapCamera, worldCamera: MapCamera) {
+        self.loader = loader
+        self.initialCamera = initialCamera
+        self.worldCamera = worldCamera
+        _camera = State(wrappedValue: initialCamera)
+    }
     @State private var selection: String?
     @State private var detail = MapDetail.minimal
     @State private var light = false
@@ -171,8 +188,8 @@ extension PackTestView: View {
             switch press.key {
             case .character("w"):
                 if camera.longitudeSpan == 360 {
-                    camera = try! MapCamera(center: MapCoordinate(latitude: 45, longitude: -90), longitudeSpan: 30)
-                } else { camera = MapFixtures.Scene.world.camera }
+                    camera = initialCamera
+                } else { camera = worldCamera }
             case .character("d"): detail = .source
             case .character("t"): light.toggle()
             case .character("e"): retry += 1

@@ -242,12 +242,14 @@ struct CreateAgentTests {
 }
 
 private struct CreationTestApp {
-    nonisolated init() {}
+    private let agents: [Agent]?
+    nonisolated init(agents: [Agent]) { self.agents = agents }
+    nonisolated init() { agents = nil;}
 }
 
 extension CreationTestApp: App {
     var body: some Scene {
-        WindowGroup(id: "creation-tests") { DashboardView(shouldAnimate: false, isPaused: true) }
+        WindowGroup(id: "creation-tests") { if let agents { DashboardView(agents: agents, shouldAnimate: false, isPaused: true) } else { Text("Unconfigured test app") } }
             .exitOnKeys([])
     }
 }
@@ -260,7 +262,7 @@ private func withCreationScene(
     let recorder = HostedFrameRecorder()
     let surface = HostedRasterSurface(surfaceSize: size, appearance: .fallback,
                                       onFrame: { recorder.receive($0) })
-    let session = try HostedSceneSession(for: CreationTestApp(), sceneID: "creation-tests", surface: surface)
+    let session = try HostedSceneSession(for: CreationTestApp(agents: try Agent.examples), sceneID: "creation-tests", surface: surface)
     let run = Task { try await session.start() }
     defer { session.stop() }
     do {

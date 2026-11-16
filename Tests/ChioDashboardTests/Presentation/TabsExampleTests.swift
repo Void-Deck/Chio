@@ -9,9 +9,9 @@ struct TabsExampleTests {
     @Test("Workspace tabs retain essential content and hints across sizes and themes",
           arguments: [CellSize(width: 100, height: 30), CellSize(width: 50, height: 30),
                       CellSize(width: 36, height: 18)], ExampleTheme.allCases)
-    func initialLayout(size: CellSize, appearance: ExampleTheme) {
+    func initialLayout(size: CellSize, appearance: ExampleTheme) throws {
         let rendered = DefaultRenderer().render(
-            TabsExampleView(theme: appearance).environment(\.terminalSize, size),
+            try TabsExampleView(theme: appearance).environment(\.terminalSize, size),
             proposal: ProposedSize(width: size.width, height: size.height), frameInstant: .zero
         )
         let surface = rendered.rasterSurface
@@ -309,12 +309,14 @@ private func focusWorkspaceStrip(
 }
 
 private struct TabsExampleTestApp {
-    nonisolated init() {}
+    private let agents: [Agent]?
+    nonisolated init(agents: [Agent]) { self.agents = agents }
+    nonisolated init() { agents = nil;}
 }
 
 extension TabsExampleTestApp: App {
     var body: some Scene {
-        WindowGroup(id: "tabs-example-tests") { TabsExampleView() }.exitOnKeys([])
+        WindowGroup(id: "tabs-example-tests") { if let agents { TabsExampleView(agents: agents) } else { Text("Unconfigured test app") } }.exitOnKeys([])
     }
 }
 
@@ -325,7 +327,7 @@ private func withTabsExample(
 ) async throws {
     let recorder = HostedFrameRecorder()
     let surface = HostedRasterSurface(surfaceSize: size, appearance: .fallback, onFrame: { recorder.receive($0) })
-    let session = try HostedSceneSession(for: TabsExampleTestApp(), sceneID: "tabs-example-tests", surface: surface)
+    let session = try HostedSceneSession(for: TabsExampleTestApp(agents: try Agent.examples), sceneID: "tabs-example-tests", surface: surface)
     let run = Task { try await session.start() }
     defer { session.stop() }
     do {

@@ -9,7 +9,14 @@ struct TabsExampleView {
     @State private var section = Section.overview
     @FocusState private var isStripFocused: Bool
 
-    init(theme: ExampleTheme = .default) {
+    init(theme: ExampleTheme = .default) throws {
+        self.init(agents: try Agent.examples, theme: theme)
+    }
+
+    private let exampleAgents: [Agent]
+
+    init(agents: [Agent], theme: ExampleTheme = .default) {
+        exampleAgents = agents
         _themeChoice = State(wrappedValue: theme)
     }
 
@@ -42,7 +49,7 @@ extension TabsExampleView: View {
             }
             TabView(selection: $section) {
                 Tab("Overview", value: Section.overview) { OverviewTab() }
-                Tab("Agents", badge: "4", value: Section.agents) { AgentsTab() }
+                Tab("Agents", badge: "4", value: Section.agents) { AgentsTab(agents: exampleAgents) }
                 Tab("Notes", value: Section.notes) { NotesTab() }
                 Tab("Activity", value: Section.activity) { ActivityTab() }
                 Tab("Settings", value: Section.settings) { SettingsTab() }
@@ -103,14 +110,20 @@ extension OverviewTab: View {
 private struct AgentsTab {
     @Environment(\.chioStyle) private var theme
     @State private var query = ""
-    @State private var selection: Agent.ID? = Agent.examples.first?.id
+    let agents: [Agent]
+    @State private var selection: Agent.ID?
+
+    init(agents: [Agent]) {
+        self.agents = agents
+        _selection = State(wrappedValue: agents.first?.id)
+    }
 }
 
 extension AgentsTab: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("Agent directory").bold().foregroundStyle(theme.colors.heading)
-            SearchableList(Agent.examples, selection: $selection, query: $query, searchText: \.name) { agent in
+            SearchableList(agents, selection: $selection, query: $query, searchText: \.name) { agent in
                 Text(agent.name)
             }
         }

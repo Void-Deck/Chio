@@ -110,10 +110,12 @@ public struct MapView {
         selection.wrappedValue = marker.id
         // An application may reject a write. Do not pan to a rejected selection.
         guard selection.wrappedValue == marker.id else { return }
-        let coordinate = try! MapCoordinate(latitude: min(MapLimits.mercatorLatitude,
-                                             max(-MapLimits.mercatorLatitude, marker.coordinate.latitude)),
-                                             longitude: marker.coordinate.longitude)
-        camera.wrappedValue = try! MapCamera(center: coordinate, longitudeSpan: camera.wrappedValue.longitudeSpan)
+        do {
+            let coordinate = try MapCoordinate(latitude: min(MapLimits.mercatorLatitude,
+                                                 max(-MapLimits.mercatorLatitude, marker.coordinate.latitude)),
+                                                 longitude: marker.coordinate.longitude)
+            camera.wrappedValue = try MapCamera(center: coordinate, longitudeSpan: camera.wrappedValue.longitudeSpan)
+        } catch { return }
     }
 
     private func stepMarker(_ direction: Int) {
@@ -131,12 +133,18 @@ public struct MapView {
         guard isEnabled, press.modifiers.isEmpty else { return .ignored }
         // Bindings are read for each event, not captured at the preceding frame.
         switch press.key {
-        case .arrowLeft: camera.wrappedValue = try! camera.wrappedValue.panned(longitudeFraction: -0.12, latitudeFraction: 0)
-        case .arrowRight: camera.wrappedValue = try! camera.wrappedValue.panned(longitudeFraction: 0.12, latitudeFraction: 0)
-        case .arrowUp: camera.wrappedValue = try! camera.wrappedValue.panned(longitudeFraction: 0, latitudeFraction: 0.12)
-        case .arrowDown: camera.wrappedValue = try! camera.wrappedValue.panned(longitudeFraction: 0, latitudeFraction: -0.12)
-        case .character("+"), .character("="): camera.wrappedValue = try! camera.wrappedValue.zoomed(by: 1 / 0.7)
-        case .character("-"): camera.wrappedValue = try! camera.wrappedValue.zoomed(by: 0.7)
+        case .arrowLeft:
+            do { camera.wrappedValue = try camera.wrappedValue.panned(longitudeFraction: -0.12, latitudeFraction: 0) } catch { return .ignored }
+        case .arrowRight:
+            do { camera.wrappedValue = try camera.wrappedValue.panned(longitudeFraction: 0.12, latitudeFraction: 0) } catch { return .ignored }
+        case .arrowUp:
+            do { camera.wrappedValue = try camera.wrappedValue.panned(longitudeFraction: 0, latitudeFraction: 0.12) } catch { return .ignored }
+        case .arrowDown:
+            do { camera.wrappedValue = try camera.wrappedValue.panned(longitudeFraction: 0, latitudeFraction: -0.12) } catch { return .ignored }
+        case .character("+"), .character("="):
+            do { camera.wrappedValue = try camera.wrappedValue.zoomed(by: 1 / 0.7) } catch { return .ignored }
+        case .character("-"):
+            do { camera.wrappedValue = try camera.wrappedValue.zoomed(by: 0.7) } catch { return .ignored }
         case .character("n"): stepMarker(1)
         case .character("p"): stepMarker(-1)
         case .return:

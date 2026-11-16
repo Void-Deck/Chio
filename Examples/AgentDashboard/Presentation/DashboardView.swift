@@ -28,9 +28,23 @@ struct DashboardView {
         case create, run, report, theme, pause
     }
 
-    init(scenario: DashboardScenario = .normal, theme: ExampleTheme = .default, shouldAnimate: Bool = true, isPaused: Bool = false) {
-        _agents = State(wrappedValue: scenario.agents)
-        _selection = State(wrappedValue: scenario.initialSelection)
+    init(scenario: DashboardScenario = .normal, theme: ExampleTheme = .default, shouldAnimate: Bool = true, isPaused: Bool = false) throws {
+        self.init(agents: try Agent.examples, scenario: scenario, theme: theme, shouldAnimate: shouldAnimate, isPaused: isPaused)
+    }
+
+    private let exampleAgents: [Agent]
+
+    init(agents: [Agent], scenario: DashboardScenario = .normal, theme: ExampleTheme = .default, shouldAnimate: Bool = true, isPaused: Bool = false) {
+        exampleAgents = agents
+        let initialAgents: [Agent]
+        switch scenario {
+        case .empty: initialAgents = []
+        case .normal, .noMatches: initialAgents = agents
+        case .failed: initialAgents = agents.map { $0.replacingPhase(.failed) }
+        case .completed: initialAgents = agents.map { $0.replacingPhase(.completed) }
+        }
+        _agents = State(wrappedValue: initialAgents)
+        _selection = State(wrappedValue: scenario == .noMatches ? nil : initialAgents.first?.id)
         _query = State(wrappedValue: scenario.query)
         _themeChoice = State(wrappedValue: theme)
         _isPaused = State(wrappedValue: isPaused)
@@ -87,7 +101,7 @@ struct DashboardView {
     }
 
     private func toggleEmpty() {
-        agents = agents.isEmpty ? Agent.examples : []
+        agents = agents.isEmpty ? exampleAgents : []
         selection = agents.first?.id
         query = ""
     }

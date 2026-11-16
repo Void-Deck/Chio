@@ -6,7 +6,7 @@ enum RouteReadabilityScene: String {
 
     var camera: MapCamera {
         // Fixed fixtures stay inside the retained Singapore extract.
-        try! MapCamera(center: MapCoordinate(latitude: 1.2875, longitude: 103.86), longitudeSpan: 0.025)
+        get throws { try MapCamera(center: MapCoordinate(latitude: 1.2875, longitude: 103.86), longitudeSpan: 0.025) }
     }
 
     func path(street: MapPolyline) throws -> MapPolyline {

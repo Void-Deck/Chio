@@ -291,7 +291,7 @@ struct HelpExampleTests {
         let recorder = HostedFrameRecorder()
         let surface = HostedRasterSurface(surfaceSize: CellSize(width: 76, height: 30), appearance: .fallback,
                                           onFrame: { recorder.receive($0) })
-        let session = try HostedSceneSession(for: HelpTestApp(), sceneID: "help-example-tests", surface: surface)
+        let session = try HostedSceneSession(for: HelpTestApp(agents: try Agent.examples), sceneID: "help-example-tests", surface: surface)
         let run = Task { try await session.start() }
         var deadline: Task<Void, Never>?
         defer { deadline?.cancel(); session.stop() }
@@ -321,9 +321,9 @@ struct HelpExampleTests {
     @Test("The help example keeps content, status, actions and essential hints in both themes",
           arguments: [CellSize(width: 100, height: 30), CellSize(width: 50, height: 30),
                       CellSize(width: 36, height: 18)], ExampleTheme.allCases)
-    func layout(size: CellSize, appearance: ExampleTheme) {
+    func layout(size: CellSize, appearance: ExampleTheme) throws {
         let frame = DefaultRenderer().render(
-            HelpExampleView(theme: appearance).environment(\.terminalSize, size),
+            try HelpExampleView(theme: appearance).environment(\.terminalSize, size),
             proposal: ProposedSize(width: size.width, height: size.height), frameInstant: .zero
         )
         let text = frame.rasterSurface.lines.joined(separator: "\n")
@@ -344,12 +344,14 @@ struct HelpExampleTests {
 }
 
 private struct HelpTestApp {
-    nonisolated init() {}
+    private let agents: [Agent]?
+    nonisolated init(agents: [Agent]) { self.agents = agents }
+    nonisolated init() { agents = nil;}
 }
 
 extension HelpTestApp: App {
     var body: some Scene {
-        WindowGroup(id: "help-example-tests") { HelpExampleView() }.exitOnKeys([])
+        WindowGroup(id: "help-example-tests") { if let agents { HelpExampleView(agents: agents) } else { Text("Unconfigured test app") } }.exitOnKeys([])
     }
 }
 
@@ -360,7 +362,7 @@ private func withHelpExample(
     let recorder = HostedFrameRecorder()
     let surface = HostedRasterSurface(surfaceSize: CellSize(width: 76, height: 30), appearance: .fallback,
                                       onFrame: { recorder.receive($0) })
-    let session = try HostedSceneSession(for: HelpTestApp(), sceneID: "help-example-tests", surface: surface)
+    let session = try HostedSceneSession(for: HelpTestApp(agents: try Agent.examples), sceneID: "help-example-tests", surface: surface)
     let run = Task { try await session.start() }
     defer { session.stop() }
     do {

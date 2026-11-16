@@ -8,14 +8,22 @@ struct HelpExampleView {
     @Environment(\.terminalSize) private var terminalSize
     @Environment(\.requestTermination) private var requestTermination
     @State private var themeChoice: ExampleTheme
-    @State private var selection: Agent.ID? = Agent.examples.first?.id
+    @State private var selection: Agent.ID? = nil
     @State private var query = ""
     @State private var isSearching = false
     @State private var help: ShortcutScope?
     @State private var runs = 0
     @FocusState private var actionFocus: Action?
 
-    init(theme: ExampleTheme = .default) {
+    init(theme: ExampleTheme = .default) throws {
+        self.init(agents: try Agent.examples, theme: theme)
+    }
+
+    private let exampleAgents: [Agent]
+
+    init(agents: [Agent], theme: ExampleTheme = .default) {
+        exampleAgents = agents
+        _selection = State(wrappedValue: agents.first?.id)
         _themeChoice = State(wrappedValue: theme)
     }
 
@@ -46,7 +54,7 @@ struct HelpExampleView {
     private static let close = ShortcutHint("esc", "close", detail: "Close help and return to the control you were using.")
 
     private var theme: ChioStyle { themeChoice.theme }
-    private var selectedAgent: Agent? { Agent.examples.first { $0.id == selection } }
+    private var selectedAgent: Agent? { exampleAgents.first { $0.id == selection } }
     private var activeShortcutScope: ShortcutScope {
         if actionFocus != nil { return .actions }
         return isSearching ? .editing : .browse
@@ -133,7 +141,7 @@ extension HelpExampleView: View {
                     .foregroundStyle(theme.colors.secondaryText)
                 Spacer().frame(height: 1)
             }
-            SearchableList(Agent.examples, selection: $selection, query: $query, searchText: \.name) { agent in
+            SearchableList(exampleAgents, selection: $selection, query: $query, searchText: \.name) { agent in
                 Text(agent.name)
             }
             .onActivate { _ in runSelected() }

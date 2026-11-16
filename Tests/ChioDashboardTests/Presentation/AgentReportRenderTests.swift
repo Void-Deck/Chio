@@ -8,8 +8,8 @@ struct AgentReportRenderTests {
     @Test("Reports retain their header, complete navigation hints, and captured agent across sizes and themes",
           arguments: [CellSize(width: 100, height: 30), CellSize(width: 50, height: 30),
                       CellSize(width: 36, height: 18)], ExampleTheme.allCases)
-    func layout(size: CellSize, appearance: ExampleTheme) {
-        let view = AgentReportView(report: AgentReport(agent: Agent.examples[3]),
+    func layout(size: CellSize, appearance: ExampleTheme) throws {
+        let view = AgentReportView(report: AgentReport(agent: (try Agent.examples)[3]),
                                    themeChoice: .constant(appearance), close: {})
         let surface = DefaultRenderer().render(
             view, proposal: ProposedSize(width: size.width, height: size.height), frameInstant: .zero

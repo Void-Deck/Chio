@@ -215,15 +215,18 @@ struct DashboardPaletteTests {
 }
 
 private struct PaletteTestApp {
+    private let agents: [Agent]?
     let scenario: DashboardScenario
 
-    nonisolated init() { scenario = .normal }
-    nonisolated init(scenario: DashboardScenario) { self.scenario = scenario }
+    nonisolated init() { agents = nil; scenario = .normal }
+    nonisolated init(scenario: DashboardScenario) throws {
+        agents = try Agent.examples
+ self.scenario = scenario }
 }
 
 extension PaletteTestApp: App {
     var body: some Scene {
-        WindowGroup(id: "palette-tests") { DashboardView(scenario: scenario, shouldAnimate: false, isPaused: true) }
+        WindowGroup(id: "palette-tests") { if let agents { DashboardView(agents: agents, scenario: scenario, shouldAnimate: false, isPaused: true) } else { Text("Unconfigured test app") } }
             .exitOnKeys([])
     }
 }

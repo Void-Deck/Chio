@@ -170,10 +170,14 @@ public actor MapTilePack {
     private static func read(descriptor: Int32, offset: Int, length: Int) throws -> Data {
         var data = Data(count: length)
         try data.withUnsafeMutableBytes { buffer in
+            guard let base = buffer.baseAddress else {
+                guard length == 0 else { throw PackError.ioFailure(EFAULT) }
+                return
+            }
             var completed = 0
             while completed < length {
                 try Task.checkCancellation()
-                let count = pread(descriptor, buffer.baseAddress!.advanced(by: completed),
+                let count = pread(descriptor, base.advanced(by: completed),
                                   min(65_536, length - completed), off_t(offset + completed))
                 if count < 0 {
                     if errno == EINTR { continue }
@@ -188,10 +192,14 @@ public actor MapTilePack {
 
     private static func write(_ data: Data, descriptor: Int32, offset: Int) throws {
         try data.withUnsafeBytes { buffer in
+            guard let base = buffer.baseAddress else {
+                guard data.count == 0 else { throw PackError.ioFailure(EFAULT) }
+                return
+            }
             var completed = 0
             while completed < data.count {
                 try Task.checkCancellation()
-                let count = pwrite(descriptor, buffer.baseAddress!.advanced(by: completed),
+                let count = pwrite(descriptor, base.advanced(by: completed),
                                    min(65_536, data.count - completed), off_t(offset + completed))
                 if count < 0 {
                     if errno == EINTR { continue }

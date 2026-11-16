@@ -8,11 +8,13 @@ enum DashboardScenario: String {
     case completed
 
     var agents: [Agent] {
-        switch self {
-        case .empty: []
-        case .normal, .noMatches: Agent.examples
-        case .failed: Agent.examples.map { $0.replacingPhase(.failed) }
-        case .completed: Agent.examples.map { $0.replacingPhase(.completed) }
+        get throws {
+            switch self {
+            case .empty: []
+            case .normal, .noMatches: try Agent.examples
+            case .failed: try Agent.examples.map { $0.replacingPhase(.failed) }
+            case .completed: try Agent.examples.map { $0.replacingPhase(.completed) }
+            }
         }
     }
 
@@ -24,9 +26,11 @@ enum DashboardScenario: String {
     }
 
     var initialSelection: Agent.ID? {
-        switch self {
-        case .noMatches: nil
-        case .normal, .empty, .failed, .completed: agents.first?.id
+        get throws {
+            switch self {
+            case .noMatches: nil
+            case .normal, .empty, .failed, .completed: try agents.first?.id
+            }
         }
     }
 }

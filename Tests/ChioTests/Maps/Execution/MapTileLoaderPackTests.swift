@@ -134,7 +134,7 @@ struct MapTileLoaderPackTests {
     }
 
     private func metadata() throws -> MapSourceMetadata {
-        let url = URL(string: "https://example.test")!
+        let url = (try #require(URL(string: "https://example.test")))
         return try MapSourceMetadata(attribution: "Test tiles", license: "Fixture", licenseURL: url,
                                      sourceURL: url, sourceRevision: "same-provider-revision")
     }

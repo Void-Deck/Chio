@@ -4,12 +4,12 @@ import Testing
 
 struct AgentTests {
     @Test("Scenarios preserve initial selection and filtering policies")
-    func scenarioPolicies() {
-        #expect(DashboardScenario.normal.initialSelection == "build")
-        #expect(DashboardScenario.empty.initialSelection == nil)
-        #expect(DashboardScenario.noMatches.initialSelection == nil)
-        #expect(DashboardScenario.failed.initialSelection == "build")
-        #expect(DashboardScenario.completed.initialSelection == "build")
+    func scenarioPolicies() throws {
+        #expect((try DashboardScenario.normal.initialSelection) == "build")
+        #expect((try DashboardScenario.empty.initialSelection) == nil)
+        #expect((try DashboardScenario.noMatches.initialSelection) == nil)
+        #expect((try DashboardScenario.failed.initialSelection) == "build")
+        #expect((try DashboardScenario.completed.initialSelection) == "build")
         #expect(DashboardScenario.noMatches.query == "xyz")
         #expect([DashboardScenario.normal, .empty, .failed, .completed].allSatisfy { $0.query.isEmpty })
     }
@@ -56,19 +56,19 @@ struct AgentTests {
     }
 
     @Test("Phase replacement preserves identity and metadata without changing the original")
-    func phaseReplacement() {
-        let original = Agent.examples[0]
+    func phaseReplacement() throws {
+        let original = (try Agent.examples)[0]
         let updated = original.replacingPhase(.failed)
         #expect(updated.id == original.id)
         #expect(updated.name == original.name)
         #expect(updated.summary == original.summary)
         #expect(updated.phase == .failed)
-        #expect(original.phase == .running(progress: Agent.RunningProgress(fraction: 0.78)!))
+        #expect(original.phase == .running(progress: (try #require(Agent.RunningProgress(fraction: 0.78)))))
     }
 
     @Test("Agents and scenarios preserve their values through synthesized codecs")
     func modelCodecs() throws {
-        let agents = Agent.examples + [Agent.examples[0].replacingPhase(.running(progress: .zero))]
+        let agents = (try Agent.examples) + [(try Agent.examples)[0].replacingPhase(.running(progress: .zero))]
         let decoded = try JSONDecoder().decode([Agent].self, from: JSONEncoder().encode(agents))
         #expect(decoded == agents)
         #expect(Set(decoded) == Set(agents))

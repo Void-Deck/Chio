@@ -9,8 +9,8 @@ struct MapDrawingWorkTests {
     func fixtureMatrix() throws {
         let fixtures = try MapFixtures.load()
         for scene in MapFixtures.Scene.allCases {
-            let moved = try scene.camera.zoomed(by: 1.4).panned(longitudeFraction: 0.12, latitudeFraction: 0.12)
-            for camera in [scene.camera, moved] {
+            let moved = try (try scene.camera).zoomed(by: 1.4).panned(longitudeFraction: 0.12, latitudeFraction: 0.12)
+            for camera in [(try scene.camera), moved] {
                 for detail in MapDetail.allCases {
                     for (columns, rows) in [(100, 30), (60, 20), (240, 100)] {
                         let viewport = try MapViewport(columns: columns, rows: rows)

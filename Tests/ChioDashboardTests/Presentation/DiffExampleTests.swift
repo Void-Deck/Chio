@@ -143,13 +143,13 @@ struct DiffExampleTests {
 
     @Test("Unsupported and empty content has explicit summaries rather than invented source rows",
           arguments: [2, 3, 4, 5], [false, true])
-    func summaries(index: Int, isSplit: Bool) {
-        let expected = [
+    func summaries(index: Int, isSplit: Bool) throws {
+        let expected = (try #require([
             2: "Empty file added.",
             3: "Empty file deleted.",
             4: "Renamed from Docs/GettingStarted.md. No textual changes.",
             5: "Binary content · no source lines to display.",
-        ][index]!
+        ][index]))
         let rendered = DefaultRenderer().render(
             DiffFileView(file: DiffFile.examples[index], isSplit: isSplit, minimumWidth: 100,
                          sourceWidth: 0, activeHunk: nil).style(.default),
@@ -264,9 +264,10 @@ struct DiffExampleTests {
                     && route.contentOffset.x > 0
             }
             #expect(right.semantics.scrollRoutes.count == 1)
+            let rightScrollRoute = try #require(right.semantics.scrollRoutes.first)
             session.send(.key(.arrowLeft))
             let left = try await recorder.wait(after: right.sequence, description: "left reverses immediately from the horizontal edge") {
-                $0.diffReaderFocused && $0.semantics.scrollRoutes.first?.contentOffset.x == right.semantics.scrollRoutes.first!.contentOffset.x - 1
+                $0.diffReaderFocused && $0.semantics.scrollRoutes.first?.contentOffset.x == rightScrollRoute.contentOffset.x - 1
             }
             session.send(.key(.character("f"), modifiers: .ctrl))
             var current = try await recorder.wait(after: left.sequence, description: "next file resets the native viewport to an empty added summary") {

@@ -3,8 +3,8 @@ import Testing
 
 struct AgentReportTests {
     @Test("A report keeps its captured run after simulation advances and finishes")
-    func immutableRunSnapshot() {
-        let agent = Agent.examples[0]
+    func immutableRunSnapshot() throws {
+        let agent = (try Agent.examples)[0]
         let report = AgentReport(agent: agent)
         let sameSnapshot = AgentReport(agent: agent)
         let advanced = AgentSimulation.advance([agent], step: 0.1)[0]
@@ -13,7 +13,7 @@ struct AgentReportTests {
         #expect(report == sameSnapshot)
         #expect(Set([report, sameSnapshot]).count == 1)
         #expect(report.agent == agent)
-        #expect(report.agent.phase == .running(progress: Agent.RunningProgress(fraction: 0.78)!))
+        #expect(report.agent.phase == .running(progress: (try #require(Agent.RunningProgress(fraction: 0.78)))))
         #expect(completed.phase == .completed)
         #expect(report != AgentReport(agent: advanced))
         #expect(Set([report, AgentReport(agent: advanced)]).count == 2)

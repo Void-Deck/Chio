@@ -33,7 +33,7 @@ struct MapPreparationTests {
         let world = try MapPreparation.prepare(dataset: dataset,
                                                camera: MapCamera(center: coordinate(0, 0), longitudeSpan: 360), viewport: viewport)
         #expect(world.lines.count == 2)
-        #expect(world.lines.allSatisfy { abs($0.points.last!.x - $0.points.first!.x) < 1 })
+        #expect(try world.lines.allSatisfy { abs((try #require($0.points.last)).x - (try #require($0.points.first)).x) < 1 })
         #expect(world.lines.contains { $0.points.first?.x == 0 })
         #expect(world.lines.contains { $0.points.last?.x == 100 })
     }

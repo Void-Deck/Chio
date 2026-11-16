@@ -88,7 +88,7 @@ struct MapPreparationWorkerTests {
             #expect(world.routes.count == 2)
             #expect(world.routes.contains { $0.points.first?.x == 0 })
             #expect(world.routes.contains { $0.points.last?.x == 100 })
-            #expect(world.routes.allSatisfy { abs($0.points.last!.x - $0.points.first!.x) < 1 })
+            #expect(try world.routes.allSatisfy { abs((try #require($0.points.last)).x - (try #require($0.points.first)).x) < 1 })
         }
     }
 

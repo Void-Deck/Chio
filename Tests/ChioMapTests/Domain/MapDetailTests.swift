@@ -237,9 +237,9 @@ struct MapDetailTests {
         let fixtures = try MapFixtures.load()
         for (columns, rows) in [(100, 20), (60, 20), (36, 18)] {
             let viewport = try MapViewport(columns: columns, rows: rows)
-            let source = try MapPreparation.prepare(dataset: fixtures.street, camera: MapFixtures.Scene.street.camera,
+            let source = try MapPreparation.prepare(dataset: fixtures.street, camera: (try MapFixtures.Scene.street.camera),
                                                     viewport: viewport, detail: .source)
-            let abstract = try MapPreparation.prepare(dataset: fixtures.street, camera: MapFixtures.Scene.street.camera,
+            let abstract = try MapPreparation.prepare(dataset: fixtures.street, camera: (try MapFixtures.Scene.street.camera),
                                                       viewport: viewport, detail: .abstract)
             #expect(abstract.statistics.visibleFeatures * 2 < source.statistics.visibleFeatures)
             #expect(abstract.statistics.preparedVertices * 2 < source.statistics.preparedVertices)
@@ -258,7 +258,7 @@ struct MapDetailTests {
         for scene in MapFixtures.Scene.allCases {
             let dataset = fixtures.dataset(for: scene)
             let captured = dataset
-            let camera = scene.camera
+            let camera = (try scene.camera)
             for (columns, rows) in [(100, 20), (60, 20), (36, 18)] {
                 let viewport = try MapViewport(columns: columns, rows: rows)
                 let maps = try MapDetail.allCases.map {
@@ -290,7 +290,7 @@ struct MapDetailTests {
                 }
             }
             #expect(dataset == captured)
-            #expect(camera == scene.camera)
+            #expect(camera == (try scene.camera))
         }
     }
 

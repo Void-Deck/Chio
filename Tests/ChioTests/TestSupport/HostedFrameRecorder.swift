@@ -32,7 +32,8 @@ final class HostedFrameRecorder {
     ) async throws -> SemanticHostFrame {
         record(.waiting(description, after: sequence))
         let matches: @MainActor (SemanticHostFrame) -> Bool = { frame in
-            (sequence == nil || frame.sequence > sequence!) && predicate(frame)
+            if let sequence, frame.sequence <= sequence { return false }
+            return predicate(frame)
         }
         if let latest, matches(latest) {
             record(.matched(description, sequence: latest.sequence))

@@ -8,6 +8,35 @@ struct MapFixtures {
     let streetSource: MapSource
     let openFreeMapSource: MapSource
 
+    let worldCamera: MapCamera
+    let streetCamera: MapCamera
+    let worldOverlays: MapOverlays
+    let streetOverlays: MapOverlays
+    let demoCamera: MapCamera
+    let demoRequest: MapRouteRequest
+
+    init(worldSource: MapSource, streetSource: MapSource, openFreeMapSource: MapSource) throws {
+        _ = try MapFixtureGeocoder.attributionURL
+        _ = try MapFixtureRouter.attributionURL
+        self.worldSource = worldSource
+        self.streetSource = streetSource
+        self.openFreeMapSource = openFreeMapSource
+        worldCamera = try Scene.world.camera
+        streetCamera = try Scene.street.camera
+        worldOverlays = try Scene.world.overlays
+        streetOverlays = try Scene.street.overlays
+        demoCamera = try MapRoutingDemo.camera
+        demoRequest = try MapRoutingDemo.request
+    }
+
+    func camera(for scene: Scene) -> MapCamera {
+        switch scene { case .world: worldCamera; case .street: streetCamera }
+    }
+
+    func overlays(for scene: Scene) -> MapOverlays {
+        switch scene { case .world: worldOverlays; case .street: streetOverlays }
+    }
+
     var world: MapDataset { worldSource.dataset }
     var street: MapDataset { streetSource.dataset }
 
@@ -82,7 +111,7 @@ struct MapFixtures {
         /// Demonstration locations and synthetic guides, independent of source geography.
         var overlays: MapOverlays {
             // These fixed fixtures exercise the same checked API as application input.
-            try! makeOverlays()
+            get throws { try makeOverlays() }
         }
 
         private func makeOverlays() throws -> MapOverlays {
@@ -113,10 +142,11 @@ struct MapFixtures {
         }
 
         var camera: MapCamera {
-            // Fixed example inputs satisfy the checked geographic constructors.
-            switch self {
-            case .world: try! MapCamera(center: MapCoordinate(latitude: 0, longitude: 0), longitudeSpan: 360)
-            case .street: try! MapCamera(center: MapCoordinate(latitude: 1.289, longitude: 103.866), longitudeSpan: 0.030)
+            get throws {
+                switch self {
+                case .world: try MapCamera(center: MapCoordinate(latitude: 0, longitude: 0), longitudeSpan: 360)
+                case .street: try MapCamera(center: MapCoordinate(latitude: 1.289, longitude: 103.866), longitudeSpan: 0.030)
+                }
             }
         }
     }
