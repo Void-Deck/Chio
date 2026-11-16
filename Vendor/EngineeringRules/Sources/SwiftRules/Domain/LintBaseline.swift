@@ -42,6 +42,10 @@ struct LintBaseline {
         guard schemaVersion == 1, hasUniqueEntries, hasValidCountsAndReasons, hasSafePaths, hasNoParseFailures else {
             throw ToolFailure.invalid("Malformed baseline: require unique entries, positive counts, reasons, and no parse failures")
         }
+        let unbaselinable = Set(entries.map(\.identity.ruleID).filter { !SwiftLintRule.permitsBaselineEntry(forDiagnosticID: $0) })
+        guard unbaselinable.isEmpty else {
+            throw ToolFailure.invalid("Malformed baseline: force rules have no exception and cannot be baselined: " + unbaselinable.sorted().joined(separator: ", "))
+        }
         return self
     }
 

@@ -91,6 +91,11 @@ enum SwiftRulesCommand {
                 }
                 try aggregate.verifyUnchanged()
             }
+            let unbaselinable = diagnostics.filter { !SwiftLintRule.permitsBaselineEntry(forDiagnosticID: $0.ruleID) }
+            guard unbaselinable.isEmpty else {
+                try report(unbaselinable, asJSON: request.isJSON)
+                throw ToolFailure.invalid("Force-rule findings cannot be baselined; fix them before recording a baseline")
+            }
             let baseline = LintBaseline(diagnostics: diagnostics, reason: reason)
             let url = try repository.containedURL(output)
             let encoder = JSONEncoder()

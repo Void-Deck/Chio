@@ -17,17 +17,11 @@ struct SwiftLintGate {
         try FileManager.default.createDirectory(at: temporary, withIntermediateDirectories: false, attributes: [.posixPermissions: 0o700])
         defer { try? FileManager.default.removeItem(at: temporary) }
         let configURL = temporary.appendingPathComponent("swiftlint.yml")
-        let config = """
-        only_rules:
-          - duplicate_imports
-          - file_name
-        file_name:
-          severity: error
-        duplicate_imports:
-          severity: error
-        check_for_updates: false
-        allow_zero_lintable_files: false
-        """
+        let selection = SwiftLintRule.allCases.map { "  - " + $0.rawValue }.joined(separator: "\n")
+        let settings = SwiftLintRule.allCases.map { rule in
+            ([rule.rawValue + ":", "  severity: error"] + rule.configurationOptions.map { "  " + $0 }).joined(separator: "\n")
+        }.joined(separator: "\n")
+        let config = "only_rules:\n" + selection + "\n" + settings + "\ncheck_for_updates: false\nallow_zero_lintable_files: false\n"
         try config.write(to: configURL, atomically: true, encoding: .utf8)
         var environment = ProcessInfo.processInfo.environment
         environment["SCRIPT_INPUT_FILE_COUNT"] = String(files.count)
