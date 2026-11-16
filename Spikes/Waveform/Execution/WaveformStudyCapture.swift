@@ -7,7 +7,7 @@ import SwiftTUI
 enum WaveformStudyCapture {
     static func export(_ application: WaveformStudyApplication, width: Int, height: Int, style: ChioStyle,
                        sequence: WaveformStudyCommand.CaptureSequence?, initialWindow: WaveformStudyWindow,
-                       frameCount: Int, delayMS: Int) async throws {
+                       frameCount: Int, delayMS: Int, eventWindows: [WaveformStudyWindow]) async throws {
         let recorder = Recorder(size: CellSize(width: width, height: height))
         recorder.prepare(after: nil, window: initialWindow)
         let surface = HostedRasterSurface(surfaceSize: recorder.size, appearance: .fallback,
@@ -37,6 +37,16 @@ enum WaveformStudyCapture {
                         current = try await recorder.wait(frameNumber: number + 1)
                         frames.append(Frame(delayMS: delayMS, cells: pixels(current.raster, style: style)))
                         window = next
+                    }
+                case .events:
+                    // Three captured views, each occupying four playback frames.
+                    frames = Array(repeating: frames[0], count: 4)
+                    for (index, next) in eventWindows.dropFirst().enumerated() {
+                        recorder.prepare(after: current.sequence, window: next)
+                        session.send(.key(.character("e")))
+                        current = try await recorder.wait(frameNumber: index + 2)
+                        let held = Frame(delayMS: delayMS, cells: pixels(current.raster, style: style))
+                        frames.append(contentsOf: Array(repeating: held, count: 4))
                     }
                 case .zoom:
                     for number in 1..<WaveformStudyWindow.Length.ordered.count {

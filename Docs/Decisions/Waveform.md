@@ -71,9 +71,12 @@ pan and zoom sequences driven by real key events, show the following:
 - On the same window, the existing `HistoryChart` differs mainly by vertical holes,
   where individual observations miss braille columns.
 
-## Alternative under consideration
+## Waveform stays separate from HistoryChart
 
-Extend `HistoryChart` instead of adding a view. The extension would accept a
-fixed-rate series, fill every covered column, and add an optional zero axis and
-event bands. This reuses the accepted time-window contract. The trade-off is a
-larger `HistoryChart` contract against a second, narrower component.
+The user decided on 2026-11-16 to develop `Waveform` as a standalone view.
+`HistoryChart` remains unchanged, and the two share no implementation for now.
+`HistoryChart` models irregular observations with per-sample offsets, admits
+16,384 samples and draws one history. A CPAP night is a fixed-rate series of
+about 720,000 samples, with a signed zero axis and event bands. Reusing
+`HistoryChart` would need a rename and a more general design. Revisit
+generalization only when a second concrete use case needs both shapes.

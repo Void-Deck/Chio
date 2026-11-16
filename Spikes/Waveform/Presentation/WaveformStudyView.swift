@@ -23,31 +23,56 @@ struct WaveformStudyView {
     private var flow: some View {
         GroupBox("Flow · L/min") {
             VStack(spacing: 0) {
+                Text(eventTitle).foregroundStyle(style.colors.heading).lineLimit(1)
                 eventRow
                 HStack(spacing: 1) {
-                    VStack { Text("+60"); Spacer(); Text("0 ┤"); Spacer(); Text("−60") }
+                    VStack { Text("+40"); Spacer(); Text("0 ┤"); Spacer(); Text("−40") }
                         .foregroundStyle(style.colors.mutedText).frame(width: 4)
-                    StudyWaveform(samples: night.flow, indices: window.indices, mode: .bipolar(limit: 60))
+                    StudyWaveform(samples: night.flow, indices: window.indices, mode: .bipolar(limit: 40))
                 }
             }
         }
     }
 
     private var pressure: some View {
-        GroupBox("Pressure · cmH₂O") {
-            HStack(spacing: 1) {
-                VStack { Text("14"); Spacer(); Text("4") }
-                    .foregroundStyle(style.colors.mutedText).frame(width: 4)
-                StudyWaveform(samples: night.pressure, indices: window.indices, mode: .magnitude(lower: 4, upper: 14))
+        let bounds = night.pressureBounds(in: window.indices)
+        return GroupBox("Pressure · cmH₂O · automatic") {
+            if let bounds {
+                HStack(spacing: 1) {
+                    VStack { Text(String(Int(bounds.upperBound))); Spacer(); Text(String(Int(bounds.lowerBound))) }
+                        .foregroundStyle(style.colors.mutedText).frame(width: 4)
+                    StudyWaveform(samples: night.pressure, indices: window.indices,
+                                  mode: .magnitude(lower: bounds.lowerBound, upper: bounds.upperBound))
+                }
+            } else {
+                Text("Mask off · no known pressure samples").foregroundStyle(style.colors.mutedText)
             }
         }
     }
 
-    private func color(_ kind: WaveformStudyNight.Event.Kind) -> Color {
-        switch kind {
-        case .obstructive, .central: style.colors.error
-        case .hypopnea: style.colors.warning
-        case .limitation: style.colors.mutedText
+    private var eventTitle: String {
+        let visible = night.events.filter { $0.seconds.overlaps(window.start..<window.end) }
+        let kinds: [WaveformStudyNight.Event.Kind] = [.obstructive, .central, .hypopnea, .limitation]
+        let counts = "Events" + kinds.map { kind in
+            " · \(kind.rawValue) \(visible.filter { $0.kind == kind }.count)"
+        }.joined()
+        return night.gap.overlaps(window.start..<window.end) ? counts + " · mask off" : counts
+    }
+
+    private func color(_ tone: WaveformStudyEventRow.Tone) -> Color {
+        switch tone {
+        case .error: style.colors.error
+        case .warning: style.colors.warning
+        case .muted: style.colors.mutedText
+        }
+    }
+
+    private func eventCells(window: WaveformStudyWindow, width: Int, markersOnly: Bool = false) -> some View {
+        let row = WaveformStudyEventRow(events: night.events, window: window, width: width, markersOnly: markersOnly)
+        return HStack(spacing: 0) {
+            ForEach(Array(row.cells.enumerated()), id: \.offset) { entry in
+                Text(String(entry.element.character)).foregroundStyle(color(entry.element.tone))
+            }
         }
     }
 
@@ -55,57 +80,40 @@ struct WaveformStudyView {
         HStack(spacing: 1) {
             Text("evt").frame(width: 4).foregroundStyle(style.colors.mutedText)
             GeometryReader { geometry in
-                let labels = eventLabels(width: geometry.size.width)
-                HStack(spacing: 0) {
-                    ForEach(Array(labels.enumerated()), id: \.offset) { entry in
-                        Text(entry.element.text).foregroundStyle(entry.element.color)
-                    }
-                }
+                eventCells(window: window, width: geometry.size.width)
             }
         }.frame(height: 1)
     }
 
-    // Place labels in terminal columns. At overview density, earlier labels win
-    // collisions; events remain in the fixture and reappear on zoom.
-    private func eventLabels(width: Int) -> [(text: String, color: Color)] {
-        var result: [(text: String, color: Color)] = []
-        var cursor = 0
-        var labels = night.events.filter { $0.seconds.overlaps(window.start..<window.end) }.map {
-            (second: max(window.start, $0.seconds.lowerBound), text: $0.label, color: color($0.kind))
-        }
-        if night.gap.overlaps(window.start..<window.end) {
-            labels.append((max(window.start, night.gap.lowerBound), "mask off", style.colors.mutedText))
-        }
-        for label in labels.sorted(by: { $0.second < $1.second }) {
-            let column = (label.second - window.start) * max(0, width) / window.length.seconds
-            guard column >= cursor, column + label.text.count <= width else { continue }
-            result.append((String(repeating: " ", count: column - cursor), style.colors.mutedText))
-            result.append((label.text, label.color))
-            cursor = column + label.text.count
-        }
-        return result
-    }
-
     private var overview: some View {
-        GeometryReader { geometry in
-            Text(overviewText(width: geometry.size.width)).foregroundStyle(style.colors.secondaryText)
-        }.frame(height: 1)
+        VStack(spacing: 0) {
+            StudyWaveform(samples: night.flow, indices: night.flow.indices, mode: .magnitude(lower: 0, upper: 40),
+                          usesAbsoluteValues: true)
+                .overlay {
+                    GeometryReader { geometry in
+                        let width = geometry.size.width
+                        let left = min(max(0, width - 1), window.start * width / WaveformStudyNight.seconds)
+                        let right = min(max(0, width - 1), max(left, (window.end * width - 1) / WaveformStudyNight.seconds))
+                        ZStack(alignment: .topLeading) {
+                            if left == right {
+                                Text("│").offset(x: left)
+                            } else {
+                                Text("[").offset(x: left)
+                                Text("]").offset(x: right)
+                            }
+                        }
+                        .foregroundStyle(style.colors.warning)
+                    }
+                }
+                .frame(height: 1)
+            GeometryReader { geometry in
+                eventCells(window: WaveformStudyWindow(start: 0, length: .night),
+                           width: geometry.size.width, markersOnly: true)
+            }.frame(height: 1)
+        }.frame(height: 2)
     }
 
-    private func overviewText(width: Int) -> String {
-        guard width > 1 else { return "" }
-        let last = width - 1
-        let left = window.start * last / WaveformStudyNight.seconds
-        let right = max(left + 1, window.end * last / WaveformStudyNight.seconds)
-        return String((0..<width).map { column -> Character in
-            if column == left { return "[" }
-            if column == min(last, right) { return "]" }
-            let second = column * WaveformStudyNight.seconds / width
-            if night.gap.contains(second) { return " " }
-            if column > left, column < right { return "━" }
-            return "─"
-        })
-    }
+
 }
 
 extension WaveformStudyView: View {
@@ -128,6 +136,7 @@ extension WaveformStudyView: View {
                     KeyHint("+/−", "Zoom")
                     KeyHint("t", "Theme")
                     KeyHint("c", "Compare")
+                    KeyHint("e", "Events")
                     KeyHint("q", "Quit")
                 }
             }
@@ -148,6 +157,7 @@ extension WaveformStudyView: View {
             case .character("-"): window = window.zoomed(-1)
             case .character("t"): appearance = appearance.next
             case .character("c"): isComparing.toggle()
+            case .character("e"): window = night.nextEventStudyWindow(after: window)
             case .character("q"): _ = requestTermination()
             default: return .ignored
             }

@@ -16,12 +16,20 @@ struct StudyWaveform {
     let samples: [Float?]
     let indices: Range<Int>
     let mode: Mode
+    let usesAbsoluteValues: Bool
+
+    init(samples: [Float?], indices: Range<Int>, mode: Mode, usesAbsoluteValues: Bool = false) {
+        self.samples = samples
+        self.indices = indices
+        self.mode = mode
+        self.usesAbsoluteValues = usesAbsoluteValues
+    }
     @Environment(\.chioStyle) private var theme
 }
 
 extension StudyWaveform: View {
     var body: some View {
-        Canvas(Envelope(samples: samples, indices: indices, mode: mode, axisColor: theme.colors.mutedText), grid: .braille2x4)
+        Canvas(Envelope(samples: samples, indices: indices, mode: mode, usesAbsoluteValues: usesAbsoluteValues, axisColor: theme.colors.mutedText), grid: .braille2x4)
             .foregroundStyle(theme.colors.accent)
             .accessibilityLabel("Synthetic min/max envelope; missing readings leave gaps.")
     }
@@ -34,6 +42,7 @@ private struct Envelope: CanvasDrawing {
     let samples: [Float?]
     let indices: Range<Int>
     let mode: StudyWaveform.Mode
+    let usesAbsoluteValues: Bool
     let axisColor: Color
 
     func draw(into context: inout CanvasContext) {
@@ -61,7 +70,7 @@ private struct Envelope: CanvasDrawing {
             var maximum: Double?
             for index in first..<max(first, end) {
                 if let sample = samples[index] {
-                    let value = Double(sample)
+                    let value = usesAbsoluteValues ? abs(Double(sample)) : Double(sample)
                     minimum = min(minimum ?? value, value)
                     maximum = max(maximum ?? value, value)
                 }

@@ -78,3 +78,55 @@ struct WaveformStudyNight {
         return String(format: "%02d:%02d", minute / 60, minute % 60)
     }
 }
+
+
+extension WaveformStudyNight {
+    func pressureBounds(in indices: Range<Int>) -> ClosedRange<Double>? {
+        var minimum: Double?
+        var maximum: Double?
+        for index in indices {
+            guard let value = pressure[index] else { continue }
+            let reading = Double(value)
+            minimum = min(minimum ?? reading, reading)
+            maximum = max(maximum ?? reading, reading)
+        }
+        guard let minimum, let maximum else { return nil }
+        return floor(minimum - 0.5)...ceil(maximum + 0.5)
+    }
+
+    /// Density means event starts per ten minutes, with the earliest window winning ties.
+    var eventStudyWindows: [WaveformStudyWindow] {
+        let ordered = events.sorted { $0.seconds.lowerBound < $1.seconds.lowerBound }
+        var bestStart = 0
+        var bestCount = 0
+        var end = 0
+        var lower = 0
+        for first in ordered.indices {
+            let start = min(ordered[first].seconds.lowerBound, Self.seconds - 600)
+            while end < ordered.count, ordered[end].seconds.lowerBound < start + 600 { end += 1 }
+            while lower < ordered.count, ordered[lower].seconds.lowerBound < start { lower += 1 }
+            let count = end - lower
+            if count > bestCount { bestStart = start; bestCount = count }
+        }
+        let cluster = ordered.filter { (bestStart..<(bestStart + 600)).contains($0.seconds.lowerBound) }
+        let center: Int
+        if cluster.isEmpty {
+            center = bestStart + 300
+        } else {
+            let event = cluster[cluster.count / 2]
+            center = event.seconds.lowerBound + event.seconds.count / 2
+        }
+        return [WaveformStudyWindow(start: 0, length: .night),
+                WaveformStudyWindow(start: bestStart, length: .tenMinutes),
+                WaveformStudyWindow(start: center - 60, length: .twoMinutes)]
+    }
+
+    func nextEventStudyWindow(after window: WaveformStudyWindow) -> WaveformStudyWindow {
+        let windows = eventStudyWindows
+        switch window.length {
+        case .night: return windows[1]
+        case .tenMinutes: return windows[2]
+        case .hour, .twoMinutes, .thirtySeconds: return windows[0]
+        }
+    }
+}

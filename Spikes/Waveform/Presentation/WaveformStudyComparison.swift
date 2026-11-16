@@ -26,8 +26,8 @@ extension WaveformStudyComparison: View {
             switch Result(catching: history) {
             case .success(let (series, interval)):
                 VStack(spacing: 0) {
-                    Text("Same window · fixed −60…+60").frame(height: 1)
-                    HistoryChart(series, window: interval, scale: .fixed(-60...60))
+                    Text("Same window · fixed −40…+40").frame(height: 1)
+                    HistoryChart(series, window: interval, scale: .fixed(-40...40))
                 }
             case .failure(let error): Text("History unavailable: \(String(describing: error))")
             }

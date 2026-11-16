@@ -8,14 +8,14 @@ struct WaveformStudyCommand {
     @Option(help: "Window start clock HH:MM, from 22:31 through 06:30.") var start = "00:30"
     @Flag(help: "Show public HistoryChart beside the flow envelope.") var compare = false
     @Flag(help: "Print a bounded hosted raster as JSON pixels.") var capture = false
-    @Option(help: "Hosted sequence: pan or zoom; requires --capture.") var captureSequence: CaptureSequence?
+    @Option(help: "Hosted sequence: pan, zoom or events; requires --capture.") var captureSequence: CaptureSequence?
     @Option(help: "Pan sequence frame count (1...240). Zoom always emits nine frames.") var frames = 24
     @Option(help: "Animation frame delay in milliseconds (1...60000).") var delayMs = 250
     @Option var width = 120
     @Option var height = 34
     @OptionGroup var swiftTUIOptions: SwiftTUIOptions
 
-    enum CaptureSequence: String { case pan, zoom }
+    enum CaptureSequence: String { case pan, zoom, events }
 
     enum Appearance: String {
         case `default`, light, btop
@@ -66,17 +66,20 @@ extension WaveformStudyCommand: AsyncParsableCommand {
     mutating func run() async throws {
         let offset = try startOffset()
         let visible: WaveformStudyWindow
-        if captureSequence == .zoom {
+        let night = WaveformStudyNight.synthetic()
+        if captureSequence == .events {
+            visible = night.eventStudyWindows[0]
+        } else if captureSequence == .zoom {
             visible = WaveformStudyWindow(start: 0, length: .night, zoomCenterSecond: offset)
         } else {
             visible = WaveformStudyWindow(start: offset, length: window)
         }
-        let view = WaveformStudyView(night: .synthetic(), window: visible, appearance: theme, compare: compare)
+        let view = WaveformStudyView(night: night, window: visible, appearance: theme, compare: compare)
         let application = WaveformStudyApplication(content: view)
         if capture {
             try await WaveformStudyCapture.export(application, width: width, height: height, style: theme.style,
                                                   sequence: captureSequence, initialWindow: visible,
-                                                  frameCount: frames, delayMS: delayMs)
+                                                  frameCount: frames, delayMS: delayMs, eventWindows: night.eventStudyWindows)
         } else {
             try await WebHostCLIRunner.run(application, configuration: swiftTUIOptions.runtimeConfiguration())
         }

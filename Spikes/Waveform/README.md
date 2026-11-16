@@ -29,11 +29,11 @@ never substituted zeroes. No file, network, device or private recording is read.
   encoding. Capture dimensions are bounded to 60–240 columns and 24–100 rows;
   defaults are 120×34. It waits up to ten seconds for a correctly sized frame
   containing the header and nonblank braille, then stops and joins the session.
-  A window wholly inside mask-off has no braille and intentionally times out.
+  A window wholly inside mask-off leaves the main trace blank; the overview still supplies braille.
 
 Left/right arrows pan by one quarter window. `+` zooms in, `-` zooms out through
 these five windows, retaining the center when possible. `t` cycles themes, `c`
-toggles comparison, and `q` quits. SwiftTUI owns the terminal and input lifecycle.
+toggles comparison, `e` steps through the event study, and `q` quits. SwiftTUI owns the terminal and input lifecycle.
 The spike owns all window/theme state. Use at least 80×24 for interactive study;
 compare is easiest at 120×34 or wider.
 
@@ -46,14 +46,16 @@ swift run -c release WaveformStudy --capture --capture-sequence pan --width 100 
 python3 Scripts/docs/render-raster.py pan.json pan.png
 swift run -c release WaveformStudy --capture --capture-sequence zoom --theme btop --width 100 --height 30 > zoom.json
 python3 Scripts/docs/render-raster.py zoom.json zoom.gif
+swift run -c release WaveformStudy --capture --capture-sequence events --theme btop --width 100 --height 30 > events.json
+python3 Scripts/docs/render-raster.py events.json events.png
 ```
 
-`--capture-sequence pan|zoom` requires `--capture`. Pan starts at the chosen
+`--capture-sequence pan|zoom|events` requires `--capture`. Pan starts at the chosen
 `--start` and `--window`, sends real right-arrow keys, and reverses with left-arrow
 keys at session boundaries. `--frames N` controls pan's total frame count
 (default 24, range 1–240). A whole-night pan cannot move: it still sends the key
-and requests a fresh hosted frame. A pan window wholly inside mask-off times out
-under the same nonblank-braille readiness rule as still capture.
+and requests a fresh hosted frame. A pan window wholly inside mask-off leaves the main plot blank while the
+whole-night overview remains visible.
 
 Zoom always starts at 8h, sends real `+` keys through 1h, 10m, 2m and 30s,
 and repeats the final captured image four extra times: nine frames in total.
@@ -63,6 +65,14 @@ left edge. `--start 01:10` produces 22:31–06:31, 00:40–01:40, 01:05–01:15,
 without discarding the intended center for later zooms. `--window` is ignored
 for zoom sequences; `--frames` applies only to pan. Interactive `+`/`-` uses the
 same retained center; a pan establishes a new center from its fitted window.
+
+Events captures three distinct views: 8h, the densest 10m cluster, then 2m
+centered on that cluster's median event (upper median when even). Density counts
+supplied event starts in a ten-minute window; the earliest window wins ties.
+Each captured view occupies four playback frames, for twelve JSON frames total.
+The same real hosted `e` key used interactively advances the views. `--start`,
+`--window` and `--frames` do not select event-study windows. No event is inferred
+from flow or pressure.
 
 `--delay-ms N` sets the exported delay on each frame (default 250, range
 1–60000 ms). Capture runs at hosted rendering speed; the delay controls playback,
@@ -92,14 +102,29 @@ sub-sample columns consult neighbouring samples clipped to the visible window.
 All-gap columns draw nothing. Partially missing columns retain known extrema;
 subcolumn gaps can disappear at overview scale.
 
-Flow uses fixed −60…+60 scaling and every known column includes the zero dot row.
-The `0 ┤` caption and sparse muted zero-row ticks identify the axis. Braille has
-one foreground per terminal cell: a tick tints the whole cell it shares with
-flow. Pressure draws its min/max span with fixed 4…14 bounds; it does not fill
-down to the lower bound. Event labels align with the flow plot's time columns;
-earlier labels win collisions at overview density, and zoom exposes more labels.
-Mask-off gets a muted label when space permits. The one-row whole-night strip
-shows the current bracket and leaves a break for mask-off.
+Flow uses fixed −40…+40 L/min scaling and every known column includes the zero
+dot row. The `0 ┤` caption and sparse muted ticks identify the axis. Braille has
+one foreground per terminal cell: a tick tints the cell it shares with flow.
+Pressure is a spike-local automatic magnitude-scale experiment: scan only known
+samples in the visible range, pad min/max by 0.5 cmH₂O, and round the lower bound
+down and upper bound up to whole cmH₂O. Axis labels show those computed bounds.
+All-missing pressure reports no known samples; no fixed fallback is invented.
+Pressure draws min/max spans rather than filling down to the lower bound.
+
+The Events heading counts visible supplied OA, CA, H and FL labels, including
+ranges crossing either window edge. These counts imply no clinical interpretation.
+Events are processed in time order. A label is placed at its start column only
+if it fits before the next event and clears the previous label/marker, leaving
+at least one blank cell between labels. Otherwise `▾` occupies its start column.
+Coincident markers merge with error above warning above muted. Events already
+in progress at the left edge use column zero. Mask-off is named in the heading.
+
+The overview is a second, one-row `StudyWaveform` in magnitude mode over the
+whole night: absolute flow, fixed 0…40. Absolute values are computed lazily during
+reduction, without copying the night. A bracket overlays the window endpoints;
+subcell windows use a single vertical marker. Only bracket glyphs overlay the
+waveform; no row of spaces masks it. A separate marker-only event row sits below
+it. Missing samples remain a break, subject to the same dot-column resolution.
 
 HistoryChart admission allows 16,384 samples. Comparison constructs a series only
 from the visible range, taking every Nth sample when necessary, where
@@ -107,24 +132,34 @@ N = ceil(visible count / 16,384). The title reports N; 2m and 30s retain all
 samples. The stride selects observations, not extrema, so narrow spikes can be
 lost. Timestamps retain their original 40 ms positions relative to window start;
 `nil` stays missing. No extrapolated endpoint is appended. Both plots use fixed
-−60…+60 bounds. HistoryChart's own drawing-work/allocation rejection remains
+−40…+40 bounds. HistoryChart's own drawing-work/allocation rejection remains
 visible, rather than being hidden by a fallback. Side-by-side panels have their
 own native layout, so their plot widths may differ slightly due to axis captions.
 
-## Verification handoff
+## Evidence
 
-The coordinator reports that the initial spike builds cleanly in release and
-single-frame captures and the shared renderer work. The first sequence version
-timed out at frame 2 because the study had no native focus region. The subsequent
-focus, short-window clock and zoom-center corrections require coordinator runtime
-verification. Parser checks and the documentation gate pass. All spike files
-typecheck against the existing release modules. A supplementary domain smoke
-check passes the requested zoom ranges, seconds labels, quarter-window pan and
-center recovery after session-edge clamping; it does not exercise native input.
+The coordinator's pre-round-2 renders establish that single-frame captures and
+the shared renderer work. The retained decision records real pan/zoom captures
+with native key events and readable breaths/zero crossings in btop and light at
+30s and 2m. They also exposed event collisions, an uninformative overview and
+pressure ripple hidden by fixed 4–14 scaling. Those observations motivated this
+round; they do not verify its new rendering.
 
-Earlier sandbox build attempts stopped at SwiftPM sandbox setup; the rules gate
-verified all 35 vendored file hashes, then failed on a denied module-cache write.
-The coordinator must build the sequence changes, inspect APNG/GIF and still
-previews, and exercise keys, resize and terminal restoration. Hosted animation
-playback does not prove real terminal input or appearance. No public library
-behavior or proposal contract is changed.
+All round-2 spike files typecheck against the existing release modules.
+Supplementary implementer checks pass label spacing, coincident-marker severity,
+pressure padding/all-missing ranges and deterministic cluster-window selection.
+The documentation gate reports zero findings, and `git diff --check` passes.
+These checks are not independent acceptance tests or rendered evidence.
+
+Round-2 event placement, marker merging, counts, absolute-flow overview, ±40 flow,
+automatic pressure bounds and the events sequence remain visually unverified.
+No new APNG/GIF, real terminal, resize, runtime cost, memory or cross-platform
+measurement is claimed. Waveform is standalone: all prototype drawing and layout
+remain in this spike, with no shared implementation with HistoryChart. Compare
+continues to call only public HistoryChart APIs.
+
+Earlier sandbox builds stopped at SwiftPM sandbox setup. The coordinator must
+build this revision, inspect its themes/windows/compare and events sequence, then
+exercise keys, resize and terminal restoration. Hosted playback does not prove
+emulator appearance or terminal timing. No public library behavior or proposal
+contract is changed.
