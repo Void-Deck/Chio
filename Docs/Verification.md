@@ -1687,10 +1687,14 @@ and three measured fresh sessions per scene/allocation; small allocations measur
 the compact summary. Fixture I/O is excluded. These measurements replace the
 spike's separate preparation/drawing/raster timings and do not measure SSH latency.
 Use `--detail` and `--source` to choose retained input and presentation.
-`Scripts/maps/render-snapshot.py` converts `--snapshot-json` exports into
+`Scripts/docs/render-raster.py` converts `--snapshot-json` exports into
 inspection previews with Pillow and explicit text/braille fonts. Its default
 fonts are macOS paths; supply `--font` and `--symbol-font` elsewhere. It is an
-optional capture tool, not a Swift package or CI dependency.
+optional capture tool, not a Swift package or CI dependency. The same renderer
+accepts frame documents with positive `delayMS` values and equally sized `cells`
+rasters. Multiple frames produce APNG with a `.png` suffix or animated GIF with
+`.gif`; GIF quantizes colors. These animations retain hosted raster evidence,
+not emulator appearance or terminal timing evidence.
 
 Shape changes additionally compare land and water fills without labels, preserve
 holes and seam behavior, and exercise unsafe-candidate/work-budget fallback.

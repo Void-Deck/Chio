@@ -237,6 +237,7 @@ in Releases; avoid duplicating full contracts across documents.
 | Topic | Status and responsibility |
 | --- | --- |
 | [Dot matrix display](Decisions/DotMatrix.md) | Accepted public RGB/intensity frames, inherited dot style and passive presentation |
+| [Waveform](Decisions/Waveform.md) | Proposal: dense fixed-rate signals with a min/max envelope, gaps and event bands; not accepted |
 | <a id="theme"></a>[Styles and native control styling](Decisions/Themes.md) | Accepted |
 | <a id="compact-instrumentation"></a><a id="duration-presentation-and-example-owned-timekeeping"></a>[Compact instrumentation and duration display](Decisions/Instrumentation.md) | Accepted instrumentation and high-contrast target dials; tile deferred |
 | <a id="searchable-selection"></a><a id="searchable-multiple-choice"></a>[Searchable selection and membership](Decisions/SearchableSelection.md) | Accepted |

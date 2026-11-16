@@ -74,6 +74,15 @@ checks do not qualify native macOS or Linux execution. Fresh applicable gates an
 separate review remain required before PR readiness; this rollout does not imply
 merge, default-branch adoption or a Chio release.
 
+## Proposed: waveform view
+
+The user approved drafting a waveform contract and a visual mock-up on
+2026-11-16. The consumer is Pneuma, which records CPAP blower flow and
+pressure at 25 Hz. The [waveform proposal](Decisions/Waveform.md) owns the draft
+contract and its open questions. No code, public API or example exists yet.
+Implementation waits for the user to accept the contract after reviewing the
+mock-up. Spec-derived tests from a separate author will accompany the build.
+
 ## Current slice: public dot matrix display
 
 The user approved promotion on 2026-10-23 after reviewing the isolated visual

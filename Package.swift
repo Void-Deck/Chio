@@ -58,6 +58,12 @@ let package = Package(
             exclude: ["README.md"],
             resources: [.copy("Fixtures")]
         ),
+        .executableTarget(
+            name: "WaveformStudy",
+            dependencies: ["Chio", .product(name: "SwiftTUI", package: "swift-tui")],
+            path: "Spikes/Waveform",
+            exclude: ["README.md"]
+        ),
         // Private POSIX bridge; no additional public library product.
         .target(name: "ChioFileSystem"),
         .target(
