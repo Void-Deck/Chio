@@ -107,6 +107,14 @@ struct MapRouteOverlaysForceUnwrapSpecTests {
         #expect(MapRouteOverlays.rejectionStatus(for: error) == "Route not shown: \(error) · x clear")
     }
 
+    @Test("C3: a non-validation error uses its default string interpolation")
+    func nonValidationRejectionStatus() {
+        struct ProbeError: Error, CustomStringConvertible {
+            var description: String { "probe" }
+        }
+        #expect(MapRouteOverlays.rejectionStatus(for: ProbeError()) == "Route not shown: probe · x clear")
+    }
+
     private func marker(id: String, latitude: Double) throws -> MapMarker {
         try MapMarker(id: id, coordinate: MapCoordinate(latitude: latitude, longitude: 103), title: id)
     }
