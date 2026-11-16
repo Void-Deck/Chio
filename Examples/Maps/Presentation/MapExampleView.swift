@@ -64,47 +64,28 @@ struct MapExampleView {
     private var source: MapSource { fixtures.source(for: scene, streetSource: streetSource) }
     private var baseOverlays: MapOverlays { openedPlace?.overlays ?? fixtures.overlays(for: scene) }
 
-    private enum OverlayComposition {
-        case validation(Result<MapOverlays, MapValidationError>)
-        case unexpectedFailure(any Error)
-    }
-
-    private var overlayComposition: OverlayComposition {
-        do {
-            return .validation(try validatedOverlayComposition())
-        } catch {
-            return .unexpectedFailure(error)
-        }
-    }
-
-    private func validatedOverlayComposition() throws -> Result<MapOverlays, MapValidationError> {
+    private var overlayComposition: Result<MapOverlays, any Error> {
         do {
             let base = baseOverlays
             switch routePhase {
             case .idle: return .success(base)
             case .ready(_, _, _, let route):
-                // Remove the authored synthetic guide while a routed path is visible.
-                return .success(try MapOverlays(markers: base.markers + route.markers, routes: route.routes))
-            case .start(let origin): return .success(try requestedStart(origin, base: base))
+                return .success(try MapRouteOverlays.routed(base: base, markers: route.markers, routes: route.routes))
+            case .start(let origin):
+                return .success(try MapRouteOverlays.requestedStart(at: origin, base: base))
             case .loading(let request), .noRoute(let request, _), .failed(let request, _):
-                return .success(try requestedStart(request.origin, base: base))
+                return .success(try MapRouteOverlays.requestedStart(at: request.origin, base: base))
             }
-        } catch let error as MapValidationError {
+        } catch {
             return .failure(error)
         }
     }
 
     private var overlays: MapOverlays {
         switch overlayComposition {
-        case .validation(.success(let composed)): composed
-        // Both failure paths are reported by routeStatus.
-        case .validation(.failure), .unexpectedFailure: baseOverlays
+        case .success(let composed): composed
+        case .failure: baseOverlays
         }
-    }
-
-    private func requestedStart(_ origin: MapCoordinate, base: MapOverlays) throws -> MapOverlays {
-        let marker = try MapMarker(id: "requested-route-start", coordinate: origin, title: "Requested start")
-        return try MapOverlays(markers: base.markers + [marker], routes: [])
     }
 
     private var mapStyle: ChioStyle {
@@ -144,16 +125,8 @@ struct MapExampleView {
     }
 
     private var routeStatus: String? {
-        switch overlayComposition {
-        case .unexpectedFailure(let error):
-            return "Route not shown: \(error) · x clear"
-        case .validation(.failure(let error)):
-            switch error {
-            case .budgetExceeded: return "Route not shown: overlay limit reached · x clear"
-            case .duplicateIdentity: return "Route not shown: duplicate overlay identity · x clear"
-            default: return "Route not shown: \(error) · x clear"
-            }
-        case .validation(.success): break
+        if case .failure(let error) = overlayComposition {
+            return MapRouteOverlays.rejectionStatus(for: error)
         }
         switch routePhase {
         case .idle: return nil
