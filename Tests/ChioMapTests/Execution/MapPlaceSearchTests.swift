@@ -179,7 +179,7 @@ private extension HeldPlaceProvider {
         completed += 1
         return try MapPlaceMatches(places: [
             MapPlace(coordinate: MapCoordinate(latitude: 1, longitude: 2), name: "\(text) response \(index)")
-        ], attributions: [MapPlaceMatches.Attribution(text: "Held fixtures", link: URL(string: "https://example.test/credits")!)])
+        ], attributions: [MapPlaceMatches.Attribution(text: "Held fixtures", link: (try #require(URL(string: "https://example.test/credits"))))])
     }
 }
 

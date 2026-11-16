@@ -22,7 +22,14 @@ struct AppearanceExampleView {
         case overview
     }
 
-    init(recipe: AppearanceRecipe = .chio, density: AppearanceDensity = .recipe) {
+    init(recipe: AppearanceRecipe = .chio, density: AppearanceDensity = .recipe) throws {
+        self.init(agents: try Agent.examples, recipe: recipe, density: density)
+    }
+
+    private let exampleAgents: [Agent]
+
+    init(agents: [Agent], recipe: AppearanceRecipe = .chio, density: AppearanceDensity = .recipe) {
+        exampleAgents = agents
         _recipe = State(wrappedValue: recipe)
         _density = State(wrappedValue: density)
     }
@@ -41,7 +48,7 @@ struct AppearanceExampleView {
 
     private var agents: some View {
         GroupBox("Agents") {
-            SearchableList(Agent.examples, selection: $selection, query: $query,
+            SearchableList(exampleAgents, selection: $selection, query: $query,
                            prompt: "Filter agents", searchText: \.name) { agent in
                 HStack(spacing: 1) {
                     Text(agent.name).fixedSize(horizontal: true, vertical: false)

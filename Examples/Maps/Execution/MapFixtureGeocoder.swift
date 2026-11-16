@@ -3,6 +3,10 @@ import Foundation
 
 /// Synthetic, deterministic examples; this provider never accesses the network.
 struct MapFixtureGeocoder {
+    static var attributionURL: URL {
+        get throws { try MapFixtureError.url("https://github.com/echoz/Chio") }
+    }
+
     private func places() throws -> [MapPlace] {
         try [
             MapPlace(coordinate: MapCoordinate(latitude: 1.2868, longitude: 103.8545),
@@ -18,7 +22,7 @@ struct MapFixtureGeocoder {
 
     private func matches(_ places: [MapPlace]) throws -> MapPlaceMatches {
         try MapPlaceMatches(places: places, attributions: [
-            MapPlaceMatches.Attribution(text: "Chio synthetic place fixtures", link: URL(string: "https://github.com/echoz/Chio")!)
+            MapPlaceMatches.Attribution(text: "Chio synthetic place fixtures", link: Self.attributionURL)
         ])
     }
 }

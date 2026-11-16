@@ -161,7 +161,7 @@ struct MapTileLoaderPersistenceTests {
     }
 
     private func source() throws -> OpenMapTilesSource {
-        let url = URL(string: "https://example.test")!
+        let url = (try #require(URL(string: "https://example.test")))
         return try OpenMapTilesSource(template: "https://example.test/{z}/{x}/{y}.pbf", zoomRange: 1...1,
                                       metadata: MapSourceMetadata(attribution: "Fixture", license: "Fixture",
                                                                   licenseURL: url, sourceURL: url, sourceRevision: "1"))

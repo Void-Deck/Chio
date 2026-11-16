@@ -326,7 +326,8 @@ public actor MapTileLoader {
                 return hasExpiredUptime || (diskCache != nil && hasInvalidWallTime)
             }
         }.map(\.key)
-        for tile in expired { cacheBytes -= cache.removeValue(forKey: tile)!.data.count }
+        for tile in expired { guard let removed = cache.removeValue(forKey: tile) else { continue }
+            cacheBytes -= removed.data.count }
     }
 
     /// A loader-session floor keeps a stalled/backward UTC clock from renewing
@@ -349,7 +350,8 @@ public actor MapTileLoader {
         if let prior = cache.removeValue(forKey: tile) { cacheBytes -= prior.data.count }
         while cache.count >= 64 || cacheBytes + data.count > 32 * 1_024 * 1_024 {
             guard let oldest = cache.min(by: { $0.value.access < $1.value.access })?.key else { break }
-            cacheBytes -= cache.removeValue(forKey: oldest)!.data.count
+            guard let removed = cache.removeValue(forKey: oldest) else { break }
+            cacheBytes -= removed.data.count
         }
         access &+= 1
         cache[tile] = CachedTile(data: data, retention: retention, access: access)

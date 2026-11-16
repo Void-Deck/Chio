@@ -43,7 +43,7 @@ struct OnlineMapFixturesTests {
                                             zoomRange: 0...14, metadata: metadata)
         let loader = MapTileLoader(source: source, transport: { url, _ in
             let parts = url.deletingPathExtension().pathComponents
-            let tile = try MapTileCoordinate(zoom: Int(parts[1])!, x: Int(parts[2])!, y: Int(parts[3])!)
+            let tile = try MapTileCoordinate(zoom: (try #require(Int(parts[1]))), x: (try #require(Int(parts[2]))), y: (try #require(Int(parts[3]))))
             calls.withLock { $0.append(tile) }
             guard let data = bytes[tile] else { throw MapTileLoader.LoadingError.httpStatus(404) }
             return MapHTTPClient.Response(data: data, headers: ["cache-control": "max-age=60"])
@@ -53,7 +53,7 @@ struct OnlineMapFixturesTests {
                                                              longitudeSpan: 0.03), viewport: viewport)
         let panRequest = try MapTileRequest(camera: MapCamera(center: MapCoordinate(latitude: 1.289, longitude: 103.8948),
                                                          longitudeSpan: 0.03), viewport: viewport)
-        let markers = MapFixtures.Scene.street.overlays.markers
+        let markers = (try MapFixtures.Scene.street.overlays).markers
         let merlion = try #require(markers.first { $0.id == "merlion" })
         let gardens = try #require(markers.first { $0.id == "gardens" })
         #expect(merlion.coordinate == (try MapCoordinate(latitude: 1.2868, longitude: 103.8545)))
@@ -142,7 +142,7 @@ struct OnlineMapFixturesTests {
                                             zoomRange: 12...12, metadata: metadata)
         let loader = MapTileLoader(source: source, transport: { url, _ in
             let parts = url.deletingPathExtension().pathComponents
-            let tile = try MapTileCoordinate(zoom: Int(parts[1])!, x: Int(parts[2])!, y: Int(parts[3])!)
+            let tile = try MapTileCoordinate(zoom: (try #require(Int(parts[1]))), x: (try #require(Int(parts[2]))), y: (try #require(Int(parts[3]))))
             guard let data = bytes[tile] else { throw MapTileLoader.LoadingError.httpStatus(404) }
             return MapHTTPClient.Response(data: data, headers: ["cache-control": "max-age=60"])
         })

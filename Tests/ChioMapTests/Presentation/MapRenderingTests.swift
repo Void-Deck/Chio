@@ -245,7 +245,7 @@ struct MapRenderingTests {
         for scene in MapFixtures.Scene.allCases {
             let dataset = fixtures.dataset(for: scene)
             let viewport = try MapViewport(columns: 36, rows: 18)
-            let prepared = try MapPreparation.prepare(dataset: dataset, camera: scene.camera, viewport: viewport)
+            let prepared = try MapPreparation.prepare(dataset: dataset, camera: (try scene.camera), viewport: viewport)
             let surface = try render(prepared, columns: viewport.columns, rows: viewport.rows, theme: .default)
             #expect(prepared.statistics.visibleFeatures > 0)
             #expect(prepared.statistics.preparedVertices <= MapLimits.preparedVertices)
@@ -257,12 +257,12 @@ struct MapRenderingTests {
     @Test("The real vector tile uses all shared detail levels and themes at wide and narrow allocations")
     func vectorTilePresentation() throws {
         let source = try MapFixtures.load().openFreeMapSource
-        #expect(source.coverage.contains(MapFixtures.Scene.street.camera.center))
+        #expect(source.coverage.contains((try MapFixtures.Scene.street.camera).center))
         for detail in MapDetail.allCases {
             for (width, height) in [(100, 30), (60, 20), (36, 18)] {
                 let viewport = try MapViewport(columns: width, rows: height)
                 let prepared = try MapPreparation.prepare(dataset: source.dataset,
-                    camera: MapFixtures.Scene.street.camera, viewport: viewport, detail: detail)
+                    camera: (try MapFixtures.Scene.street.camera), viewport: viewport, detail: detail)
                 #expect(prepared.statistics.visibleFeatures > 0)
                 for theme in [ChioStyle.default, .light, .btop] {
                     let surface = try render(prepared, columns: width, rows: height, theme: theme,
@@ -297,7 +297,7 @@ struct MapRenderingTests {
     @Test("Map UI credits and coverage follow the adapted source rather than the selected scene name")
     func adaptedSourcePresentation() throws {
         let loaded = try MapFixtures.load()
-        let swapped = MapFixtures(worldSource: loaded.streetSource, streetSource: loaded.worldSource,
+        let swapped = try MapFixtures(worldSource: loaded.streetSource, streetSource: loaded.worldSource,
                                   openFreeMapSource: loaded.openFreeMapSource)
         let view = MapExampleView(fixtures: swapped, scene: .world, appearance: .default)
             .environment(\.terminalSize, CellSize(width: 100, height: 30))

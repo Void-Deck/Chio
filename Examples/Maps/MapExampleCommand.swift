@@ -135,8 +135,8 @@ extension MapExampleCommand: AsyncParsableCommand {
             throw ValidationError("--router-endpoint requires an explicit complete OSRM /route/v1/profile URL.")
         }
         return try OSRMRouter(endpoint: endpoint, userAgent: "ChioMaps/0.1 (https://github.com/echoz/Chio)", attributions: [
-            MapAttribution(text: "OSRM", link: URL(string: "https://project-osrm.org/")!),
-            MapAttribution(text: "© OpenStreetMap contributors", link: URL(string: "https://www.openstreetmap.org/copyright")!)
+            MapAttribution(text: "OSRM", link: MapFixtureError.url("https://project-osrm.org/")),
+            MapAttribution(text: "© OpenStreetMap contributors", link: MapFixtureError.url("https://www.openstreetmap.org/copyright"))
         ])
     }
 

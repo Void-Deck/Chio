@@ -199,7 +199,7 @@ struct MapPlaceSearchInteractionTests {
         let replacementQuery = try MapPlaceQuery(text: "replacement")
         let replacement = try MapPlaceMatches(places: [MapPlace(coordinate: MapCoordinate(latitude: 40, longitude: 50),
             name: "Replacement place")], attributions: [MapPlaceMatches.Attribution(text: "Replacement credits",
-            link: URL(string: "https://example.test/replacement")!)])
+            link: (try #require(URL(string: "https://example.test/replacement"))))])
         let handoff = PlaceSearchPhaseHandoff(transition: .accept(.matches(.search(replacementQuery), replacement, response: UUID())),
                                             trigger: .activation)
         let frames = PlaceFrames()
@@ -355,7 +355,7 @@ struct MapPlaceSearchInteractionTests {
     @Test("Search and compact recovery preserve the online tile source and camera independently of geocoding")
     func onlineContinuity() async throws {
         let tiles = PlaceTileRecorder()
-        let endpoint = URL(string: "https://example.test")!
+        let endpoint = (try #require(URL(string: "https://example.test")))
         let source = try OpenMapTilesSource(template: "https://example.test/{z}/{x}/{y}.pbf", zoomRange: 1...14,
             metadata: MapSourceMetadata(attribution: "Controlled tile credits", license: "Fixture license",
                                         licenseURL: endpoint, sourceURL: endpoint, sourceRevision: "search-test"))
@@ -685,7 +685,7 @@ extension CompactCreditGeocoder: MapGeocodingProvider {
         try MapPlaceMatches(places: [MapPlace(coordinate: MapCoordinate(latitude: 1, longitude: 2),
                                              name: "Fixture place", detail: "Supporting detail for a compact place")],
                             attributions: (1...4).map { index in
-            try MapPlaceMatches.Attribution(text: "Credit \(index)", link: URL(string: "https://example.test/credit/\(index)")!)
+            try MapPlaceMatches.Attribution(text: "Credit \(index)", link: (try #require(URL(string: "https://example.test/credit/\(index)"))))
         })
     }
 }
@@ -741,7 +741,7 @@ extension EightResultGeocoder: MapGeocodingProvider {
         try MapPlaceMatches(places: (1...8).map { index in
             try MapPlace(coordinate: MapCoordinate(latitude: Double(index), longitude: 20 + Double(index)),
                          name: "Fixture \(index)", detail: "Detail for fixture \(index)")
-        }, attributions: [MapPlaceMatches.Attribution(text: "Eight result fixtures", link: URL(string: "https://example.test/credits")!)])
+        }, attributions: [MapPlaceMatches.Attribution(text: "Eight result fixtures", link: (try #require(URL(string: "https://example.test/credits"))))])
     }
 }
 

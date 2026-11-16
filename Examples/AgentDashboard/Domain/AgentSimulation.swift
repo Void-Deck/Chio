@@ -4,11 +4,11 @@ enum AgentSimulation {
         precondition(step.isFinite && step >= 0)
         return agents.map { agent in
             guard case .running(let progress) = agent.phase else { return agent }
-            let next = progress.fraction + step
-            let phase: Agent.Phase = next >= 1
-                ? .completed
-                : .running(progress: Agent.RunningProgress(fraction: next)!)
-            return agent.replacingPhase(phase)
+            // With a finite nonnegative step, an invalid fraction has reached completion.
+            guard let next = Agent.RunningProgress(fraction: progress.fraction + step) else {
+                return agent.replacingPhase(.completed)
+            }
+            return agent.replacingPhase(.running(progress: next))
         }
     }
 }

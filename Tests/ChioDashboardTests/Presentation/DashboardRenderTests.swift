@@ -6,8 +6,8 @@ import Testing
 struct DashboardRenderTests {
     @Test(arguments: [CellSize(width: 100, height: 30), CellSize(width: 100, height: 26),
                       CellSize(width: 100, height: 24), CellSize(width: 50, height: 30)])
-    func normalAndNarrowDashboard(_ size: CellSize) {
-        let view = DashboardView(shouldAnimate: false)
+    func normalAndNarrowDashboard(_ size: CellSize) throws {
+        let view = try DashboardView(shouldAnimate: false)
         let first = DefaultRenderer().render(view, proposal: ProposedSize(width: size.width, height: size.height), frameInstant: .zero)
         let second = DefaultRenderer().render(view, proposal: ProposedSize(width: size.width, height: size.height), frameInstant: .zero)
         #expect(first.rasterSurface == second.rasterSurface)
@@ -19,9 +19,9 @@ struct DashboardRenderTests {
     }
 
     @Test("Short terminals retain visible selection and essential keyboard help")
-    func shortDashboard() {
+    func shortDashboard() throws {
         let frame = DefaultRenderer().render(
-            DashboardView(shouldAnimate: false),
+            try DashboardView(shouldAnimate: false),
             proposal: ProposedSize(width: 36, height: 18), frameInstant: .zero
         )
         #expect(frame.rasterSurface.size == CellSize(width: 36, height: 18))
@@ -33,9 +33,9 @@ struct DashboardRenderTests {
     }
 
     @Test(arguments: [DashboardScenario.empty, .noMatches, .failed, .completed])
-    func deterministicScenarios(_ scenario: DashboardScenario) {
+    func deterministicScenarios(_ scenario: DashboardScenario) throws {
         let frame = DefaultRenderer().render(
-            DashboardView(scenario: scenario, shouldAnimate: false),
+            try DashboardView(scenario: scenario, shouldAnimate: false),
             proposal: ProposedSize(width: 100, height: 30), frameInstant: .zero
         )
         let text = frame.rasterSurface.lines.joined(separator: "\n")

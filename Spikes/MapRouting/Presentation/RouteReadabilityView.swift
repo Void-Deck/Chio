@@ -3,6 +3,7 @@ import SwiftTUI
 
 @MainActor
 struct RouteReadabilityView {
+    private let initialCamera: MapCamera
     let source: MapSource
     let overlays: MapOverlays
     let scene: RouteReadabilityScene
@@ -16,7 +17,7 @@ struct RouteReadabilityView {
     @Environment(\.requestTermination) private var requestTermination
 
     init(source: MapSource, overlays: MapOverlays, scene: RouteReadabilityScene,
-         style: ChioStyle, detail: MapDetail, fills: Bool, labels: Bool, mutedRoads: Bool, selection: String?) {
+         style: ChioStyle, detail: MapDetail, fills: Bool, labels: Bool, mutedRoads: Bool, selection: String?) throws {
         self.source = source
         self.overlays = overlays
         self.scene = scene
@@ -38,7 +39,8 @@ struct RouteReadabilityView {
             mapStyle = style
         }
         self.detail = detail
-        _camera = State(wrappedValue: scene.camera)
+        initialCamera = try scene.camera
+        _camera = State(wrappedValue: initialCamera)
         _selection = State(wrappedValue: selection)
         _showsFills = State(wrappedValue: fills)
         _showsLabels = State(wrappedValue: labels)
@@ -76,7 +78,7 @@ extension RouteReadabilityView: View {
             switch press.key {
             case .character("o"): showsFills.toggle()
             case .character("l"): showsLabels.toggle()
-            case .character("r"): camera = scene.camera; selection = nil
+            case .character("r"): camera = initialCamera; selection = nil
             case .character("q"): _ = requestTermination()
             default: return .ignored
             }

@@ -96,6 +96,8 @@ in the showcase after this slice is merged and deployed.
 
 ## Maps
 
+If route overlays exceed the overlay limit or duplicate an identity, the map retains the base overlays and shows the reason in the route status line.
+
 The map example composes Chio’s public `MapView` with offline world and street
 sources and a synthetic guide with named locations and an application-authored route:
 

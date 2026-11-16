@@ -54,7 +54,7 @@ struct MapExampleView {
         _routeOwner = State(wrappedValue: MapExampleRouting(provider: router))
         _searchOwner = State(wrappedValue: MapPlaceSearch(provider: geocoder, reverseProvider: reverseGeocoder))
         _scene = State(wrappedValue: scene)
-        _camera = State(wrappedValue: scene.camera)
+        _camera = State(wrappedValue: fixtures.camera(for: scene))
         _selection = State(wrappedValue: nil)
         _appearance = State(wrappedValue: appearance)
         _detail = State(wrappedValue: detail)
@@ -62,22 +62,49 @@ struct MapExampleView {
 
     private var theme: ChioStyle { appearance.theme }
     private var source: MapSource { fixtures.source(for: scene, streetSource: streetSource) }
-    private var overlays: MapOverlays {
-        let base = openedPlace?.overlays ?? scene.overlays
-        switch routePhase {
-        case .idle: return base
-        case .ready(_, _, _, let route):
-            // Remove the authored synthetic guide while a routed path is visible.
-            return try! MapOverlays(markers: base.markers + route.markers, routes: route.routes)
-        case .start(let origin): return requestedStart(origin, base: base)
-        case .loading(let request), .noRoute(let request, _), .failed(let request, _):
-            return requestedStart(request.origin, base: base)
+    private var baseOverlays: MapOverlays { openedPlace?.overlays ?? fixtures.overlays(for: scene) }
+
+    private enum OverlayComposition {
+        case validation(Result<MapOverlays, MapValidationError>)
+        case unexpectedFailure(any Error)
+    }
+
+    private var overlayComposition: OverlayComposition {
+        do {
+            return .validation(try validatedOverlayComposition())
+        } catch {
+            return .unexpectedFailure(error)
         }
     }
 
-    private func requestedStart(_ origin: MapCoordinate, base: MapOverlays) -> MapOverlays {
-        let marker = try! MapMarker(id: "requested-route-start", coordinate: origin, title: "Requested start")
-        return try! MapOverlays(markers: base.markers + [marker], routes: [])
+    private func validatedOverlayComposition() throws -> Result<MapOverlays, MapValidationError> {
+        do {
+            let base = baseOverlays
+            switch routePhase {
+            case .idle: return .success(base)
+            case .ready(_, _, _, let route):
+                // Remove the authored synthetic guide while a routed path is visible.
+                return .success(try MapOverlays(markers: base.markers + route.markers, routes: route.routes))
+            case .start(let origin): return .success(try requestedStart(origin, base: base))
+            case .loading(let request), .noRoute(let request, _), .failed(let request, _):
+                return .success(try requestedStart(request.origin, base: base))
+            }
+        } catch let error as MapValidationError {
+            return .failure(error)
+        }
+    }
+
+    private var overlays: MapOverlays {
+        switch overlayComposition {
+        case .validation(.success(let composed)): composed
+        // Both failure paths are reported by routeStatus.
+        case .validation(.failure), .unexpectedFailure: baseOverlays
+        }
+    }
+
+    private func requestedStart(_ origin: MapCoordinate, base: MapOverlays) throws -> MapOverlays {
+        let marker = try MapMarker(id: "requested-route-start", coordinate: origin, title: "Requested start")
+        return try MapOverlays(markers: base.markers + [marker], routes: [])
     }
 
     private var mapStyle: ChioStyle {
@@ -117,6 +144,17 @@ struct MapExampleView {
     }
 
     private var routeStatus: String? {
+        switch overlayComposition {
+        case .unexpectedFailure(let error):
+            return "Route not shown: \(error) · x clear"
+        case .validation(.failure(let error)):
+            switch error {
+            case .budgetExceeded: return "Route not shown: overlay limit reached · x clear"
+            case .duplicateIdentity: return "Route not shown: duplicate overlay identity · x clear"
+            default: return "Route not shown: \(error) · x clear"
+            }
+        case .validation(.success): break
+        }
         switch routePhase {
         case .idle: return nil
         case .start: return "Requested start set · pan, then 2 to route · x clear"
@@ -152,9 +190,9 @@ struct MapExampleView {
         case .character("g"):
             openedPlace = nil
             scene = .street
-            camera = MapRoutingDemo.camera
+            camera = fixtures.demoCamera
             showsLabels = false
-            submitRoute(MapRoutingDemo.request, owner: owner, phase: phase, selection: selection)
+            submitRoute(fixtures.demoRequest, owner: owner, phase: phase, selection: selection)
         case .character("1"):
             owner.cancel()
             phase.wrappedValue = .start(camera.center)
@@ -234,7 +272,7 @@ struct MapExampleView {
     private func openPlace(_ place: MapPlace, attributions: [MapPlaceMatches.Attribution], owner: MapPlaceSearch) {
         do {
             let replacementCamera = try MapCamera(center: place.coordinate, longitudeSpan: camera.longitudeSpan)
-            let replacementPlace = try MapOpenedPlace(place: place, attributions: attributions, overlays: scene.overlays)
+            let replacementPlace = try MapOpenedPlace(place: place, attributions: attributions, overlays: fixtures.overlays(for: scene))
             camera = replacementCamera
             openedPlace = replacementPlace
             selection = replacementPlace.marker.id
@@ -297,7 +335,7 @@ struct MapExampleView {
             routePhase = .idle
             openedPlace = nil
             scene = scene.next
-            camera = scene.camera
+            camera = fixtures.camera(for: scene)
             selection = nil
             activation = "Return opens the selected place"
         case .character("t"): appearance = appearance.next
@@ -306,7 +344,7 @@ struct MapExampleView {
         case .character("d"): detail = detail.next
         case .character("f"): fillsAreas.toggle()
         case .character("l"): showsLabels.toggle()
-        case .character("r"): camera = scene.camera
+        case .character("r"): camera = fixtures.camera(for: scene)
         case .character("e") where acquisition.usesTiles: retry &+= 1
         default: return .ignored
         }
@@ -410,9 +448,9 @@ extension MapExampleView: View {
             focusStorage.wrappedValue = .map
             if routeDemo {
                 scene = .street
-                camera = MapRoutingDemo.camera
+                camera = fixtures.demoCamera
                 showsLabels = false
-                submitRoute(MapRoutingDemo.request, owner: routingOwner, phase: routingStorage, selection: routeSelectionStorage)
+                submitRoute(fixtures.demoRequest, owner: routingOwner, phase: routingStorage, selection: routeSelectionStorage)
             }
         }
         .onDisappear { owner.close(); routingOwner.close() }

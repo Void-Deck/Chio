@@ -25,7 +25,7 @@ struct OnlineWorldMapTests {
         let loader = MapTileLoader(source: source, transport: { url, _ in
             calls.withLock { $0.append(url.path) }
             let parts = url.deletingPathExtension().pathComponents
-            let tile = try MapTileCoordinate(zoom: Int(parts[1])!, x: Int(parts[2])!, y: Int(parts[3])!)
+            let tile = try MapTileCoordinate(zoom: (try #require(Int(parts[1]))), x: (try #require(Int(parts[2]))), y: (try #require(Int(parts[3]))))
             guard let data = bytes[tile] else { throw MapTileLoader.LoadingError.httpStatus(404) }
             return MapHTTPClient.Response(data: data, headers: ["cache-control": "max-age=60"])
         })

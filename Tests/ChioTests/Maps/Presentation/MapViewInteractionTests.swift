@@ -217,7 +217,7 @@ struct MapViewInteractionTests {
             // After centering, the marker centre is in the bottom row. Click the
             // uppermost lit cell, outside the old one-cell marker hit region.
             let point = try #require(cells.first)
-            #expect(point.y < cells.map(\.y).max()!)
+            #expect(point.y < (try #require(cells.map(\.y).max())))
             session.send([
                 .mouse(MouseEvent(kind: .down(.primary), location: .cellFallback(point))),
                 .mouse(MouseEvent(kind: .up(.primary), location: .cellFallback(point))),
@@ -295,7 +295,7 @@ private struct MapConsumerFixtures {
     let overlays: MapOverlays
 
     init(markers: Bool) throws {
-        let url = URL(string: "https://example.com/offline-maps")!
+        let url = (try #require(URL(string: "https://example.com/offline-maps")))
         func source(_ title: String, feature: MapFeature) throws -> MapSource {
             try MapSource(dataset: MapDataset(features: [feature]),
                           metadata: MapSourceMetadata(attribution: "\(title) credit", license: "Fixture license",

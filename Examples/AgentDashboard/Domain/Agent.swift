@@ -17,7 +17,9 @@ struct Agent {
             self.fraction = fraction
         }
 
-        static let zero = RunningProgress(fraction: 0)!
+        private init() { fraction = 0 }
+
+        static let zero = RunningProgress()
     }
 
     enum Phase {
@@ -74,12 +76,19 @@ struct Agent {
         }
     }
 
-    static let examples: [Agent] = [
-        Agent(id: "build", name: "Build Agent", summary: "Compile · resolve · package", phase: .running(progress: RunningProgress(fraction: 0.78)!)),
-        Agent(id: "review", name: "Review Agent", summary: "Read · inspect · suggest", phase: .idle),
-        Agent(id: "test", name: "Test Agent", summary: "Check · verify · report", phase: .failed),
-        Agent(id: "docs", name: "Docs Agent", summary: "Write · explain · publish", phase: .completed),
-    ]
+    static var examples: [Agent] {
+        get throws {
+            guard let progress = RunningProgress(fraction: 0.78) else { throw FixtureError.invalidProgress }
+            return [
+                Agent(id: "build", name: "Build Agent", summary: "Compile · resolve · package", phase: .running(progress: progress)),
+                Agent(id: "review", name: "Review Agent", summary: "Read · inspect · suggest", phase: .idle),
+                Agent(id: "test", name: "Test Agent", summary: "Check · verify · report", phase: .failed),
+                Agent(id: "docs", name: "Docs Agent", summary: "Write · explain · publish", phase: .completed),
+            ]
+        }
+    }
+
+    private enum FixtureError: Error { case invalidProgress }
 }
 
 extension Agent: Identifiable {}

@@ -26,7 +26,7 @@ struct MapBudgetInteractionTests {
                                   ])))
         let source = try MapSource(dataset: MapDataset(features: buildings + [road]),
                                    metadata: loaded.streetSource.metadata, coverage: loaded.streetSource.coverage)
-        let fixtures = MapFixtures(worldSource: loaded.worldSource, streetSource: source,
+        let fixtures = try MapFixtures(worldSource: loaded.worldSource, streetSource: source,
                                    openFreeMapSource: loaded.openFreeMapSource)
         let frames = Frames()
         let surface = HostedRasterSurface(surfaceSize: CellSize(width: 100, height: 30), appearance: .fallback,

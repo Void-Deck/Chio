@@ -78,7 +78,7 @@ extension RouteReadabilityCommand: AsyncParsableCommand {
             MapMarker(id: "finish", coordinate: path.coordinates[path.coordinates.count - 1], title: "Finish"),
         ]
         let overlays = try MapOverlays(markers: markers, routes: [MapRoute(id: "trace", path: path)])
-        let content = RouteReadabilityView(source: source, overlays: overlays, scene: scene, style: theme.style,
+        let content = try RouteReadabilityView(source: source, overlays: overlays, scene: scene, style: theme.style,
                                           detail: detail == "minimal" ? .minimal : .source,
                                           fills: !outlines, labels: labels, mutedRoads: mutedRoads,
                                           selection: noMarkers ? nil : endpoint.selection)

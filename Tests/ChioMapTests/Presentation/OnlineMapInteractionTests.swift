@@ -23,7 +23,7 @@ struct OnlineMapInteractionTests {
 
     @Test("Explicit online source files decode a bounded checked configuration without provider discovery")
     func configuredSourceFile() throws {
-        let url = URL(string: "https://example.test")!
+        let url = (try #require(URL(string: "https://example.test")))
         let source = try OpenMapTilesSource(template: "https://example.test/{z}/{x}/{y}.pbf", zoomRange: 1...14,
             metadata: MapSourceMetadata(attribution: "Configured provider", license: "Fixture license",
                                         licenseURL: url, sourceURL: url, sourceRevision: "configured-test"))
@@ -258,7 +258,7 @@ private actor OnlineTransport {
     init(held: Bool, fails: Bool) throws {
         self.held = held
         self.fails = fails
-        let url = URL(string: "https://example.test")!
+        let url = (try #require(URL(string: "https://example.test")))
         source = try OpenMapTilesSource(template: "https://example.test/{z}/{x}/{y}.pbf", zoomRange: 1...14,
             metadata: MapSourceMetadata(attribution: "Controlled tiles", license: "Fixture license",
                                         licenseURL: url, sourceURL: url, sourceRevision: "test-revision"))
@@ -300,11 +300,15 @@ private actor OnlineTransport {
 }
 
 private struct OnlineTestApp {
+    let streetCamera: MapCamera?
+    let worldCamera: MapCamera?
     let transport: OnlineTransport?
     let startsWorld: Bool
     let overlays: MapOverlays
-    nonisolated init() { transport = nil; startsWorld = false; overlays = .empty }
-    nonisolated init(transport: OnlineTransport, startsWorld: Bool, overlays: MapOverlays) {
+    nonisolated init() { streetCamera = nil; worldCamera = nil; transport = nil; startsWorld = false; overlays = .empty }
+    nonisolated init(transport: OnlineTransport, startsWorld: Bool, overlays: MapOverlays) throws {
+        streetCamera = try MapFixtures.Scene.street.camera
+        worldCamera = try MapFixtures.Scene.world.camera
         self.transport = transport; self.startsWorld = startsWorld; self.overlays = overlays
     }
 }
@@ -312,8 +316,8 @@ private struct OnlineTestApp {
 extension OnlineTestApp: App {
     var body: some Scene {
         WindowGroup(id: "online-map-tests") {
-            if let transport {
-                OnlineTestView(transport: transport, startsWorld: startsWorld, overlays: overlays)
+            if let transport, let streetCamera, let worldCamera {
+                OnlineTestView(transport: transport, startsWorld: startsWorld, overlays: overlays, streetCamera: streetCamera, worldCamera: worldCamera)
             }
         }.exitOnKeys([])
     }
@@ -323,6 +327,8 @@ extension OnlineTestApp: App {
 private struct OnlineTestView {
     let transport: OnlineTransport
     let overlays: MapOverlays
+    private let streetCamera: MapCamera
+    private let worldCamera: MapCamera
     @State private var camera: MapCamera
     @State private var selection: String?
     @State private var detail: MapDetail = .minimal
@@ -331,10 +337,12 @@ private struct OnlineTestView {
     @State private var barrier = 0
     @State private var activation = "none"
 
-    init(transport: OnlineTransport, startsWorld: Bool, overlays: MapOverlays) {
+    init(transport: OnlineTransport, startsWorld: Bool, overlays: MapOverlays, streetCamera: MapCamera, worldCamera: MapCamera) {
+        self.streetCamera = streetCamera
+        self.worldCamera = worldCamera
         self.transport = transport
         self.overlays = overlays
-        _camera = State(wrappedValue: (startsWorld ? MapFixtures.Scene.world : .street).camera)
+        _camera = State(wrappedValue: startsWorld ? worldCamera : streetCamera)
         _selection = State(wrappedValue: nil)
     }
 }
@@ -359,7 +367,7 @@ extension OnlineTestView: View {
             case .character("d"): detail = .source
             case .character("t"): light.toggle()
             case .character("e"): retry += 1
-            case .character("w"): camera = camera.longitudeSpan >= 45 ? MapFixtures.Scene.street.camera : MapFixtures.Scene.world.camera
+            case .character("w"): camera = camera.longitudeSpan >= 45 ? streetCamera : worldCamera
             default: return .ignored
             }
             return .handled
@@ -378,9 +386,9 @@ private func withOnlineScene(
                                       onFrame: { frames.latest = $0 })
     let transport = try OnlineTransport(held: held, fails: fails)
     let overlays = markers ? try MapOverlays(markers: [
-        MapMarker(id: "place", coordinate: MapFixtures.Scene.street.camera.center, title: "Online place")
+        MapMarker(id: "place", coordinate: (try MapFixtures.Scene.street.camera).center, title: "Online place")
     ]) : .empty
-    let session = try HostedSceneSession(for: OnlineTestApp(transport: transport, startsWorld: startsWorld, overlays: overlays),
+    let session = try HostedSceneSession(for: try OnlineTestApp(transport: transport, startsWorld: startsWorld, overlays: overlays),
                                         sceneID: "online-map-tests", surface: surface)
     let run = Task { try await session.start() }
     do {

@@ -91,7 +91,7 @@ struct MapExampleRoutingTests {
 
     @Test("Bundled trace answers only its exact request and supplies no invented metrics")
     func fixture() async throws {
-        let response = try await MapFixtureRouter().route(MapRoutingDemo.request)
+        let response = try await MapFixtureRouter().route((try MapRoutingDemo.request))
         let route = try #require(response.route)
         #expect(route.path.coordinates.count == 84)
         #expect(route.path.coordinates.first?.latitude == 1.2930831)
@@ -144,7 +144,7 @@ extension HeldRoutingProvider: MapRoutingProvider {
         let outcome = await withCheckedContinuation { held[index] = $0 }
         active -= 1
         completed += 1
-        let credits = try [MapAttribution(text: "Response \(index)", link: URL(string: "https://example.test/credits")!)]
+        let credits = try [MapAttribution(text: "Response \(index)", link: (try #require(URL(string: "https://example.test/credits"))))]
         switch outcome {
         case .failure: throw FixtureFailure()
         case .noRoute: return try MapRouteResponse(route: nil, attributions: credits)

@@ -62,18 +62,18 @@ struct MapTileLoaderTests {
         let plan = try MapTilePlan(request: request, zoom: 14)
         #expect(plan.tiles.count == 4)
         let boundedLoader = MapTileLoader(source: try source(range: 14...14), transport: { url, _ in
-            MapHTTPClient.Response(data: visibleTransportationTile(url: url, features: 1_000), headers: [:])
+            MapHTTPClient.Response(data: try visibleTransportationTile(url: url, features: 1_000), headers: [:])
         })
         let accepted = try await boundedLoader.load(request)
         #expect(accepted.source.dataset.features.count == 4_000)
         #expect(Set(accepted.source.dataset.features.map(\.id)).count == 4_000)
         #expect(accepted.source.dataset.vertexCount == 8_000)
         let rejectedLoader = MapTileLoader(source: try source(range: 14...14), transport: { url, _ in
-            MapHTTPClient.Response(data: visibleTransportationTile(url: url, features: 1_001), headers: [:])
+            MapHTTPClient.Response(data: try visibleTransportationTile(url: url, features: 1_001), headers: [:])
         })
         await #expect(throws: MapValidationError.budgetExceeded) { try await rejectedLoader.load(request) }
         let fallback = MapTileLoader(source: try source(), transport: { url, _ in
-            MapHTTPClient.Response(data: visibleTransportationTile(url: url, features: Int(url.pathComponents[2]) == 14 ? 1_001 : 1), headers: [:])
+            MapHTTPClient.Response(data: try visibleTransportationTile(url: url, features: Int(url.pathComponents[2]) == 14 ? 1_001 : 1), headers: [:])
         })
         let lowered = try await fallback.load(request)
         #expect(lowered.requestedZoom == 14 && lowered.attainedZoom == 13)
@@ -99,11 +99,11 @@ struct MapTileLoaderTests {
         let request = try request(span: 0.001)
         let attempts = Mutex<Set<Int>>([])
         let loader = MapTileLoader(source: try source(), transport: { url, _ in
-            let zoom = Int(url.pathComponents[2])!
+            let zoom = (try #require(Int(url.pathComponents[2])))
             _ = attempts.withLock { $0.insert(zoom) }
             let vertices = zoom == 14 ? MapLimits.pathVertices + 1 : 2
             return MapHTTPClient.Response(
-                data: visibleTransportationTile(url: url, features: 1, vertices: vertices), headers: [:])
+                data: try visibleTransportationTile(url: url, features: 1, vertices: vertices), headers: [:])
         })
         let snapshot = try await loader.load(request)
         #expect(snapshot.requestedZoom == 14 && snapshot.attainedZoom == 13)
@@ -115,8 +115,8 @@ struct MapTileLoaderTests {
 
         let malformedAttempts = Mutex<Set<Int>>([])
         let malformed = MapTileLoader(source: try source(), transport: { url, _ in
-            _ = malformedAttempts.withLock { $0.insert(Int(url.pathComponents[2])!) }
-            return MapHTTPClient.Response(data: visibleTransportationTile(
+            _ = try malformedAttempts.withLock { $0.insert((try #require(Int(url.pathComponents[2])))) }
+            return MapHTTPClient.Response(data: try visibleTransportationTile(
                 url: url, features: 1, vertices: MapLimits.pathVertices + 1,
                 hasInvalidFinalCoordinate: true), headers: [:])
         })
@@ -130,8 +130,8 @@ struct MapTileLoaderTests {
     func decodedSchemaMismatchDoesNotRetry() async throws {
         let attempts = Mutex<Set<Int>>([])
         let loader = MapTileLoader(source: try source(), transport: { url, _ in
-            _ = attempts.withLock { $0.insert(Int(url.pathComponents[2])!) }
-            return MapHTTPClient.Response(data: visibleTransportationTile(
+            _ = try attempts.withLock { $0.insert((try #require(Int(url.pathComponents[2])))) }
+            return MapHTTPClient.Response(data: try visibleTransportationTile(
                 url: url, features: 1, vertices: MapLimits.pathVertices + 1, layerName: "water"), headers: [:])
         })
         await #expect(throws: OpenMapTilesAdapter.ValidationError.invalidGeometry) {
@@ -145,8 +145,8 @@ struct MapTileLoaderTests {
         for name in ["Bad\nname", String(repeating: "a", count: 257)] {
             let attempts = Mutex<Set<Int>>([])
             let loader = MapTileLoader(source: try source(), transport: { url, _ in
-                _ = attempts.withLock { $0.insert(Int(url.pathComponents[2])!) }
-                return MapHTTPClient.Response(data: visibleTransportationTile(
+                _ = try attempts.withLock { $0.insert((try #require(Int(url.pathComponents[2])))) }
+                return MapHTTPClient.Response(data: try visibleTransportationTile(
                     url: url, features: 1, vertices: MapLimits.pathVertices + 1, name: name), headers: [:])
             })
             await #expect(throws: MapValidationError.invalidIdentity) {
@@ -187,7 +187,7 @@ struct MapTileLoaderTests {
         let request = try request(span: 0.03)
         let wanted = MapTilePlan.desiredZoom(for: request, range: 1...14)
         let loader = MapTileLoader(source: try source(), transport: { url, _ in
-            let zoom = Int(url.pathComponents[2])!
+            let zoom = (try #require(Int(url.pathComponents[2])))
             attempts.withLock { $0.append(zoom) }
             if zoom == wanted { throw MapTileLoader.LoadingError.responseTooLarge }
             return MapHTTPClient.Response(data: Data(), headers: [:])
@@ -198,7 +198,7 @@ struct MapTileLoaderTests {
         #expect(Set(attempts.withLock { $0 }) == [wanted, wanted - 1])
         let exhausted = Mutex<Set<Int>>([])
         let failed = MapTileLoader(source: try source(), transport: { url, _ in
-            _ = exhausted.withLock { $0.insert(Int(url.pathComponents[2])!) }
+            _ = try exhausted.withLock { $0.insert((try #require(Int(url.pathComponents[2])))) }
             throw MapTileLoader.LoadingError.responseTooLarge
         })
         await #expect(throws: MapTileLoader.LoadingError.responseTooLarge) { try await failed.load(request) }
@@ -210,7 +210,7 @@ struct MapTileLoaderTests {
         for mode in 0..<2 {
             let zooms = Mutex<Set<Int>>([])
             let loader = MapTileLoader(source: try source(), transport: { url, _ in
-                _ = zooms.withLock { $0.insert(Int(url.pathComponents[2])!) }
+                _ = try zooms.withLock { $0.insert((try #require(Int(url.pathComponents[2])))) }
                 if mode == 0 { throw MapTileLoader.LoadingError.httpStatus(503) }
                 return MapHTTPClient.Response(data: Data([0xff]), headers: [:])
             })
@@ -326,8 +326,8 @@ struct MapTileLoaderTests {
     private func source(range: ClosedRange<Int> = 0...14) throws -> OpenMapTilesSource {
         try OpenMapTilesSource(template: "https://example.test/tiles/{z}/{x}/{y}.pbf", zoomRange: range,
                   metadata: MapSourceMetadata(attribution: "Fixture", license: "Fixture",
-                                              licenseURL: URL(string: "https://example.test/license")!,
-                                              sourceURL: URL(string: "https://example.test")!, sourceRevision: "fixture"))
+                                              licenseURL: (try #require(URL(string: "https://example.test/license"))),
+                                              sourceURL: (try #require(URL(string: "https://example.test"))), sourceRevision: "fixture"))
     }
     private func request(longitude: Double = 0, span: Double = 5) throws -> MapTileRequest {
         try MapTileRequest(camera: MapCamera(center: MapCoordinate(latitude: 0, longitude: longitude), longitudeSpan: span),
@@ -337,10 +337,10 @@ struct MapTileLoaderTests {
     /// requested viewport. Offscreen lines must not establish aggregate admission.
     private func visibleTransportationTile(url: URL, features: Int, vertices: Int = 2,
                                            hasInvalidFinalCoordinate: Bool = false,
-                                           layerName: String = "transportation", name: String = "") -> Data {
-        let zoom = Int(url.pathComponents[2])!
-        let x = Int(url.pathComponents[3])!
-        let y = Int(url.deletingPathExtension().lastPathComponent)!
+                                           layerName: String = "transportation", name: String = "") throws -> Data {
+        let zoom = (try #require(Int(url.pathComponents[2])))
+        let x = (try #require(Int(url.pathComponents[3])))
+        let y = (try #require(Int(url.deletingPathExtension().lastPathComponent)))
         return transportationTile(features: features, x: x < (1 << zoom) / 2 ? 4_095 : 0,
                                   y: y < (1 << zoom) / 2 ? 4_095 : 0, vertices: vertices,
                                   hasInvalidFinalCoordinate: hasInvalidFinalCoordinate,
@@ -390,7 +390,7 @@ struct MapTileLoaderTests {
             group.addTask(operation: operation)
             group.addTask { try await Task.sleep(for: .seconds(5)); throw Timeout.expired }
             defer { group.cancelAll() }
-            return try await group.next()!
+            return try #require(await group.next())
         }
     }
     private enum Timeout: Error { case expired }

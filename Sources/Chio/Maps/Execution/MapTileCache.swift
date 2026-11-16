@@ -139,7 +139,8 @@ public actor MapTileCache {
         while records.count > maximumEntries || bytes > maximumBytes {
             guard let tile = oldest(in: records) else { break }
             try removeFile(name(for: tile), directory: descriptor)
-            bytes -= records.removeValue(forKey: tile)!.bytes
+            guard let removed = records.removeValue(forKey: tile) else { break }
+            bytes -= removed.bytes
         }
         try Task.checkCancellation()
         let ownership = Ownership(directory: descriptor, lock: lock)
@@ -284,10 +285,14 @@ public actor MapTileCache {
         guard metadata.st_size >= 0, metadata.st_size <= limit else { return nil }
         var data = Data(count: Int(metadata.st_size))
         try data.withUnsafeMutableBytes { buffer in
+            guard let base = buffer.baseAddress else {
+                guard buffer.count == 0 else { throw CacheError.ioFailure(EFAULT) }
+                return
+            }
             var offset = 0
             while offset < buffer.count {
                 try Task.checkCancellation()
-                let count = readDescriptor(descriptor, buffer.baseAddress!.advanced(by: offset), min(65_536, buffer.count - offset))
+                let count = readDescriptor(descriptor, base.advanced(by: offset), min(65_536, buffer.count - offset))
                 if count < 0 { if errno == EINTR { continue }; throw CacheError.ioFailure(errno) }
                 if count == 0 { throw CacheError.ioFailure(EIO) }
                 offset += count
@@ -305,10 +310,14 @@ public actor MapTileCache {
         defer { if needsClose { _ = closeDescriptor(descriptor) } }
         do {
             try data.withUnsafeBytes { buffer in
+                guard let base = buffer.baseAddress else {
+                    guard buffer.count == 0 else { throw CacheError.ioFailure(EFAULT) }
+                    return
+                }
                 var offset = 0
                 while offset < buffer.count {
                     try Task.checkCancellation()
-                    let count = writeDescriptor(descriptor, buffer.baseAddress!.advanced(by: offset), min(65_536, buffer.count - offset))
+                    let count = writeDescriptor(descriptor, base.advanced(by: offset), min(65_536, buffer.count - offset))
                     if count < 0 { if errno == EINTR { continue }; throw CacheError.ioFailure(errno) }
                     guard count > 0 else { throw CacheError.ioFailure(EIO) }
                     offset += count

@@ -8,9 +8,9 @@ struct AppearanceExampleTests {
     @Test("Identical comparison content keeps native controls and narrow navigation hints",
           arguments: [CellSize(width: 100, height: 30), CellSize(width: 36, height: 18),
                       CellSize(width: 36, height: 64)], AppearanceRecipe.allCases)
-    func layout(size: CellSize, recipe: AppearanceRecipe) {
+    func layout(size: CellSize, recipe: AppearanceRecipe) throws {
         let frame = DefaultRenderer().render(
-            AppearanceExampleView(recipe: recipe).environment(\.terminalSize, size),
+            try AppearanceExampleView(recipe: recipe).environment(\.terminalSize, size),
             proposal: ProposedSize(width: size.width, height: size.height), frameInstant: .zero
         )
         let text = frame.rasterSurface.lines.joined(separator: "\n")
@@ -40,7 +40,7 @@ struct AppearanceExampleTests {
     func rowSpacing(recipe: AppearanceRecipe, density: AppearanceDensity) throws {
         let size = CellSize(width: 100, height: 30)
         let frame = DefaultRenderer().render(
-            AppearanceExampleView(recipe: recipe, density: density).environment(\.terminalSize, size),
+            try AppearanceExampleView(recipe: recipe, density: density).environment(\.terminalSize, size),
             proposal: ProposedSize(width: size.width, height: size.height), frameInstant: .zero
         )
         let lines = frame.rasterSurface.lines
@@ -186,10 +186,12 @@ struct AppearanceExampleTests {
 }
 
 private struct AppearanceTestApp {
+    private let agents: [Agent]?
     let recipe: AppearanceRecipe
     let observeInput: @MainActor @Sendable (KeyPress) -> Void
-    nonisolated init() { recipe = .chio; observeInput = { _ in } }
-    nonisolated init(recipe: AppearanceRecipe, observeInput: @escaping @MainActor @Sendable (KeyPress) -> Void) {
+    nonisolated init() { agents = nil; recipe = .chio; observeInput = { _ in } }
+    nonisolated init(recipe: AppearanceRecipe, observeInput: @escaping @MainActor @Sendable (KeyPress) -> Void) throws {
+        agents = try Agent.examples
         self.recipe = recipe
         self.observeInput = observeInput
     }
@@ -198,11 +200,13 @@ private struct AppearanceTestApp {
 extension AppearanceTestApp: App {
     var body: some Scene {
         WindowGroup(id: "appearance-tests") {
-            AppearanceExampleView(recipe: recipe)
+            if let agents {
+            AppearanceExampleView(agents: agents, recipe: recipe)
                 .onKeyPress { press in
                     observeInput(press)
                     return .ignored
                 }
+            }
         }.exitOnKeys([])
     }
 }
@@ -214,7 +218,7 @@ private func withAppearance(
 ) async throws {
     let recorder = HostedFrameRecorder()
     let surface = HostedRasterSurface(surfaceSize: size, appearance: .fallback, onFrame: { recorder.receive($0) })
-    let app = AppearanceTestApp(recipe: recipe, observeInput: { recorder.record("input dispatched: \($0)") })
+    let app = try AppearanceTestApp(recipe: recipe, observeInput: { recorder.record("input dispatched: \($0)") })
     let session = try HostedSceneSession(for: app, sceneID: "appearance-tests", surface: surface)
     let run = Task { try await session.start() }
     do {

@@ -326,7 +326,7 @@ struct MapTileCacheTests {
         defer { try? FileManager.default.removeItem(at: directory) }
         let oversizedURL = try #require(URL(string: "https://example.test/" + String(repeating: "x", count: 100_000)))
         let metadata = try MapSourceMetadata(attribution: "Fixture", license: "Fixture",
-            licenseURL: oversizedURL, sourceURL: URL(string: "https://example.test")!, sourceRevision: "fixture")
+            licenseURL: oversizedURL, sourceURL: (try #require(URL(string: "https://example.test"))), sourceRevision: "fixture")
         let oversizedSource = try OpenMapTilesSource(template: "https://example.test/{z}/{x}/{y}",
                                                       zoomRange: 0...14, metadata: metadata)
         #expect(throws: MapTileCache.CacheError.invalidConfiguration) {
@@ -453,7 +453,7 @@ struct MapTileCacheTests {
                         range: ClosedRange<Int> = 0...14, attribution: String = "Fixture") throws -> OpenMapTilesSource {
         try OpenMapTilesSource(template: template, zoomRange: range,
             metadata: MapSourceMetadata(attribution: attribution, license: "Fixture",
-                licenseURL: URL(string: "https://example.test/license")!, sourceURL: URL(string: "https://example.test")!,
+                licenseURL: (try #require(URL(string: "https://example.test/license"))), sourceURL: (try #require(URL(string: "https://example.test"))),
                 sourceRevision: revision))
     }
 

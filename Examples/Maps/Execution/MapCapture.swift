@@ -58,13 +58,14 @@ enum MapCapture {
                                                      detail: detail, streetSource: streetSource)
                     if sample > 0 { times.append(capture.firstFrameMS) }
                 }
+                guard let maximum = times.max() else { throw CaptureError.noMeasuredSamples }
                 results.append(Measurement(scene: scene.rawValue,
                                            source: scene.sourceIdentifier(streetSource: streetSource),
                                            detail: detail, width: width, height: height,
                                            cellAspect: cellAspect ?? 2,
                                            warmupSamples: 1, measuredSamples: times.count,
                                            firstFrameMedianMS: times.sorted()[times.count / 2],
-                                           firstFrameMaxMS: times.max()!))
+                                           firstFrameMaxMS: maximum))
             }
         }
         let encoder = JSONEncoder()
@@ -138,11 +139,13 @@ enum MapCapture {
     }
 
     private enum CaptureError: Error, CustomStringConvertible {
+        case noMeasuredSamples
         case frameTimeout
         case stoppedBeforeFrame
 
         var description: String {
             switch self {
+            case .noMeasuredSamples: "No measured map capture samples were recorded."
             case .frameTimeout: "Timed out after 10 seconds waiting for a completed hosted map frame."
             case .stoppedBeforeFrame: "The hosted map session stopped before delivering a completed frame."
             }

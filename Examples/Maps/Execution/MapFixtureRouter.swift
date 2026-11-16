@@ -3,14 +3,18 @@ import Foundation
 
 /// Offline demonstration only; the path was copied from connected OSM segments,
 /// not calculated or validated for driving, walking, direction or turn restrictions.
-struct MapFixtureRouter {}
+struct MapFixtureRouter {
+    static var attributionURL: URL {
+        get throws { try MapFixtureError.url("https://www.openstreetmap.org/copyright") }
+    }
+}
 
 extension MapFixtureRouter: MapRoutingProvider {
     func route(_ request: MapRouteRequest) async throws -> MapRouteResponse {
         try Task.checkCancellation()
         let credits = try [MapAttribution(text: "© OpenStreetMap contributors · synthetic road trace",
-                                         link: URL(string: "https://www.openstreetmap.org/copyright")!)]
-        guard request == MapRoutingDemo.request else {
+                                         link: Self.attributionURL)]
+        guard request == (try MapRoutingDemo.request) else {
             return try MapRouteResponse(route: nil, attributions: credits)
         }
         guard let url = Bundle.module.url(forResource: "road-trace", withExtension: "json", subdirectory: "Fixtures") else {

@@ -27,7 +27,7 @@ struct MapHTTPClientTests {
             for policy in policies {
                 for mime in policy.accepted {
                     let response = try await bounded("accept \(mime)") {
-                        try await MapHTTPClient.fetch(server.url("/policy?mime=\(mime)&bytes=0"), resource: policy.resource)
+                        try await MapHTTPClient.fetch(try server.url("/policy?mime=\(mime)&bytes=0"), resource: policy.resource)
                     }
                     #expect(response.data.isEmpty)
                     #expect(response.headers["x-observed-accept"] == policy.accept)
@@ -36,17 +36,17 @@ struct MapHTTPClientTests {
                 for mime in policy.rejected {
                     await #expect(throws: MapTileLoader.LoadingError.unexpectedContentType) {
                         try await bounded("reject \(mime)") {
-                            try await MapHTTPClient.fetch(server.url("/policy?mime=\(mime)&bytes=0"), resource: policy.resource)
+                            try await MapHTTPClient.fetch(try server.url("/policy?mime=\(mime)&bytes=0"), resource: policy.resource)
                         }
                     }
                 }
                 let exact = try await bounded("exact resource byte limit") {
-                    try await MapHTTPClient.fetch(server.url("/policy?mime=\(policy.accepted[0])&bytes=\(policy.limit)"), resource: policy.resource)
+                    try await MapHTTPClient.fetch(try server.url("/policy?mime=\(policy.accepted[0])&bytes=\(policy.limit)"), resource: policy.resource)
                 }
                 #expect(exact.data.count == policy.limit)
                 await #expect(throws: MapTileLoader.LoadingError.responseTooLarge) {
                     try await bounded("over resource byte limit") {
-                        try await MapHTTPClient.fetch(server.url("/policy?mime=\(policy.accepted[0])&bytes=\(policy.limit + 1)"), resource: policy.resource)
+                        try await MapHTTPClient.fetch(try server.url("/policy?mime=\(policy.accepted[0])&bytes=\(policy.limit + 1)"), resource: policy.resource)
                     }
                 }
             }
@@ -58,7 +58,7 @@ struct MapHTTPClientTests {
         try await withServer { server in
             for (status, body) in [(200, #"{"code":"Ok"}"#), (400, #"{"code":"NoRoute"}"#)] {
                 let response = try await bounded("routing accepted status and body") {
-                    try await MapHTTPClient.fetchResponse(server.url("/routing-response?status=\(status)"),
+                    try await MapHTTPClient.fetchResponse(try server.url("/routing-response?status=\(status)"),
                         resource: .routing, userAgent: "Chio Routing Tests", timeout: 10)
                 }
                 #expect(response.statusCode == status)
@@ -69,7 +69,7 @@ struct MapHTTPClientTests {
             for status in [201, 404, 429, 500] {
                 do {
                     _ = try await bounded("routing rejected status") {
-                        try await MapHTTPClient.fetchResponse(server.url("/routing-response?status=\(status)"),
+                        try await MapHTTPClient.fetchResponse(try server.url("/routing-response?status=\(status)"),
                             resource: .routing, userAgent: "Tests", timeout: 10)
                     }
                     Issue.record("Routing accepted HTTP \(status)")
@@ -78,7 +78,7 @@ struct MapHTTPClientTests {
                     #expect(retryAfter == "30")
                 }
             }
-            let rejectedURL = server.url("/policy?status=400&mime=text/html&bytes=2097153")
+            let rejectedURL = try server.url("/policy?status=400&mime=text/html&bytes=2097153")
             do {
                 _ = try await bounded("geocoding rejects routing status") {
                     try await MapHTTPClient.fetchResponse(rejectedURL, resource: .geocoding, userAgent: "Tests", timeout: 10)
@@ -104,7 +104,7 @@ struct MapHTTPClientTests {
             for status in [200, 400] {
                 for mime in ["application/json", "APPLICATION/JSON", "application/json;charset=utf-8"] {
                     let response = try await bounded("routing accepted JSON MIME") {
-                        try await MapHTTPClient.fetchResponse(server.url("/policy?status=\(status)&mime=\(mime)&bytes=0"),
+                        try await MapHTTPClient.fetchResponse(try server.url("/policy?status=\(status)&mime=\(mime)&bytes=0"),
                             resource: .routing, userAgent: "Tests", timeout: 10)
                     }
                     #expect(response.statusCode == status)
@@ -112,11 +112,11 @@ struct MapHTTPClientTests {
                 }
                 for mime in ["application/geo+json", "text/json", "text/html", "application/octet-stream",
                              "", "   ", "\"application/json\"", "application/json, text/html"] {
-                    var components = URLComponents(url: server.url("/policy"), resolvingAgainstBaseURL: false)!
+                    var components = (try #require(URLComponents(url: try server.url("/policy"), resolvingAgainstBaseURL: false)))
                     components.queryItems = [URLQueryItem(name: "status", value: String(status)),
                                              URLQueryItem(name: "mime", value: mime), URLQueryItem(name: "bytes", value: "0")]
                     components.percentEncodedQuery = components.percentEncodedQuery?.replacingOccurrences(of: "+", with: "%2B")
-                    let url = components.url!
+                    let url = (try #require(components.url))
                     do {
                         _ = try await bounded("routing rejected JSON MIME") {
                             try await MapHTTPClient.fetchResponse(url, resource: .routing, userAgent: "Tests", timeout: 10)
@@ -126,13 +126,13 @@ struct MapHTTPClientTests {
                 }
                 do {
                     _ = try await bounded("routing requires explicit MIME") {
-                        try await MapHTTPClient.fetchResponse(server.url("/policy.json?status=\(status)&bytes=0"),
+                        try await MapHTTPClient.fetchResponse(try server.url("/policy.json?status=\(status)&bytes=0"),
                             resource: .routing, userAgent: "Tests", timeout: 10)
                     }
                     Issue.record("Routing accepted inferred JSON MIME without Content-Type")
                 } catch MapHTTPClient.Failure.unexpectedContentType { }
                 let exact = try await bounded("routing exact byte limit") {
-                    try await MapHTTPClient.fetchResponse(server.url("/policy?status=\(status)&mime=application/json&bytes=2097152"),
+                    try await MapHTTPClient.fetchResponse(try server.url("/policy?status=\(status)&mime=application/json&bytes=2097152"),
                         resource: .routing, userAgent: "Tests", timeout: 10)
                 }
                 #expect(exact.statusCode == status)
@@ -142,7 +142,7 @@ struct MapHTTPClientTests {
                     let acknowledgments = Mutex(0)
                     do {
                         _ = try await bounded("routing decompressed byte overflow") {
-                            try await MapHTTPClient.fetchResponse(server.url(path), resource: .routing, userAgent: "Tests", timeout: 10,
+                            try await MapHTTPClient.fetchResponse(try server.url(path), resource: .routing, userAgent: "Tests", timeout: 10,
                                 onTerminalAcknowledgement: { acknowledgments.withLock { $0 += 1 } })
                         }
                         Issue.record("Routing admitted oversized HTTP \(status) data")
@@ -159,7 +159,7 @@ struct MapHTTPClientTests {
             let acknowledgments = Mutex(0)
             do {
                 _ = try await bounded("routing HTTP 400 body deadline") {
-                    try await MapHTTPClient.fetchResponse(server.url("/routing-deadline"), resource: .routing,
+                    try await MapHTTPClient.fetchResponse(try server.url("/routing-deadline"), resource: .routing,
                         userAgent: "Tests", timeout: 0.25,
                         onTerminalAcknowledgement: { acknowledgments.withLock { $0 += 1 } })
                 }
@@ -173,7 +173,7 @@ struct MapHTTPClientTests {
     func osrmLoopbackRoute() async throws {
         try await withServer { server in
             let attributions = try routingAttributions()
-            let router = try OSRMRouter(endpoint: server.url("/osrm-ok/route/v1/driving"),
+            let router = try OSRMRouter(endpoint: try server.url("/osrm-ok/route/v1/driving"),
                                         userAgent: "Chio Routing Tests", attributions: attributions)
             let response = try await bounded("OSRM route request and response") { try await router.route(routingRequest()) }
             let route = try #require(response.route)
@@ -183,7 +183,7 @@ struct MapHTTPClientTests {
             #expect(route.durationSeconds == 321.25)
             #expect(response.attributions.map(\.text) == ["Fixture routing service", "Fixture road data"])
             #expect(response.attributions.map { $0.link.absoluteString } == ["https://example.test/router", "https://example.test/roads"])
-            let observed = try await MapHTTPClient.fetch(server.url("/osrm-observed"), resource: .catalog)
+            let observed = try await MapHTTPClient.fetch(try server.url("/osrm-observed"), resource: .catalog)
             let requests = try JSONDecoder().decode([[String: String]].self, from: observed.data)
             #expect(requests == [[
                 "path": "/osrm-ok/route/v1/driving/103.75,1.25;103.85,1.35",
@@ -198,25 +198,25 @@ struct MapHTTPClientTests {
         try await withServer { server in
             let attributions = try routingAttributions()
             let request = try routingRequest()
-            let noRoute = try OSRMRouter(endpoint: server.url("/osrm-no-route/route/v1/driving"),
+            let noRoute = try OSRMRouter(endpoint: try server.url("/osrm-no-route/route/v1/driving"),
                                          userAgent: "Chio Routing Tests", attributions: attributions)
             let empty = try await bounded("OSRM HTTP 400 no route") { try await noRoute.route(request) }
             #expect(empty.route == nil)
             #expect(empty.attributions == attributions)
-            let noSegment = try OSRMRouter(endpoint: server.url("/osrm-no-segment/route/v1/driving"),
+            let noSegment = try OSRMRouter(endpoint: try server.url("/osrm-no-segment/route/v1/driving"),
                                            userAgent: "Chio Routing Tests", attributions: attributions)
             do {
                 _ = try await bounded("OSRM cannot snap") { try await noSegment.route(request) }
                 Issue.record("OSRM NoSegment became a route response")
             } catch OSRMRouter.RouteError.cannotSnap { }
-            let invalidQuery = try OSRMRouter(endpoint: server.url("/osrm-invalid-query/route/v1/driving"),
+            let invalidQuery = try OSRMRouter(endpoint: try server.url("/osrm-invalid-query/route/v1/driving"),
                                               userAgent: "Chio Routing Tests", attributions: attributions)
             do {
                 _ = try await bounded("OSRM rejected request") { try await invalidQuery.route(request) }
                 Issue.record("OSRM InvalidQuery became a route response")
             } catch OSRMRouter.RouteError.rejectedRequest(let code) { #expect(code == "InvalidQuery") }
             for mode in ["malformed", "bad-geometry"] {
-                let router = try OSRMRouter(endpoint: server.url("/osrm-\(mode)/route/v1/driving"),
+                let router = try OSRMRouter(endpoint: try server.url("/osrm-\(mode)/route/v1/driving"),
                                             userAgent: "Chio Routing Tests", attributions: attributions)
                 do {
                     _ = try await bounded("OSRM invalid data") { try await router.route(request) }
@@ -224,14 +224,14 @@ struct MapHTTPClientTests {
                 } catch OSRMRouter.RouteError.invalidData { }
             }
             for mode in ["wrong-status", "ok-error"] {
-                let router = try OSRMRouter(endpoint: server.url("/osrm-\(mode)/route/v1/driving"),
+                let router = try OSRMRouter(endpoint: try server.url("/osrm-\(mode)/route/v1/driving"),
                                             userAgent: "Chio Routing Tests", attributions: attributions)
                 do {
                     _ = try await bounded("OSRM inconsistent status and code") { try await router.route(request) }
                     Issue.record("OSRM inconsistent status and code became a route response")
                 } catch OSRMRouter.RouteError.invalidResponse { }
             }
-            let throttled = try OSRMRouter(endpoint: server.url("/osrm-throttled/route/v1/driving"),
+            let throttled = try OSRMRouter(endpoint: try server.url("/osrm-throttled/route/v1/driving"),
                                            userAgent: "Chio Routing Tests", attributions: attributions)
             do {
                 _ = try await bounded("OSRM HTTP rejection metadata") { try await throttled.route(request) }
@@ -248,13 +248,13 @@ struct MapHTTPClientTests {
         try await withServer { server in
             let attributions = try routingAttributions()
             let request = try routingRequest()
-            let slow = try OSRMRouter(endpoint: server.url("/osrm-slow/route/v1/driving"),
+            let slow = try OSRMRouter(endpoint: try server.url("/osrm-slow/route/v1/driving"),
                                       userAgent: "Chio Routing Tests", attributions: attributions)
             let pending = Task { try await slow.route(request) }
             defer { pending.cancel() }
             try await bounded("OSRM transfer entered") {
                 while true {
-                    let response = try await MapHTTPClient.fetch(server.url("/started"), resource: .catalog)
+                    let response = try await MapHTTPClient.fetch(try server.url("/started"), resource: .catalog)
                     if String(decoding: response.data, as: UTF8.self) == "true" { return }
                     try await Task.sleep(for: .milliseconds(10))
                 }
@@ -264,7 +264,7 @@ struct MapHTTPClientTests {
                 _ = try await bounded("OSRM cancellation acknowledgement") { try await pending.value }
                 Issue.record("Cancelled OSRM request succeeded")
             } catch OSRMRouter.RouteError.cancelled { }
-            let deadline = try OSRMRouter(endpoint: server.url("/osrm-deadline/route/v1/driving"),
+            let deadline = try OSRMRouter(endpoint: try server.url("/osrm-deadline/route/v1/driving"),
                                           userAgent: "Chio Routing Tests", attributions: attributions)
             do {
                 _ = try await bounded("OSRM public ten-second deadline", timeout: .seconds(11)) { try await deadline.route(request) }
@@ -279,14 +279,14 @@ struct MapHTTPClientTests {
     }
 
     private func routingAttributions() throws -> [MapAttribution] {
-        try [MapAttribution(text: "Fixture routing service", link: URL(string: "https://example.test/router")!),
-             MapAttribution(text: "Fixture road data", link: URL(string: "https://example.test/roads")!)]
+        try [MapAttribution(text: "Fixture routing service", link: (try #require(URL(string: "https://example.test/router")))),
+             MapAttribution(text: "Fixture road data", link: (try #require(URL(string: "https://example.test/roads"))))]
     }
 
     @Test("Photon sends submitted text and identity, preserves order, and distinguishes empty matches")
     func photonSearch() async throws {
         try await withServer { server in
-            let geocoder = try PhotonGeocoder(endpoint: server.url("/photon"), userAgent: "Chio Tests/1.0")
+            let geocoder = try PhotonGeocoder(endpoint: try server.url("/photon"), userAgent: "Chio Tests/1.0")
             let query = try MapPlaceQuery(text: "Café + quay & marina", limit: 2)
             let matches = try await bounded("Photon query and Unicode decoding") { try await geocoder.search(query) }
             #expect(matches.places.map(\.name) == ["Café + quay & marina", "Second"])
@@ -297,7 +297,7 @@ struct MapHTTPClientTests {
             let empty = try await bounded("Photon no matches") { try await geocoder.search(MapPlaceQuery(text: "empty")) }
             #expect(empty.places.isEmpty)
             #expect(!empty.attributions.isEmpty)
-            let bad = try PhotonGeocoder(endpoint: server.url("/photon-invalid"), userAgent: "Chio Tests/1.0")
+            let bad = try PhotonGeocoder(endpoint: try server.url("/photon-invalid"), userAgent: "Chio Tests/1.0")
             do {
                 _ = try await bounded("Photon malformed JSON") { try await bad.search(query) }
                 Issue.record("Malformed JSON became successful matches")
@@ -314,7 +314,7 @@ struct MapHTTPClientTests {
     @Test("Photon reverse lookup sends only latitude, longitude and limit to its explicit path")
     func photonReverseLookup() async throws {
         try await withServer { server in
-            let provider = try PhotonReverseGeocoder(endpoint: server.url("/custom/reverse"), userAgent: "Chio Reverse Tests/1.0")
+            let provider = try PhotonReverseGeocoder(endpoint: try server.url("/custom/reverse"), userAgent: "Chio Reverse Tests/1.0")
             let query = try MapPlaceLookup(coordinate: MapCoordinate(latitude: 1.25, longitude: -73.5), limit: 3)
             let matches = try await bounded("Photon reverse wire coordinates") { try await provider.reverse(query) }
             #expect(matches.places.map(\.name) == ["Reverse", "Pole", "Reverse"])
@@ -333,7 +333,7 @@ struct MapHTTPClientTests {
             let empty = try await bounded("Photon reverse no matches") { try await provider.reverse(emptyQuery) }
             #expect(empty.places.isEmpty)
             #expect(empty.attributions.map { $0.link.absoluteString } == ["https://photon.komoot.io", "https://www.openstreetmap.org/copyright"])
-            let redirected = try PhotonReverseGeocoder(endpoint: server.url("/reverse-redirect"), userAgent: "Tests")
+            let redirected = try PhotonReverseGeocoder(endpoint: try server.url("/reverse-redirect"), userAgent: "Tests")
             let redirectMatches = try await bounded("Photon reverse same-origin redirect") { try await redirected.reverse(query) }
             #expect(redirectMatches.places.map(\.name) == ["Reverse", "Pole", "Reverse"])
             #expect(redirectMatches.places[0].detail == "lat=1.25;lon=-73.5;limit=3;keys=lat,limit,lon;ua=Tests")
@@ -351,30 +351,30 @@ struct MapHTTPClientTests {
         try await withServer { server in
             let query = try MapPlaceLookup(coordinate: MapCoordinate(latitude: 1, longitude: 103))
             for path in ["/photon-invalid", "/photon"] {
-                let provider = try PhotonReverseGeocoder(endpoint: server.url(path), userAgent: "Tests")
+                let provider = try PhotonReverseGeocoder(endpoint: try server.url(path), userAgent: "Tests")
                 do {
                     _ = try await bounded("reverse invalid or over-limit response") { try await provider.reverse(query) }
                     Issue.record("Malformed or requested-limit overflow became reverse matches")
                 } catch PhotonReverseGeocoder.LookupError.invalidData { }
             }
-            let missingMIME = try PhotonReverseGeocoder(endpoint: server.url("/photon-no-mime.json"), userAgent: "Tests")
+            let missingMIME = try PhotonReverseGeocoder(endpoint: try server.url("/photon-no-mime.json"), userAgent: "Tests")
             do { _ = try await missingMIME.reverse(query); Issue.record("Reverse lookup accepted missing MIME") }
             catch PhotonReverseGeocoder.LookupError.unexpectedContentType { }
             for path in ["/geocoding-stream", "/geocoding-gzip"] {
-                let provider = try PhotonReverseGeocoder(endpoint: server.url(path), userAgent: "Tests")
+                let provider = try PhotonReverseGeocoder(endpoint: try server.url(path), userAgent: "Tests")
                 do {
                     _ = try await bounded("reverse streamed or decompressed byte limit") { try await provider.reverse(query) }
                     Issue.record("Reverse lookup accepted oversized data")
                 } catch PhotonReverseGeocoder.LookupError.responseTooLarge { }
             }
             for path in ["/cross-host", "/scheme", "/loop"] {
-                let provider = try PhotonReverseGeocoder(endpoint: server.url(path), userAgent: "Tests")
+                let provider = try PhotonReverseGeocoder(endpoint: try server.url(path), userAgent: "Tests")
                 do {
                     _ = try await bounded("reverse forbidden redirect") { try await provider.reverse(query) }
                     Issue.record("Reverse lookup accepted forbidden redirect")
                 } catch PhotonReverseGeocoder.LookupError.rejectedRedirect { }
             }
-            let throttled = try PhotonReverseGeocoder(endpoint: server.url("/reverse-status"), userAgent: "Tests")
+            let throttled = try PhotonReverseGeocoder(endpoint: try server.url("/reverse-status"), userAgent: "Tests")
             do { _ = try await throttled.reverse(query); Issue.record("Reverse HTTP rejection became success") }
             catch PhotonReverseGeocoder.LookupError.httpStatus(let status, let retryAfter) {
                 #expect(status == 429)
@@ -387,12 +387,12 @@ struct MapHTTPClientTests {
     func photonReverseCancellationAndDeadline() async throws {
         try await withServer { server in
             let query = try MapPlaceLookup(coordinate: MapCoordinate(latitude: 1, longitude: 103))
-            let slow = try PhotonReverseGeocoder(endpoint: server.url("/photon-slow"), userAgent: "Tests")
+            let slow = try PhotonReverseGeocoder(endpoint: try server.url("/photon-slow"), userAgent: "Tests")
             let pending = Task { try await slow.reverse(query) }
             defer { pending.cancel() }
             try await bounded("reverse transfer started") {
                 while true {
-                    let response = try await MapHTTPClient.fetch(server.url("/started"), resource: .catalog)
+                    let response = try await MapHTTPClient.fetch(try server.url("/started"), resource: .catalog)
                     if String(decoding: response.data, as: UTF8.self) == "true" { return }
                     try await Task.sleep(for: .milliseconds(10))
                 }
@@ -400,7 +400,7 @@ struct MapHTTPClientTests {
             pending.cancel()
             do { _ = try await bounded("reverse cancellation acknowledgment") { try await pending.value }; Issue.record("Cancelled reverse lookup succeeded") }
             catch PhotonReverseGeocoder.LookupError.cancelled { }
-            let deadline = try PhotonReverseGeocoder(endpoint: server.url("/photon-deadline"), userAgent: "Tests")
+            let deadline = try PhotonReverseGeocoder(endpoint: try server.url("/photon-deadline"), userAgent: "Tests")
             do { _ = try await deadline.reverse(query); Issue.record("Reverse lookup exceeded its deadline") }
             catch PhotonReverseGeocoder.LookupError.deadlineExceeded { }
         }
@@ -410,10 +410,10 @@ struct MapHTTPClientTests {
     func geocodingTransport() async throws {
         try await withServer { server in
             for mime in ["application/json", "application/geo+json", "application/json;charset=utf-8"] {
-                var components = URLComponents(url: server.url("/policy"), resolvingAgainstBaseURL: false)!
+                var components = (try #require(URLComponents(url: try server.url("/policy"), resolvingAgainstBaseURL: false)))
                 components.queryItems = [URLQueryItem(name: "mime", value: mime), URLQueryItem(name: "bytes", value: "0")]
                 components.percentEncodedQuery = components.percentEncodedQuery?.replacingOccurrences(of: "+", with: "%2B")
-                let url = components.url!
+                let url = (try #require(components.url))
                 let response = try await bounded("geocoding MIME") {
                     try await MapHTTPClient.fetchResponse(url,
                                                          resource: .geocoding, userAgent: "Chio Search Tests", timeout: 10)
@@ -423,28 +423,28 @@ struct MapHTTPClientTests {
             }
             for path in ["/policy?bytes=0", "/photon-no-mime.json", "/policy?mime=text/json&bytes=0"] {
                 do {
-                    _ = try await MapHTTPClient.fetchResponse(server.url(path), resource: .geocoding,
+                    _ = try await MapHTTPClient.fetchResponse(try server.url(path), resource: .geocoding,
                                                               userAgent: "Tests", timeout: 10)
                     Issue.record("Invalid geocoding MIME accepted")
                 } catch MapHTTPClient.Failure.unexpectedContentType { }
             }
             for mime in ["", "   ", "\"application/json\"", "application/json, text/html"] {
-                var components = URLComponents(url: server.url("/policy"), resolvingAgainstBaseURL: false)!
+                var components = (try #require(URLComponents(url: try server.url("/policy"), resolvingAgainstBaseURL: false)))
                 components.queryItems = [URLQueryItem(name: "mime", value: mime), URLQueryItem(name: "bytes", value: "0")]
                 do {
-                    _ = try await MapHTTPClient.fetchResponse(components.url!, resource: .geocoding,
+                    _ = try await MapHTTPClient.fetchResponse((try #require(components.url)), resource: .geocoding,
                                                               userAgent: "Tests", timeout: 10)
                     Issue.record("Malformed explicit Content-Type accepted")
                 } catch MapHTTPClient.Failure.unexpectedContentType { }
             }
-            let exact = try await MapHTTPClient.fetchResponse(server.url("/policy?mime=application/json&bytes=524288"),
+            let exact = try await MapHTTPClient.fetchResponse(try server.url("/policy?mime=application/json&bytes=524288"),
                                                               resource: .geocoding, userAgent: "Tests", timeout: 10)
             #expect(exact.data.count == 524_288)
             for path in ["/policy?mime=application/json&bytes=524289", "/geocoding-stream", "/geocoding-gzip"] {
                 let acknowledgments = Mutex(0)
                 do {
                     _ = try await bounded("geocoding overflow") {
-                        try await MapHTTPClient.fetchResponse(server.url(path), resource: .geocoding, userAgent: "Tests", timeout: 10,
+                        try await MapHTTPClient.fetchResponse(try server.url(path), resource: .geocoding, userAgent: "Tests", timeout: 10,
                                                               onTerminalAcknowledgement: { acknowledgments.withLock { $0 += 1 } })
                     }
                     Issue.record("Oversized geocoding response accepted")
@@ -455,10 +455,10 @@ struct MapHTTPClientTests {
                                      ("Sunday, 06-Nov-94 08:49:37 GMT", "Sunday, 06-Nov-94 08:49:37 GMT"),
                                      ("Sun Nov  6 08:49:37 1994", "Sun Nov  6 08:49:37 1994"),
                                      ("banana", ""), ("-1", ""), ("", ""), (String(repeating: "1", count: 257), "")] {
-                var components = URLComponents(url: server.url("/photon-status"), resolvingAgainstBaseURL: false)!
+                var components = (try #require(URLComponents(url: try server.url("/photon-status"), resolvingAgainstBaseURL: false)))
                 components.queryItems = [URLQueryItem(name: "retry", value: hint)]
                 do {
-                    _ = try await MapHTTPClient.fetchResponse(components.url!, resource: .geocoding,
+                    _ = try await MapHTTPClient.fetchResponse((try #require(components.url)), resource: .geocoding,
                                                               userAgent: "Tests", timeout: 10)
                     Issue.record("HTTP 429 became success")
                 } catch MapHTTPClient.Failure.httpStatus(let status, let retryAfter) {
@@ -466,18 +466,18 @@ struct MapHTTPClientTests {
                     #expect(retryAfter == expected)
                 }
             }
-            let throttled = try PhotonGeocoder(endpoint: server.url("/photon-status"), userAgent: "Tests")
+            let throttled = try PhotonGeocoder(endpoint: try server.url("/photon-status"), userAgent: "Tests")
             do { _ = try await throttled.search(MapPlaceQuery(text: "test")); Issue.record("HTTP 429 search succeeded") }
             catch PhotonGeocoder.SearchError.httpStatus(let status, let retryAfter) {
                 #expect(status == 429)
                 #expect(retryAfter.isEmpty)
             }
-            let slow = try PhotonGeocoder(endpoint: server.url("/photon-slow"), userAgent: "Tests")
+            let slow = try PhotonGeocoder(endpoint: try server.url("/photon-slow"), userAgent: "Tests")
             let pending = Task { try await slow.search(MapPlaceQuery(text: "test")) }
             defer { pending.cancel() }
             try await bounded("geocoding request entered") {
                 while true {
-                    let response = try await MapHTTPClient.fetch(server.url("/started"), resource: .catalog)
+                    let response = try await MapHTTPClient.fetch(try server.url("/started"), resource: .catalog)
                     if String(decoding: response.data, as: UTF8.self) == "true" { return }
                     try await Task.sleep(for: .milliseconds(10))
                 }
@@ -494,27 +494,27 @@ struct MapHTTPClientTests {
             let acknowledgments = Mutex(0)
             do {
                 _ = try await bounded("whole redirect-chain deadline") {
-                    try await MapHTTPClient.fetchResponse(server.url("/delayed-redirect?hop=0"),
+                    try await MapHTTPClient.fetchResponse(try server.url("/delayed-redirect?hop=0"),
                         resource: .geocoding, userAgent: "Tests", timeout: 2,
                         onTerminalAcknowledgement: { acknowledgments.withLock { $0 += 1 } })
                 }
                 Issue.record("Redirects extended the transfer deadline")
             } catch let error as URLError { #expect(error.code == .timedOut) }
             #expect(acknowledgments.withLock { $0 } == 1)
-            let observed = try await MapHTTPClient.fetch(server.url("/redirect-hops"), resource: .catalog)
+            let observed = try await MapHTTPClient.fetch(try server.url("/redirect-hops"), resource: .catalog)
             let hops = try JSONDecoder().decode([Int].self, from: observed.data)
             #expect(Array(hops.prefix(2)) == [0, 1])
             for path in ["/cross-host", "/scheme", "/loop"] {
-                let geocoder = try PhotonGeocoder(endpoint: server.url(path), userAgent: "Tests")
+                let geocoder = try PhotonGeocoder(endpoint: try server.url(path), userAgent: "Tests")
                 do {
                     _ = try await bounded("Photon rejects redirect") { try await geocoder.search(MapPlaceQuery(text: "test")) }
                     Issue.record("Photon accepted a forbidden redirect")
                 } catch PhotonGeocoder.SearchError.rejectedRedirect { }
             }
-            let redirected = try PhotonGeocoder(endpoint: server.url("/photon-redirect"), userAgent: "Tests")
+            let redirected = try PhotonGeocoder(endpoint: try server.url("/photon-redirect"), userAgent: "Tests")
             let matches = try await bounded("Photon same-origin redirect") { try await redirected.search(MapPlaceQuery(text: "test")) }
             #expect(matches.places.map(\.name) == ["test", "Second"])
-            let slow = try PhotonGeocoder(endpoint: server.url("/photon-deadline"), userAgent: "Tests")
+            let slow = try PhotonGeocoder(endpoint: try server.url("/photon-deadline"), userAgent: "Tests")
             // Exercise the public ten-second policy directly. The server would
             // finish successfully at twelve seconds if the deadline were lost.
             do { _ = try await slow.search(MapPlaceQuery(text: "test")); Issue.record("Photon deadline did not expire") }
@@ -525,12 +525,12 @@ struct MapHTTPClientTests {
     @Test("Real localhost transport bounds decompressed bodies and rejects HTTP/MIME/redirect failures")
     func boundedHTTP() async throws {
         try await withServer { server in
-            let valid = try await bounded("empty HTTP 200") { try await MapHTTPClient.fetch(server.url("/empty"), resource: .tile) }
+            let valid = try await bounded("empty HTTP 200") { try await MapHTTPClient.fetch(try server.url("/empty"), resource: .tile) }
             #expect(valid.data.isEmpty)
             #expect(valid.headers["cache-control"] == "max-age=60")
-            let tile = try await bounded("nonempty HTTP 200") { try await MapHTTPClient.fetch(server.url("/tile"), resource: .tile) }
+            let tile = try await bounded("nonempty HTTP 200") { try await MapHTTPClient.fetch(try server.url("/tile"), resource: .tile) }
             #expect(tile.data == Data([0x08, 0x00]))
-            let redirected = try await bounded("permitted same-origin redirect") { try await MapHTTPClient.fetch(server.url("/redirect"), resource: .tile) }
+            let redirected = try await bounded("permitted same-origin redirect") { try await MapHTTPClient.fetch(try server.url("/redirect"), resource: .tile) }
             #expect(redirected.data.isEmpty)
             for (path, expected) in [
                 ("/status", MapTileLoader.LoadingError.httpStatus(503)),
@@ -541,7 +541,7 @@ struct MapHTTPClientTests {
                 let terminalCount = Mutex(0)
                 await #expect(throws: expected) {
                     try await bounded("reject \(path)") {
-                        try await MapHTTPClient.fetch(server.url(path), resource: .tile,
+                        try await MapHTTPClient.fetch(try server.url(path), resource: .tile,
                             onTerminalAcknowledgement: { terminalCount.withLock { $0 += 1 } })
                     }
                 }
@@ -550,17 +550,17 @@ struct MapHTTPClientTests {
             // The compressed Content-Length is below the catalog limit, while the
             // decompressed delegate bytes exceed it. This is real URLSession gzip.
             await #expect(throws: MapTileLoader.LoadingError.responseTooLarge) {
-                try await bounded("decompressed catalog overflow") { try await MapHTTPClient.fetch(server.url("/gzip"), resource: .catalog) }
+                try await bounded("decompressed catalog overflow") { try await MapHTTPClient.fetch(try server.url("/gzip"), resource: .catalog) }
             }
             let terminalCount = Mutex(0)
-            let pending = Task { [url = server.url("/slow")] in
+            let pending = Task { [url = try server.url("/slow")] in
                 try await MapHTTPClient.fetch(url, resource: .tile,
                     onTerminalAcknowledgement: { terminalCount.withLock { $0 += 1 } })
             }
             defer { pending.cancel() }
             try await bounded("slow fixture request entered") {
                 while true {
-                    let status = try await MapHTTPClient.fetch(server.url("/started"), resource: .catalog)
+                    let status = try await MapHTTPClient.fetch(try server.url("/started"), resource: .catalog)
                     if String(data: status.data, encoding: .utf8) == "true" { return }
                     try await Task.sleep(for: .milliseconds(10))
                 }
@@ -569,12 +569,12 @@ struct MapHTTPClientTests {
             await #expect(throws: CancellationError.self) { try await bounded("in-flight cancellation acknowledgment") { try await pending.value } }
             #expect(terminalCount.withLock { $0 } == 1)
             do {
-                _ = try await bounded("native resource timeout") { try await MapHTTPClient.fetch(server.url("/slow"), resource: .tile, timeout: 0.2) }
+                _ = try await bounded("native resource timeout") { try await MapHTTPClient.fetch(try server.url("/slow"), resource: .tile, timeout: 0.2) }
                 Issue.record("Slow HTTP resource did not time out")
             } catch let error as URLError { #expect(error.code == .timedOut) }
             let cancelled = Task {
                 withUnsafeCurrentTask { $0?.cancel() }
-                return try await MapHTTPClient.fetch(server.url("/empty"), resource: .tile)
+                return try await MapHTTPClient.fetch(try server.url("/empty"), resource: .tile)
             }
             await #expect(throws: CancellationError.self) { try await bounded("cancel before registration") { try await cancelled.value } }
         }
@@ -585,7 +585,7 @@ struct MapHTTPClientTests {
         try await withServer { server in
             let control = RedirectGate()
             let acknowledgments = Mutex(0)
-            let pending = Task { [url = server.url("/redirect")] in
+            let pending = Task { [url = try server.url("/redirect")] in
                 try await MapHTTPClient.fetch(url, resource: .tile,
                     onTerminalAcknowledgement: { acknowledgments.withLock { $0 += 1 } },
                     beforeRedirectDecision: { control.intercept($0) })
@@ -665,11 +665,11 @@ time.sleep(60)
     }
 
     @Test("Same-origin redirects normalize implicit HTTP and HTTPS ports")
-    func originComparison() {
-        #expect(MapHTTPClient.sameOrigin(URL(string: "https://example.test/a")!, URL(string: "https://example.test:443/b")!))
-        #expect(MapHTTPClient.sameOrigin(URL(string: "http://example.test/a")!, URL(string: "http://example.test:80/b")!))
-        #expect(!MapHTTPClient.sameOrigin(URL(string: "http://example.test/a")!, URL(string: "https://example.test/b")!))
-        #expect(!MapHTTPClient.sameOrigin(URL(string: "https://example.test/a")!, URL(string: "https://example.test:444/b")!))
+    func originComparison() throws {
+        #expect(MapHTTPClient.sameOrigin((try #require(URL(string: "https://example.test/a"))), (try #require(URL(string: "https://example.test:443/b")))))
+        #expect(MapHTTPClient.sameOrigin((try #require(URL(string: "http://example.test/a"))), (try #require(URL(string: "http://example.test:80/b")))))
+        #expect(!MapHTTPClient.sameOrigin((try #require(URL(string: "http://example.test/a"))), (try #require(URL(string: "https://example.test/b")))))
+        #expect(!MapHTTPClient.sameOrigin((try #require(URL(string: "https://example.test/a"))), (try #require(URL(string: "https://example.test:444/b")))))
     }
 
     @Test("Discovery chooses the first checked HTTPS OpenFreeMap template and retains observed provenance")
@@ -712,7 +712,7 @@ time.sleep(60)
             group.addTask(operation: operation)
             group.addTask { try await Task.sleep(for: timeout); throw WaitError.timeout(phase) }
             defer { group.cancelAll() }
-            return try await group.next()!
+            return try #require(await group.next())
         }
     }
     private enum WaitError: Error, Equatable { case timeout(String), fixtureStartup(String) }
@@ -749,7 +749,7 @@ time.sleep(60)
             process.arguments = ["python3", "-u", "-c", script]
             process.standardOutput = pipe
             process.standardError = errorPipe
-            let command = "executable=/usr/bin/env; arguments=\(process.arguments!.debugDescription)"
+            let command = "executable=/usr/bin/env; arguments=\((try #require(process.arguments)).debugDescription)"
             let handle = pipe.fileHandleForReading
             let errorHandle = errorPipe.fileHandleForReading
             for input in [handle, errorHandle] {
@@ -813,7 +813,7 @@ time.sleep(60)
                 throw WaitError.fixtureStartup("Python HTTP fixture startup failed: \(error); child \(status); \(command); stdout=\(stdout.debugDescription); stderr=\(stderr.debugDescription)")
             }
         }
-        func url(_ path: String) -> URL { URL(string: path, relativeTo: base)!.absoluteURL }
+        func url(_ path: String) throws -> URL { (try #require(URL(string: path, relativeTo: base))).absoluteURL }
         var isRunning: Bool { process.isRunning }
         func stop() async {
             let shouldStop = stopped.withLock { value in if value { return false }; value = true; return true }

@@ -12,7 +12,7 @@ extension ChioDashboardCommand {
         let configuration = swiftTUIOptions.runtimeConfiguration()
         switch example {
         case .dashboard:
-            let app = DashboardApplication(scenario: scenario, theme: theme, isPaused: paused)
+            let app = try DashboardApplication(scenario: scenario, theme: theme, isPaused: paused)
             try await WebHostCLIRunner.run(app, configuration: configuration)
         case .choices:
             try await WebHostCLIRunner.run(ChoiceApplication(theme: theme), configuration: configuration)
@@ -63,7 +63,7 @@ extension ChioDashboardCommand {
     private func renderSnapshot(_ example: DashboardExample, theme: ExampleTheme) throws -> String {
         switch example {
         case .dashboard:
-            render(DashboardView(scenario: scenario, theme: theme, shouldAnimate: false, isPaused: paused))
+            try render(DashboardView(scenario: scenario, theme: theme, shouldAnimate: false, isPaused: paused))
         case .choices:
             render(ChoiceExampleView(theme: theme))
         case .textEntry:
@@ -73,9 +73,9 @@ extension ChioDashboardCommand {
         case .files:
             throw Self.fileSnapshotError
         case .keyboardHelp:
-            render(HelpExampleView(theme: theme))
+            try render(HelpExampleView(theme: theme))
         case .tabs:
-            render(TabsExampleView(theme: theme))
+            try render(TabsExampleView(theme: theme))
         case .pagination:
             render(PaginationExampleView(theme: theme))
         case .viewport:
@@ -93,7 +93,7 @@ extension ChioDashboardCommand {
         case .inbox:
             render(InboxExampleView(theme: theme))
         case .appearance:
-            render(AppearanceExampleView(recipe: treatment ?? .chio, density: density ?? .recipe))
+            try render(AppearanceExampleView(recipe: treatment ?? .chio, density: density ?? .recipe))
         case .diff:
             render(DiffExampleView(theme: theme))
         }
