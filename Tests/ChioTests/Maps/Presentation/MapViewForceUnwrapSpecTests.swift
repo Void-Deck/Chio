@@ -59,7 +59,15 @@ struct MapViewForceUnwrapSpecTests {
             #expect(text.contains(cameraText(longitude: rejectsSelection ? 0 : longitude,
                                             latitude: rejectsSelection ? 0 : latitude, span: 100)))
             #expect(text.contains("SelectionAttempts=1"))
-            #expect(text.contains(rejectsSelection ? "Selected=nil" : "Selected=\(key == "n" ? "north" : "south")"))
+            let expectedSelection: String
+            if rejectsSelection {
+                expectedSelection = "Selected=nil"
+            } else if key == "n" {
+                expectedSelection = "Selected=north"
+            } else {
+                expectedSelection = "Selected=south"
+            }
+            #expect(text.contains(expectedSelection))
             #expect(text.contains(rejectsSelection ? "Writes=0 Observed=1" : "Writes=1 Observed=1"))
             #expect(frame.focusedIdentity == initial.focusedIdentity)
         }
