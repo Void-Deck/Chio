@@ -1,9 +1,7 @@
 # Waveform
 
-**Status:** Proposal, not accepted. The user approved drafting this contract and a
-visual mock-up on 2026-11-16, with Pneuma's CPAP nights as the consumer. Nothing
-here changes a shipped contract until the user accepts it. [Plan](../Plan.md)
-records delivery status.
+**Status:** Accepted by the user on 2026-11-16, with Pneuma's CPAP nights as the
+consumer. Not yet delivered; [Plan](../Plan.md) records delivery status.
 
 ## Need
 
@@ -15,10 +13,7 @@ window; neither reduces dense samples or draws a signed signal around zero.
 Every application that plots such data would otherwise rebuild the same
 reduction. Slow signals, such as one-minute leak, remain `HistoryChart` content.
 
-## Proposed contract
-
-Owner decisions on 2026-11-16 settle the reduction and the scale ownership.
-The other rules below are the coordinator's proposal and await acceptance.
+## Contract
 
 - **Samples.** `WaveformSamples` is a checked, immutable fixed-rate series. It
   holds a start offset (`Duration`), a positive finite sample rate in hertz and
@@ -47,7 +42,7 @@ The other rules below are the coordinator's proposal and await acceptance.
     rounds each bound outwards to a whole unit. A constant window is centred
     within one unit of padding. A window with no known sample draws only gaps.
   `Waveform` owns this type; it doesn't reuse `Sparkline.Scale`.
-- **Style.** `.bipolar` draws around zero and requires zero inside the scale; it
+- **Mode.** `.bipolar` draws around zero and requires zero inside the scale; it
   draws a muted zero axis. `.magnitude` draws upwards from the scale's lower bound.
   Colors come from the inherited `ChioStyle`: the trace uses the accent, and the
   axis and gaps use muted text.
@@ -67,6 +62,114 @@ The other rules below are the coordinator's proposal and await acceptance.
   silently clips or rescales.
 - **Accessibility.** The view exposes a text summary: the window, the visible value
   range, the number of gaps and the number and labels of the visible events.
+
+## Public interface
+
+All types are in the `Chio` library, under `Sources/Chio/Waveform`. Domain types
+are `Hashable` and `Sendable`, and their validation errors conform to `Error`.
+
+```swift
+public struct WaveformSamples {
+    public static let maximumCount = 2_097_152
+    public let start: Duration          // offset of values[0]
+    public let rate: Double             // samples per second
+    public let values: [Double?]        // nil marks a gap
+    public enum ValidationError { case startOutOfRange, endOutOfRange, invalidRate, empty, tooManySamples, nonFiniteValue(index: Int) }
+    public init(start: Duration, rate: Double, values: [Double?]) throws(ValidationError)
+}
+
+public struct WaveformScale {
+    public enum ValidationError { case nonFiniteBound, nonIncreasingBounds, invalidPadding }
+    public static func fixed(lower: Double, upper: Double) throws(ValidationError) -> WaveformScale
+    public static func automatic(padding: Double) throws(ValidationError) -> WaveformScale
+}
+
+public enum WaveformMode { case bipolar, magnitude }
+
+public struct WaveformEvent {
+    public static let maximumLabelLength = 16
+    public enum Tone: CaseIterable { case muted, warning, error }
+    public let start: Duration
+    public let duration: Duration
+    public let label: String
+    public let tone: Tone
+    public enum ValidationError { case startOutOfRange, nonPositiveDuration, emptyLabel, invalidLabel }
+    public init(start: Duration, duration: Duration, label: String, tone: Tone) throws(ValidationError)
+}
+
+@MainActor public struct Waveform: View {
+    public static let maximumEvents = 4_096
+    public init(_ samples: WaveformSamples, window: HistoryInterval, scale: WaveformScale,
+                mode: WaveformMode, events: [WaveformEvent] = [])
+}
+```
+
+### Validation
+
+- `WaveformSamples` checks in this order. `startOutOfRange`: `start` is below zero or
+  above `Duration.seconds(Int64.max)`. `invalidRate`: the rate is not finite or
+  not above zero. `empty`: no values. `tooManySamples`: more than `maximumCount`.
+  `endOutOfRange`: the last sample's offset, `start + (count − 1) / rate`, exceeds
+  `Duration.seconds(Int64.max)`. `nonFiniteValue(index:)`: the first non-finite
+  value. Sample `k` sits at offset `start + k / rate`.
+- `WaveformScale.fixed` throws `nonFiniteBound` for a non-finite bound, then
+  `nonIncreasingBounds` unless `lower < upper`. `automatic` throws `invalidPadding`
+  unless the padding is finite and at least zero.
+- `WaveformEvent` throws `startOutOfRange` under the same bounds as samples, then
+  `nonPositiveDuration`, then `emptyLabel` for an empty label, then `invalidLabel`
+  for more than `maximumLabelLength` characters or any newline or control
+  character. An event covers `start..<start + duration`.
+
+### Layout and drawing
+
+- When `events` is not empty, the top row is the event row and the plot uses the
+  remaining rows. Otherwise the plot uses every row. The plot is a braille canvas
+  with two dot columns and four dot rows per cell.
+- Dot column `i` of `W` covers window time `[s + i·(e−s)/W, s + (i+1)·(e−s)/W)`,
+  and the last column also includes `e`. A sample belongs to the column that
+  contains its offset.
+- A column with known samples spans their minimum and maximum. A column with no
+  sample, between two adjacent known samples `k` and `k+1`, spans the values
+  linearly interpolated at the column's start and end times. Any other column is
+  a gap and draws no trace dots.
+- Automatic bounds: `lower = floor(min − padding)` and `upper = ceil(max +
+  padding)`, over known samples inside the window. In `.bipolar` mode they then
+  extend to include zero. If `lower == upper`, they become `lower − 1` and
+  `upper + 1`. A window with no known sample draws only the axis.
+- Value `v` maps to dot row `round((upper − v) / (upper − lower) · (H − 1))`,
+  clamped to `0...H−1`, where row zero is the top. Fixed-scale values outside the
+  bounds therefore draw on the edge row.
+- `.bipolar` fills each column from its minimum row to its maximum row and draws
+  the zero row across every column, gaps included, in muted text. Trace dots win
+  a shared cell. `.magnitude` fills each column from the bottom dot row up to its
+  maximum's row. The trace uses the style's accent.
+- An event is visible when its range intersects the window. Its anchor cell is
+  `max(0, floor((start − s) / (e − s) · width))`. Visible events are processed in
+  order of start time, then input order. A label occupies `label.count` cells
+  from its anchor. It is drawn only when it ends at or before the row's end,
+  starts at least two cells after the previous occupied cell, and leaves at least
+  one blank cell before the next visible event's anchor. Otherwise the event draws
+  `▾` at its anchor. A marker in an already occupied marker cell keeps the more
+  severe tone: error, then warning, then muted. Tones use the style's
+  `mutedText`, `warning` and `error` colors.
+
+### Unavailable states
+
+The whole view is replaced by one line of text, which is also its accessibility
+label, when:
+- the size exceeds 512 columns or 64 rows: `Waveform unavailable: allocation limit exceeded.`
+- there are more than `maximumEvents` events: `Waveform unavailable: event limit exceeded.`
+- `.bipolar` uses a fixed scale whose bounds exclude zero: `Waveform unavailable: zero is outside the fixed scale.`
+
+### Accessibility
+
+The label reads `Waveform: K known samples, G gaps in window.` K counts known
+samples whose offsets lie in the window. G counts maximal runs of `nil` samples
+with at least one offset in the window. When K is above zero, ` Minimum: MIN.
+Maximum: MAX.` follows, using Swift's default `Double` description. Then
+` Events: N.` follows, with N the number of visible events; when N is above zero,
+the labels follow in drawing order inside parentheses, separated by `, `,
+before the full stop, as in ` Events: 2 (OA, CA).`
 
 ## Boundaries
 
