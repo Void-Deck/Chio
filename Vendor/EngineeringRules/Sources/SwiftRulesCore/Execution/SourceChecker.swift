@@ -79,7 +79,7 @@ private final class SourceScan: SyntaxVisitor {
                     diagnostics.append(LintDiagnostic(
                         path: file.path, line: location.line, column: location.column,
                         ruleID: "lint_suppression",
-                        message: "Do not disable shared SwiftLint rules (duplicate_imports, file_name, or all) in source comments.",
+                        message: "Do not disable shared SwiftLint rules (" + SwiftLintRule.allCases.map(\.rawValue).joined(separator: ", ") + ", or all) in source comments.",
                         anchor: comment
                     ))
                 }
@@ -92,7 +92,7 @@ private final class SourceScan: SyntaxVisitor {
 
     private func suppressesSelectedRule(_ comment: String) -> Bool {
         let directives = ["swiftlint:disable", "swiftlint:disable:next", "swiftlint:disable:this", "swiftlint:disable:previous"]
-        let selectedRules = ["duplicate_imports", "file_name", "all"]
+        let selectedRules = SwiftLintRule.allCases.map(\.rawValue) + ["all"]
         for line in comment.split(whereSeparator: { $0.isNewline }) {
             let words = line.split(whereSeparator: { character in
                 character.isWhitespace || character == "/" || character == "*" || character == ","

@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "upstreamRepository": "Void-Deck/EngineeringRules",
   "upstreamPath": ".",
-  "upstreamCommit": "9fc56fa3c0fda6b26f148ad4ae10d75d9cf782af",
+  "upstreamCommit": "63e024af42fd6dc1002ae78ad71f3d64ece60261",
   "files": {
     "Package.swift": {
       "source": "Configuration/public-copy/Package.swift",
@@ -38,7 +38,7 @@
     },
     "Sources/SwiftRules/Domain/LintBaseline.swift": {
       "source": "Sources/SwiftRules/Domain/LintBaseline.swift",
-      "sha256": "791e97ab4eaa5a7a856e70f03f32eb292204c504cf9e5b116f773f547b2dd875"
+      "sha256": "a54f92d9bf853cbf3a1f5e8898c72a337e534687232dbca855b4d40f5161adf9"
     },
     "Sources/SwiftRules/Domain/RuleConfiguration.swift": {
       "source": "Sources/SwiftRules/Domain/RuleConfiguration.swift",
@@ -50,7 +50,7 @@
     },
     "Sources/SwiftRules/Domain/ToolVersion.swift": {
       "source": "Sources/SwiftRules/Domain/ToolVersion.swift",
-      "sha256": "b09347e5f99fa5fe0d99bdb1a0914c9d77f06fbef2a0d8c16b59bd0ceb95f92e"
+      "sha256": "1cd21eeb896c8bf9ea092e80008f7e8c4c8260feda7716375a20cba455f7781f"
     },
     "Sources/SwiftRules/Execution/CompilerEvidenceGate+Inputs.swift": {
       "source": "Sources/SwiftRules/Execution/CompilerEvidenceGate+Inputs.swift",
@@ -78,7 +78,7 @@
     },
     "Sources/SwiftRules/Execution/SwiftLintGate.swift": {
       "source": "Sources/SwiftRules/Execution/SwiftLintGate.swift",
-      "sha256": "5125afc5445ef6f8e262a7e0913459962eee919eaada0cf58d10725020239c58"
+      "sha256": "1be0a1fa971a7dbf51e70bbdd9ae11457d2aecb87fd91d149cc79f5433f84fd7"
     },
     "Sources/SwiftRules/Execution/SwiftRulesCommand+Naming.swift": {
       "source": "Sources/SwiftRules/Execution/SwiftRulesCommand+Naming.swift",
@@ -86,7 +86,7 @@
     },
     "Sources/SwiftRules/Execution/SwiftRulesCommand.swift": {
       "source": "Sources/SwiftRules/Execution/SwiftRulesCommand.swift",
-      "sha256": "279239ff742eac40fb077e05bf569fbebce8f1a1246cf5e0dbe4e64bd2b797fb"
+      "sha256": "9c4cb8348744591b6ce446d7c598abbebd3ed8ac057c48e56134be5e0c5138af"
     },
     "Sources/SwiftRulesCore/Domain/CompilerIndex.swift": {
       "source": "Sources/SwiftRulesCore/Domain/CompilerIndex.swift",
@@ -108,6 +108,10 @@
       "source": "Sources/SwiftRulesCore/Domain/SourceFile.swift",
       "sha256": "7d7cec4f404c4bf73a9777e3fd453723d4197cc5912441546e6e40030a553c09"
     },
+    "Sources/SwiftRulesCore/Domain/SwiftLintRule.swift": {
+      "source": "Sources/SwiftRulesCore/Domain/SwiftLintRule.swift",
+      "sha256": "e6a9355ed583adf5ae9df55bb732bedc7a36e004e305f7b734f28c9d4b0d2395"
+    },
     "Sources/SwiftRulesCore/Execution/SourceChecker+Conformance.swift": {
       "source": "Sources/SwiftRulesCore/Execution/SourceChecker+Conformance.swift",
       "sha256": "041f996a350b4b3f674776f66618bfaf86119747aac29652dfd35f0ade3e3e94"
@@ -126,7 +130,7 @@
     },
     "Sources/SwiftRulesCore/Execution/SourceChecker.swift": {
       "source": "Sources/SwiftRulesCore/Execution/SourceChecker.swift",
-      "sha256": "5825a7ba3c05b450f16aa0f72d0d6d14ebfb04023f70acda183c411229d2066d"
+      "sha256": "867f091a549e8237da9de29261bc4037dfb71c7142e3865e6614baee196ec5ae"
     },
     "Scripts/compiler-context.py": {
       "source": "Scripts/compiler-context.py",

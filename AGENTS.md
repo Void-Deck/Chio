@@ -40,9 +40,9 @@ Update each owning document instead of duplicating contracts or history here.
 
 ## Reviewed engineering checks
 
-This public repository uses the complete reviewed EngineeringRules v0.2.2 source
+This public repository uses the complete reviewed EngineeringRules v0.3.0 source
 copy in [Vendor/EngineeringRules](Vendor/EngineeringRules/PUBLIC-COPY-README.md),
-exported from commit `9fc56fa3c0fda6b26f148ad4ae10d75d9cf782af` by upstream
+exported from commit `63e024af42fd6dc1002ae78ad71f3d64ece60261` by upstream
 `Scripts/export-public-copy.py`. The copy manifest records source paths and
 SHA-256 hashes. Do not hand-edit copied files. Refresh the complete copy through
 a focused rollout PR: rerun the upstream exporter at the new release tag and

@@ -60,8 +60,8 @@ remain required before readiness; the verification record owns the evidence.
 
 ## Current maintenance: reviewed EngineeringRules public copy
 
-The bounded rollout uses EngineeringRules v0.2.2 at
-`9fc56fa3c0fda6b26f148ad4ae10d75d9cf782af`. Upstream
+The bounded rollout uses EngineeringRules v0.3.0 at
+`63e024af42fd6dc1002ae78ad71f3d64ece60261`. Upstream
 `Scripts/export-public-copy.py` exports the complete reviewed public surface into
 `Vendor/EngineeringRules`; Chio verifies the exact inventory and hashes.
 The repository owns explicit tool preparation and its compiler-backed gate.
