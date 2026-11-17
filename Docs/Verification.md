@@ -1973,9 +1973,33 @@ The complete CI gate builds `chio-matrix` and runs this probe on macOS and Linux
 These checks do not establish hardware simulation, LED calibration, SSH latency
 or every terminal font. The [decision](Decisions/DotMatrix.md) owns public bounds.
 
+### Waveform example
+
+Run `swift test --filter 'ChioWaveformTests|Waveform'` for example models and
+public component checks. Example model tests are supplementary implementer tests;
+the existing public contract suites retain their separate authorship.
+Build and capture synthetic terminal interactions separately:
+
+```sh
+swift build -c release --product chio-waveform
+python3 -B Scripts/docs/capture-waveform.py .build/release/chio-waveform \
+  --output .build/waveform-review
+node Scripts/docs/render-terminal-previews.cjs .build/waveform-review/waveform-*-initial.cast
+cp .build/waveform-review/waveform-default.cast Docs/Media/waveform.cast
+cp .build/waveform-review/waveform-default.png Docs/Media/waveform.png
+for theme in default light btop; do
+  cp ".build/waveform-review/waveform-$theme.png" "Docs/Media/themes/waveform-$theme.png"
+done
+```
+
+Inspect all three stills and raw logs before retaining media. The bounded 80×32
+PTY checks whole-night, 10m/2m zoom, pan, theme and clean quit with terminal
+restoration. Hosted JSON export remains compatible with `render-raster.py`.
+These captures establish no live-device or clinical behavior.
+
 ### Demo site
 
-The [showcase](https://echoz.github.io/Chio/) assembles seventeen recordings and 51
+The [showcase](https://echoz.github.io/Chio/) assembles eighteen recordings and 54
 three-theme previews from `Docs/Media`, using the pinned local asciinema player
 in `Docs/Site`. Its upstream license remains with the vendored assets. The catalog
 opens on Maps and separates Chio views, styles for native SwiftTUI controls and

@@ -2,9 +2,9 @@ import Chio
 import SwiftTUI
 
 @MainActor
-struct WaveformStudyComparison {
-    let night: WaveformStudyNight
-    let window: WaveformStudyWindow
+struct WaveformComparison {
+    let night: WaveformNight
+    let window: WaveformWindow
 
     private var stride: Int {
         (window.indices.count + HistorySeries.maximumSampleCount - 1) / HistorySeries.maximumSampleCount
@@ -19,7 +19,7 @@ struct WaveformStudyComparison {
     }
 }
 
-extension WaveformStudyComparison: View {
+extension WaveformComparison: View {
     var body: some View {
         GroupBox(stride == 1 ? "HistoryChart (all visible samples)" : "HistoryChart (every \(stride)th sample)") {
             // Construction errors remain visible; they never become empty data.

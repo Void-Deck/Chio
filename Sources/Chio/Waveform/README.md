@@ -53,5 +53,5 @@ The separate-author spec suites provide contract evidence:
 [Supplementary tests](../../../Tests/ChioTests/Waveform/Presentation/WaveformRenderingTests.swift)
 exercise internal boundaries, the narrow-window event regression, and public
 rendering at 720,000 samples and the maximum admitted sample count. The
-[study](../../../Spikes/Waveform/README.md) consumes the public view with hosted
+[example](../../../Examples/Waveform/README.md) consumes the public view with hosted
 captures. See [Verification](../../../Docs/Verification.md) for repository gates.

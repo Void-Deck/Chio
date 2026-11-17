@@ -1,4 +1,4 @@
-struct WaveformStudyWindow {
+struct WaveformWindow {
     enum Length: String {
         case night = "8h", hour = "1h", tenMinutes = "10m", twoMinutes = "2m", thirtySeconds = "30s"
         static let ordered: [Self] = [.night, .hour, .tenMinutes, .twoMinutes, .thirtySeconds]
@@ -18,7 +18,7 @@ struct WaveformStudyWindow {
     let zoomCenterSecond: Int
 
     init(start: Int, length: Length, zoomCenterSecond: Int? = nil) {
-        let fittedStart = min(max(0, start), WaveformStudyNight.seconds - length.seconds)
+        let fittedStart = min(max(0, start), WaveformNight.seconds - length.seconds)
         self.start = fittedStart
         self.length = length
         self.zoomCenterSecond = zoomCenterSecond ?? (fittedStart + length.seconds / 2)
@@ -26,9 +26,9 @@ struct WaveformStudyWindow {
     var end: Int { start + length.seconds }
     var clockRange: String {
         let includesSeconds = length.seconds < 600
-        return "\(WaveformStudyNight.clock(start, includesSeconds: includesSeconds))–\(WaveformStudyNight.clock(end, includesSeconds: includesSeconds))"
+        return "\(WaveformNight.clock(start, includesSeconds: includesSeconds))–\(WaveformNight.clock(end, includesSeconds: includesSeconds))"
     }
-    var indices: Range<Int> { (start * WaveformStudyNight.sampleRate)..<(end * WaveformStudyNight.sampleRate) }
+    var indices: Range<Int> { (start * WaveformNight.sampleRate)..<(end * WaveformNight.sampleRate) }
     func panned(_ direction: Int) -> Self { Self(start: start + direction * length.seconds / 4, length: length) }
     func zoomed(_ direction: Int) -> Self {
         guard let index = Length.ordered.firstIndex(of: length) else { return self }

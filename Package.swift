@@ -10,6 +10,7 @@ let package = Package(
         .executable(name: "chio-dashboard", targets: ["ChioDashboard"]),
         .executable(name: "chio-maps", targets: ["ChioMaps"]),
         .executable(name: "chio-matrix", targets: ["ChioDotMatrix"]),
+        .executable(name: "chio-waveform", targets: ["ChioWaveform"]),
     ],
     dependencies: [
         // Includes the merged startup-input and borrowed-output corrections.
@@ -58,11 +59,20 @@ let package = Package(
             exclude: ["README.md"],
             resources: [.copy("Fixtures")]
         ),
-        .executableTarget(
-            name: "WaveformStudy",
+        .target(
+            name: "WaveformExample",
             dependencies: ["Chio", .product(name: "SwiftTUI", package: "swift-tui")],
-            path: "Spikes/Waveform",
-            exclude: ["README.md"]
+            path: "Examples/Waveform",
+            exclude: ["README.md", "Launcher"]
+        ),
+        .executableTarget(
+            name: "ChioWaveform",
+            dependencies: ["WaveformExample"],
+            path: "Examples/Waveform/Launcher"
+        ),
+        .testTarget(
+            name: "ChioWaveformTests",
+            dependencies: ["Chio", "WaveformExample"]
         ),
         // Private POSIX bridge; no additional public library product.
         .target(name: "ChioFileSystem"),
