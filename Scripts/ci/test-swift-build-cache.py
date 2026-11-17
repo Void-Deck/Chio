@@ -311,8 +311,8 @@ print(json.dumps({"bytecode": str(bytecode), "generated": bytecode.is_file()}))
         paths = [command for command in commands if "--show-bin-path" in command]
         self.assertEqual(len(tests), 2)
         self.assertEqual([command[command.index("--product") + 1] for command in products],
-                         ["chio-dashboard", "chio-matrix", "chio-maps"])
-        self.assertEqual(len(paths), 3)
+                         ["chio-dashboard", "chio-matrix", "chio-waveform", "chio-maps"])
+        self.assertEqual(len(paths), 4)
         for command in tests + products + paths:
             expected_path = ".build/ci-cache/tests" if command[0] == "test" else ".build/ci-cache/products"
             self.assertEqual(command[command.index("--scratch-path") + 1], expected_path)

@@ -31,6 +31,31 @@
   ],
   "importPolicies": [
     {
+      "path": "Examples/Waveform/Launcher",
+      "allowed": [
+        "Swift",
+        "WaveformExample"
+      ]
+    },
+    {
+      "path": "Examples/Waveform",
+      "allowed": [
+        "Chio",
+        "Foundation",
+        "Swift",
+        "SwiftTUI"
+      ]
+    },
+    {
+      "path": "Tests/ChioWaveformTests",
+      "allowed": [
+        "Chio",
+        "Swift",
+        "Testing",
+        "WaveformExample"
+      ]
+    },
+    {
       "path": "Tests/ChioDotMatrixTests",
       "allowed": [
         "Chio",

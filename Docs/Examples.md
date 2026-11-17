@@ -831,3 +831,19 @@ locally after cloning the repository:
 ```sh
 asciinema play Docs/Media/choices.cast
 ```
+
+## Waveform
+
+The standalone [Waveform example](../Examples/Waveform/README.md) presents a
+synthetic eight-hour CPAP night through the public view. No recordings, devices
+or clinical interpretation are involved. Waveform is unreleased after 0.2.2.
+
+```sh
+swift run -c release chio-waveform --theme default
+swift run -c release chio-waveform --window 10m --start 00:30 --compare
+```
+
+Use ←/→ to pan, +/− to zoom, t to cycle themes, c to compare HistoryChart,
+e to cycle event windows and q to quit. The example owns axes, event counts,
+window state and overview. Hosted `--capture` JSON remains available for the
+shared raster renderer; the showcase uses real-terminal recordings.

@@ -435,7 +435,7 @@ Applications own sampling, interpretation, panning, zoom, captions and counts.
 The view is passive and performs no clinical interpretation.
 
 [Component API and limits](../Sources/Chio/Waveform/README.md) ·
-[Runnable study](../Spikes/Waveform/README.md)
+[Runnable example](../Examples/Waveform/README.md)
 
 ## Maps
 

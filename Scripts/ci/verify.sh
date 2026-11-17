@@ -100,6 +100,15 @@ matrix_capture_directory="$(mktemp -d .build/ci-results/dot-matrix/run.XXXXXX)"
 python3 -B Scripts/docs/capture-dot-matrix.py "$matrix_binary" \
   --output "$matrix_capture_directory"
 
+# Verify synthetic night navigation and theme changes through real terminal input.
+swift build "${product_build[@]}" --force-resolved-versions --jobs "${SWIFT_BUILD_JOBS:-2}" \
+  -c release --product chio-waveform
+waveform_binary="$(swift build "${product_build[@]}" -c release --show-bin-path)/chio-waveform"
+mkdir -p .build/ci-results/waveform
+waveform_capture_directory="$(mktemp -d .build/ci-results/waveform/run.XXXXXX)"
+python3 -B Scripts/docs/capture-waveform.py "$waveform_binary" \
+  --output "$waveform_capture_directory"
+
 # Public map contracts run with the test targets above. Exercise the local map
 # example separately from the dashboard, including fixture provenance and raw input.
 python3 Scripts/maps/prepare-fixtures.py --verify

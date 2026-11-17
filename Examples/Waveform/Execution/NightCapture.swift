@@ -4,15 +4,15 @@ import SwiftTUI
 
 /// Bounded native hosted captures. Animation delays belong to the exported document.
 @MainActor
-enum WaveformStudyCapture {
-    static func export(_ application: WaveformStudyApplication, width: Int, height: Int, style: ChioStyle,
-                       sequence: WaveformStudyCommand.CaptureSequence?, initialWindow: WaveformStudyWindow,
-                       frameCount: Int, delayMS: Int, eventWindows: [WaveformStudyWindow]) async throws {
+enum NightCapture {
+    static func export(_ application: NightApplication, width: Int, height: Int, style: ChioStyle,
+                       sequence: NightCommand.CaptureSequence?, initialWindow: NightWindow,
+                       frameCount: Int, delayMS: Int, eventWindows: [NightWindow]) async throws {
         let recorder = Recorder(size: CellSize(width: width, height: height))
         recorder.prepare(after: nil, window: initialWindow)
         let surface = HostedRasterSurface(surfaceSize: recorder.size, appearance: .fallback,
                                           onFrame: { recorder.receive($0) })
-        let session = try HostedSceneSession(for: application, sceneID: WindowIdentifier("Waveform study"), surface: surface)
+        let session = try HostedSceneSession(for: application, sceneID: WindowIdentifier("Waveform example"), surface: surface)
         let run = Task { try await session.start() }
         let outcome: Result<[Frame], any Error>
         do {
@@ -49,7 +49,7 @@ enum WaveformStudyCapture {
                         frames.append(contentsOf: Array(repeating: held, count: 4))
                     }
                 case .zoom:
-                    for number in 1..<WaveformStudyWindow.Length.ordered.count {
+                    for number in 1..<NightWindow.Length.ordered.count {
                         let next = window.zoomed(1)
                         recorder.prepare(after: current.sequence, window: next)
                         session.send(.key(.character("+")))
@@ -96,7 +96,7 @@ enum WaveformStudyCapture {
 
         init(size: CellSize) { self.size = size }
 
-        func prepare(after sequence: UInt64?, window: WaveformStudyWindow) {
+        func prepare(after sequence: UInt64?, window: NightWindow) {
             captured = nil
             after = sequence
             expectedHeader = "\(window.clockRange) · \(window.length.rawValue)"
@@ -106,9 +106,9 @@ enum WaveformStudyCapture {
             if let after, frame.sequence <= after { return }
             let text = frame.raster.lines.joined(separator: "\n")
             let hasExpectedSize = frame.raster.size == size
-            let hasHeader = text.contains("pneuma study") && text.contains(expectedHeader)
+            let hasHeader = text.contains("chio waveform") && text.contains(expectedHeader)
             let hasRaster = text.unicodeScalars.contains { (0x2801...0x28FF).contains($0.value) }
-            // The study's root is its only native focus region. Do not send the
+            // The example's root is its only native focus region. Do not send the
             // next key until native focus and the completed raster arrive together.
             let hasFocus = frame.focusedIdentity != nil
             guard captured == nil, hasExpectedSize, hasHeader, hasRaster, hasFocus else { return }
@@ -132,7 +132,7 @@ enum WaveformStudyCapture {
         var description: String {
             switch self {
             case .frameTimeout(let number, let header):
-                "Capture frame \(number) timed out after 10 seconds waiting for header '\(header)' and braille with native study focus."
+                "Capture frame \(number) timed out after 10 seconds waiting for header '\(header)' and braille with native example focus."
             case .emptyCapture: "Capture produced no frames."
             }
         }

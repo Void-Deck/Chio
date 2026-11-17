@@ -1,18 +1,18 @@
-# Waveform visual study
+# Waveform example
 
 Start from the repository root:
 
 ```sh
-swift run -c release WaveformStudy --theme btop --window 2m --start 00:30
-swift run -c release WaveformStudy --window 10m --start 00:30 --compare
-swift run -c release WaveformStudy --window 8h --capture --width 120 --height 34 > /tmp/waveform.json
+swift run -c release chio-waveform --theme btop --window 2m --start 00:30
+swift run -c release chio-waveform --window 10m --start 00:30 --compare
+swift run -c release chio-waveform --window 8h --capture --width 120 --height 34 > /tmp/waveform.json
 ```
 
-This study composes the public `Waveform` under its [accepted contract](../../Docs/Decisions/Waveform.md).
+This example composes the public `Waveform` under its [accepted contract](../../Docs/Decisions/Waveform.md).
 Axes, event counts, window state and capture sequences remain application-owned.
 The overview uses one magnitude plot row plus the public event row.
-All data is synthetic: a fixed-seed eight-hour night starting at 22:31 on
-15 November, sampled at 25 Hz (720,000 readings per signal). Positive flow is
+All data is synthetic: a fixed-seed eight-hour night starting at 22:31,
+sampled at 25 Hz (720,000 readings per signal). Positive flow is
 inspiration. Synthetic OA, H, CA and FL events modify the flow; they do not
 represent clinical interpretation. Pressure has slow APAP-like drift and breath
 ripple, bounded to 4–14 cmH₂O. Mask-off is 02:31–02:36: both arrays contain `nil`,
@@ -35,20 +35,28 @@ never substituted zeroes. No file, network, device or private recording is read.
 
 Left/right arrows pan by one quarter window. `+` zooms in, `-` zooms out through
 these five windows, retaining the center when possible. `t` cycles themes, `c`
-toggles comparison, `e` steps through the event study, and `q` quits. SwiftTUI owns the terminal and input lifecycle.
-The spike owns all window/theme state. Use at least 80×24 for interactive study;
+toggles comparison, `e` steps through the event windows, and `q` quits. SwiftTUI owns the terminal and input lifecycle.
+The example owns all window/theme state. Use at least 80×24 for interactive use;
 compare is easiest at 120×34 or wider.
+
+## Showcase recording
+
+The real-terminal pipeline records an 80×32 terminal and retains raw diagnostics
+separately. Run the capture and preview commands in
+[Verification](../../Docs/Verification.md#waveform-example), inspect the three
+theme stills and recording, then copy the approved media into `Docs/Media`.
+The showcase recording is distinct from the optional hosted JSON export below.
 
 ## Animated captures
 
 Capture a pan sequence and render its native raster frames with Pillow:
 
 ```sh
-swift run -c release WaveformStudy --capture --capture-sequence pan --width 100 --height 30 > pan.json
+swift run -c release chio-waveform --capture --capture-sequence pan --width 100 --height 30 > pan.json
 python3 Scripts/docs/render-raster.py pan.json pan.png
-swift run -c release WaveformStudy --capture --capture-sequence zoom --theme btop --width 100 --height 30 > zoom.json
+swift run -c release chio-waveform --capture --capture-sequence zoom --theme btop --width 100 --height 30 > zoom.json
 python3 Scripts/docs/render-raster.py zoom.json zoom.gif
-swift run -c release WaveformStudy --capture --capture-sequence events --theme btop --width 100 --height 30 > events.json
+swift run -c release chio-waveform --capture --capture-sequence events --theme btop --width 100 --height 30 > events.json
 python3 Scripts/docs/render-raster.py events.json events.png
 ```
 
@@ -73,14 +81,14 @@ centered on that cluster's median event (upper median when even). Density counts
 supplied event starts in a ten-minute window; the earliest window wins ties.
 Each captured view occupies four playback frames, for twelve JSON frames total.
 The same real hosted `e` key used interactively advances the views. `--start`,
-`--window` and `--frames` do not select event-study windows. No event is inferred
+`--window` and `--frames` do not select event windows. No event is inferred
 from flow or pressure.
 
 `--delay-ms N` sets the exported delay on each frame (default 250, range
 1–60000 ms). Capture runs at hosted rendering speed; the delay controls playback,
 not sleeps between keys. Each changed window must deliver a newer frame with
-its expected clock/window header, the study header, braille and native study
-focus within ten seconds. The study content is a native focusable region with
+its expected clock/window header, the example header, braille and native example
+focus within ten seconds. The example content is a native focusable region with
 default focus for hosted and terminal key routing. A timeout reports the frame
 number and expected header. The session is stopped and joined on success or
 failure.
@@ -96,7 +104,7 @@ not screenshots of an emulator.
 
 ## Drawing and ownership
 
-The study draws through public `Waveform`; its [source guide](../../Sources/Chio/Waveform/README.md)
+The example draws through public `Waveform`; its [source guide](../../Sources/Chio/Waveform/README.md)
 and [accepted decision](../../Docs/Decisions/Waveform.md) own reduction, scale,
 axis, event placement, accessibility and unavailable behavior. No drawing code is
 shared with `HistoryChart` or `Sparkline`.
@@ -129,8 +137,9 @@ own native layout, so their plot widths may differ slightly due to axis captions
 
 ## Evidence
 
-The original study motivated the accepted contract. This candidate migrates its
-hosted capture and real-key pan, zoom and event sequences to public `Waveform`.
+The original study motivated the accepted contract and was promoted to this
+example. Hosted capture and real-key pan, zoom and event sequences use public
+`Waveform`. The example model tests are supplementary implementer checks.
 The separate-author spec suites provide contract evidence:
 [sample validation](../../Tests/ChioTests/Waveform/Domain/WaveformSamplesSpecTests.swift),
 [scale validation](../../Tests/ChioTests/Waveform/Domain/WaveformScaleSpecTests.swift),

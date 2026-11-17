@@ -20,7 +20,7 @@ The rows stack on narrow screens. These featured stills retain their captured
 appearance; the shared theme selector controls the catalog previews. DotMatrix's
 unreleased status stays visible beside its featured introduction.
 
-The catalog assembles 17 terminal recordings and 51 static previews across three themes from
+The catalog assembles 18 terminal recordings and 54 static previews across three themes from
 `Docs/Media`. The pinned local player
 and its upstream license stay in `vendor/asciinema-player`; its
 [guide](vendor/asciinema-player/README.md) records player-specific limits.
@@ -37,6 +37,15 @@ the other entries. Frame production, lettering, animation timing and interaction
 belong to the example; the public view presents checked frames with inherited
 dot styling. See the [component guide](../../Sources/Chio/DotMatrix/README.md) and
 [example guide](../../Examples/DotMatrix/README.md).
+
+The Views catalog also includes public `Waveform` with the standalone
+`chio-waveform` example. `recordings/waveform.cast` and `recordings/waveform.png`
+provide playback and fallback; `recordings/themes/waveform-{default,light,btop}.png`
+provide shared theme previews. The example owns synthetic CPAP data, window
+navigation, axes and counts; the public view presents the min/max envelope,
+gaps and supplied events without clinical interpretation. See the
+[component guide](../../Sources/Chio/Waveform/README.md) and
+[example guide](../../Examples/Waveform/README.md).
 
 ## Assemble and preview
 

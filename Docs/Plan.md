@@ -82,8 +82,12 @@ The consumer is Pneuma, which records CPAP blower flow and pressure at 25 Hz.
 `Waveform`, the accepted contract, visual study and shared raster renderer.
 It includes 59 spec-derived tests written by a separate author from the contract
 and public interface, plus supplementary implementer tests. The study renders
-through the public view. Independent review is in progress; platform qualification
-remains a separate gate.
+through the public view. The study has been promoted to the standalone
+[chio-waveform example](../Examples/Waveform/README.md), with testable night/window
+models, retained hosted export and a real-terminal capture script. The public
+showcase adds a nonfeatured Views entry with shared theme previews, API and source
+links. The media was generated and inspected. Platform qualification and
+deployment from main after merge remain.
 
 ## Current slice: public dot matrix display
 

@@ -40,8 +40,8 @@
       "document": "Spikes/MapRouting/README.md"
     },
     {
-      "path": "Spikes/Waveform",
-      "document": "Spikes/Waveform/README.md"
+      "path": "Examples/Waveform",
+      "document": "Examples/Waveform/README.md"
     },
     {
       "path": "Examples/DotMatrix",
@@ -49,6 +49,10 @@
     },
     {
       "path": "Tests/ChioDotMatrixTests",
+      "document": "Docs/Verification.md"
+    },
+    {
+      "path": "Tests/ChioWaveformTests",
       "document": "Docs/Verification.md"
     }
   ],
@@ -201,6 +205,10 @@
     {
       "id": "chio-matrix",
       "root": "Examples/DotMatrix"
+    },
+    {
+      "id": "chio-waveform",
+      "root": "Examples/Waveform"
     }
   ]
 }

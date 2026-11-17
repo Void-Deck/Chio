@@ -87,6 +87,7 @@
           <nav class="demo-options" data-recording-group="views" aria-label="Views">
             <a href="#maps" data-demo="maps">Maps</a>
             <a href="#dot-matrix" data-demo="dot-matrix">Dot matrix</a>
+            <a href="#waveform" data-demo="waveform">Waveform</a>
             <a href="#markdown" data-demo="markdown">Markdown</a>
             <a href="#choices" data-demo="choices">Choices</a>
             <a href="#metrics" data-demo="metrics">Metrics</a>
@@ -216,6 +217,55 @@ DotMatrix(frame: frame, label: "LED display")
               <div><dt>Application</dt><dd>Private lettering fixtures, heart frames, animation timing, intensity changes and keyboard controls.</dd></div>
             </dl>
             <a class="example-source" href="https://github.com/echoz/Chio/tree/main/Examples/DotMatrix">View example source <span aria-hidden="true">↗</span></a>
+          </div>
+        </article>
+
+        <article id="waveform" class="recording" data-category="views" data-cols="80" data-rows="32">
+          <div class="recording-heading"><h3>Waveform</h3><span class="recording-kind">Reusable view</span></div>
+          <p class="recording-summary">Draw dense fixed-rate signals as a per-column min/max envelope in an application-owned time window.</p>
+          <div class="theme-preview-controls" hidden>
+            <button class="play-recording" type="button" hidden><span aria-hidden="true">▶</span> Play original recording</button>
+            <button class="show-theme-preview" type="button" hidden>Show static preview</button>
+            <p id="waveform-preview-status" class="preview-status" role="status"></p>
+          </div>
+          <div class="recording-preview"><img class="recording-image" src="recordings/waveform.png" alt="Two minutes of synthetic CPAP flow showing individual breaths that end at a mask-off gap, with automatically scaled pressure and a whole-night overview with event markers."></div>
+          <div class="player" aria-label="Waveform recording"></div>
+          <p class="player-message" role="status" hidden></p>
+          <div class="recording-caption">
+            <p>A synthetic CPAP night shows flow and pressure, event labels or merged markers, and gaps. Zoom and pan an application-owned window. No clinical interpretation is performed.</p>
+            <a class="download" href="recordings/waveform.cast" download>Download recording ↓</a>
+          </div>
+          <div class="recording-run">
+            <div class="run-heading"><h4>Try this example</h4><a href="https://github.com/echoz/Chio/blob/main/Examples/Waveform/README.md">Keyboard controls <span aria-hidden="true">↗</span></a></div>
+            <pre><code>swift run -c release chio-waveform --theme default</code></pre>
+            <p>←/→ pans · +/− zooms · t cycles themes · c toggles HistoryChart comparison · e cycles event windows · q quits.</p>
+            <p>Run from the current source checkout. Waveform is unreleased and is not included in 0.2.2.</p>
+          </div>
+          <div class="api-example">
+            <h4>Use in your view</h4>
+            <a class="api-doc-link" href="https://github.com/echoz/Chio/blob/main/Docs/Usage.md#waveform">API guide ↗</a>
+            <pre><code data-theme-code>let samples = try WaveformSamples(
+    start: .zero, rate: 25, values: [0, 2, -1, nil, 3])
+let window = try HistoryInterval(start: .zero, end: .seconds(1))
+let scale = try WaveformScale.fixed(lower: -4, upper: 4)
+let events = [try WaveformEvent(
+    start: .zero, duration: .milliseconds(80),
+    label: "Event", tone: .warning)]
+
+Waveform(samples, window: window, scale: scale,
+         mode: .bipolar, events: events)
+    .frame(width: 48, height: 6)
+    .style(.default)</code></pre>
+          </div>
+          <p class="component-options"><strong>Presentation options.</strong> Bipolar mode draws around zero; magnitude mode fills from the lower bound. Choose a fixed scale or automatic bounds with padding. Optional events reserve the top row for labels or merged markers.</p>
+          <p class="component-options">Proposals above 512 columns or 64 rows, or more than 4,096 events, show an explicit unavailable message. Samples admit up to 2,097,152 readings; nil preserves gaps. Applications own timing, window navigation and interpretation.</p>
+          <div class="recording-details">
+            <dl class="recording-ingredients">
+              <div><dt>Chio</dt><dd><code>WaveformSamples</code>, <code>HistoryInterval</code>, <code>WaveformScale</code>, <code>WaveformEvent</code> and <code>Waveform</code>. <a href="https://github.com/echoz/Chio/blob/main/Sources/Chio/Waveform/README.md">Component guide ↗</a></dd></div>
+              <div><dt>SwiftTUI</dt><dd>Native Canvas drawing, layout, environment, focus and keyboard input.</dd></div>
+              <div><dt>Application</dt><dd>Synthetic night fixtures, axes, counts, overview, window navigation and comparison.</dd></div>
+            </dl>
+            <a class="example-source" href="https://github.com/echoz/Chio/tree/main/Examples/Waveform">View example source <span aria-hidden="true">↗</span></a>
           </div>
         </article>
 
