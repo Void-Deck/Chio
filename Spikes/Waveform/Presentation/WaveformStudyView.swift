@@ -25,7 +25,8 @@ struct WaveformStudyView {
             VStack(spacing: 0) {
                 Text(eventTitle).foregroundStyle(style.colors.heading).lineLimit(1)
                 HStack(spacing: 1) {
-                    VStack { Text("+40"); Spacer(); Text("0 ┤"); Spacer(); Text("−40") }
+                    // The first row lines up with the view's event row, so axis labels match plot rows.
+                    VStack(spacing: 0) { Text("evt"); Text("+40"); Spacer(); Text("0 ┤"); Spacer(); Text("−40") }
                         .foregroundStyle(style.colors.mutedText).frame(width: 4)
                     publicPlot(samples: night.waveformFlow, mode: .bipolar, lower: -40, upper: 40, events: night.waveformEvents)
                 }
