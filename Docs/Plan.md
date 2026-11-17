@@ -86,7 +86,8 @@ through the public view. The study has been promoted to the standalone
 [chio-waveform example](../Examples/Waveform/README.md), with testable night/window
 models, retained hosted export and a real-terminal capture script. The public
 showcase adds a nonfeatured Views entry with shared theme previews, API and source
-links. Media generation and platform qualification remain separate gates.
+links. The media was generated and inspected. Platform qualification and
+deployment from main after merge remain.
 
 ## Current slice: public dot matrix display
 

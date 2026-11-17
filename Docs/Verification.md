@@ -320,9 +320,9 @@ Review relevant names there manually; older tools require manual review too.
 ### Documentation coverage
 
 [.documentation-rules.json](../.documentation-rules.json) uses schema 2. Its
-eleven module mappings under `Sources`, `Examples`, `Tests` and `Spikes`, including
-the waveform spike, have no exclusions. They link Design, Examples, Verification, the
-routing and waveform spike guides and the DotMatrix example guide. Current
+twelve module mappings under `Sources`, `Examples`, `Tests` and `Spikes` have
+no exclusions. They link Design, Examples, Verification, the routing spike guide
+and the DotMatrix and Waveform example guides. Current
 decisions, release guidance and map fixture provenance remain enrolled.
 
 The copied checker discovers immediate children only under these explicit
@@ -330,12 +330,12 @@ The copied checker discovers immediate children only under these explicit
 roots, so the upstream-owned checker modules are outside Chio's documentation
 inventory. No exclusion or scope change is needed for the reviewed copy.
 
-The deliverable inventory declares twenty-three source-root guides: the Chio library,
-its eighteen public views, three example applications and the static showcase.
+The deliverable inventory declares twenty-four source-root guides: the Chio library,
+its eighteen public views, four example applications and the static showcase.
 Each view has a distinct real source root and its own `README.md`; the library
 is its declared parent. The [library guide](../Sources/Chio/README.md) links those
 views, and [source ownership](Design.md#source-ownership) explains their boundaries.
-The gate checks 64 unique documents, eleven modules and twenty-three deliverables.
+The gate checks 64 unique documents, twelve modules and twenty-four deliverables.
 
 Schema 2 rejects duplicate roots, invalid parents, missing or blank READMEs,
 symlinks and invalid local Markdown file destinations. Module discovery still
@@ -1993,8 +1993,10 @@ done
 ```
 
 Inspect all three stills and raw logs before retaining media. The bounded 80×32
-PTY checks whole-night, 10m/2m zoom, pan, theme and clean quit with terminal
-restoration. Hosted JSON export remains compatible with `render-raster.py`.
+PTY checks whole-night, 10m/2m zoom, two right pans, theme and clean quit with
+terminal restoration. Zoom and pan must change braille glyphs or positions; theme
+changes must recolor visible braille cells. The still retains the 2m phase.
+Hosted JSON export remains compatible with `render-raster.py`.
 These captures establish no live-device or clinical behavior.
 
 ### Demo site

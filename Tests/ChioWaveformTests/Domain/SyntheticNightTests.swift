@@ -2,9 +2,9 @@
 import Testing
 
 /// Supplementary implementer checks; no live or clinical data.
-struct WaveformNightTests {
+struct SyntheticNightTests {
     @Test func syntheticNight() throws {
-        let night = WaveformNight.synthetic()
+        let night = SyntheticNight.synthetic()
         #expect(night.flow.count == 720_000)
         #expect(night.pressure.count == 720_000)
         #expect(night.gap == 14_400..<14_700)
@@ -20,7 +20,7 @@ struct WaveformNightTests {
         #expect(try night.waveformPressure.get().values[360_000] == nil)
         #expect(try night.waveformMagnitude.get().values.compactMap { $0 }.allSatisfy { $0 >= 0 })
         #expect(try night.waveformEvents.get().count == night.events.count)
-        #expect(WaveformNight.clock(28_800) == "06:31")
+        #expect(SyntheticNight.clock(28_800) == "06:31")
         let windows = night.eventWindows
         #expect(windows.map(\.length) == [.night, .tenMinutes, .twoMinutes])
         #expect(night.nextEventWindow(after: windows[2]).length == .night)

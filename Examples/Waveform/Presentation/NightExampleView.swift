@@ -2,16 +2,16 @@ import Chio
 import SwiftTUI
 
 @MainActor
-struct WaveformExampleView {
-    let night: WaveformNight
-    @State private var window: WaveformWindow
-    @State private var appearance: WaveformCommand.Appearance
+struct NightExampleView {
+    let night: SyntheticNight
+    @State private var window: NightWindow
+    @State private var appearance: NightCommand.Appearance
     @State private var isComparing: Bool
     @FocusState private var isFocused: Bool
     @Environment(\.requestTermination) private var requestTermination
 
-    init(night: WaveformNight, window: WaveformWindow,
-         appearance: WaveformCommand.Appearance, compare: Bool) {
+    init(night: SyntheticNight, window: NightWindow,
+         appearance: NightCommand.Appearance, compare: Bool) {
         self.night = night
         _window = State(wrappedValue: window)
         _appearance = State(wrappedValue: appearance)
@@ -42,7 +42,7 @@ struct WaveformExampleView {
                 HStack(spacing: 1) {
                     VStack { Text(String(Int(bounds.upperBound))); Spacer(); Text(String(Int(bounds.lowerBound))) }
                         .foregroundStyle(style.colors.mutedText).frame(width: 4)
-                    publicPlot(samples: night.waveformPressure, mode: .magnitude, scale: Result { try WaveformScale.automatic(padding: WaveformNight.pressurePadding) })
+                    publicPlot(samples: night.waveformPressure, mode: .magnitude, scale: Result { try WaveformScale.automatic(padding: SyntheticNight.pressurePadding) })
                 }
             } else {
                 Text("Mask off · no known pressure samples").foregroundStyle(style.colors.mutedText)
@@ -52,7 +52,7 @@ struct WaveformExampleView {
 
     private var eventTitle: String {
         let visible = night.events.filter { $0.seconds.overlaps(window.start..<window.end) }
-        let kinds: [WaveformNight.Event.Kind] = [.obstructive, .central, .hypopnea, .limitation]
+        let kinds: [SyntheticNight.Event.Kind] = [.obstructive, .central, .hypopnea, .limitation]
         let counts = visible.isEmpty ? "no events" : "Events" + kinds.map { kind in
             " · \(kind.rawValue) \(visible.filter { $0.kind == kind }.count)"
         }.joined()
@@ -67,7 +67,7 @@ struct WaveformExampleView {
         case .success(let samples):
             switch Result(catching: {
                 let interval = try HistoryInterval(start: .seconds(wholeNight ? 0 : window.start),
-                                                   end: .seconds(wholeNight ? WaveformNight.seconds : window.end))
+                                                   end: .seconds(wholeNight ? SyntheticNight.seconds : window.end))
                 return (interval, try scale.get(), try events.get())
             }) {
             case .success(let (interval, scale, events)):
@@ -85,8 +85,8 @@ struct WaveformExampleView {
                 .overlay {
                     GeometryReader { geometry in
                         let width = geometry.size.width
-                        let left = min(max(0, width - 1), window.start * width / WaveformNight.seconds)
-                        let right = min(max(0, width - 1), max(left, (window.end * width - 1) / WaveformNight.seconds))
+                        let left = min(max(0, width - 1), window.start * width / SyntheticNight.seconds)
+                        let right = min(max(0, width - 1), max(left, (window.end * width - 1) / SyntheticNight.seconds))
                         ZStack(alignment: .topLeading) {
                             if left == right {
                                 Text("│").offset(x: left, y: 1)
@@ -105,7 +105,7 @@ struct WaveformExampleView {
 
 }
 
-extension WaveformExampleView: View {
+extension NightExampleView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("chio waveform · synthetic CPAP night").foregroundStyle(style.colors.accent)
@@ -113,7 +113,7 @@ extension WaveformExampleView: View {
                 .foregroundStyle(style.colors.secondaryText)
             HStack(spacing: 1) {
                 flow
-                if isComparing { WaveformComparison(night: night, window: window) }
+                if isComparing { HistoryChartComparison(night: night, window: window) }
             }.frame(maxHeight: .infinity)
             pressure.frame(height: 7)
             overview

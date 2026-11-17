@@ -36,6 +36,74 @@ appearance = load_script("appearance_capture", "Scripts/docs/capture-appearance.
 screen_reader = appearance.screen_reader
 
 
+def braille_surface(raw):
+    """Keep braille glyphs at their screen positions; ignore labels and markers."""
+    return "".join(character if 0x2800 <= ord(character) <= 0x28FF else " "
+                   for character in screen_reader.screen(raw))
+
+
+def braille_colors(raw):
+    """Replay colored braille cells through the same bounded screen reader.
+
+    Encode each glyph/color combination as one temporary scalar so native cursor
+    movement, erasure and overwrites keep their existing screen-reader semantics.
+    Only the colors of currently visible braille cells participate in comparison.
+    """
+    value = raw.decode("utf-8", errors="replace")
+    foreground, background = (), ()
+    encoded, symbols, cells = [], {}, {}
+    index = 0
+    while index < len(value):
+        character = value[index]
+        if character == "\x1b":
+            match = screen_reader.ESCAPE.match(value, index)
+            if not match:
+                break  # A subsequent receive completes a split escape sequence.
+            parameters, _, final = match.groups()
+            if final == "m":
+                codes = [int(part or 0) for part in (parameters or "").split(";")]
+                offset = 0
+                while offset < len(codes):
+                    code = codes[offset]
+                    if code == 0:
+                        foreground, background = (), ()
+                    elif code == 39:
+                        foreground = ()
+                    elif code == 49:
+                        background = ()
+                    elif 30 <= code <= 37 or 90 <= code <= 97:
+                        foreground = (code,)
+                    elif 40 <= code <= 47 or 100 <= code <= 107:
+                        background = (code,)
+                    elif code in (38, 48) and offset + 1 < len(codes):
+                        mode = codes[offset + 1]
+                        size = {2: 5, 5: 3}.get(mode, 0)
+                        if size and offset + size <= len(codes):
+                            color = tuple(codes[offset:offset + size])
+                            if code == 38:
+                                foreground = color
+                            else:
+                                background = color
+                            offset += size - 1
+                    offset += 1
+            encoded.append(match.group())
+            index = match.end()
+            continue
+        if 0x2800 <= ord(character) <= 0x28FF:
+            cell = (character, foreground, background)
+            if cell not in symbols:
+                symbol = chr(0xF0000 + len(symbols))
+                symbols[cell] = symbol
+                cells[symbol] = cell
+            encoded.append(symbols[cell])
+        else:
+            encoded.append(character)
+        index += 1
+    screen = screen_reader.screen("".join(encoded).encode("utf-8"))
+    return tuple((position, cells[character]) for position, character in enumerate(screen)
+                 if character in cells)
+
+
 def capture(binary, output, theme):
     name = f"waveform-{theme}"
     width, height = 80, 32
@@ -67,8 +135,9 @@ def capture(binary, output, theme):
         events.append([round(time.monotonic() - began, 4), "o", decoder.decode(data)])
         return True
 
-    def phase(title, expected, keys=b"", hold=0.3, absent=()):
+    def phase(title, expected, keys=b"", hold=0.3, absent=(), colors=False):
         expected = [*expected, "chio waveform · synthetic CPAP night"]
+        previous = braille_colors(raw) if colors else braille_surface(raw)
         if keys:
             os.write(master, keys)
         deadline = time.monotonic() + 5
@@ -86,6 +155,18 @@ def capture(binary, output, theme):
         screen = screen_reader.screen(raw)
         assert all(text in screen for text in expected), f"Unstable {title}\n{screen}"
         assert all(text not in screen for text in absent), f"Unstable {title}\n{screen}"
+        if keys:
+            current = braille_colors(raw) if colors else braille_surface(raw)
+            if colors:
+                previous_cells = dict(previous)
+                changed_colors = any(
+                    position in previous_cells
+                    and cell[0] == previous_cells[position][0]
+                    and cell[1:] != previous_cells[position][1:]
+                    for position, cell in current)
+                assert changed_colors, f"{title} did not change colors on visible braille cells"
+            else:
+                assert current != previous, f"{title} changed only labels, not braille glyphs and positions"
         phases.append(dict(title=title, elapsed=round(time.monotonic() - began, 4),
                            cells=[width, height]))
         return screen
@@ -114,10 +195,10 @@ def capture(binary, output, theme):
         phase("two minutes", ["02:30:00–02:32:00 · 2m"], b"+", hold=1.2)
         # Breath-level detail reads better than the whole-night band as the still.
         still(name)
-        for step, clock in enumerate(("02:30:30–02:32:30", "02:31:00–02:33:00", "02:31:30–02:33:30"), 1):
+        for step, clock in enumerate(("02:30:30–02:32:30", "02:31:00–02:33:00"), 1):
             phase(f"pan right {step}", [f"{clock} · 2m"], b"\x1b[C", hold=0.6)
         next_theme = {"default": "light", "light": "btop", "btop": "default"}[theme]
-        phase("theme", [f"02:31:30–02:33:30 · 2m · {next_theme}"], b"t", hold=1.2)
+        phase("theme", [f"02:31:00–02:33:00 · 2m · {next_theme}"], b"t", hold=1.2, colors=True)
         published = appearance.terminal_events(list(events))
         published.append([round(time.monotonic() - began, 4), "o", ""])
         clip_text = "".join(event[2] for event in published if event[1] == "o")

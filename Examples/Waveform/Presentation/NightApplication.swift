@@ -1,12 +1,12 @@
 import SwiftTUI
 
-struct WaveformApplication {
-    private let content: WaveformExampleView?
+struct NightApplication {
+    private let content: NightExampleView?
     nonisolated init() { content = nil }
-    nonisolated init(content: WaveformExampleView) { self.content = content }
+    nonisolated init(content: NightExampleView) { self.content = content }
 }
 
-extension WaveformApplication: SwiftTUIRuntime.App {
+extension NightApplication: SwiftTUIRuntime.App {
     var body: some Scene {
         WindowGroup("Waveform example") {
             if let content { content }

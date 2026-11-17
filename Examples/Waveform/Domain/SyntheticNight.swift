@@ -2,7 +2,7 @@ import Foundation
 import Chio
 
 /// Entirely synthetic signals. No recording, patient data or clinical inference.
-struct WaveformNight {
+struct SyntheticNight {
     static let sampleRate = 25
     static let pressurePadding = 0.5
     static let seconds = 8 * 60 * 60
@@ -106,7 +106,7 @@ struct WaveformNight {
 }
 
 
-extension WaveformNight {
+extension SyntheticNight {
     func pressureBounds(in indices: Range<Int>) -> ClosedRange<Double>? {
         var minimum: Double?
         var maximum: Double?
@@ -121,7 +121,7 @@ extension WaveformNight {
     }
 
     /// Density means event starts per ten minutes, with the earliest window winning ties.
-    var eventWindows: [WaveformWindow] {
+    var eventWindows: [NightWindow] {
         let ordered = events.sorted { $0.seconds.lowerBound < $1.seconds.lowerBound }
         var bestStart = 0
         var bestCount = 0
@@ -142,12 +142,12 @@ extension WaveformNight {
             let event = cluster[cluster.count / 2]
             center = event.seconds.lowerBound + event.seconds.count / 2
         }
-        return [WaveformWindow(start: 0, length: .night),
-                WaveformWindow(start: bestStart, length: .tenMinutes),
-                WaveformWindow(start: center - 60, length: .twoMinutes)]
+        return [NightWindow(start: 0, length: .night),
+                NightWindow(start: bestStart, length: .tenMinutes),
+                NightWindow(start: center - 60, length: .twoMinutes)]
     }
 
-    func nextEventWindow(after window: WaveformWindow) -> WaveformWindow {
+    func nextEventWindow(after window: NightWindow) -> NightWindow {
         let windows = eventWindows
         switch window.length {
         case .night: return windows[1]

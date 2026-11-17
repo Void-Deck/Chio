@@ -185,8 +185,9 @@ view is passive, like `DotMatrix` and `HistoryChart`.
 
 ## Evidence so far
 
-The isolated Waveform study, since promoted to the [standalone example](../../Examples/Waveform/README.md), rendered a
-synthetic eight-hour, 25 Hz night through native SwiftTUI and Chio styles. Hosted
+The isolated Waveform study, since promoted to the
+[standalone example](../../Examples/Waveform/README.md), rendered a synthetic
+eight-hour, 25 Hz night through native SwiftTUI and Chio styles. Hosted
 captures, rendered with `Scripts/docs/render-raster.py` and including animated
 pan and zoom sequences driven by real key events, show the following:
 

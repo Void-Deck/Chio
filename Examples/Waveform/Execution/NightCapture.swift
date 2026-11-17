@@ -4,10 +4,10 @@ import SwiftTUI
 
 /// Bounded native hosted captures. Animation delays belong to the exported document.
 @MainActor
-enum WaveformCapture {
-    static func export(_ application: WaveformApplication, width: Int, height: Int, style: ChioStyle,
-                       sequence: WaveformCommand.CaptureSequence?, initialWindow: WaveformWindow,
-                       frameCount: Int, delayMS: Int, eventWindows: [WaveformWindow]) async throws {
+enum NightCapture {
+    static func export(_ application: NightApplication, width: Int, height: Int, style: ChioStyle,
+                       sequence: NightCommand.CaptureSequence?, initialWindow: NightWindow,
+                       frameCount: Int, delayMS: Int, eventWindows: [NightWindow]) async throws {
         let recorder = Recorder(size: CellSize(width: width, height: height))
         recorder.prepare(after: nil, window: initialWindow)
         let surface = HostedRasterSurface(surfaceSize: recorder.size, appearance: .fallback,
@@ -49,7 +49,7 @@ enum WaveformCapture {
                         frames.append(contentsOf: Array(repeating: held, count: 4))
                     }
                 case .zoom:
-                    for number in 1..<WaveformWindow.Length.ordered.count {
+                    for number in 1..<NightWindow.Length.ordered.count {
                         let next = window.zoomed(1)
                         recorder.prepare(after: current.sequence, window: next)
                         session.send(.key(.character("+")))
@@ -96,7 +96,7 @@ enum WaveformCapture {
 
         init(size: CellSize) { self.size = size }
 
-        func prepare(after sequence: UInt64?, window: WaveformWindow) {
+        func prepare(after sequence: UInt64?, window: NightWindow) {
             captured = nil
             after = sequence
             expectedHeader = "\(window.clockRange) · \(window.length.rawValue)"

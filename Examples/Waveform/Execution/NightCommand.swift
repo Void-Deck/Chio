@@ -1,9 +1,9 @@
 import Chio
 import SwiftTUI
 
-package struct WaveformCommand {
+package struct NightCommand {
     @Option(help: "Theme: default, light or btop.") var theme: Appearance = .default
-    @Option(help: "Window: 8h, 1h, 10m, 2m or 30s.") var window: WaveformWindow.Length = .twoMinutes
+    @Option(help: "Window: 8h, 1h, 10m, 2m or 30s.") var window: NightWindow.Length = .twoMinutes
     @Option(help: "Window start clock HH:MM, from 22:31 through 06:30.") var start = "00:30"
     @Flag(help: "Show public HistoryChart beside the flow envelope.") var compare = false
     @Flag(help: "Print a bounded hosted raster as JSON pixels.") var capture = false
@@ -43,13 +43,13 @@ package struct WaveformCommand {
               (0..<24).contains(hour), (0..<60).contains(minute) else {
             throw ValidationError("Use a clock time in HH:MM format.")
         }
-        let offset = (hour * 60 + minute - WaveformNight.startMinute + 1440) % 1440 * 60
-        guard offset < WaveformNight.seconds else { throw ValidationError("Start must be inside 22:31–06:31.") }
+        let offset = (hour * 60 + minute - SyntheticNight.startMinute + 1440) % 1440 * 60
+        guard offset < SyntheticNight.seconds else { throw ValidationError("Start must be inside 22:31–06:31.") }
         return offset
     }
 }
 
-extension WaveformCommand: AsyncParsableCommand {
+extension NightCommand: AsyncParsableCommand {
     package mutating func validate() throws {
         guard (60...240).contains(width), (24...100).contains(height) else {
             throw ValidationError("Use 60...240 columns and 24...100 rows for capture.")
@@ -66,19 +66,19 @@ extension WaveformCommand: AsyncParsableCommand {
     @MainActor
     package mutating func run() async throws {
         let offset = try startOffset()
-        let visible: WaveformWindow
-        let night = WaveformNight.synthetic()
+        let visible: NightWindow
+        let night = SyntheticNight.synthetic()
         if captureSequence == .events {
             visible = night.eventWindows[0]
         } else if captureSequence == .zoom {
-            visible = WaveformWindow(start: 0, length: .night, zoomCenterSecond: offset)
+            visible = NightWindow(start: 0, length: .night, zoomCenterSecond: offset)
         } else {
-            visible = WaveformWindow(start: offset, length: window)
+            visible = NightWindow(start: offset, length: window)
         }
-        let view = WaveformExampleView(night: night, window: visible, appearance: theme, compare: compare)
-        let application = WaveformApplication(content: view)
+        let view = NightExampleView(night: night, window: visible, appearance: theme, compare: compare)
+        let application = NightApplication(content: view)
         if capture {
-            try await WaveformCapture.export(application, width: width, height: height, style: theme.style,
+            try await NightCapture.export(application, width: width, height: height, style: theme.style,
                                                   sequence: captureSequence, initialWindow: visible,
                                                   frameCount: frames, delayMS: delayMs, eventWindows: night.eventWindows)
         } else {
@@ -87,7 +87,7 @@ extension WaveformCommand: AsyncParsableCommand {
     }
 }
 
-extension WaveformCommand.Appearance: ExpressibleByArgument {}
-extension WaveformWindow.Length: ExpressibleByArgument {}
+extension NightCommand.Appearance: ExpressibleByArgument {}
+extension NightWindow.Length: ExpressibleByArgument {}
 
-extension WaveformCommand.CaptureSequence: ExpressibleByArgument {}
+extension NightCommand.CaptureSequence: ExpressibleByArgument {}
