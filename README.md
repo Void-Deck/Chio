@@ -8,9 +8,9 @@ Charm-inspired themes, searchable lists and checklists, form fields, file
 selection, maps, dot matrices, and Markdown compose with native SwiftTUI views. SwiftTUI handles
 rendering, layout, input, and focus.
 
-[![Watch Chio's dashboard recording](Docs/Media/dashboard.png)](https://echoz.github.io/Chio/)
+[![Watch Chio's dashboard recording](Docs/Media/dashboard.png)](https://void-deck.github.io/Chio/)
 
-[▶ Watch Chio in action](https://echoz.github.io/Chio/) · [Examples and controls](Docs/Examples.md) · [0.2.2 release record](Docs/Releases/0.2.2.md)
+[▶ Watch Chio in action](https://void-deck.github.io/Chio/) · [Examples and controls](Docs/Examples.md) · [0.2.2 release record](Docs/Releases/0.2.2.md)
 
 ## Development and stability
 

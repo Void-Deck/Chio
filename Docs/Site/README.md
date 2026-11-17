@@ -1,6 +1,6 @@
 # Chio showcase website
 
-This is the source root of the public [Chio showcase](https://echoz.github.io/Chio/).
+This is the source root of the public [Chio showcase](https://void-deck.github.io/Chio/).
 It presents recorded terminal interactions, static theme previews, public API
 fragments and matching launch commands. The
 [package overview](../../README.md) retains the project's personal-software and
