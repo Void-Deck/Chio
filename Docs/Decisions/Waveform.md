@@ -17,42 +17,64 @@ reduction. Slow signals, such as one-minute leak, remain `HistoryChart` content.
 
 ## Proposed contract
 
-- **Samples.** A checked, immutable fixed-rate series: a start offset (`Duration`),
-  a positive sample rate, and finite values, with `nil` for gaps. Construction
-  and decoding reject a non-finite value, a non-positive rate or an offset outside
-  the `Duration` range that `HistoryChart` uses. A gap is never zero.
+Owner decisions on 2026-11-16 settle the reduction and the scale ownership.
+The other rules below are the coordinator's proposal and await acceptance.
+
+- **Samples.** `WaveformSamples` is a checked, immutable fixed-rate series. It
+  holds a start offset (`Duration`), a positive finite sample rate in hertz and
+  values of type `Double?`, where `nil` marks a gap. A gap never reads as zero.
+  The throwing initializer reports a typed error for a non-finite value, a
+  non-positive or non-finite rate, an offset outside the range that
+  `HistoryInterval` admits, an empty series or more than 2,097,152 samples
+  (about 23 hours at 25 Hz). The view takes only a checked series, so it has no
+  runtime failure path.
 - **Window.** The application supplies the visible window as a `HistoryInterval`.
-  It owns panning and zooming, and the view starts no timers or input handling.
-- **Reduction.** Chio reduces the samples behind each braille dot column to their
-  minimum and maximum. A column with no known sample draws as a gap. When a column
-  covers less than one sample, the view uses the neighbouring samples, so the trace
-  stays continuous at high zoom.
-- **Style.** `bipolar` mirrors the envelope around zero, and is used for flow.
-  `magnitude` draws from the lower bound, and is used for pressure. Scale reuses
-  `Sparkline.Scale` (`.fixed` or `.automatic`). Colors come from the inherited
-  `ChioStyle`; the trace uses the accent, and gaps use muted text.
-- **Event bands.** Optional application-supplied time ranges, each with a short
-  label and a semantic tone. Labels always carry the meaning; color only
-  reinforces it. Chio doesn't decode or classify events.
-- **Accessibility.** The view exposes a text summary: window, value range and the
-  number of gaps and events.
+  It owns panning, zooming and any cursor. The view is passive: it starts no
+  timers and handles no input.
+- **Reduction.** Every braille dot column draws the minimum and maximum of the
+  known samples it covers, at every zoom level. The view never substitutes a
+  trend or an average. An application that wants a coarse trend computes it and
+  draws it as a second, lower-rate `Waveform`. A column with no known sample draws
+  as a gap. A column that covers less than one sample interval uses the two
+  neighbouring known samples, so the trace stays continuous at high zoom; it does
+  not join across a gap. Reduction reads only the samples inside the window.
+- **Scale.** The application chooses the vertical scale for each view, and there is
+  no default:
+  - `.fixed(lower:upper:)` takes finite bounds with the lower below the upper;
+    its throwing factory rejects anything else.
+  - `.automatic(padding:)` uses the minimum and maximum known samples inside the
+    window, ignores gaps, adds the non-negative finite padding on both sides and
+    rounds each bound outwards to a whole unit. A constant window is centred
+    within one unit of padding. A window with no known sample draws only gaps.
+  `Waveform` owns this type; it doesn't reuse `Sparkline.Scale`.
+- **Style.** `.bipolar` draws around zero and requires zero inside the scale; it
+  draws a muted zero axis. `.magnitude` draws upwards from the scale's lower bound.
+  Colors come from the inherited `ChioStyle`: the trace uses the accent, and the
+  axis and gaps use muted text.
+- **Traces.** One view draws one trace. Applications stack views that share one
+  `HistoryInterval` to align several signals, as the study does with flow and
+  pressure.
+- **Event bands.** Optional application-supplied ranges, at most 4,096, each with a
+  start, a duration, a short label and a semantic tone (`.muted`, `.warning` or
+  `.error`). The view draws a label at its start column only when the label fits
+  without touching the neighbouring labels, with one blank cell between them.
+  Otherwise it draws a `▾` marker, and markers in one column merge to the most
+  severe tone. Labels always carry the meaning; color only reinforces it. Chio
+  doesn't decode, count or classify events. Summaries such as counts are
+  application composition.
+- **Limits.** As with `HistoryChart`, a proposal above 512 columns or 64 rows
+  replaces the whole plot with an explicit unavailable message. The view never
+  silently clips or rescales.
+- **Accessibility.** The view exposes a text summary: the window, the visible value
+  range, the number of gaps and the number and labels of the visible events.
 
 ## Boundaries
 
 Chio performs no clinical interpretation: no AHI, no thresholds and no
 classification of readings, as with `MeasurementGauge`. Fixtures, tests and
 recordings are synthetic, because Chio is public. Pneuma owns collection,
-storage, clocks, sample timing and event decoding. The view is passive, like
-`DotMatrix` and `HistoryChart`.
-
-## Open questions
-
-- Should a playhead or cursor marker be part of the view, or application
-  composition?
-- Does one view draw several aligned traces, or does the application stack
-  several views that share a window?
-- What bounds apply to sample counts and window length, to keep reduction cost
-  bounded?
+storage, clocks, sample timing, event decoding and any trend calculation. The
+view is passive, like `DotMatrix` and `HistoryChart`.
 
 ## Evidence so far
 
