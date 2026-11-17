@@ -62,7 +62,7 @@ def main():
             raise RuntimeError('Selected finish is missing')
         path = output / f'{name}.json'
         path.write_text(capture.stdout)
-        subprocess.run([sys.executable, str(root / 'Scripts/maps/render-snapshot.py'),
+        subprocess.run([sys.executable, str(root / 'Scripts/docs/render-raster.py'),
                         str(path), str(output / f'{name}.png')], check=True, timeout=15)
         manifest.append({'name': name, 'arguments': command[1:], 'width': len(cells[0]), 'height': len(cells)})
     (output / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')

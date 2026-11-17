@@ -73,7 +73,7 @@ enum MapCapture {
         print(String(decoding: try encoder.encode(results), as: UTF8.self))
     }
 
-    /// Retains the existing per-cell JSON interchange used by render-snapshot.py.
+    /// Retains the existing per-cell JSON interchange used by render-raster.py.
     static func export(_ raster: RasterSurface, background: Color, foreground: Color) throws {
         let cells = raster.cells.map { row in
             row.map { cell in

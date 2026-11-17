@@ -40,6 +40,10 @@
       "document": "Spikes/MapRouting/README.md"
     },
     {
+      "path": "Spikes/Waveform",
+      "document": "Spikes/Waveform/README.md"
+    },
+    {
       "path": "Examples/DotMatrix",
       "document": "Examples/DotMatrix/README.md"
     },
@@ -84,7 +88,8 @@
     "Docs/Decisions/Themes.md",
     "Examples/Maps/Fixtures/Provenance.md",
     "Examples/Maps/Fixtures/OnlineTiles/Provenance.md",
-    "Docs/Decisions/DotMatrix.md"
+    "Docs/Decisions/DotMatrix.md",
+    "Docs/Decisions/Waveform.md"
   ],
   "deliverables": [
     {
@@ -104,6 +109,11 @@
     {
       "id": "Chio.FormField",
       "root": "Sources/Chio/Forms",
+      "parent": "Chio"
+    },
+    {
+      "id": "Chio.Waveform",
+      "root": "Sources/Chio/Waveform",
       "parent": "Chio"
     },
     {

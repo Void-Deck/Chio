@@ -192,13 +192,13 @@ Swift modules nor public names. Maps and Markdown keep their complete implementa
 together. Style owns shared palette/environment integration; Search owns matching
 used by several controls. KeyboardHelp owns expanded help and shared shortcut
 values; KeyHint and KeyHints each own their directly usable view. DurationText,
-HistoryChart, InstrumentReadout, MeasurementGauge and Sparkline have distinct
+HistoryChart, Waveform, InstrumentReadout, MeasurementGauge and Sparkline have distinct
 component roots. HistoryChart owns its checked history values; MeasurementGauge
 owns its nested annotations. Instrumentation retains shared native control styles.
 Forms, Composition and Feedback retain related styles and presentation. Only
 populated responsibility groups exist. Examples keep their application structure.
 
-The [library guide](../Sources/Chio/README.md) links all seventeen public views.
+The [library guide](../Sources/Chio/README.md) links all eighteen public views.
 Each view has its own source-root README and a separate nested entry under Chio
 in [.documentation-rules.json](../.documentation-rules.json). Forms owns FormField;
 Composition owns StatusBar. Each is the sole public view at that source root, with
@@ -237,6 +237,7 @@ in Releases; avoid duplicating full contracts across documents.
 | Topic | Status and responsibility |
 | --- | --- |
 | [Dot matrix display](Decisions/DotMatrix.md) | Accepted public RGB/intensity frames, inherited dot style and passive presentation |
+| [Waveform](Decisions/Waveform.md) | Accepted: dense fixed-rate signals with a min/max envelope, gaps and event bands; not yet delivered |
 | <a id="theme"></a>[Styles and native control styling](Decisions/Themes.md) | Accepted |
 | <a id="compact-instrumentation"></a><a id="duration-presentation-and-example-owned-timekeeping"></a>[Compact instrumentation and duration display](Decisions/Instrumentation.md) | Accepted instrumentation and high-contrast target dials; tile deferred |
 | <a id="searchable-selection"></a><a id="searchable-multiple-choice"></a>[Searchable selection and membership](Decisions/SearchableSelection.md) | Accepted |

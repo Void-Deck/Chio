@@ -320,22 +320,22 @@ Review relevant names there manually; older tools require manual review too.
 ### Documentation coverage
 
 [.documentation-rules.json](../.documentation-rules.json) uses schema 2. Its
-ten module mappings under `Sources`, `Examples`, `Tests` and `Spikes` remain
-unchanged, with no exclusions. They link Design, Examples, Verification, the
-routing spike guide and the DotMatrix example guide. Current decisions, release
-guidance and map fixture provenance remain enrolled.
+eleven module mappings under `Sources`, `Examples`, `Tests` and `Spikes`, including
+the waveform spike, have no exclusions. They link Design, Examples, Verification, the
+routing and waveform spike guides and the DotMatrix example guide. Current
+decisions, release guidance and map fixture provenance remain enrolled.
 
 The copied checker discovers immediate children only under these explicit
 `moduleRoots`; it does not search outside them. `Vendor` is absent from those
 roots, so the upstream-owned checker modules are outside Chio's documentation
 inventory. No exclusion or scope change is needed for the reviewed copy.
 
-The deliverable inventory declares twenty-two source-root guides: the Chio library,
-its seventeen public views, three example applications and the static showcase.
+The deliverable inventory declares twenty-three source-root guides: the Chio library,
+its eighteen public views, three example applications and the static showcase.
 Each view has a distinct real source root and its own `README.md`; the library
 is its declared parent. The [library guide](../Sources/Chio/README.md) links those
 views, and [source ownership](Design.md#source-ownership) explains their boundaries.
-The gate checks 61 unique documents, ten modules and twenty-two deliverables.
+The gate checks 64 unique documents, eleven modules and twenty-three deliverables.
 
 Schema 2 rejects duplicate roots, invalid parents, missing or blank READMEs,
 symlinks and invalid local Markdown file destinations. Module discovery still
@@ -1687,10 +1687,14 @@ and three measured fresh sessions per scene/allocation; small allocations measur
 the compact summary. Fixture I/O is excluded. These measurements replace the
 spike's separate preparation/drawing/raster timings and do not measure SSH latency.
 Use `--detail` and `--source` to choose retained input and presentation.
-`Scripts/maps/render-snapshot.py` converts `--snapshot-json` exports into
+`Scripts/docs/render-raster.py` converts `--snapshot-json` exports into
 inspection previews with Pillow and explicit text/braille fonts. Its default
 fonts are macOS paths; supply `--font` and `--symbol-font` elsewhere. It is an
-optional capture tool, not a Swift package or CI dependency.
+optional capture tool, not a Swift package or CI dependency. The same renderer
+accepts frame documents with positive `delayMS` values and equally sized `cells`
+rasters. Multiple frames produce APNG with a `.png` suffix or animated GIF with
+`.gif`; GIF quantizes colors. These animations retain hosted raster evidence,
+not emulator appearance or terminal timing evidence.
 
 Shape changes additionally compare land and water fills without labels, preserve
 holes and seam behavior, and exercise unsafe-candidate/work-budget fallback.
