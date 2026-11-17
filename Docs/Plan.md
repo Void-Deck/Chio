@@ -80,7 +80,7 @@ The user accepted the [waveform contract](Decisions/Waveform.md) on 2026-11-16.
 The consumer is Pneuma, which records CPAP blower flow and pressure at 25 Hz.
 [PR #40](https://github.com/Void-Deck/Chio/pull/40) carries the implemented public
 `Waveform`, the accepted contract, visual study and shared raster renderer.
-It includes 57 spec-derived tests written by a separate author from the contract
+It includes 59 spec-derived tests written by a separate author from the contract
 and public interface, plus supplementary implementer tests. The study renders
 through the public view. Independent review is in progress; platform qualification
 remains a separate gate.

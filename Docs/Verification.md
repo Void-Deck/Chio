@@ -320,8 +320,8 @@ Review relevant names there manually; older tools require manual review too.
 ### Documentation coverage
 
 [.documentation-rules.json](../.documentation-rules.json) uses schema 2. Its
-eleven module mappings under `Sources`, `Examples`, `Tests` and `Spikes` remain
-unchanged, with no exclusions. They link Design, Examples, Verification, the
+eleven module mappings under `Sources`, `Examples`, `Tests` and `Spikes`, including
+the waveform spike, have no exclusions. They link Design, Examples, Verification, the
 routing and waveform spike guides and the DotMatrix example guide. Current
 decisions, release guidance and map fixture provenance remain enrolled.
 

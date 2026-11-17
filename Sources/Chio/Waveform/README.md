@@ -46,8 +46,9 @@ The separate-author spec suites provide contract evidence:
 [sample validation](../../../Tests/ChioTests/Waveform/Domain/WaveformSamplesSpecTests.swift),
 [scale validation](../../../Tests/ChioTests/Waveform/Domain/WaveformScaleSpecTests.swift),
 [event validation](../../../Tests/ChioTests/Waveform/Domain/WaveformEventSpecTests.swift),
-[public rendering](../../../Tests/ChioTests/Waveform/Presentation/WaveformSpecTests.swift) and
-[clarified drawing rules](../../../Tests/ChioTests/Waveform/Presentation/WaveformClarificationSpecTests.swift).
+[public rendering](../../../Tests/ChioTests/Waveform/Presentation/WaveformSpecTests.swift),
+[clarified drawing rules](../../../Tests/ChioTests/Waveform/Presentation/WaveformClarificationSpecTests.swift) and
+[events far outside the window](../../../Tests/ChioTests/Waveform/Presentation/WaveformRangeSpecTests.swift).
 
 [Supplementary tests](../../../Tests/ChioTests/Waveform/Presentation/WaveformRenderingTests.swift)
 exercise internal boundaries, the narrow-window event regression, and public
