@@ -42,7 +42,15 @@ See the [accepted contract](../../../Docs/Decisions/Waveform.md) for exact rules
 [WaveformBounds.swift](Presentation/WaveformBounds.swift) and
 [WaveformEventRow.swift](Presentation/WaveformEventRow.swift) own pure reduction,
 scale mapping and placement. Domain files own checked values.
+The separate-author spec suites provide contract evidence:
+[sample validation](../../../Tests/ChioTests/Waveform/Domain/WaveformSamplesSpecTests.swift),
+[scale validation](../../../Tests/ChioTests/Waveform/Domain/WaveformScaleSpecTests.swift),
+[event validation](../../../Tests/ChioTests/Waveform/Domain/WaveformEventSpecTests.swift),
+[public rendering](../../../Tests/ChioTests/Waveform/Presentation/WaveformSpecTests.swift) and
+[clarified drawing rules](../../../Tests/ChioTests/Waveform/Presentation/WaveformClarificationSpecTests.swift).
+
 [Supplementary tests](../../../Tests/ChioTests/Waveform/Presentation/WaveformRenderingTests.swift)
-exercise internal boundaries and render a 720,000-sample series. The
+exercise internal boundaries, the narrow-window event regression, and public
+rendering at 720,000 samples and the maximum admitted sample count. The
 [study](../../../Spikes/Waveform/README.md) consumes the public view with hosted
 captures. See [Verification](../../../Docs/Verification.md) for repository gates.

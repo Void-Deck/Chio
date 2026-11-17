@@ -73,4 +73,33 @@ struct WaveformRenderingTests {
         #expect(reduced.knownCount == WaveformSamples.maximumCount)
         #expect(reduced.columns[0] == WaveformColumns.Span(minimum: 3, maximum: 3))
     }
+
+    @Test func maximumSeriesRendersExactSummary() throws {
+        let samples = try WaveformSamples(start: .zero, rate: 100, values: Array(repeating: 3, count: WaveformSamples.maximumCount))
+        let window = try HistoryInterval(start: .zero, end: .seconds(28_800))
+        let scale = try WaveformScale.fixed(lower: 0, upper: 4)
+        let snapshot = DefaultRenderer().render(
+            Waveform(samples, window: window, scale: scale, mode: .magnitude).frame(width: 512, height: 8),
+            proposal: ProposedSize(width: 512, height: 8))
+        #expect(snapshot.semanticSnapshot.accessibilityNodes.contains {
+            $0.label == "Waveform: 2097152 known samples, 0 gaps in window. Minimum: 3.0. Maximum: 3.0. Events: 0."
+        })
+        #expect(snapshot.rasterSurface.lines.contains { $0.unicodeScalars.contains { (0x2801...0x28FF).contains($0.value) } })
+    }
+
+    @Test func longEventBeforeNanosecondWindowRendersAtLeftEdge() throws {
+        let windowStart = Duration.seconds(10_000_000_000)
+        let window = try HistoryInterval(start: windowStart, end: windowStart + .nanoseconds(1))
+        let samples = try WaveformSamples(start: windowStart, rate: 1, values: [3])
+        let event = try WaveformEvent(start: .zero, duration: .seconds(20_000_000_000), label: "long", tone: .warning)
+        let scale = try WaveformScale.fixed(lower: 0, upper: 4)
+        let snapshot = DefaultRenderer().render(
+            Waveform(samples, window: window, scale: scale, mode: .magnitude, events: [event]).frame(width: 20, height: 4),
+            proposal: ProposedSize(width: 20, height: 4))
+        #expect(snapshot.rasterSurface.lines.first?.hasPrefix("long") == true)
+        #expect(snapshot.semanticSnapshot.accessibilityNodes.contains {
+            $0.label == "Waveform: 1 known samples, 0 gaps in window. Minimum: 3.0. Maximum: 3.0. Events: 1 (long)."
+        })
+    }
+
 }

@@ -198,7 +198,7 @@ owns its nested annotations. Instrumentation retains shared native control style
 Forms, Composition and Feedback retain related styles and presentation. Only
 populated responsibility groups exist. Examples keep their application structure.
 
-The [library guide](../Sources/Chio/README.md) links all seventeen public views.
+The [library guide](../Sources/Chio/README.md) links all eighteen public views.
 Each view has its own source-root README and a separate nested entry under Chio
 in [.documentation-rules.json](../.documentation-rules.json). Forms owns FormField;
 Composition owns StatusBar. Each is the sole public view at that source root, with

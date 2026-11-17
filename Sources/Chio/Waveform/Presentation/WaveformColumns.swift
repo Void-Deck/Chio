@@ -12,32 +12,33 @@ struct WaveformColumns {
     let knownCount: Int
     let gapCount: Int
 
-    static func seconds(_ duration: Duration) -> Double {
-        let parts = duration.components
-        return Double(parts.seconds) + Double(parts.attoseconds) / 1e18
-    }
-
     init(samples: WaveformSamples, window: HistoryInterval, count: Int) {
-        let startSeconds = Self.seconds(window.range.lowerBound - samples.start)
-        let duration = Self.seconds(window.range.upperBound - window.range.lowerBound)
-        let start = startSeconds * samples.rate
-        let end = Self.seconds(window.range.upperBound - samples.start) * samples.rate
-        func index(_ value: Double, rounding: FloatingPointRoundingRule) -> Int {
-            if value <= 0 { return 0 }
-            if value >= Double(samples.values.count) { return samples.values.count }
-            return Int(value.rounded(rounding))
+        let windowStartSeconds = WaveformTime.seconds(window.range.lowerBound - samples.start)
+        let windowDurationSeconds = WaveformTime.seconds(window.range.upperBound - window.range.lowerBound)
+        let windowStartPosition = windowStartSeconds * samples.rate
+        let windowEndPosition = WaveformTime.seconds(window.range.upperBound - samples.start) * samples.rate
+        func sampleIndex(at position: Double, rounding: FloatingPointRoundingRule) -> Int {
+            // Saturate even infinite products before conversion. The admitted
+            // sample count bounds every converted position to at most 2,097,152.
+            if position <= 0 { return 0 }
+            if position >= Double(samples.values.count) { return samples.values.count }
+            return Int(position.rounded(rounding))
         }
-        let first = index(start, rounding: .up)
-        let limit = min(samples.values.count, index(end, rounding: .down) + (end >= 0 && end < Double(samples.values.count) ? 1 : 0))
-        var low: Double?
-        var high: Double?
+        let firstSampleIndex = sampleIndex(at: windowStartPosition, rounding: .up)
+        let isEndNonnegative = windowEndPosition >= 0
+        let isEndBeforeSampleLimit = windowEndPosition < Double(samples.values.count)
+        let includesEndSample = isEndNonnegative && isEndBeforeSampleLimit
+        let endSampleIndex = sampleIndex(at: windowEndPosition, rounding: .down)
+        let sampleLimit = min(samples.values.count, endSampleIndex + (includesEndSample ? 1 : 0))
+        var windowMinimum: Double?
+        var windowMaximum: Double?
         var known = 0
         var gaps = 0
         var wasGap = false
-        for position in first..<max(first, limit) {
-            if let value = samples.values[position] {
-                low = min(low ?? value, value)
-                high = max(high ?? value, value)
+        for sampleIndex in firstSampleIndex..<max(firstSampleIndex, sampleLimit) {
+            if let value = samples.values[sampleIndex] {
+                windowMinimum = min(windowMinimum ?? value, value)
+                windowMaximum = max(windowMaximum ?? value, value)
                 known += 1
                 wasGap = false
             } else {
@@ -45,47 +46,53 @@ struct WaveformColumns {
                 wasGap = true
             }
         }
-        minimum = low
-        maximum = high
+        minimum = windowMinimum
+        maximum = windowMaximum
         knownCount = known
         gapCount = gaps
         guard count > 0 else { columns = []; return }
-        guard first < limit else { columns = Array(repeating: nil, count: count); return }
+        guard firstSampleIndex < sampleLimit else { columns = Array(repeating: nil, count: count); return }
         var output: [Span?] = []
         output.reserveCapacity(count)
         for column in 0..<count {
-            let a = (startSeconds + Double(column) / Double(count) * duration) * samples.rate
-            let b = (startSeconds + Double(column + 1) / Double(count) * duration) * samples.rate
-            let lower = max(first, index(a, rounding: .up))
-            let upper = min(limit, column == count - 1 ? limit : index(b, rounding: .up))
-            var minimum: Double?
-            var maximum: Double?
-            for position in lower..<max(lower, upper) {
-                if let value = samples.values[position] {
-                    minimum = min(minimum ?? value, value)
-                    maximum = max(maximum ?? value, value)
+            let columnStartPosition = (windowStartSeconds + Double(column) / Double(count) * windowDurationSeconds) * samples.rate
+            let columnEndPosition = (windowStartSeconds + Double(column + 1) / Double(count) * windowDurationSeconds) * samples.rate
+            let firstColumnSampleIndex = max(firstSampleIndex, sampleIndex(at: columnStartPosition, rounding: .up))
+            let columnSampleLimit = min(sampleLimit, column == count - 1 ? sampleLimit : sampleIndex(at: columnEndPosition, rounding: .up))
+            var columnMinimum: Double?
+            var columnMaximum: Double?
+            for sampleIndex in firstColumnSampleIndex..<max(firstColumnSampleIndex, columnSampleLimit) {
+                if let value = samples.values[sampleIndex] {
+                    columnMinimum = min(columnMinimum ?? value, value)
+                    columnMaximum = max(columnMaximum ?? value, value)
                 }
             }
-            if let minimum, let maximum {
-                output.append(Span(minimum: minimum, maximum: maximum))
-            } else if lower == upper, a >= Double(first), b <= Double(limit - 1), a >= 0,
-                      a < Double(samples.values.count - 1) {
-                let left = Int(a.rounded(.down))
-                if let x = samples.values[left], let y = samples.values[left + 1] {
-                    let v = Self.blend(x, y, fraction: a - Double(left))
-                    let w = Self.blend(x, y, fraction: b - Double(left))
-                    output.append(Span(minimum: min(v, w), maximum: max(v, w)))
+            let hasNoSample = firstColumnSampleIndex == columnSampleLimit
+            let startsInsideWindowSamples = columnStartPosition >= Double(firstSampleIndex)
+            let endsInsideWindowSamples = columnEndPosition <= Double(sampleLimit - 1)
+            let hasLeftNeighbour = columnStartPosition >= 0
+            let hasRightNeighbour = columnStartPosition < Double(samples.values.count - 1)
+            let canInterpolate = hasNoSample && startsInsideWindowSamples && endsInsideWindowSamples
+                && hasLeftNeighbour && hasRightNeighbour
+            if let columnMinimum, let columnMaximum {
+                output.append(Span(minimum: columnMinimum, maximum: columnMaximum))
+            } else if canInterpolate {
+                let leftSampleIndex = sampleIndex(at: columnStartPosition, rounding: .down)
+                if let leftValue = samples.values[leftSampleIndex], let rightValue = samples.values[leftSampleIndex + 1] {
+                    let startValue = Self.blend(leftValue, rightValue, fraction: columnStartPosition - Double(leftSampleIndex))
+                    let endValue = Self.blend(leftValue, rightValue, fraction: columnEndPosition - Double(leftSampleIndex))
+                    output.append(Span(minimum: min(startValue, endValue), maximum: max(startValue, endValue)))
                 } else { output.append(nil) }
             } else { output.append(nil) }
         }
         columns = output
     }
 
-    private static func blend(_ a: Double, _ b: Double, fraction: Double) -> Double {
-        let magnitude = max(abs(a), abs(b))
+    private static func blend(_ leftValue: Double, _ rightValue: Double, fraction: Double) -> Double {
+        let magnitude = max(abs(leftValue), abs(rightValue))
         guard magnitude > 0 else { return 0 }
-        let value = a / magnitude * (1 - fraction) + b / magnitude * fraction
-        return min(max(a, b), max(min(a, b), min(1, max(-1, value)) * magnitude))
+        let blendedValue = leftValue / magnitude * (1 - fraction) + rightValue / magnitude * fraction
+        return min(max(leftValue, rightValue), max(min(leftValue, rightValue), min(1, max(-1, blendedValue)) * magnitude))
     }
 }
 

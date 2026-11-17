@@ -1,10 +1,10 @@
 /// Explicit vertical bounds or visible-window scaling.
 public struct WaveformScale {
-    enum Bounds {
+    enum Rule {
         case fixed(lower: Double, upper: Double)
         case automatic(padding: Double)
     }
-    let bounds: Bounds
+    let rule: Rule
 
     public enum ValidationError {
         case nonFiniteBound, nonIncreasingBounds, invalidPadding
@@ -13,12 +13,12 @@ public struct WaveformScale {
     public static func fixed(lower: Double, upper: Double) throws(ValidationError) -> WaveformScale {
         guard lower.isFinite, upper.isFinite else { throw .nonFiniteBound }
         guard lower < upper else { throw .nonIncreasingBounds }
-        return WaveformScale(bounds: .fixed(lower: lower, upper: upper))
+        return WaveformScale(rule: .fixed(lower: lower, upper: upper))
     }
 
     public static func automatic(padding: Double) throws(ValidationError) -> WaveformScale {
         guard padding.isFinite, padding >= 0 else { throw .invalidPadding }
-        return WaveformScale(bounds: .automatic(padding: padding))
+        return WaveformScale(rule: .automatic(padding: padding))
     }
 }
 
@@ -28,5 +28,5 @@ extension WaveformScale.ValidationError: Error {}
 extension WaveformScale.ValidationError: Hashable {}
 extension WaveformScale.ValidationError: Sendable {}
 
-extension WaveformScale.Bounds: Hashable {}
-extension WaveformScale.Bounds: Sendable {}
+extension WaveformScale.Rule: Hashable {}
+extension WaveformScale.Rule: Sendable {}

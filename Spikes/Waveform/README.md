@@ -103,8 +103,9 @@ shared with `HistoryChart` or `Sparkline`.
 
 Flow uses fixed −40…+40 L/min bipolar scaling. Pressure uses a magnitude plot:
 the application computes visible known extrema with 0.5 cmH₂O padding rounded
-outwards for its axis captions and supplies those fixed bounds. All-missing
-pressure reports no known samples. Magnitude plots fill to the lower bound.
+outwards for its axis captions and supplies the same automatic rule to the public
+view. Both use the inclusive visible window. All-missing pressure reports no known
+samples. Magnitude plots fill to the lower bound.
 
 The application counts supplied OA, CA, H and FL labels. An empty window says
 `no events`; mask-off remains named in the heading. These counts imply no
@@ -130,7 +131,14 @@ own native layout, so their plot widths may differ slightly due to axis captions
 
 The original study motivated the accepted contract. This candidate migrates its
 hosted capture and real-key pan, zoom and event sequences to public `Waveform`.
-Supplementary implementer tests exercise internal reduction and render a full
-720,000-sample series. Independent spec-derived tests remain separate evidence.
+The separate-author spec suites provide contract evidence:
+[sample validation](../../Tests/ChioTests/Waveform/Domain/WaveformSamplesSpecTests.swift),
+[scale validation](../../Tests/ChioTests/Waveform/Domain/WaveformScaleSpecTests.swift),
+[event validation](../../Tests/ChioTests/Waveform/Domain/WaveformEventSpecTests.swift),
+[public rendering](../../Tests/ChioTests/Waveform/Presentation/WaveformSpecTests.swift) and
+[clarified drawing rules](../../Tests/ChioTests/Waveform/Presentation/WaveformClarificationSpecTests.swift).
+
+[Supplementary implementer tests](../../Tests/ChioTests/Waveform/Presentation/WaveformRenderingTests.swift)
+exercise internal reduction and public rendering through the maximum sample count.
 See [Verification](../../Docs/Verification.md) for repository and platform gates.
 A hosted capture does not establish real-terminal, Linux or live-device behavior.

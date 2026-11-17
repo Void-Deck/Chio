@@ -28,20 +28,21 @@ struct WaveformStudyView {
                     // The first row lines up with the view's event row, so axis labels match plot rows.
                     VStack(spacing: 0) { Text("evt"); Text("+40"); Spacer(); Text("0 ┤"); Spacer(); Text("−40") }
                         .foregroundStyle(style.colors.mutedText).frame(width: 4)
-                    publicPlot(samples: night.waveformFlow, mode: .bipolar, lower: -40, upper: 40, events: night.waveformEvents)
+                    publicPlot(samples: night.waveformFlow, mode: .bipolar, scale: Result { try WaveformScale.fixed(lower: -40, upper: 40) }, events: night.waveformEvents)
                 }
             }
         }
     }
 
     private var pressure: some View {
-        let bounds = night.pressureBounds(in: window.indices)
+        let pressureIndices = window.indices.lowerBound..<min(night.pressure.count, window.indices.upperBound + 1)
+        let bounds = night.pressureBounds(in: pressureIndices)
         return GroupBox("Pressure · cmH₂O · automatic") {
             if let bounds {
                 HStack(spacing: 1) {
                     VStack { Text(String(Int(bounds.upperBound))); Spacer(); Text(String(Int(bounds.lowerBound))) }
                         .foregroundStyle(style.colors.mutedText).frame(width: 4)
-                    publicPlot(samples: night.waveformPressure, mode: .magnitude, lower: bounds.lowerBound, upper: bounds.upperBound)
+                    publicPlot(samples: night.waveformPressure, mode: .magnitude, scale: Result { try WaveformScale.automatic(padding: WaveformStudyNight.pressurePadding) })
                 }
             } else {
                 Text("Mask off · no known pressure samples").foregroundStyle(style.colors.mutedText)
@@ -60,15 +61,14 @@ struct WaveformStudyView {
 
     @ViewBuilder
     private func publicPlot(samples: Result<WaveformSamples, any Error>, mode: WaveformMode,
-                            lower: Double, upper: Double, events: Result<[WaveformEvent], any Error> = .success([]),
+                            scale: Result<WaveformScale, any Error>, events: Result<[WaveformEvent], any Error> = .success([]),
                             wholeNight: Bool = false) -> some View {
         switch samples {
         case .success(let samples):
             switch Result(catching: {
                 let interval = try HistoryInterval(start: .seconds(wholeNight ? 0 : window.start),
                                                    end: .seconds(wholeNight ? WaveformStudyNight.seconds : window.end))
-                let scale = try WaveformScale.fixed(lower: lower, upper: upper)
-                return (interval, scale, try events.get())
+                return (interval, try scale.get(), try events.get())
             }) {
             case .success(let (interval, scale, events)):
                 Waveform(samples, window: interval, scale: scale, mode: mode, events: events)
@@ -80,7 +80,7 @@ struct WaveformStudyView {
 
     private var overview: some View {
         VStack(spacing: 0) {
-            publicPlot(samples: night.waveformMagnitude, mode: .magnitude, lower: 0, upper: 40,
+            publicPlot(samples: night.waveformMagnitude, mode: .magnitude, scale: Result { try WaveformScale.fixed(lower: 0, upper: 40) },
                        events: night.waveformEvents, wholeNight: true)
                 .overlay {
                     GeometryReader { geometry in

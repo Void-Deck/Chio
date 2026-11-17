@@ -23,7 +23,7 @@ public struct Waveform {
     private func unavailable(width: Int, height: Int) -> String? {
         if width > 512 || height > 64 { return "Waveform unavailable: allocation limit exceeded." }
         if events.count > Self.maximumEvents { return "Waveform unavailable: event limit exceeded." }
-        if mode == .bipolar, case .fixed(let lower, let upper) = scale.bounds,
+        if mode == .bipolar, case .fixed(let lower, let upper) = scale.rule,
            lower > 0 || upper < 0 { return "Waveform unavailable: zero is outside the fixed scale." }
         return nil
     }

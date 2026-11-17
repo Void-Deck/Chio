@@ -409,6 +409,34 @@ seeks and clocks. Local native style overrides remain available. No playback
 framework is added. See [the instruments example](Examples.md#instruments) and
 [the owning decision](Decisions/Instrumentation.md) for contracts and pending gates.
 
+## Waveform
+
+`Waveform` is an unreleased addition after 0.2.2. Use the current source checkout
+for this API. Supply checked fixed-rate samples, an explicit window and scale:
+
+```swift
+let samples = try WaveformSamples(start: .zero, rate: 25, values: [0, 2, -1, nil, 3])
+let window = try HistoryInterval(start: .zero, end: .seconds(1))
+let scale = try WaveformScale.fixed(lower: -4, upper: 4)
+VStack(alignment: .leading, spacing: 0) {
+    Text("Signal · application units")
+    Waveform(samples, window: window, scale: scale, mode: .bipolar)
+        .frame(width: 48, height: 6)
+        .style(.btop)
+    Text("0–1 seconds · −4…+4")
+}
+```
+
+Each braille dot column preserves the known samples' minimum and maximum;
+`nil` marks a gap. Bipolar mode draws a muted zero axis. Magnitude mode fills
+from the lower bound; `.automatic(padding:)` derives bounds from visible samples.
+Optional checked `WaveformEvent` ranges supply labels and semantic tones.
+Applications own sampling, interpretation, panning, zoom, captions and counts.
+The view is passive and performs no clinical interpretation.
+
+[Component API and limits](../Sources/Chio/Waveform/README.md) ·
+[Runnable study](../Spikes/Waveform/README.md)
+
 ## Maps
 
 `MapView` draws a north-up world or street map from a retained `MapSource`.

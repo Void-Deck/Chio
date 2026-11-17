@@ -8,36 +8,50 @@ struct WaveformEventRow {
     let visible: [WaveformEvent]
 
     init(events: [WaveformEvent], window: HistoryInterval, width: Int) {
-        let start = window.range.lowerBound
-        let end = window.range.upperBound
+        let windowStart = window.range.lowerBound
+        let windowEnd = window.range.upperBound
         visible = events.enumerated().filter {
-            $0.element.start <= end && ($0.element.start >= start || $0.element.duration > start - $0.element.start)
+            let event = $0.element
+            let startsBeforeWindowEnd = event.start <= windowEnd
+            let startsInsideWindow = event.start >= windowStart
+            let extendsIntoWindow = event.duration > windowStart - event.start
+            return startsBeforeWindowEnd && (startsInsideWindow || extendsIntoWindow)
         }.sorted {
             if $0.element.start == $1.element.start { return $0.offset < $1.offset }
             return $0.element.start < $1.element.start
         }.map(\.element)
         guard width > 0 else { cells = []; return }
-        let duration = WaveformColumns.seconds(end - start)
+        let windowDurationSeconds = WaveformTime.seconds(windowEnd - windowStart)
         let anchors = visible.map {
-            max(0, min(width - 1, Int((WaveformColumns.seconds($0.start - start) / duration * Double(width)).rounded(.down))))
+            let position = WaveformTime.seconds($0.start - windowStart) / windowDurationSeconds * Double(width)
+            // A visible range may start far before a subsecond window. Clamp
+            // in Double before converting, including the exact right endpoint.
+            if position <= 0 { return 0 }
+            if position >= Double(width - 1) { return width - 1 }
+            return Int(position.rounded(.down))
         }
         var output = Array(repeating: Cell(character: " ", tone: .muted), count: width)
-        var previous = -2
+        var lastOccupiedCell = -2
         for (index, event) in visible.enumerated() {
             let anchor = anchors[index]
-            guard anchor < width else { continue }
-            let next = index + 1 < anchors.count ? anchors[index + 1] : width + 1
-            let end = anchor + event.label.count - 1
-            if end < width, anchor >= previous + 2, end + 1 < next {
+            let nextAnchor = index + 1 < anchors.count ? anchors[index + 1] : width + 1
+            let labelEnd = anchor + event.label.count - 1
+            let fitsInRow = labelEnd < width
+            let clearsPreviousCell = anchor >= lastOccupiedCell + 2
+            let clearsNextAnchor = labelEnd + 1 < nextAnchor
+            if fitsInRow && clearsPreviousCell && clearsNextAnchor {
                 for (offset, character) in event.label.enumerated() {
                     output[anchor + offset] = Cell(character: character, tone: event.tone)
                 }
-                previous = end
+                lastOccupiedCell = labelEnd
             } else {
-                let old = output[anchor]
-                let tone = old.character == "▾" && Self.severity(old.tone) > Self.severity(event.tone) ? old.tone : event.tone
+                let existingCell = output[anchor]
+                let isExistingMarker = existingCell.character == "▾"
+                let isExistingMoreSevere = Self.severity(existingCell.tone) > Self.severity(event.tone)
+                let keepsExistingTone = isExistingMarker && isExistingMoreSevere
+                let tone = keepsExistingTone ? existingCell.tone : event.tone
                 output[anchor] = Cell(character: "▾", tone: tone)
-                previous = max(previous, anchor)
+                lastOccupiedCell = max(lastOccupiedCell, anchor)
             }
         }
         cells = output

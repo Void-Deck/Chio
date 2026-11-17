@@ -17,8 +17,12 @@ public struct WaveformSamples {
         guard values.count <= Self.maximumCount else { throw .tooManySamples }
         let elapsed = Double(values.count - 1) / rate
         let remaining = Duration.seconds(Int64.max) - start
-        guard elapsed.isFinite, elapsed < Double(Int64.max) else { throw .endOutOfRange }
-        guard (elapsed == 0 || remaining > .zero), Duration.seconds(elapsed) <= remaining else { throw .endOutOfRange }
+        let isElapsedFinite = elapsed.isFinite
+        let isElapsedRepresentable = elapsed < Double(Int64.max)
+        guard isElapsedFinite && isElapsedRepresentable else { throw .endOutOfRange }
+        let hasRoomForElapsed = elapsed == 0 || remaining > .zero
+        let isEndWithinLimit = Duration.seconds(elapsed) <= remaining
+        guard hasRoomForElapsed && isEndWithinLimit else { throw .endOutOfRange }
         for (index, value) in values.enumerated() {
             if let value, !value.isFinite { throw .nonFiniteValue(index: index) }
         }

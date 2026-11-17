@@ -7,7 +7,7 @@ struct WaveformBounds {
     private let divisor: Double
 
     init(scale: WaveformScale, mode: WaveformMode, columns: WaveformColumns) {
-        switch scale.bounds {
+        switch scale.rule {
         case .fixed(let lower, let upper):
             self.lower = lower
             self.upper = upper
@@ -45,7 +45,12 @@ struct WaveformBounds {
         let fraction = span.isFinite
             ? (upper - value) / span
             : (upper / magnitude - value / magnitude) / (upper / magnitude - lower / magnitude)
-        return min(height - 1, max(0, Int((fraction * Double(height - 1)).rounded())))
+        let rowPosition = (fraction * Double(height - 1)).rounded()
+        // The finite interior fraction maps between the edge rows. Saturate in
+        // Double before converting, just as for sample positions and anchors.
+        if rowPosition <= 0 { return 0 }
+        if rowPosition >= Double(height - 1) { return height - 1 }
+        return Int(rowPosition)
     }
 }
 

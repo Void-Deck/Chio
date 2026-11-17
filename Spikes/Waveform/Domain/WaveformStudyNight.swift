@@ -4,6 +4,7 @@ import Chio
 /// Entirely synthetic signals. No recording, patient data or clinical inference.
 struct WaveformStudyNight {
     static let sampleRate = 25
+    static let pressurePadding = 0.5
     static let seconds = 8 * 60 * 60
     static let startMinute = 22 * 60 + 31
     let flow: [Float?]
@@ -116,7 +117,7 @@ extension WaveformStudyNight {
             maximum = max(maximum ?? reading, reading)
         }
         guard let minimum, let maximum else { return nil }
-        return floor(minimum - 0.5)...ceil(maximum + 0.5)
+        return floor(minimum - Self.pressurePadding)...ceil(maximum + Self.pressurePadding)
     }
 
     /// Density means event starts per ten minutes, with the earliest window winning ties.
