@@ -1,4 +1,5 @@
 import Foundation
+import Chio
 
 /// Entirely synthetic signals. No recording, patient data or clinical inference.
 struct WaveformStudyNight {
@@ -9,6 +10,10 @@ struct WaveformStudyNight {
     let pressure: [Float?]
     let events: [Event]
     let gap: Range<Int>
+    let waveformFlow: Result<WaveformSamples, any Error>
+    let waveformPressure: Result<WaveformSamples, any Error>
+    let waveformMagnitude: Result<WaveformSamples, any Error>
+    let waveformEvents: Result<[WaveformEvent], any Error>
 
     struct Event {
         enum Kind: String { case obstructive = "OA", hypopnea = "H", central = "CA", limitation = "FL" }
@@ -67,7 +72,27 @@ struct WaveformStudyNight {
             let apap = 9 + 3.8 * sin(t / 2400) + 0.7 * sin(t / 417) + 0.18 * breath
             pressure.append(isGap ? nil : Float(min(14, max(4, apap))))
         }
-        return Self(flow: flow, pressure: pressure, events: events, gap: gap)
+        let checkedEvents = events.map { event in
+            let tone: WaveformEvent.Tone
+            switch event.kind {
+            case .obstructive, .central: tone = .error
+            case .hypopnea: tone = .warning
+            case .limitation: tone = .muted
+            }
+            return Result { try WaveformEvent(start: .seconds(event.seconds.lowerBound),
+                                              duration: .seconds(event.seconds.count), label: event.label, tone: tone) }
+        }
+        // Synthetic construction failures remain visible through the plot's result.
+        let eventResult = Result { try checkedEvents.map { try $0.get() } }
+        let waveformFlow = Result {
+            _ = try eventResult.get()
+            return try WaveformSamples(start: .zero, rate: Double(sampleRate), values: flow.map { $0.map(Double.init) })
+        }
+        return Self(flow: flow, pressure: pressure, events: events, gap: gap,
+                    waveformFlow: waveformFlow,
+                    waveformPressure: Result { try WaveformSamples(start: .zero, rate: Double(sampleRate), values: pressure.map { $0.map(Double.init) }) },
+                    waveformMagnitude: Result { try WaveformSamples(start: .zero, rate: Double(sampleRate), values: flow.map { $0.map { abs(Double($0)) } }) },
+                    waveformEvents: eventResult)
     }
 
     static func clock(_ offset: Int, includesSeconds: Bool = false) -> String {

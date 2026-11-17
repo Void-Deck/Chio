@@ -192,7 +192,7 @@ Swift modules nor public names. Maps and Markdown keep their complete implementa
 together. Style owns shared palette/environment integration; Search owns matching
 used by several controls. KeyboardHelp owns expanded help and shared shortcut
 values; KeyHint and KeyHints each own their directly usable view. DurationText,
-HistoryChart, InstrumentReadout, MeasurementGauge and Sparkline have distinct
+HistoryChart, Waveform, InstrumentReadout, MeasurementGauge and Sparkline have distinct
 component roots. HistoryChart owns its checked history values; MeasurementGauge
 owns its nested annotations. Instrumentation retains shared native control styles.
 Forms, Composition and Feedback retain related styles and presentation. Only

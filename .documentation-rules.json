@@ -112,6 +112,11 @@
       "parent": "Chio"
     },
     {
+      "id": "Chio.Waveform",
+      "root": "Sources/Chio/Waveform",
+      "parent": "Chio"
+    },
+    {
       "id": "Chio.HistoryChart",
       "root": "Sources/Chio/HistoryChart",
       "parent": "Chio"

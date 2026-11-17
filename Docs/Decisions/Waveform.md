@@ -45,7 +45,7 @@ reduction. Slow signals, such as one-minute leak, remain `HistoryChart` content.
 - **Mode.** `.bipolar` draws around zero and requires zero inside the scale; it
   draws a muted zero axis. `.magnitude` draws upwards from the scale's lower bound.
   Colors come from the inherited `ChioStyle`: the trace uses the accent, and the
-  axis and gaps use muted text.
+  axis uses muted text. Gaps draw nothing.
 - **Traces.** One view draws one trace. Applications stack views that share one
   `HistoryInterval` to align several signals, as the study does with flow and
   pressure.
@@ -117,8 +117,8 @@ public struct WaveformEvent {
   unless the padding is finite and at least zero.
 - `WaveformEvent` throws `startOutOfRange` under the same bounds as samples, then
   `nonPositiveDuration`, then `emptyLabel` for an empty label, then `invalidLabel`
-  for more than `maximumLabelLength` characters or any newline or control
-  character. An event covers `start..<start + duration`.
+  for more than `maximumLabelLength` characters, or for any scalar in
+  `CharacterSet.newlines` or `CharacterSet.controlCharacters` (Unicode Cc and Cf). An event covers `start..<start + duration`.
 
 ### Layout and drawing
 
@@ -130,21 +130,24 @@ public struct WaveformEvent {
   contains its offset.
 - A column with known samples spans their minimum and maximum. A column with no
   sample, between two adjacent known samples `k` and `k+1`, spans the values
-  linearly interpolated at the column's start and end times. Any other column is
-  a gap and draws no trace dots.
+  linearly interpolated at the column's start and end times. Both neighbours must
+  lie inside the window. Any other column is a gap and draws nothing.
 - Automatic bounds: `lower = floor(min − padding)` and `upper = ceil(max +
   padding)`, over known samples inside the window. In `.bipolar` mode they then
   extend to include zero. If `lower == upper`, they become `lower − 1` and
-  `upper + 1`. A window with no known sample draws only the axis.
+  `upper + 1`. With no known sample in the window, `.bipolar` uses `-1...1` and
+  draws only the axis, and `.magnitude` draws nothing. A fixed bound equal to zero
+  counts as including zero.
 - Value `v` maps to dot row `round((upper − v) / (upper − lower) · (H − 1))`,
+  rounding halves away from zero,
   clamped to `0...H−1`, where row zero is the top. Fixed-scale values outside the
   bounds therefore draw on the edge row.
 - `.bipolar` fills each column from its minimum row to its maximum row and draws
-  the zero row across every column, gaps included, in muted text. Trace dots win
-  a shared cell. `.magnitude` fills each column from the bottom dot row up to its
+  the zero row across every column, gaps included, in muted text. A cell holding
+  both trace and axis dots keeps both and takes the accent. `.magnitude` fills each column from the bottom dot row up to its
   maximum's row. The trace uses the style's accent.
 - An event is visible when its range intersects the window. Its anchor cell is
-  `max(0, floor((start − s) / (e − s) · width))`. Visible events are processed in
+  `max(0, floor((start − s) / (e − s) · width))`, limited to the last cell. Visible events are processed in
   order of start time, then input order. A label occupies `label.count` cells
   from its anchor. It is drawn only when it ends at or before the row's end,
   starts at least two cells after the previous occupied cell, and leaves at least
@@ -156,7 +159,7 @@ public struct WaveformEvent {
 ### Unavailable states
 
 The whole view is replaced by one line of text, which is also its accessibility
-label, when:
+label. The first matching condition applies, in this order:
 - the size exceeds 512 columns or 64 rows: `Waveform unavailable: allocation limit exceeded.`
 - there are more than `maximumEvents` events: `Waveform unavailable: event limit exceeded.`
 - `.bipolar` uses a fixed scale whose bounds exclude zero: `Waveform unavailable: zero is outside the fixed scale.`

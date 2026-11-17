@@ -41,6 +41,7 @@ These directories remain part of the single `Chio` module.
 | `FormField` | [Forms](Forms/README.md) |
 | `DotMatrix` | [DotMatrix](DotMatrix/README.md) |
 | `DurationText` | [DurationText](DurationText/README.md) |
+| `Waveform` | [Waveform](Waveform/README.md) |
 | `HistoryChart` | [HistoryChart](HistoryChart/README.md) |
 | `InstrumentReadout` | [InstrumentReadout](InstrumentReadout/README.md) |
 | `MeasurementGauge` | [MeasurementGauge](MeasurementGauge/README.md) |

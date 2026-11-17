@@ -24,11 +24,10 @@ struct WaveformStudyView {
         GroupBox("Flow · L/min") {
             VStack(spacing: 0) {
                 Text(eventTitle).foregroundStyle(style.colors.heading).lineLimit(1)
-                eventRow
                 HStack(spacing: 1) {
                     VStack { Text("+40"); Spacer(); Text("0 ┤"); Spacer(); Text("−40") }
                         .foregroundStyle(style.colors.mutedText).frame(width: 4)
-                    StudyWaveform(samples: night.flow, indices: window.indices, mode: .bipolar(limit: 40))
+                    publicPlot(samples: night.waveformFlow, mode: .bipolar, lower: -40, upper: 40, events: night.waveformEvents)
                 }
             }
         }
@@ -41,8 +40,7 @@ struct WaveformStudyView {
                 HStack(spacing: 1) {
                     VStack { Text(String(Int(bounds.upperBound))); Spacer(); Text(String(Int(bounds.lowerBound))) }
                         .foregroundStyle(style.colors.mutedText).frame(width: 4)
-                    StudyWaveform(samples: night.pressure, indices: window.indices,
-                                  mode: .magnitude(lower: bounds.lowerBound, upper: bounds.upperBound))
+                    publicPlot(samples: night.waveformPressure, mode: .magnitude, lower: bounds.lowerBound, upper: bounds.upperBound)
                 }
             } else {
                 Text("Mask off · no known pressure samples").foregroundStyle(style.colors.mutedText)
@@ -53,42 +51,36 @@ struct WaveformStudyView {
     private var eventTitle: String {
         let visible = night.events.filter { $0.seconds.overlaps(window.start..<window.end) }
         let kinds: [WaveformStudyNight.Event.Kind] = [.obstructive, .central, .hypopnea, .limitation]
-        let counts = "Events" + kinds.map { kind in
+        let counts = visible.isEmpty ? "no events" : "Events" + kinds.map { kind in
             " · \(kind.rawValue) \(visible.filter { $0.kind == kind }.count)"
         }.joined()
         return night.gap.overlaps(window.start..<window.end) ? counts + " · mask off" : counts
     }
 
-    private func color(_ tone: WaveformStudyEventRow.Tone) -> Color {
-        switch tone {
-        case .error: style.colors.error
-        case .warning: style.colors.warning
-        case .muted: style.colors.mutedText
-        }
-    }
-
-    private func eventCells(window: WaveformStudyWindow, width: Int, markersOnly: Bool = false) -> some View {
-        let row = WaveformStudyEventRow(events: night.events, window: window, width: width, markersOnly: markersOnly)
-        return HStack(spacing: 0) {
-            ForEach(Array(row.cells.enumerated()), id: \.offset) { entry in
-                Text(String(entry.element.character)).foregroundStyle(color(entry.element.tone))
+    @ViewBuilder
+    private func publicPlot(samples: Result<WaveformSamples, any Error>, mode: WaveformMode,
+                            lower: Double, upper: Double, events: Result<[WaveformEvent], any Error> = .success([]),
+                            wholeNight: Bool = false) -> some View {
+        switch samples {
+        case .success(let samples):
+            switch Result(catching: {
+                let interval = try HistoryInterval(start: .seconds(wholeNight ? 0 : window.start),
+                                                   end: .seconds(wholeNight ? WaveformStudyNight.seconds : window.end))
+                let scale = try WaveformScale.fixed(lower: lower, upper: upper)
+                return (interval, scale, try events.get())
+            }) {
+            case .success(let (interval, scale, events)):
+                Waveform(samples, window: interval, scale: scale, mode: mode, events: events)
+            case .failure(let error): Text("Waveform study unavailable: \(error)")
             }
+        case .failure(let error): Text("Waveform study unavailable: \(error)")
         }
-    }
-
-    private var eventRow: some View {
-        HStack(spacing: 1) {
-            Text("evt").frame(width: 4).foregroundStyle(style.colors.mutedText)
-            GeometryReader { geometry in
-                eventCells(window: window, width: geometry.size.width)
-            }
-        }.frame(height: 1)
     }
 
     private var overview: some View {
         VStack(spacing: 0) {
-            StudyWaveform(samples: night.flow, indices: night.flow.indices, mode: .magnitude(lower: 0, upper: 40),
-                          usesAbsoluteValues: true)
+            publicPlot(samples: night.waveformMagnitude, mode: .magnitude, lower: 0, upper: 40,
+                       events: night.waveformEvents, wholeNight: true)
                 .overlay {
                     GeometryReader { geometry in
                         let width = geometry.size.width
@@ -96,20 +88,16 @@ struct WaveformStudyView {
                         let right = min(max(0, width - 1), max(left, (window.end * width - 1) / WaveformStudyNight.seconds))
                         ZStack(alignment: .topLeading) {
                             if left == right {
-                                Text("│").offset(x: left)
+                                Text("│").offset(x: left, y: 1)
                             } else {
-                                Text("[").offset(x: left)
-                                Text("]").offset(x: right)
+                                Text("[").offset(x: left, y: 1)
+                                Text("]").offset(x: right, y: 1)
                             }
                         }
                         .foregroundStyle(style.colors.warning)
                     }
                 }
-                .frame(height: 1)
-            GeometryReader { geometry in
-                eventCells(window: WaveformStudyWindow(start: 0, length: .night),
-                           width: geometry.size.width, markersOnly: true)
-            }.frame(height: 1)
+                .frame(height: 2)
         }.frame(height: 2)
     }
 

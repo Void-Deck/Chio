@@ -81,8 +81,10 @@ The consumer is Pneuma, which records CPAP blower flow and pressure at 25 Hz.
 [PR #40](https://github.com/Void-Deck/Chio/pull/40) carries the contract, the
 visual study and the shared raster renderer, and will carry the public `Waveform`.
 A separate author writes spec-derived tests from the contract and public interface
-only. Implementer tests are supplementary. The isolated study remains the visual
-evidence until it renders through the public view.
+only. Implementer tests are supplementary. The candidate now implements the public
+view and migrates the study to it.
+Its pure reduction and event placement have supplementary implementer coverage.
+Separate spec-derived tests, review and platform qualification remain distinct gates.
 
 ## Current slice: public dot matrix display
 

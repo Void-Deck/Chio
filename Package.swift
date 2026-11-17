@@ -83,6 +83,7 @@ let package = Package(
                 "FilePicker/README.md",
                 "Forms/README.md",
                 "HistoryChart/README.md",
+                "Waveform/README.md",
                 "InstrumentReadout/README.md",
                 "KeyHint/README.md",
                 "KeyHints/README.md",
