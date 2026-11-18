@@ -130,11 +130,14 @@ extension MapExampleCommand: AsyncParsableCommand {
         }
     }
 
+    /// Identifies this example to opt-in online services, as their usage policies require.
+    private static let applicationIdentity = "ChioMaps/0.1 (https://github.com/Void-Deck/Chio)"
+
     private func configuredRouter() throws -> OSRMRouter {
         guard let endpoint = URL(string: routerEndpoint) else {
             throw ValidationError("--router-endpoint requires an explicit complete OSRM /route/v1/profile URL.")
         }
-        return try OSRMRouter(endpoint: endpoint, userAgent: "ChioMaps/0.1 (https://github.com/echoz/Chio)", attributions: [
+        return try OSRMRouter(endpoint: endpoint, userAgent: Self.applicationIdentity, attributions: [
             MapAttribution(text: "OSRM", link: MapFixtureError.url("https://project-osrm.org/")),
             MapAttribution(text: "© OpenStreetMap contributors", link: MapFixtureError.url("https://www.openstreetmap.org/copyright"))
         ])
@@ -144,14 +147,14 @@ extension MapExampleCommand: AsyncParsableCommand {
         guard let endpoint = URL(string: geocoderEndpoint) else {
             throw ValidationError("--geocoder-endpoint requires an explicit Photon /api URL.")
         }
-        return try PhotonGeocoder(endpoint: endpoint, userAgent: "ChioMaps/0.1 (https://github.com/echoz/Chio)")
+        return try PhotonGeocoder(endpoint: endpoint, userAgent: Self.applicationIdentity)
     }
 
     private func configuredReverseGeocoder() throws -> PhotonReverseGeocoder {
         guard let endpoint = URL(string: reverseGeocoderEndpoint) else {
             throw ValidationError("--reverse-geocoder-endpoint requires an explicit Photon /reverse URL.")
         }
-        return try PhotonReverseGeocoder(endpoint: endpoint, userAgent: "ChioMaps/0.1 (https://github.com/echoz/Chio)")
+        return try PhotonReverseGeocoder(endpoint: endpoint, userAgent: Self.applicationIdentity)
     }
 
     @MainActor

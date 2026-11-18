@@ -4,7 +4,7 @@ import Foundation
 /// Synthetic, deterministic examples; this provider never accesses the network.
 struct MapFixtureGeocoder {
     static var attributionURL: URL {
-        get throws { try MapFixtureError.url("https://github.com/echoz/Chio") }
+        get throws { try MapFixtureError.url("https://github.com/Void-Deck/Chio") }
     }
 
     private func places() throws -> [MapPlace] {
