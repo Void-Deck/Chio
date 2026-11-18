@@ -1450,9 +1450,11 @@ fetching their full histories.
 
 Chio's public copy contains exactly four generic component files and their
 [manifest](../.github/actions/source-receipt/reviewed-copy.json), exported from
-`Void-Deck/ci-helpers` commit `ba95ede8d39f70369d817db8f1b1c2f8e5938086`.
+`Void-Deck/ci-helpers` commit `130707d1aeac6ad0402ecfe02c8e6eba6a8fd2e5`.
 The entrypoint checks the manifest and allowlisted hashes before loading the
-receipt implementation.
+receipt implementation. When GitHub builds the PR merge on a newer base than the
+event names, the receipt still rejects the run, with stage `merge-base-moved` and
+a fixed instruction to merge the base branch into the PR and push.
 An update requires another explicit export and review. No private action access
 or private controller code is required.
 

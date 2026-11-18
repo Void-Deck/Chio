@@ -42,6 +42,18 @@ categories identify the rejected check without printing observed values.
 Unexpected errors retain the generic failure diagnostic. A category does not
 prove why the rejected observation differed or authorize a retry.
 
+A pull request merge must have exactly two parents, the event's `base.sha` then
+its `head.sha`. GitHub can build `refs/pull/<number>/merge` on a newer base
+commit while the event still names the base from the pull request's last base
+update. When the second parent is the event head but the first parent is not
+the event base, the receipt rejects the run with the fixed stage
+`merge-base-moved` and the fixed standard-error line `source receipt: source identity validation failed
+(merge-base-moved): merge the base branch into the pull request and push.`, the
+same `source receipt: ` prefix as every other rejection. Any
+other parent mismatch keeps the stage `merge-parents`. Neither diagnostic prints
+an observed value, and neither relaxes the parent check: the receipt stays
+token- and network-free, so it cannot verify which base commit GitHub used.
+
 ## Receipt contract
 
 Schema version 1 preserves separate target repository name/id, workflow ref and

@@ -25,6 +25,7 @@ class ValidationStage(Enum):
     PR_BASE = "pull-request-base"
     PR_HEAD = "pull-request-head"
     PR_PARENTS = "merge-parents"
+    PR_BASE_MOVED = "merge-base-moved"
     PUSH = "push-identity"
     GIT = "git-read"
 
@@ -160,6 +161,11 @@ def observe(environment, provenance):
         commit = git(workspace, "cat-file", "-p", "HEAD").decode("utf-8", errors="replace")
         headers = commit.split("\n\n", 1)[0].splitlines()
         parents = [line[7:] for line in headers if line.startswith("parent ")]
+        # GitHub can build the merge on a newer base than the event's base.sha;
+        # name that case so the caller knows to update the branch.
+        moved = (len(parents) == 2 and parents[1] == head_identity["commit"]
+                 and parents[0] != base_identity["commit"])
+        require(not moved, ValidationStage.PR_BASE_MOVED)
         require(parents == [base_identity["commit"], head_identity["commit"]], ValidationStage.PR_PARENTS)
         source.update(pullRequest={"number": number}, base=base_identity,
                       head=head_identity, testedMergeCommit=checked_out)
