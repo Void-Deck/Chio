@@ -2001,7 +2001,7 @@ These captures establish no live-device or clinical behavior.
 
 ### Demo site
 
-The [showcase](https://echoz.github.io/Chio/) assembles eighteen recordings and 54
+The [showcase](https://void-deck.github.io/Chio/) assembles eighteen recordings and 54
 three-theme previews from `Docs/Media`, using the pinned local asciinema player
 in `Docs/Site`. Its upstream license remains with the vendored assets. The catalog
 opens on Maps and separates Chio views, styles for native SwiftTUI controls and
@@ -2024,7 +2024,7 @@ missing-asset fallbacks remain supported. The build gives owned CSS/JavaScript
 content-hashed names. The player's NPT-poster limitation is recorded alongside
 the vendored assets.
 
-The separate [style comparison](https://echoz.github.io/Chio/appearance.html)
+The separate [style comparison](https://void-deck.github.io/Chio/appearance.html)
 compares six actual terminal captures (default, opencode and btop at 100 × 30 and
 36 × 64). [PR #10](https://github.com/echoz/Chio/pull/10) supplies the unified
 `ChioStyle` implementation and refreshed, inspected captures. Refresh affected

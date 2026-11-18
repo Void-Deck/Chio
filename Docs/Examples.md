@@ -21,7 +21,7 @@ The map example uses `t`. With no option, metrics starts in btop and other examp
 start in default. Dashboard examples retain `--light` as an alias for
 `--theme light`; use one option or the other.
 
-The [showcase](https://echoz.github.io/Chio/) provides one shared **Theme** selector.
+The [showcase](https://void-deck.github.io/Chio/) provides one shared **Theme** selector.
 It follows you across entries and updates the static preview, Swift fragment and
 launch command. Previews render the same example state in all three themes;
 the URL retains your theme and entry for sharing. **Play original recording**
@@ -65,7 +65,7 @@ for three columns; narrower terminals stack the sections in a native scroll view
 The **36 × 64** comparison images show the full stack, while **36 × 18** is the
 small interactive check. The application owns this breakpoint and section navigation.
 
-[Compare the rendered treatments](https://echoz.github.io/Chio/appearance.html).
+[Compare the rendered treatments](https://void-deck.github.io/Chio/appearance.html).
 The [style decision](Decisions/Themes.md#appearance-study) owns the accepted API
 and application boundaries. [Verification](Verification.md#demo-site) owns capture
 and browser checks. The main catalog retains three captured themes,
@@ -374,7 +374,7 @@ selection, and an open reader stays open until dismissed.
 
 These are fixed snapshots, with no GitHub connection, current clock or repository
 operations. Use `--inbox --snapshot --width 36 --height 18` for a compact frame.
-Watch the [inbox recording](https://echoz.github.io/Chio/#inbox).
+Watch the [inbox recording](https://void-deck.github.io/Chio/#inbox).
 
 ## Diff reader prototype
 
@@ -402,7 +402,7 @@ is not a terminal-independent source editor. Large diffs, selection/copy,
 syntax highlighting and VCS ingestion are outside this prototype.
 
 Use `--diff --snapshot --width 36 --height 18` for a compact frame. Watch the
-[diff recording](https://echoz.github.io/Chio/#diff).
+[diff recording](https://void-deck.github.io/Chio/#diff).
 
 ## Choice fields
 
@@ -717,7 +717,7 @@ deterministic initial state. See [usage](Usage.md#instruments-and-time-aware-his
 
 ## Gallery and recordings
 
-[Watch the recordings in your browser](https://echoz.github.io/Chio/), with pause,
+[Watch the recordings in your browser](https://void-deck.github.io/Chio/), with pause,
 seeking, and fullscreen playback. These are recorded examples; run the binary to
 interact with the controls yourself.
 
@@ -733,7 +733,7 @@ distinct from the shared theme.
 
 The local agent dashboard combines native controls with Chio's theme, searchable
 selection, progress styling, and contextual help.
-[Watch](https://echoz.github.io/Chio/#dashboard) · [Download recording](Media/dashboard.cast).
+[Watch](https://void-deck.github.io/Chio/#dashboard) · [Download recording](Media/dashboard.cast).
 
 ### Searchable choices and light-theme feedback
 
@@ -741,13 +741,13 @@ selection, progress styling, and contextual help.
 
 Checked membership stays distinct from keyboard focus. Filtering can hide a
 checked item without removing it from the application's selection.
-[Watch](https://echoz.github.io/Chio/#choices) · [Download recording](Media/choices.cast).
+[Watch](https://void-deck.github.io/Chio/#choices) · [Download recording](Media/choices.cast).
 
 ![Chio's light-theme feedback example with an accent outline around the focused Publish button](Media/feedback-light.png)
 
 The same semantic theme roles apply to the light palette. Focused buttons use an
 accent outline and preserve the surrounding surface.
-[Watch](https://echoz.github.io/Chio/#feedback) · [Download recording](Media/feedback-light.cast).
+[Watch](https://void-deck.github.io/Chio/#feedback) · [Download recording](Media/feedback-light.cast).
 
 ### Paginated history
 
@@ -755,7 +755,7 @@ accent outline and preserve the surrounding surface.
 
 Filter local runs, move between pages, and change the page size while keeping the
 previously visible run in the new window. Empty results have no active page.
-[Watch](https://echoz.github.io/Chio/#pagination) · [Download recording](Media/pagination.cast).
+[Watch](https://void-deck.github.io/Chio/#pagination) · [Download recording](Media/pagination.cast).
 
 ### Scrolling and expandable trees
 
@@ -763,13 +763,13 @@ previously visible run in the new window. Empty results have no active page.
 
 Navigate a wide local log, change theme and try a compact terminal. Native
 scrolling owns the position; Chio supplies semantic indicator colors.
-[Watch](https://echoz.github.io/Chio/#viewport) · [Download recording](Media/viewport.cast).
+[Watch](https://void-deck.github.io/Chio/#viewport) · [Download recording](Media/viewport.cast).
 
 ![A themed project tree with nested folders, file labels and bulk expansion actions](Media/tree.png)
 
 Fold nested groups while keeping their expansion choices, then change theme or
 resize. The hierarchy is authored local example data; it does not read files.
-[Watch](https://echoz.github.io/Chio/#tree) · [Download recording](Media/tree.cast).
+[Watch](https://void-deck.github.io/Chio/#tree) · [Download recording](Media/tree.cast).
 
 ### Grouped settings
 
@@ -777,7 +777,7 @@ resize. The hierarchy is authored local example data; it does not read files.
 
 Conditional fields retain their draft text, related values validate together, and
 Cancel restores the latest saved snapshot. The example starts no background jobs.
-[Watch](https://echoz.github.io/Chio/#forms) · [Download recording](Media/forms.cast).
+[Watch](https://void-deck.github.io/Chio/#forms) · [Download recording](Media/forms.cast).
 
 ### Timers and stopwatches
 
@@ -785,7 +785,7 @@ Cancel restores the latest saved snapshot. The example starts no background jobs
 
 Pause each clock independently, resume its retained interval, and follow countdown
 expiry through theme and terminal-size changes.
-[Watch](https://echoz.github.io/Chio/#timers) · [Download recording](Media/timers.cast).
+[Watch](https://void-deck.github.io/Chio/#timers) · [Download recording](Media/timers.cast).
 
 ### Markdown code, links and reports
 
@@ -796,7 +796,7 @@ Move through inline links with native focus and activate each destination locall
 Paragraph wrapping, focused links and persistent feedback
 share the theme through terminal-size changes. The application chooses what
 activation does; this demo opens no browser and makes no network requests.
-[Watch](https://echoz.github.io/Chio/#markdown) · [Download recording](Media/markdown-links.cast).
+[Watch](https://void-deck.github.io/Chio/#markdown) · [Download recording](Media/markdown-links.cast).
 
 ### Compact metrics
 
@@ -805,7 +805,7 @@ activation does; this demo opens no browser and makes no network requests.
 Advance local readings, switch between bars and target dials, show missing or empty
 history, and compare btop, default and light palettes. Gauges remain accented at 100%; the
 application supplies data, normalization and updates.
-[Watch](https://echoz.github.io/Chio/#metrics) · [Download recording](Media/metrics.cast).
+[Watch](https://void-deck.github.io/Chio/#metrics) · [Download recording](Media/metrics.cast).
 
 ### Review inbox
 
@@ -813,7 +813,7 @@ application supplies data, normalization and updates.
 
 Sort and filter fixed local reviews, hide the wide preview, and open the full
 reader. Query, selection and native focus survive theme and terminal-size changes.
-[Watch](https://echoz.github.io/Chio/#inbox) · [Download recording](Media/inbox.cast).
+[Watch](https://void-deck.github.io/Chio/#inbox) · [Download recording](Media/inbox.cast).
 
 ### Read-only diff prototype
 
@@ -822,7 +822,7 @@ reader. Query, selection and native focus survive theme and terminal-size change
 Jump between hunks, switch split/unified views, and resize into compact reading.
 Existing Chio styles and native scrolling support an example-owned diff model;
 empty files, renames and binary content have explicit summaries.
-[Watch](https://echoz.github.io/Chio/#diff) · [Download recording](Media/diff.cast).
+[Watch](https://void-deck.github.io/Chio/#diff) · [Download recording](Media/diff.cast).
 
 These previews render real release-binary terminal output. Font rendering can
 vary between terminals. The accompanying Asciinema-compatible recordings replay
