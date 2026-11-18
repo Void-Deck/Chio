@@ -61,11 +61,11 @@ owns migration and qualification evidence.
 Requires **Swift 6.4+**, on **macOS 15+ or Linux**. Repository development and CI use
 the **6.4 release compiler line** in [`.swift-version`](.swift-version); see
 [compiler selection](Docs/Verification.md#repository-compiler-selection).
-[Chio 0.2.2](https://github.com/echoz/Chio/releases/tag/v0.2.2) is published at
+[Chio 0.2.2](https://github.com/Void-Deck/Chio/releases/tag/v0.2.2) is published at
 `4ded80f870fb2c92c92d7d402fd71d42213ecee8`. Install that immutable revision:
 
 ```swift
-.package(url: "https://github.com/echoz/Chio.git",
+.package(url: "https://github.com/Void-Deck/Chio.git",
          revision: "4ded80f870fb2c92c92d7d402fd71d42213ecee8")
 ```
 
