@@ -21,7 +21,7 @@ release and downstream application adoption remain separate steps.
 ## Current maintenance: shared source receipt
 
 The bounded CI candidate imports the four reviewed generic action files from
-`Void-Deck/ci-helpers` commit `ba95ede8d39f70369d817db8f1b1c2f8e5938086`.
+`Void-Deck/ci-helpers` commit `130707d1aeac6ad0402ecfe02c8e6eba6a8fd2e5`.
 The manifest records that source and the exact file hashes. Both ordinary platform
 jobs record their event checkout after Python is available. The
 [source receipt contract](Verification.md#ci-source-receipt) owns provenance,

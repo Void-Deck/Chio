@@ -15,6 +15,11 @@ UPSTREAM_REPOSITORY = "Void-Deck/ci-helpers"
 UPSTREAM_PATH = "ci/source-receipt"
 
 
+# Fixed remediation text for rejections the caller can resolve. It never
+# contains observed values.
+STAGE_HINTS = {"merge-base-moved": "merge the base branch into the pull request and push."}
+
+
 class ReceiptError(Exception):
     """Safe fixed diagnostics only; never event or subprocess text."""
 
@@ -98,7 +103,9 @@ def main():
     except module.IdentityError as error:
         if not isinstance(error.stage, module.ValidationStage):
             raise
-        raise ReceiptError("source identity validation failed (" + error.stage.value + ")") from None
+        hint = STAGE_HINTS.get(error.stage.value)
+        message = "source identity validation failed (" + error.stage.value + ")"
+        raise ReceiptError(message + (": " + hint if hint else "")) from None
 
 
 if __name__ == "__main__":
