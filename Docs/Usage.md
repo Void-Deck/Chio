@@ -9,11 +9,11 @@ rendering, layout, state, input, focus, and scrolling.
 The package exports one `Chio` library. Applications also depend on SwiftTUI
 for the native views and runtime. See [Package.swift](../Package.swift) for the
 current dependency pins and [the design](Design.md) for interaction contracts.
-The published [0.2.2 release](https://github.com/echoz/Chio/releases/tag/v0.2.2)
+The published [0.2.2 release](https://github.com/Void-Deck/Chio/releases/tag/v0.2.2)
 uses these immutable requirements:
 
 ```swift
-.package(url: "https://github.com/echoz/Chio.git",
+.package(url: "https://github.com/Void-Deck/Chio.git",
          revision: "4ded80f870fb2c92c92d7d402fd71d42213ecee8"),
 .package(url: "https://github.com/SwiftTUI/swift-tui.git",
          revision: "3999a9a57dde52fb00aa98952460b0819a0641bf"),
